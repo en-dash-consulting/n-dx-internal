@@ -24458,7 +24458,7 @@
             {
               "id": "afb5f9cb-5df5-47ad-b76d-d2f4f63edc81",
               "title": "Replace numeric provider prompt with keyboard-driven select",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace the existing numeric '1) codex 2) claude' prompt with an enquirer Select prompt. Arrow keys navigate, Enter confirms. Display vendor names with friendly labels. Vertical select is the baseline; horizontal tab-style is acceptable if the library supports it cleanly.",
               "acceptanceCriteria": [
@@ -24467,7 +24467,11 @@
                 "Enter confirms selection",
                 "Selected provider is passed to the next stage (model selection)"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-04-03T15:47:33.651Z",
+              "completedAt": "2026-04-03T15:54:38.499Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Replaced readline numeric prompt with enquirer Select for provider selection. Updated cli.js to use real isTTY. Added PROVIDER_LABELS, updated e2e tests and architecture-policy docs."
             },
             {
               "id": "34c6db6f-bd50-4590-84c3-0974a8cd9cf0",
@@ -24521,7 +24525,7 @@
             {
               "id": "4ed5ffca-9c76-422d-8a2d-2dfd41f735d0",
               "title": "Create packages/core/llm-model-catalog.js",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Create a static local model catalog at packages/core/llm-model-catalog.js. Export LLM_MODEL_CATALOG mapping each vendor to an array of { id, label, description?, recommended } entries. Claude: claude-sonnet-4-6 (recommended), claude-opus-4-20250514, claude-haiku-4-20250414. Codex: gpt-5-codex (recommended). The catalog intentionally duplicates a small amount of model metadata — contract tests guard against drift.",
               "acceptanceCriteria": [
@@ -24531,7 +24535,11 @@
                 "Claude has at least 3 models, Codex has at least 1",
                 "Exactly one model per vendor is marked recommended: true"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-04-03T15:57:49.051Z",
+              "completedAt": "2026-04-03T16:08:34.506Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "llm-model-catalog.js already existed from prior session. Added explicit recommended: false to non-recommended models to satisfy AC3 (\"each model entry has id, label, and recommended fields\"). Updated JSDoc to mark recommended as required. Strengthened unit test to assert typeof recommended === \"boolean\" on every entry."
             },
             {
               "id": "86b700c8-96e1-4bac-ad05-17dbfac5bf80",

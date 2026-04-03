@@ -26,7 +26,7 @@
  * @typedef {Object} ModelEntry
  * @property {string} id          Canonical model ID (persisted to config)
  * @property {string} label       Friendly display label
- * @property {boolean} [recommended]  Whether this is the recommended default
+ * @property {boolean} recommended    Whether this is the recommended default
  */
 
 /** @type {Record<string, ModelEntry[]>} */
@@ -36,8 +36,8 @@ export const LLM_MODEL_CATALOG = {
   ],
   claude: [
     { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", recommended: true },
-    { id: "claude-opus-4-20250514", label: "Claude Opus 4" },
-    { id: "claude-haiku-4-20250414", label: "Claude Haiku 4" },
+    { id: "claude-opus-4-20250514", label: "Claude Opus 4", recommended: false },
+    { id: "claude-haiku-4-20250414", label: "Claude Haiku 4", recommended: false },
   ],
 };
 

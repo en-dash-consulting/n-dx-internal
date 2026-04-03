@@ -658,11 +658,15 @@ describe("LLM_MODEL_CATALOG", () => {
     }
   });
 
-  it("every model has an id and label", () => {
+  it("every model has an id, label, and recommended field", () => {
     for (const [vendor, models] of Object.entries(LLM_MODEL_CATALOG)) {
       for (const model of models) {
         expect(model.id, `${vendor} model missing id`).toBeTruthy();
         expect(model.label, `${vendor} model missing label`).toBeTruthy();
+        expect(
+          typeof model.recommended,
+          `${vendor}/${model.id} missing explicit recommended field`,
+        ).toBe("boolean");
       }
     }
   });
