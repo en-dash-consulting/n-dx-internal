@@ -1285,6 +1285,216 @@ describe("n-dx config", () => {
     });
   });
 
+  // ── LLM model config keys ────────────────────────────────────────────────
+
+  describe("llm.codex.model", () => {
+    it("sets llm.codex.model in .n-dx.json", async () => {
+      const output = run(["llm.codex.model", "gpt-5-codex", tmpDir]);
+      expect(output).toContain("llm.codex.model = gpt-5-codex");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+    });
+
+    it("gets llm.codex.model after setting it", () => {
+      run(["llm.codex.model", "gpt-5-codex", tmpDir]);
+      const output = run(["llm.codex.model", tmpDir]);
+      expect(output.trim()).toBe("gpt-5-codex");
+    });
+
+    it("shows llm.codex.model in --json output", () => {
+      run(["llm.codex.model", "gpt-5-codex", tmpDir]);
+
+      const output = run(["llm", "--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.codex.model).toBe("gpt-5-codex");
+    });
+
+    it("persists alongside other llm.codex settings", async () => {
+      run(["llm.codex.api_endpoint", "https://api.openai.com", tmpDir]);
+      run(["llm.codex.model", "gpt-5-codex", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.codex.api_endpoint).toBe("https://api.openai.com");
+      expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+    });
+
+    it("updates existing llm.codex.model value", async () => {
+      run(["llm.codex.model", "old-model", tmpDir]);
+      run(["llm.codex.model", "new-model", tmpDir]);
+
+      const output = run(["llm.codex.model", tmpDir]);
+      expect(output.trim()).toBe("new-model");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.codex.model).toBe("new-model");
+    });
+  });
+
+  describe("llm.claude.model", () => {
+    it("sets llm.claude.model in .n-dx.json", async () => {
+      const output = run(["llm.claude.model", "claude-opus-4-20250514", tmpDir]);
+      expect(output).toContain("llm.claude.model = claude-opus-4-20250514");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.claude.model).toBe("claude-opus-4-20250514");
+    });
+
+    it("gets llm.claude.model after setting it", () => {
+      run(["llm.claude.model", "claude-sonnet-4-6", tmpDir]);
+      const output = run(["llm.claude.model", tmpDir]);
+      expect(output.trim()).toBe("claude-sonnet-4-6");
+    });
+
+    it("shows llm.claude.model in --json output", () => {
+      run(["llm.claude.model", "claude-opus-4-20250514", tmpDir]);
+
+      const output = run(["llm", "--json", tmpDir]);
+      const parsed = JSON.parse(output);
+      expect(parsed.claude.model).toBe("claude-opus-4-20250514");
+    });
+
+    it("persists alongside other llm.claude settings", async () => {
+      run(["llm.claude.api_endpoint", "https://proxy.example.com", tmpDir]);
+      run(["llm.claude.model", "claude-sonnet-4-6", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.claude.api_endpoint).toBe("https://proxy.example.com");
+      expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
+    });
+
+    it("updates existing llm.claude.model value", async () => {
+      run(["llm.claude.model", "claude-sonnet-4-6", tmpDir]);
+      run(["llm.claude.model", "claude-opus-4-20250514", tmpDir]);
+
+      const output = run(["llm.claude.model", tmpDir]);
+      expect(output.trim()).toBe("claude-opus-4-20250514");
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.claude.model).toBe("claude-opus-4-20250514");
+    });
+  });
+
+  // ── Legacy Claude sync ──────────────────────────────────────────────────
+
+  describe("legacy claude sync", () => {
+    it("syncs llm.claude.model to claude.model in .n-dx.json", async () => {
+      run(["llm.claude.model", "claude-opus-4-20250514", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      // Primary key
+      expect(ndxConfig.llm.claude.model).toBe("claude-opus-4-20250514");
+      // Legacy sync
+      expect(ndxConfig.claude.model).toBe("claude-opus-4-20250514");
+    });
+
+    it("syncs llm.claude.api_endpoint to claude.api_endpoint", async () => {
+      run(["llm.claude.api_endpoint", "https://custom-proxy.example.com", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.claude.api_endpoint).toBe("https://custom-proxy.example.com");
+      expect(ndxConfig.claude.api_endpoint).toBe("https://custom-proxy.example.com");
+    });
+
+    it("syncs llm.claude.cli_path to claude.cli_path in .n-dx.local.json", async () => {
+      run(["llm.claude.cli_path", "/my/local/claude", "--force", tmpDir]);
+
+      const localConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.local.json"), "utf-8"),
+      );
+      // Primary key
+      expect(localConfig.llm.claude.cli_path).toBe("/my/local/claude");
+      // Legacy sync
+      expect(localConfig.claude.cli_path).toBe("/my/local/claude");
+    });
+
+    it("preserves existing claude config when syncing llm.claude.model", async () => {
+      // Set existing claude config first
+      run(["claude.api_key", "sk-ant-existing-key", tmpDir]);
+      // Now set llm.claude.model — should add claude.model without losing api_key
+      run(["llm.claude.model", "claude-sonnet-4-6", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.claude.model).toBe("claude-sonnet-4-6");
+      expect(ndxConfig.claude.api_key).toBe("sk-ant-existing-key");
+    });
+
+    it("does not sync non-claude llm keys to claude namespace", async () => {
+      run(["llm.codex.model", "gpt-5-codex", tmpDir]);
+
+      const ndxConfig = JSON.parse(
+        await readFile(join(tmpDir, ".n-dx.json"), "utf-8"),
+      );
+      expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      // claude namespace should not exist
+      expect(ndxConfig.claude).toBeUndefined();
+    });
+  });
+
+  // ── Invalid config values ──────────────────────────────────────────────
+
+  describe("invalid config values", () => {
+    it("rejects llm.vendor with invalid value", () => {
+      const stderr = runFail(["llm.vendor", "openai", tmpDir]);
+      expect(stderr).toContain('Invalid vendor "openai"');
+      expect(stderr).toContain("claude");
+      expect(stderr).toContain("codex");
+    });
+
+    it("rejects llm.claude.model with empty string", () => {
+      const stderr = runFail(["llm.claude.model", "", tmpDir]);
+      expect(stderr).toContain("non-empty string");
+    });
+
+    it("rejects llm.codex.model with empty string", () => {
+      const stderr = runFail(["llm.codex.model", "", tmpDir]);
+      expect(stderr).toContain("non-empty string");
+    });
+
+    it("rejects llm.claude.api_endpoint with invalid URL", () => {
+      const stderr = runFail(["llm.claude.api_endpoint", "not-a-url", tmpDir]);
+      expect(stderr).toContain("Invalid URL");
+    });
+
+    it("rejects llm.codex.api_endpoint with non-HTTP URL", () => {
+      const stderr = runFail(["llm.codex.api_endpoint", "ftp://example.com", tmpDir]);
+      expect(stderr).toContain("Invalid protocol");
+    });
+
+    it("allows skipping llm.claude.model validation with --force", () => {
+      const output = run(["llm.claude.model", "", "--force", tmpDir]);
+      expect(output).toContain("llm.claude.model =");
+    });
+
+    it("allows skipping llm.codex.model validation with --force", () => {
+      const output = run(["llm.codex.model", "", "--force", tmpDir]);
+      expect(output).toContain("llm.codex.model =");
+    });
+
+    it("provides --force hint on validation failure", () => {
+      const stderr = runFail(["llm.claude.api_endpoint", "bad-url", tmpDir]);
+      expect(stderr).toContain("--force");
+    });
+  });
+
   // ── No config ──────────────────────────────────────────────────────────────
 
   describe("no config", () => {
