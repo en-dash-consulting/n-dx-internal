@@ -23669,7 +23669,7 @@
     {
       "id": "7f2fbdca-f2ad-457b-99cb-cc128a1a5665",
       "title": "Vendor-Normalized Hench Execution (Phase 2)",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Make the hench agent execution process produce consistent, observable behavior regardless of which LLM vendor (Claude, Codex, or future providers) is selected. Extracts vendor-specific code into adapter modules, adopts the PromptEnvelope and RuntimeEvent types from Phase 1, adds run diagnostics, and codifies cross-vendor parity as automated contract tests. See docs/architecture/phase2-vendor-normalization.md for the full plan.",
       "priority": "critical",
@@ -24322,7 +24322,7 @@
         {
           "id": "6f50341a-b049-46b5-8d0b-893c774a0390",
           "title": "Remove legacy re-exports from cli-loop.ts and update test imports",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "cli-loop.ts re-exports ~8 functions/types (processStreamLine, processCodexJsonLine, buildClaudeCliArgs, buildAllowedTools, normalizeCodexResponse, CliRunResult, TokenEventMetadata, ClaudeCliInput, NormalizedCodexToolEvent, NormalizedCodexResponse) from their new canonical homes in event-accumulator.ts and the adapter modules. These re-exports exist solely for test backward compatibility — no production code or public API depends on them. Remove the re-export block (lines ~67-81) and update the 9 test files to import directly from the canonical module locations.",
           "acceptanceCriteria": [
@@ -24335,9 +24335,14 @@
           "tags": [
             "hench",
             "cleanup"
-          ]
+          ],
+          "startedAt": "2026-04-03T20:47:55.994Z",
+          "completedAt": "2026-04-03T21:02:19.405Z",
+          "resolutionType": "code-change",
+          "resolutionDetail": "Removed backward-compatibility re-export block from cli-loop.ts and updated 10 test files to import from canonical locations (event-accumulator.ts, claude-cli-adapter.ts, codex-cli-adapter.ts). All 2050 tests pass, typecheck clean."
         }
-      ]
+      ],
+      "completedAt": "2026-04-03T21:02:19.572Z"
     },
     {
       "id": "8273b9d3-ae67-402a-80bf-3112fdf331fd",
@@ -24426,7 +24431,7 @@
         {
           "id": "855fc750-3dd1-4a27-b1a6-76e840e16fc8",
           "title": "Interactive Select UI",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Replace the numeric text-entry provider prompt with a keyboard-driven terminal selector (enquirer). Add a vendor-specific model selection step after provider selection. Arrow keys navigate, Enter confirms, Esc/Ctrl+C cancels.",
           "priority": "high",
@@ -24437,6 +24442,8 @@
           "blockedBy": [
             "b7fb2054-06e0-4292-9afd-162fa5ff4693"
           ],
+          "startedAt": "2026-04-03T17:27:41.947Z",
+          "completedAt": "2026-04-03T17:27:41.947Z",
           "children": [
             {
               "id": "a6a6ebf1-a0ba-4b28-920b-124c40310467",
@@ -24494,7 +24501,7 @@
             {
               "id": "9221af2a-52b1-468d-95d0-73b8d760f1ee",
               "title": "Handle cancel/escape cleanly in interactive prompts",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Esc or Ctrl+C during provider or model selection should cancel the LLM configuration stage gracefully without crashing init. If cancelled, skip LLM config and continue with existing config or defaults. Print a clear message indicating LLM configuration was skipped.",
               "acceptanceCriteria": [
@@ -24503,14 +24510,18 @@
                 "Init continues with remaining stages after cancellation",
                 "No partial config is written on cancellation"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-04-03T16:58:51.386Z",
+              "completedAt": "2026-04-03T17:31:08.516Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Task was already implemented in commit 40ae586a. Reconciling status — all acceptance criteria verified, tests pass."
             }
           ]
         },
         {
           "id": "c2ba412c-92cb-43e3-a259-297168f99696",
           "title": "Model Catalog & Config Persistence",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add a local curated model catalog in packages/core/llm-model-catalog.js. Map each vendor to model choices with recommended defaults and display labels. Persist selected model via runConfig() to .n-dx.json under llm.&lt;vendor&gt;.model. Update init summary output to display both provider and model.",
           "priority": "high",
@@ -24521,6 +24532,8 @@
           "blockedBy": [
             "b7fb2054-06e0-4292-9afd-162fa5ff4693"
           ],
+          "startedAt": "2026-04-03T17:37:20.510Z",
+          "completedAt": "2026-04-03T17:37:20.510Z",
           "children": [
             {
               "id": "4ed5ffca-9c76-422d-8a2d-2dfd41f735d0",
@@ -24563,7 +24576,7 @@
             {
               "id": "fb7099f7-8561-465a-aa1d-3a49653719ae",
               "title": "Update init summary to display both provider and model",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Update the init summary output to show the LLM configuration section with both provider and model. Example: 'LLM configuration / Provider: codex / Model: gpt-5-codex'. Show source metadata (selected, flag, existing) if useful for debugging.",
               "acceptanceCriteria": [
@@ -24571,7 +24584,11 @@
                 "Values match what was persisted to .n-dx.json",
                 "Summary appears in both interactive and flag-driven flows"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-04-03T17:32:41.346Z",
+              "completedAt": "2026-04-03T17:37:20.310Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Updated init summary to show structured LLM configuration section with both Provider and Model lines, including source metadata. Added 4 new e2e tests, updated 4 existing tests."
             }
           ]
         },
@@ -24593,7 +24610,7 @@
             {
               "id": "42ea107c-f26d-4b6f-9cb8-a38bff1fcbfd",
               "title": "Add --model flag to ndx init",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add --model=&lt;id&gt; flag to ndx init that sets the model for the active vendor. When combined with --provider, enables fully non-interactive LLM configuration. The model ID must exist in the vendor's catalog or be accepted as a custom override.",
               "acceptanceCriteria": [
@@ -24602,7 +24619,11 @@
                 "Skips interactive model prompt when flag is provided",
                 "Works in combination with --provider flag for full non-interactive flow"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-04-03T20:13:10.414Z",
+              "completedAt": "2026-04-03T20:27:36.282Z",
+              "resolutionType": "acknowledgment",
+              "resolutionDetail": "The --model flag is already fully implemented across all layers: flag parsing (extractInitModel), resolution logic (resolveInitLLMSelection), config persistence (runConfig), and summary display. 62 unit tests and 39 E2E tests cover all acceptance criteria and pass."
             },
             {
               "id": "b9396311-d898-473d-9874-0dc45eb7b34d",
@@ -24620,7 +24641,7 @@
             {
               "id": "23918a29-07c1-4e85-be71-e737d3a3a165",
               "title": "Validate incompatible flag combinations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Detect and reject incompatible flag combinations with clear error messages. Example: --provider=codex --claude-model=X should fail with 'Cannot set --claude-model when --provider is codex. Use --codex-model instead.' Also validate that --model values exist in the vendor's catalog (warn but allow custom IDs).",
               "acceptanceCriteria": [
@@ -24628,7 +24649,11 @@
                 "Unknown model IDs produce a warning but do not block init",
                 "Error messages suggest the correct flag to use"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-04-03T20:28:07.802Z",
+              "completedAt": "2026-04-03T20:47:15.073Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added validateInitFlags() function to init-llm.js, --claude-model/--codex-model flag extraction to cli.js, wired validation into handleInit, added help text entries, 21 unit tests + 10 E2E tests."
             }
           ]
         },
@@ -24690,7 +24715,7 @@
         {
           "id": "47e5bd38-51ee-4251-a578-1ffa70a762df",
           "title": "Test Coverage Expansion",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Expand E2E, config, and contract tests for the new LLM init flow. Cover interactive selection, flag-driven paths, re-init behavior, model config keys, invalid flag combos, and catalog-runtime default alignment contracts.",
           "priority": "high",
@@ -24702,11 +24727,13 @@
             "855fc750-3dd1-4a27-b1a6-76e840e16fc8",
             "c2ba412c-92cb-43e3-a259-297168f99696"
           ],
+          "startedAt": "2026-04-03T18:37:59.299Z",
+          "completedAt": "2026-04-03T18:37:59.299Z",
           "children": [
             {
               "id": "b2dcd7f1-6886-4cbd-9ee4-c7148d352f2e",
               "title": "Update tests/e2e/cli-init.test.js for interactive LLM selection",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add E2E test coverage for: interactive vendor selection via select prompt, interactive model selection after provider selection, --provider + --model no-prompt path, re-init with existing vendor/model skips prompt, re-init with vendor but missing model prompts only for model, init summary includes both provider and model.",
               "acceptanceCriteria": [
@@ -24716,12 +24743,16 @@
                 "Tests verify init summary output includes provider and model",
                 "All existing cli-init tests still pass"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-04-03T17:59:09.225Z",
+              "completedAt": "2026-04-03T18:08:12.062Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added 9 new E2E tests to cli-init.test.js covering re-init config reuse and flag-driven model selection. All 39 tests pass (30 existing + 9 new)."
             },
             {
               "id": "69f7c8ae-6e0f-4bc7-ae17-1813972f9be0",
               "title": "Update tests/e2e/cli-config.test.js for model config keys",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add config test coverage for: llm.codex.model and llm.claude.model read/write, invalid flag combinations producing errors, legacy Claude sync when llm.claude.model is set. Ensure tests/e2e/codex-artifact-validation.test.js remains green without modifications to .codex/config.toml.",
               "acceptanceCriteria": [
@@ -24730,12 +24761,16 @@
                 "Tests verify invalid flag combos exit non-zero with error message",
                 "codex-artifact-validation.test.js passes unchanged"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-04-03T17:53:31.405Z",
+              "completedAt": "2026-04-03T17:58:31.854Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added 27 new e2e tests covering llm.codex.model, llm.claude.model, legacy claude sync, and invalid config value rejection"
             },
             {
               "id": "484197df-12dd-4c38-ad4f-5204b7a4c0a1",
               "title": "Add contract tests for catalog-runtime default alignment",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add contract tests asserting: core recommended Claude model matches the shared Claude default (claude-sonnet-4-6), core recommended Codex model matches gpt-5-codex. This guards against catalog drift between init UX and runtime defaults in packages/llm-client.",
               "acceptanceCriteria": [
@@ -24743,12 +24778,16 @@
                 "Contract test asserts recommended Codex model equals gpt-5-codex",
                 "Test fails clearly if catalog or runtime default changes without the other"
               ],
-              "priority": "high"
+              "priority": "high",
+              "startedAt": "2026-04-03T17:37:57.546Z",
+              "completedAt": "2026-04-03T17:46:35.929Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Exported DEFAULT_CLAUDE_MODEL and DEFAULT_CODEX_MODEL from @n-dx/llm-client, created tests/e2e/catalog-runtime-contract.test.js with 6 contract tests cross-referencing the catalog recommended models against runtime defaults."
             },
             {
               "id": "733f8230-e8a2-4a02-bb30-ded6af3d1fee",
               "title": "Add unit tests for selection resolver and model catalog",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add focused unit tests for resolveInitLLMSelection() covering: all precedence levels (flags > config > prompt > default), edge cases (missing vendor, missing model, non-TTY), and the model catalog structure (each vendor has exactly one recommended model, all entries have required fields).",
               "acceptanceCriteria": [
@@ -24757,7 +24796,11 @@
                 "Tests validate catalog structure (one recommended per vendor, required fields present)",
                 "Tests cover partial config scenarios (vendor set, model missing)"
               ],
-              "priority": "medium"
+              "priority": "medium",
+              "startedAt": "2026-04-03T18:10:25.025Z",
+              "completedAt": "2026-04-03T20:20:51.795Z",
+              "resolutionType": "acknowledgment",
+              "resolutionDetail": "All 62 unit tests in tests/unit/init-llm.test.js already cover every acceptance criterion: 4 precedence levels (flags>config>prompt>default), non-TTY fallback (4 dedicated tests + isInteractiveTerminal 5 tests), catalog structure (7 tests including exactly-one-recommended and required fields), and partial config scenarios (3 missing-model tests + 3 edge cases). Tests pass cleanly — no new code required."
             }
           ]
         }
