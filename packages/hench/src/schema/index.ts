@@ -23,6 +23,7 @@ export type {
   RunMemoryStats,
   RunDiagnostics,
   PromptSectionDiagnostic,
+  PersistedRuntimeEvent,
   RunRecord,
   TaskBrief,
   TaskBriefTask,

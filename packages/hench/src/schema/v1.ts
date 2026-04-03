@@ -307,6 +307,56 @@ export interface RunDiagnostics {
   promptSections?: PromptSectionDiagnostic[];
 }
 
+/**
+ * Serializable representation of a RuntimeEvent for persistence.
+ *
+ * Mirrors the `RuntimeEvent` contract from `@n-dx/llm-client` but uses
+ * plain (non-readonly) fields so that the type is JSON-serializable and
+ * Zod-validatable. Stored on `RunRecord.events` when verbose/debug mode
+ * is enabled.
+ */
+export interface PersistedRuntimeEvent {
+  /** Event type. */
+  type: string;
+  /** Which vendor produced this event. */
+  vendor: string;
+  /** Monotonically increasing turn number (1-based). */
+  turn: number;
+  /** ISO 8601 timestamp when the event was received. */
+  timestamp: string;
+
+  // ── Type-specific payloads (only one is set per event) ──
+
+  /** Assistant message text (type: "assistant"). */
+  text?: string;
+
+  /** Tool invocation details (type: "tool_use"). */
+  toolCall?: {
+    tool: string;
+    input: Record<string, unknown>;
+  };
+
+  /** Tool execution result (type: "tool_result"). */
+  toolResult?: {
+    tool: string;
+    output: string;
+    durationMs: number;
+  };
+
+  /** Token usage for this turn or cumulative (type: "token_usage"). */
+  tokenUsage?: TokenUsage;
+
+  /** Failure details (type: "failure"). */
+  failure?: {
+    category: string;
+    message: string;
+    vendorDetail?: string;
+  };
+
+  /** Completion summary text (type: "completion"). */
+  completionSummary?: string;
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -331,6 +381,17 @@ export interface RunRecord {
   memoryStats?: RunMemoryStats;
   /** Run-level diagnostics for token parsing and vendor observability. */
   diagnostics?: RunDiagnostics;
+  /**
+   * Full RuntimeEvent stream captured during the run.
+   *
+   * Only populated when verbose/debug mode is enabled (to avoid bloating
+   * run records during normal operation). Useful for post-hoc debugging
+   * and event pipeline analysis.
+   *
+   * v1 additive field — no migration needed. Existing records without
+   * this field load normally.
+   */
+  events?: PersistedRuntimeEvent[];
 }
 
 export interface TaskBriefTask {

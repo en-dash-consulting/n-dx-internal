@@ -158,6 +158,30 @@ const RunDiagnosticsSchema = z.object({
   promptSections: z.array(PromptSectionDiagnosticSchema).optional(),
 });
 
+const PersistedRuntimeEventSchema = z.object({
+  type: z.string(),
+  vendor: z.string(),
+  turn: z.number(),
+  timestamp: z.string(),
+  text: z.string().optional(),
+  toolCall: z.object({
+    tool: z.string(),
+    input: z.record(z.unknown()),
+  }).optional(),
+  toolResult: z.object({
+    tool: z.string(),
+    output: z.string(),
+    durationMs: z.number(),
+  }).optional(),
+  tokenUsage: TokenUsageSchema.optional(),
+  failure: z.object({
+    category: z.string(),
+    message: z.string(),
+    vendorDetail: z.string().optional(),
+  }).optional(),
+  completionSummary: z.string().optional(),
+});
+
 export const RunRecordSchema = z.object({
   id: z.string(),
   taskId: z.string(),
@@ -177,6 +201,7 @@ export const RunRecordSchema = z.object({
   structuredSummary: RunSummaryDataSchema.optional(),
   memoryStats: RunMemoryStatsSchema.optional(),
   diagnostics: RunDiagnosticsSchema.optional(),
+  events: z.array(PersistedRuntimeEventSchema).optional(),
 });
 
 export function validateConfig(

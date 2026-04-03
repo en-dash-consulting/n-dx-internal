@@ -3,6 +3,34 @@ import { loadRun } from "../../store/index.js";
 import { HENCH_DIR } from "./constants.js";
 import { info, result } from "../output.js";
 import { lookupTaskInRex, formatTaskLine } from "./task-lookup.js";
+import type { PersistedRuntimeEvent } from "../../schema/v1.js";
+
+/**
+ * Format a single persisted event into a human-readable line.
+ *
+ * @internal Exported for testing.
+ */
+export function formatEvent(event: PersistedRuntimeEvent): string {
+  const prefix = `  [${event.turn}] ${event.timestamp} ${event.vendor}`;
+  switch (event.type) {
+    case "assistant":
+      return `${prefix} assistant: ${(event.text ?? "").slice(0, 200)}`;
+    case "tool_use":
+      return `${prefix} tool_use: ${event.toolCall?.tool ?? "unknown"}(${JSON.stringify(event.toolCall?.input ?? {}).slice(0, 100)})`;
+    case "tool_result":
+      return `${prefix} tool_result: ${event.toolResult?.tool ?? "unknown"} (${event.toolResult?.durationMs ?? 0}ms) ${(event.toolResult?.output ?? "").slice(0, 120)}`;
+    case "token_usage": {
+      const u = event.tokenUsage;
+      return `${prefix} token_usage: ${u?.input ?? 0} in / ${u?.output ?? 0} out`;
+    }
+    case "completion":
+      return `${prefix} completion: ${(event.completionSummary ?? "").slice(0, 200)}`;
+    case "failure":
+      return `${prefix} failure [${event.failure?.category ?? "unknown"}]: ${event.failure?.message ?? ""}`;
+    default:
+      return `${prefix} ${event.type}`;
+  }
+}
 
 export async function cmdShow(
   dir: string,
@@ -11,6 +39,22 @@ export async function cmdShow(
 ): Promise<void> {
   const henchDir = join(dir, HENCH_DIR);
   const run = await loadRun(henchDir, runId);
+
+  // --events mode: display the event stream and exit
+  if (flags.events !== undefined) {
+    if (!run.events || run.events.length === 0) {
+      result(`Run ${run.id}: no events recorded.`);
+      info("Events are only captured when useEventPipeline is enabled in hench config.");
+      return;
+    }
+
+    result(`Run: ${run.id}`);
+    result(`Events (${run.events.length}):\n`);
+    for (const event of run.events) {
+      result(formatEvent(event));
+    }
+    return;
+  }
 
   if (flags.format === "json") {
     result(JSON.stringify(run, null, 2));
@@ -110,5 +154,10 @@ export async function cmdShow(
       }
       info(line);
     }
+  }
+
+  // Event count hint (when events are present but not displayed)
+  if (run.events && run.events.length > 0) {
+    info(`\nEvents: ${run.events.length} captured (use --events to display)`);
   }
 }

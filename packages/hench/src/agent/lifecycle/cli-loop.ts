@@ -62,7 +62,7 @@ import type { VendorAdapter, SpawnConfig } from "./vendor-adapter.js";
 import { resolveVendorAdapter } from "./adapters/index.js";
 import { EventAccumulator } from "./event-accumulator.js";
 import { extractPromptSectionDiagnostics, logPromptSections } from "./prompt-diagnostics.js";
-import type { PromptSectionDiagnostic } from "../../schema/v1.js";
+import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schema/v1.js";
 
 // ── Backward compatibility re-exports ─────────────────────────────────────
 //
@@ -266,6 +266,32 @@ export function emitStreamOutput(event: RuntimeEvent): void {
     default:
       break;
   }
+}
+
+/**
+ * Convert a `RuntimeEvent` (readonly, from `@n-dx/llm-client`) into
+ * a `PersistedRuntimeEvent` (plain, JSON-serializable) for storage
+ * on the run record.
+ *
+ * @internal Exported for testing.
+ */
+export function toPersistedEvent(event: RuntimeEvent): PersistedRuntimeEvent {
+  const persisted: PersistedRuntimeEvent = {
+    type: event.type,
+    vendor: event.vendor,
+    turn: event.turn,
+    timestamp: event.timestamp,
+  };
+  if (event.text !== undefined) persisted.text = event.text;
+  if (event.toolCall) persisted.toolCall = { tool: event.toolCall.tool, input: { ...event.toolCall.input } };
+  if (event.toolResult) persisted.toolResult = { tool: event.toolResult.tool, output: event.toolResult.output, durationMs: event.toolResult.durationMs };
+  if (event.tokenUsage) persisted.tokenUsage = { ...event.tokenUsage };
+  if (event.failure) {
+    persisted.failure = { category: event.failure.category, message: event.failure.message };
+    if (event.failure.vendorDetail !== undefined) persisted.failure.vendorDetail = event.failure.vendorDetail;
+  }
+  if (event.completionSummary !== undefined) persisted.completionSummary = event.completionSummary;
+  return persisted;
 }
 
 /**
@@ -1154,6 +1180,12 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
 
   // Stop heartbeat before finalization
   heartbeat.stop();
+
+  // Attach accumulated events to the run record when the event pipeline is active.
+  // This enables post-hoc debugging via `hench show --events <run-id>`.
+  if (useEventPipeline && runAccumulator && runAccumulator.eventCount > 0) {
+    run.events = runAccumulator.events.map(toPersistedEvent);
+  }
 
   // Attach prompt section diagnostics to the run record.
   // Initialize diagnostics if not already present, then populate promptSections.
