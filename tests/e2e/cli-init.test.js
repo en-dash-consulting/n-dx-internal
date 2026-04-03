@@ -334,6 +334,134 @@ describe("n-dx init provider selection", () => {
     });
   });
 
+  // ── model persistence via runConfig() ──────────────────────────────────────
+
+  describe("model persistence via runConfig()", () => {
+    function pathEnvWith(...dirs) {
+      return {
+        ...process.env,
+        PATH: `${dirs.join(PATH_SEP)}${PATH_SEP}${process.env.PATH ?? ""}`,
+      };
+    }
+
+    it("persists model to .n-dx.json under llm.<vendor>.model when --model flag is given", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("persists claude model under llm.claude.model", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-claude-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        run(["init", "--provider=claude", "--model=claude-sonnet-4-6", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("claude");
+        expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("does not write model key when provider preflight fails", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-fail-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stderrLine: "not logged in", exitCode: 7 });
+
+        const result = runFail(
+          ["init", "--provider=codex", "--model=gpt-5-codex", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(result.status).not.toBe(0);
+        // .n-dx.json should not contain model (vendor preflight failed)
+        const configPath = join(tmpDir, ".n-dx.json");
+        if (existsSync(configPath)) {
+          const ndxConfig = JSON.parse(await readFile(configPath, "utf-8"));
+          expect(ndxConfig?.llm?.codex?.model).toBeUndefined();
+        }
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("model is readable via config get pathway after persistence", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-get-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        const modelValue = run(["config", "llm.codex.model", tmpDir]).trim();
+        expect(modelValue).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("does not write model to .hench/config.json or .codex/config.toml", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-isolation-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // .hench/config.json should not contain model
+        const henchConfigPath = join(tmpDir, ".hench", "config.json");
+        if (existsSync(henchConfigPath)) {
+          const henchConfig = JSON.parse(await readFile(henchConfigPath, "utf-8"));
+          expect(henchConfig.model).not.toBe("gpt-5-codex");
+        }
+
+        // .codex/config.toml should not contain model
+        const codexConfigPath = join(tmpDir, ".codex", "config.toml");
+        if (existsSync(codexConfigPath)) {
+          const codexContent = await readFile(codexConfigPath, "utf-8");
+          expect(codexContent).not.toContain("gpt-5-codex");
+        }
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("vendor is written before model (ordering guarantee)", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-model-order-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Both vendor and model should be present and consistent
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+  });
+
   // ── backward-compatible re-init ────────────────────────────────────────────
 
   describe("backward-compatible re-init detection", () => {

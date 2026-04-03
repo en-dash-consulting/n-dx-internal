@@ -208,8 +208,18 @@ function extractInitProvider(args) {
   return value;
 }
 
+function extractInitModel(args) {
+  const modelFlag = args.find((a) => a.startsWith("--model="));
+  if (!modelFlag) return undefined;
+  return modelFlag.slice("--model=".length).trim();
+}
+
 function stripInitProviderFlag(args) {
   return args.filter((a) => !a.startsWith("--provider="));
+}
+
+function stripInitModelFlag(args) {
+  return args.filter((a) => !a.startsWith("--model="));
 }
 
 /**
@@ -291,6 +301,23 @@ function readLLMVendor(dir) {
     const data = JSON.parse(readFileSync(configPath, "utf-8"));
     const vendor = data?.llm?.vendor;
     return vendor === "claude" || vendor === "codex" ? vendor : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Read configured LLM model for a given vendor from .n-dx.json.
+ * Returns undefined when unset or config file is missing/invalid.
+ */
+function readLLMModel(dir, vendor) {
+  if (!vendor) return undefined;
+  const configPath = join(dir, ".n-dx.json");
+  if (!existsSync(configPath)) return undefined;
+  try {
+    const data = JSON.parse(readFileSync(configPath, "utf-8"));
+    const model = data?.llm?.[vendor]?.model;
+    return typeof model === "string" && model.length > 0 ? model : undefined;
   } catch {
     return undefined;
   }
@@ -542,6 +569,7 @@ function runInitCapture(toolPath, args) {
 
 async function handleInit(rest) {
   const providerFromFlag = extractInitProvider(rest);
+  const modelFromFlag = extractInitModel(rest);
   if (providerFromFlag !== undefined && !SUPPORTED_PROVIDERS.includes(providerFromFlag)) {
     console.error(`Error: Invalid provider "${providerFromFlag}". Expected one of: codex, claude.`);
     process.exit(1);
@@ -560,7 +588,7 @@ async function handleInit(rest) {
   // Resolve assistant-selection flags (--assistants= > --*-only > --no-* > default)
   let assistantEnabled = resolveAssistantFlags(rest);
 
-  const initArgs = stripAssistantFlags(stripInitProviderFlag(rest));
+  const initArgs = stripAssistantFlags(stripInitModelFlag(stripInitProviderFlag(rest)));
   const dir = resolveDir(initArgs);
   const flags = extractFlags(initArgs);
 
@@ -590,9 +618,10 @@ async function handleInit(rest) {
   // or config is present, the prompt is skipped and init exits with a clear
   // message asking the user to re-run with --provider=.
   const existingVendor = readLLMVendor(dir);
+  const existingModel = readLLMModel(dir, providerFromFlag || existingVendor);
   const resolution = resolveInitLLMSelection({
-    flags: { provider: providerFromFlag },
-    existingConfig: { vendor: existingVendor },
+    flags: { provider: providerFromFlag, model: modelFromFlag },
+    existingConfig: { vendor: existingVendor, model: existingModel },
     isTTY: process.stdin.isTTY === true,
   });
 
@@ -633,10 +662,20 @@ async function handleInit(rest) {
   // Ensure .n-dx.local.json is in .gitignore (machine-specific config)
   ensureGitignoreEntry(dir, ".n-dx.local.json");
 
-  // Set provider (suppress output)
+  // Persist LLM selection (suppress output). Vendor first, then model.
+  // runConfig("llm.vendor", ...) runs auth preflight. If preflight fails,
+  // it calls process.exit(1) so the model key is never written.
+  const selectedModel = selection.model;
   const origLog = console.log;
   console.log = () => {};
-  try { await runConfig(["llm.vendor", selectedProvider, dir]); } finally { console.log = origLog; }
+  try {
+    await runConfig(["llm.vendor", selectedProvider, dir]);
+    if (selectedModel) {
+      await runConfig([`llm.${selectedProvider}.model`, selectedModel, dir]);
+    }
+  } finally {
+    console.log = origLog;
+  }
 
   // Assistant integrations (vendor-neutral dispatch)
   const assistantResults = setupAssistantIntegrations(dir, assistantEnabled);
