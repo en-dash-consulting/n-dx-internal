@@ -644,9 +644,11 @@ async function handleInit(rest) {
     process.exit(1);
   }
 
-  // Map providerSource to user-facing label for the summary
-  const SOURCE_LABELS = { flag: "from --provider flag", config: "from existing config", prompt: "selected" };
-  const providerSource = SOURCE_LABELS[selection.providerSource] ?? "selected";
+  // Map providerSource / modelSource to user-facing labels for the summary
+  const PROVIDER_SOURCE_LABELS = { flag: "from --provider flag", config: "from existing config", prompt: "selected" };
+  const MODEL_SOURCE_LABELS = { flag: "from --model flag", config: "from existing config", prompt: "selected" };
+  const providerSource = PROVIDER_SOURCE_LABELS[selection.providerSource] ?? "selected";
+  const modelSource = MODEL_SOURCE_LABELS[selection.modelSource] ?? "";
 
   // Check pre-existing state for status reporting
   const svExists = existsSync(join(dir, ".sourcevision"));
@@ -697,10 +699,18 @@ async function handleInit(rest) {
   console.log(`  .sourcevision/  ${svExists ? "already exists (reused)" : "created"}`);
   console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
   console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
+  console.log("  LLM configuration");
   if (llmSkipped) {
-    console.log("  LLM provider    skipped");
+    console.log("    Provider      skipped");
   } else {
-    console.log(`  LLM provider    ${selectedProvider} (${providerSource})`);
+    console.log(`    Provider      ${selectedProvider} (${providerSource})`);
+    const selectedModel = selection.model;
+    if (selectedModel) {
+      const modelLabel = modelSource ? `${selectedModel} (${modelSource})` : selectedModel;
+      console.log(`    Model         ${modelLabel}`);
+    } else {
+      console.log("    Model         not set");
+    }
   }
   for (const line of formatInitReport(assistantResults)) {
     console.log(line);

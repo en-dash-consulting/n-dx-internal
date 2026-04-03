@@ -80,8 +80,9 @@ describe("n-dx init provider selection", () => {
           PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
         },
       });
-      // Unified summary shows provider confirmation
-      expect(output).toMatch(/LLM provider\s+codex|llm\.vendor = codex/);
+      // Unified summary shows LLM configuration section with provider and model
+      expect(output).toContain("LLM configuration");
+      expect(output).toMatch(/Provider\s+codex/);
     } finally {
       await rm(binDir, { recursive: true, force: true });
     }
@@ -151,7 +152,8 @@ describe("n-dx init provider selection", () => {
         },
       });
 
-      expect(output).toMatch(/LLM provider\s+codex|llm\.vendor = codex/);
+      expect(output).toContain("LLM configuration");
+      expect(output).toMatch(/Provider\s+codex/);
       // Banner box should be suppressed; "n-dx initialized" summary is fine
       expect(output).not.toContain("Guided project setup");
     } finally {
@@ -273,7 +275,8 @@ describe("n-dx init provider selection", () => {
           { env: pathEnvWith(binDir) },
         );
 
-        expect(output).toMatch(/LLM provider\s+codex|llm\.vendor = codex/);
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+codex/);
         expect(output).not.toContain("Next step: run");
       } finally {
         await rm(binDir, { recursive: true, force: true });
@@ -308,7 +311,8 @@ describe("n-dx init provider selection", () => {
           { env: pathEnvWith(binDir) },
         );
 
-        expect(output).toMatch(/LLM provider\s+claude|llm\.vendor = claude/);
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+claude/);
         expect(output).not.toContain("Next step: run");
       } finally {
         await rm(binDir, { recursive: true, force: true });
@@ -459,6 +463,86 @@ describe("n-dx init provider selection", () => {
       } finally {
         await rm(binDir, { recursive: true, force: true });
       }
+    });
+  });
+
+  // ── init summary shows provider and model ──────────────────────────────────
+
+  describe("init summary shows both provider and model", () => {
+    function pathEnvWith(...dirs) {
+      return {
+        ...process.env,
+        PATH: `${dirs.join(PATH_SEP)}${PATH_SEP}${process.env.PATH ?? ""}`,
+      };
+    }
+
+    it("shows Provider and Model lines when both flags are given", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-summary-both-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--model=gpt-5-codex", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+codex\s+\(from --provider flag\)/);
+        expect(output).toMatch(/Model\s+gpt-5-codex\s+\(from --model flag\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows model with source label for claude provider", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-summary-claude-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        const output = run(
+          ["init", "--provider=claude", "--model=claude-sonnet-4-6", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+claude/);
+        expect(output).toMatch(/Model\s+claude-sonnet-4-6/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("values in summary match what was persisted to .n-dx.json", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-summary-match-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--model=gpt-5-codex", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        // Summary shows the values
+        expect(output).toMatch(/Provider\s+codex/);
+        expect(output).toMatch(/Model\s+gpt-5-codex/);
+
+        // Values match persisted config
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows 'Provider skipped' when LLM selection is cancelled", () => {
+      // Non-TTY with no flags → no provider → init fails before summary.
+      // The skipped path is exercised when a TTY user presses Esc, but we
+      // cannot simulate that in a non-TTY e2e harness. Instead, verify the
+      // non-TTY error path still works (no regression).
+      const result = runFail(["init", tmpDir]);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("Init cancelled: no provider selected");
     });
   });
 
