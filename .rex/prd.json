@@ -24140,7 +24140,7 @@
         {
           "id": "bcfd200e-0c19-4306-ba43-efd2d25b5dd0",
           "title": "API Provider Generalization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Remove the Claude-only gate from the API execution path (loop.ts) and enable registry-based provider resolution. Generalize agentLoop() to accept any LLMProvider from ProviderRegistry. Define vendor-neutral tool schema. Feature-flag gated (config.useRegistryProvider). Stretch: add OpenAI API adapter. Highest Claude-path impact — execute last.",
           "acceptanceCriteria": [
@@ -24162,6 +24162,8 @@
           "blockedBy": [
             "357ef25f-c555-4e60-8258-c79bcfd23a6f"
           ],
+          "startedAt": "2026-04-03T04:09:19.127Z",
+          "completedAt": "2026-04-03T04:09:19.127Z",
           "children": [
             {
               "id": "9df5dd83-8bd7-4104-809e-ae99831cd88f",
@@ -24212,7 +24214,7 @@
             {
               "id": "94233ff5-fbf9-4d0c-813c-457c9161ccea",
               "title": "OpenAI API adapter (stretch)",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Add OpenAiApiProvider implementing LLMProvider in packages/llm-client/src/openai-api-provider.ts. Register in ProviderRegistry with vendor \"codex\" + mode \"api\". Implement complete() and stream() for tool-use loop. Add auth detection for OPENAI_API_KEY. STRETCH GOAL — lower priority than all other Phase 2 work.",
               "acceptanceCriteria": [
@@ -24233,7 +24235,10 @@
                 "9df5dd83-8bd7-4104-809e-ae99831cd88f",
                 "ea9bc425-60cc-4bb6-95ca-2362465cca84"
               ],
-              "startedAt": "2026-04-03T03:56:48.311Z"
+              "startedAt": "2026-04-03T03:56:48.311Z",
+              "completedAt": "2026-04-03T04:09:18.948Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Implemented OpenAiApiProvider with complete(), stream(), validateAuth(), and OPENAI_API_KEY auth detection. Registered in ProviderRegistry with dual-mode codex factory (API when key available, CLI fallback). 48 new tests, all passing."
             }
           ]
         },
@@ -24287,7 +24292,7 @@
             {
               "id": "3a6c9338-ca59-4619-ba93-c4cabb597799",
               "title": "Dashboard integration for vendor diagnostics",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Surface vendor diagnostics in the web dashboard run detail view. Add vendor/model filtering to run history views. Show token diagnostic status indicators (complete/partial/unavailable).",
               "acceptanceCriteria": [
@@ -24303,7 +24308,8 @@
               ],
               "blockedBy": [
                 "1e041757-f9d8-455e-88bd-8fd1b8566b55"
-              ]
+              ],
+              "startedAt": "2026-04-03T04:10:34.035Z"
             }
           ]
         }
