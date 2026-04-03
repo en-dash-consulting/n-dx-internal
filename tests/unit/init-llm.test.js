@@ -3,6 +3,9 @@ import {
   resolveInitLLMSelection,
   promptLLMSelection,
   isInteractiveTerminal,
+  LLM_MODEL_CATALOG,
+  getModelsForVendor,
+  getRecommendedModel,
 } from "../../packages/core/init-llm.js";
 
 describe("resolveInitLLMSelection", () => {
@@ -592,5 +595,174 @@ describe("isInteractiveTerminal", () => {
     process.stdin.isTTY = true;
     delete process.env.CI;
     expect(isInteractiveTerminal()).toBe(true);
+  });
+});
+
+// ─── LLM Model Catalog ──────────────────────────────────────────────────────
+
+describe("LLM_MODEL_CATALOG", () => {
+  it("has entries for both supported providers", () => {
+    expect(LLM_MODEL_CATALOG).toHaveProperty("codex");
+    expect(LLM_MODEL_CATALOG).toHaveProperty("claude");
+  });
+
+  it("each vendor has at least one model", () => {
+    for (const [vendor, models] of Object.entries(LLM_MODEL_CATALOG)) {
+      expect(models.length, `${vendor} should have at least one model`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("each vendor has exactly one recommended model", () => {
+    for (const [vendor, models] of Object.entries(LLM_MODEL_CATALOG)) {
+      const recommended = models.filter((m) => m.recommended);
+      expect(
+        recommended.length,
+        `${vendor} should have exactly one recommended model`,
+      ).toBe(1);
+    }
+  });
+
+  it("every model has an id and label", () => {
+    for (const [vendor, models] of Object.entries(LLM_MODEL_CATALOG)) {
+      for (const model of models) {
+        expect(model.id, `${vendor} model missing id`).toBeTruthy();
+        expect(model.label, `${vendor} model missing label`).toBeTruthy();
+      }
+    }
+  });
+
+  it("model IDs are unique within each vendor", () => {
+    for (const [vendor, models] of Object.entries(LLM_MODEL_CATALOG)) {
+      const ids = models.map((m) => m.id);
+      expect(
+        new Set(ids).size,
+        `${vendor} has duplicate model IDs`,
+      ).toBe(ids.length);
+    }
+  });
+
+  // Contract tests: recommended defaults match known runtime defaults
+  it("recommended Claude model is claude-sonnet-4-6", () => {
+    const recommended = LLM_MODEL_CATALOG.claude.find((m) => m.recommended);
+    expect(recommended.id).toBe("claude-sonnet-4-6");
+  });
+
+  it("recommended Codex model is gpt-5-codex", () => {
+    const recommended = LLM_MODEL_CATALOG.codex.find((m) => m.recommended);
+    expect(recommended.id).toBe("gpt-5-codex");
+  });
+});
+
+describe("getModelsForVendor", () => {
+  it("returns model list for known vendor", () => {
+    const models = getModelsForVendor("claude");
+    expect(Array.isArray(models)).toBe(true);
+    expect(models.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("returns undefined for unknown vendor", () => {
+    expect(getModelsForVendor("unknown-vendor")).toBeUndefined();
+  });
+
+  it("returns same reference as catalog entry", () => {
+    expect(getModelsForVendor("codex")).toBe(LLM_MODEL_CATALOG.codex);
+  });
+});
+
+describe("getRecommendedModel", () => {
+  it("returns recommended model for claude", () => {
+    const recommended = getRecommendedModel("claude");
+    expect(recommended).toBeDefined();
+    expect(recommended.recommended).toBe(true);
+    expect(recommended.id).toBe("claude-sonnet-4-6");
+  });
+
+  it("returns recommended model for codex", () => {
+    const recommended = getRecommendedModel("codex");
+    expect(recommended).toBeDefined();
+    expect(recommended.recommended).toBe(true);
+    expect(recommended.id).toBe("gpt-5-codex");
+  });
+
+  it("returns undefined for unknown vendor", () => {
+    expect(getRecommendedModel("unknown-vendor")).toBeUndefined();
+  });
+});
+
+// ─── Model prompt integration (via promptLLMSelection) ───────────────────────
+
+describe("promptLLMSelection model prompt integration", () => {
+  describe("default model prompt returns model from catalog", () => {
+    it("returns model ID for single-model vendor without interactive prompt", async () => {
+      // Codex has one model — defaultPromptModel auto-returns it
+      const resolution = {
+        provider: "codex",
+        model: undefined,
+        providerSource: "flag",
+        modelSource: undefined,
+        needsProviderPrompt: false,
+        needsModelPrompt: true,
+      };
+      // Use default model prompt (no override) — single-model vendors auto-select
+      const result = await promptLLMSelection(resolution);
+      expect(result.model).toBe("gpt-5-codex");
+      expect(result.modelSource).toBe("prompt");
+    });
+  });
+
+  describe("model prompt receives correct provider after provider selection", () => {
+    it("passes newly-prompted provider to default model prompt", async () => {
+      const resolution = {
+        provider: undefined,
+        model: undefined,
+        providerSource: undefined,
+        modelSource: undefined,
+        needsProviderPrompt: true,
+        needsModelPrompt: true,
+      };
+      // Inject provider prompt but use default model prompt
+      const result = await promptLLMSelection(resolution, {
+        promptProvider: async () => "codex",
+        // No promptModel override — uses default, which auto-selects for single-model vendor
+      });
+      expect(result.provider).toBe("codex");
+      expect(result.model).toBe("gpt-5-codex");
+      expect(result.modelSource).toBe("prompt");
+    });
+  });
+
+  describe("injected model prompt still works for multi-model vendors", () => {
+    it("allows override prompt to select a non-recommended model", async () => {
+      const resolution = {
+        provider: "claude",
+        model: undefined,
+        providerSource: "config",
+        modelSource: undefined,
+        needsProviderPrompt: false,
+        needsModelPrompt: true,
+      };
+      const result = await promptLLMSelection(resolution, {
+        promptModel: async () => "claude-opus-4-20250514",
+      });
+      expect(result.model).toBe("claude-opus-4-20250514");
+      expect(result.modelSource).toBe("prompt");
+    });
+  });
+
+  describe("default model prompt returns undefined for unknown vendor", () => {
+    it("returns undefined model for unknown vendor", async () => {
+      const resolution = {
+        provider: "unknown-vendor",
+        model: undefined,
+        providerSource: "flag",
+        modelSource: undefined,
+        needsProviderPrompt: false,
+        needsModelPrompt: true,
+      };
+      // Default model prompt will check catalog, find nothing, return undefined
+      const result = await promptLLMSelection(resolution);
+      expect(result.model).toBeUndefined();
+      expect(result.modelSource).toBeUndefined();
+    });
   });
 });

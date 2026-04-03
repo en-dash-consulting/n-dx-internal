@@ -53,7 +53,8 @@
     "export.js",
     "claude-integration.js",
     "refresh-validate.js",
-    "init-llm.js"
+    "init-llm.js",
+    "llm-model-catalog.js"
   ],
   "scripts": {
     "build": "echo '@n-dx/core: plain JS, no build needed'"

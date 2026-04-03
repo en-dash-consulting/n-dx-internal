@@ -19,6 +19,7 @@
  */
 
 import { createInterface } from "node:readline/promises";
+import { getModelsForVendor, getRecommendedModel } from "./llm-model-catalog.js";
 
 const SUPPORTED_PROVIDERS = ["codex", "claude"];
 
@@ -173,17 +174,76 @@ async function defaultPromptProvider() {
 }
 
 /**
- * Default model prompt — placeholder until the model catalog epic lands.
+ * Default model prompt using enquirer's Select prompt in TTY environments.
  *
- * Returns undefined so the caller falls back to runtime defaults.
- * The model catalog epic will replace this with a keyboard-driven selector
- * using enquirer. Non-TTY environments return undefined immediately.
+ * Displays the curated model list for the chosen vendor. Shows friendly labels
+ * (e.g. "Claude Sonnet 4.6") while returning canonical model IDs (e.g.
+ * "claude-sonnet-4-6"). The recommended model is visually marked with a
+ * "★ recommended" hint and pre-selected.
  *
- * @param {string} _provider  The resolved provider (unused until model catalog exists).
- * @returns {Promise<undefined>}
+ * In non-TTY environments (piped input, CI, test harnesses), auto-selects the
+ * recommended model without prompting. Explicit model selection in scripted
+ * flows requires the --model= flag.
+ *
+ * @param {string} provider  The resolved provider (e.g. "codex", "claude").
+ * @returns {Promise<string|undefined>}  Selected model ID or undefined on cancel.
  */
-async function defaultPromptModel(_provider) {
-  return undefined;
+async function defaultPromptModel(provider) {
+  const models = getModelsForVendor(provider);
+  if (!models || models.length === 0) return undefined;
+
+  // Single-model vendor: return the only option without prompting
+  if (models.length === 1) return models[0].id;
+
+  if (isInteractiveTerminal()) {
+    return promptModelEnquirer(provider, models);
+  }
+
+  // Non-interactive environment (piped input, CI, test harnesses):
+  // auto-select the recommended model without prompting. Readline-based
+  // model selection is unreliable in non-TTY environments because stdin
+  // may be at EOF or closed. The recommended model is the sensible default
+  // for scripted flows; explicit model selection requires --model= flag.
+  const recommended = getRecommendedModel(provider);
+  return recommended ? recommended.id : models[0].id;
+}
+
+/**
+ * Enquirer-based model selector — keyboard-driven, TTY-only.
+ *
+ * @param {string} provider
+ * @param {import("./llm-model-catalog.js").ModelEntry[]} models
+ * @returns {Promise<string|undefined>}
+ */
+async function promptModelEnquirer(provider, models) {
+  try {
+    const { default: Enquirer } = await import("enquirer");
+    const enquirer = new Enquirer();
+
+    const recommended = getRecommendedModel(provider);
+    const initialIndex = recommended
+      ? models.findIndex((m) => m.id === recommended.id)
+      : 0;
+
+    const choices = models.map((m) => ({
+      name: m.id,
+      message: m.recommended ? `${m.label} ★ recommended` : m.label,
+    }));
+
+    const response = await enquirer.prompt({
+      type: "select",
+      name: "model",
+      message: "Select model",
+      choices,
+      initial: initialIndex >= 0 ? initialIndex : 0,
+    });
+
+    return response.model || undefined;
+  } catch (err) {
+    // Ctrl+C or Esc — treat as cancellation
+    if (err === "" || (err && err.message === "")) return undefined;
+    throw err;
+  }
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -197,7 +257,7 @@ async function defaultPromptModel(_provider) {
  *
  * Prompt functions can be injected for testability.  Defaults:
  * - Provider prompt: readline-based numeric/text selector.
- * - Model prompt: no-op (returns undefined) until the model catalog epic lands.
+ * - Model prompt: enquirer Select (TTY) or auto-select recommended (non-TTY), driven by llm-model-catalog.js.
  *
  * @param {object} resolution                       Output of resolveInitLLMSelection()
  * @param {object} [options]
@@ -231,3 +291,4 @@ export async function promptLLMSelection(resolution, options = {}) {
 }
 
 export { SUPPORTED_PROVIDERS };
+export { LLM_MODEL_CATALOG, getModelsForVendor, getRecommendedModel } from "./llm-model-catalog.js";
