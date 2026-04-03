@@ -52,7 +52,8 @@
     "refresh-artifacts.js",
     "export.js",
     "claude-integration.js",
-    "refresh-validate.js"
+    "refresh-validate.js",
+    "init-llm.js"
   ],
   "scripts": {
     "build": "echo '@n-dx/core: plain JS, no build needed'"
@@ -62,6 +63,7 @@
     "@n-dx/hench": "workspace:*",
     "@n-dx/sourcevision": "workspace:*",
     "@n-dx/llm-client": "workspace:*",
-    "@n-dx/web": "workspace:*"
+    "@n-dx/web": "workspace:*",
+    "enquirer": "^2.4.1"
   }
 }

@@ -7,7 +7,8 @@
  *
  * ## Tier
  *
- * Orchestration — same rules as cli.js: no package imports, only node: builtins.
+ * Orchestration — same rules as cli.js: no domain-package imports.
+ * Uses enquirer for interactive terminal prompts with a non-TTY fallback.
  *
  * ## Precedence
  *
@@ -20,6 +21,23 @@
 import { createInterface } from "node:readline/promises";
 
 const SUPPORTED_PROVIDERS = ["codex", "claude"];
+
+/**
+ * Check whether the current environment supports interactive terminal prompts.
+ *
+ * Returns false for non-TTY stdin (piped input, CI, test harnesses).
+ * Use this to choose between enquirer (requires TTY for keyboard navigation)
+ * and a readline fallback (works with piped input). This does NOT control
+ * whether to prompt at all — that decision is made by
+ * resolveInitLLMSelection() via the isTTY parameter.
+ *
+ * @returns {boolean}
+ */
+export function isInteractiveTerminal() {
+  if (!process.stdin.isTTY) return false;
+  if (process.env.CI) return false;
+  return true;
+}
 
 /**
  * Resolve LLM provider and model selection for `ndx init`.
@@ -97,7 +115,11 @@ export function resolveInitLLMSelection({ flags, existingConfig, isTTY }) {
 
 /**
  * Default interactive provider prompt using readline.
- * Mirrors the existing promptInitProvider() in cli.js.
+ *
+ * This is the non-TTY-safe fallback prompt. Enquirer-based prompts (added by
+ * sibling tasks) require a real TTY for keyboard navigation; this readline
+ * version works with piped input and test harnesses. Use isInteractiveTerminal()
+ * to choose between enquirer and this fallback.
  *
  * @returns {Promise<string|undefined>}  Selected provider or undefined on cancel.
  */
@@ -154,7 +176,8 @@ async function defaultPromptProvider() {
  * Default model prompt — placeholder until the model catalog epic lands.
  *
  * Returns undefined so the caller falls back to runtime defaults.
- * The model catalog epic will replace this with a keyboard-driven selector.
+ * The model catalog epic will replace this with a keyboard-driven selector
+ * using enquirer. Non-TTY environments return undefined immediately.
  *
  * @param {string} _provider  The resolved provider (unused until model catalog exists).
  * @returns {Promise<undefined>}

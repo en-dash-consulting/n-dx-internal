@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   resolveInitLLMSelection,
   promptLLMSelection,
+  isInteractiveTerminal,
 } from "../../packages/core/init-llm.js";
 
 describe("resolveInitLLMSelection", () => {
@@ -540,5 +541,56 @@ describe("promptLLMSelection", () => {
         ["model", "modelSource", "provider", "providerSource"],
       );
     });
+  });
+});
+
+// ─── isInteractiveTerminal ────────────────────────────────────────────────────
+
+describe("isInteractiveTerminal", () => {
+  const originalIsTTY = process.stdin.isTTY;
+  const originalCI = process.env.CI;
+
+  afterEach(() => {
+    // Restore original values
+    if (originalIsTTY === undefined) {
+      delete process.stdin.isTTY;
+    } else {
+      process.stdin.isTTY = originalIsTTY;
+    }
+    if (originalCI === undefined) {
+      delete process.env.CI;
+    } else {
+      process.env.CI = originalCI;
+    }
+  });
+
+  it("returns false when stdin is not a TTY", () => {
+    process.stdin.isTTY = false;
+    delete process.env.CI;
+    expect(isInteractiveTerminal()).toBe(false);
+  });
+
+  it("returns false when stdin.isTTY is undefined (piped input)", () => {
+    delete process.stdin.isTTY;
+    delete process.env.CI;
+    expect(isInteractiveTerminal()).toBe(false);
+  });
+
+  it("returns false when CI environment variable is set", () => {
+    process.stdin.isTTY = true;
+    process.env.CI = "true";
+    expect(isInteractiveTerminal()).toBe(false);
+  });
+
+  it("returns false when CI is set to any truthy string", () => {
+    process.stdin.isTTY = true;
+    process.env.CI = "1";
+    expect(isInteractiveTerminal()).toBe(false);
+  });
+
+  it("returns true when stdin is TTY and CI is not set", () => {
+    process.stdin.isTTY = true;
+    delete process.env.CI;
+    expect(isInteractiveTerminal()).toBe(true);
   });
 });
