@@ -614,11 +614,18 @@ async function handleInit(rest) {
     console.warn(`Warning: ${warn}`);
   }
 
-  // Resolve effective model from vendor-specific flags.
-  // --claude-model=X implies --provider=claude --model=X
-  // --codex-model=X implies --provider=codex --model=X
-  const effectiveProvider = providerFromFlag || (claudeModelFromFlag ? "claude" : codexModelFromFlag ? "codex" : undefined);
-  const effectiveModel = modelFromFlag || claudeModelFromFlag || codexModelFromFlag;
+  // Resolve effective provider and model from vendor-specific flags.
+  // A lone vendor-specific flag implies the provider (e.g. --claude-model=X → provider=claude).
+  // When both vendor-specific flags are present, --provider is required to set the active vendor.
+  const effectiveProvider = providerFromFlag
+    || (claudeModelFromFlag && !codexModelFromFlag ? "claude"
+      : codexModelFromFlag && !claudeModelFromFlag ? "codex"
+        : undefined);
+
+  // The active model is the --model flag, or the vendor-specific flag matching the active provider.
+  const effectiveModel = modelFromFlag
+    || (effectiveProvider === "claude" ? claudeModelFromFlag : undefined)
+    || (effectiveProvider === "codex" ? codexModelFromFlag : undefined);
 
   // Validate --assistants= values
   const assistantsSet = extractAssistantsFlag(rest);
@@ -691,9 +698,12 @@ async function handleInit(rest) {
 
   // Map providerSource / modelSource to user-facing labels for the summary.
   // Use the actual flag name when a vendor-specific model flag was used.
-  const modelFlagLabel = claudeModelFromFlag ? "--claude-model" : codexModelFromFlag ? "--codex-model" : "--model";
+  // When the active model came from a vendor-specific flag, name that flag in the label.
+  const modelFlagLabel = (selection.model === claudeModelFromFlag && claudeModelFromFlag) ? "--claude-model"
+    : (selection.model === codexModelFromFlag && codexModelFromFlag) ? "--codex-model"
+      : "--model";
   const providerFlagLabel = (!providerFromFlag && (claudeModelFromFlag || codexModelFromFlag))
-    ? `--${claudeModelFromFlag ? "claude" : "codex"}-model`
+    ? `--${claudeModelFromFlag && !codexModelFromFlag ? "claude" : codexModelFromFlag && !claudeModelFromFlag ? "codex" : "vendor"}-model`
     : "--provider";
   const PROVIDER_SOURCE_LABELS = { flag: `from ${providerFlagLabel} flag`, config: "from existing config", prompt: "selected" };
   const MODEL_SOURCE_LABELS = { flag: `from ${modelFlagLabel} flag`, config: "from existing config", prompt: "selected" };
@@ -734,6 +744,17 @@ async function handleInit(rest) {
       await runConfig(["llm.vendor", selectedProvider, dir]);
       if (selectedModel) {
         await runConfig([`llm.${selectedProvider}.model`, selectedModel, dir]);
+      }
+
+      // Persist vendor-specific models independently.
+      // --claude-model always writes to llm.claude.model, --codex-model to
+      // llm.codex.model, even when the active vendor is different. This
+      // enables CI scripts that configure both vendors in a single init call.
+      if (claudeModelFromFlag && selectedProvider !== "claude") {
+        await runConfig(["llm.claude.model", claudeModelFromFlag, dir]);
+      }
+      if (codexModelFromFlag && selectedProvider !== "codex") {
+        await runConfig(["llm.codex.model", codexModelFromFlag, dir]);
       }
     } finally {
       console.log = origLog;

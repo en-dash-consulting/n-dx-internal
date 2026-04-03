@@ -23680,6 +23680,7 @@
       ],
       "source": "docs/architecture/phase2-vendor-normalization.md",
       "startedAt": "2026-04-03T04:18:31.209Z",
+      "completedAt": "2026-04-03T21:02:19.572Z",
       "children": [
         {
           "id": "da21807f-fc7b-4680-bd13-253c0ac9fd17",
@@ -24341,8 +24342,7 @@
           "resolutionType": "code-change",
           "resolutionDetail": "Removed backward-compatibility re-export block from cli-loop.ts and updated 10 test files to import from canonical locations (event-accumulator.ts, claude-cli-adapter.ts, codex-cli-adapter.ts). All 2050 tests pass, typecheck clean."
         }
-      ],
-      "completedAt": "2026-04-03T21:02:19.572Z"
+      ]
     },
     {
       "id": "8273b9d3-ae67-402a-80bf-3112fdf331fd",
@@ -24595,7 +24595,7 @@
         {
           "id": "1a037921-5f73-48f2-8400-bc46122071a4",
           "title": "Flag-Based Non-Interactive Configuration",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add CLI flags for fully non-interactive LLM configuration: --model=&lt;id&gt;, --claude-model=&lt;id&gt;, --codex-model=&lt;id&gt;. Validate incompatible combinations (e.g. --provider=codex --claude-model=X). Flag precedence: explicit flags > existing config > interactive prompt > runtime default.",
           "priority": "medium",
@@ -24628,7 +24628,7 @@
             {
               "id": "b9396311-d898-473d-9874-0dc45eb7b34d",
               "title": "Add --claude-model and --codex-model convenience flags",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add vendor-specific convenience flags: --claude-model=&lt;id&gt; and --codex-model=&lt;id&gt;. These set the model for a specific vendor regardless of which vendor is active. Useful for CI scripts that configure both vendors.",
               "acceptanceCriteria": [
@@ -24636,7 +24636,11 @@
                 "--codex-model sets llm.codex.model in .n-dx.json",
                 "Flags work independently of --provider selection"
               ],
-              "priority": "low"
+              "priority": "low",
+              "startedAt": "2026-04-03T21:03:03.143Z",
+              "completedAt": "2026-04-03T21:18:32.385Z",
+              "resolutionType": "code-change",
+              "resolutionDetail": "Added --claude-model and --codex-model as independent convenience flags. Removed cross-vendor validation restrictions so flags work independently of --provider. Added independent persistence so each vendor-specific model writes to its own config section."
             },
             {
               "id": "23918a29-07c1-4e85-be71-e737d3a3a165",
@@ -24655,7 +24659,9 @@
               "resolutionType": "code-change",
               "resolutionDetail": "Added validateInitFlags() function to init-llm.js, --claude-model/--codex-model flag extraction to cli.js, wired validation into handleInit, added help text entries, 21 unit tests + 10 E2E tests."
             }
-          ]
+          ],
+          "startedAt": "2026-04-03T21:18:32.569Z",
+          "completedAt": "2026-04-03T21:18:32.569Z"
         },
         {
           "id": "3a53d6cb-e0aa-41b1-ba49-1137ac01aa3e",

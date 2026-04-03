@@ -313,12 +313,7 @@ export function validateInitFlags({ provider, model, claudeModel, codexModel }) 
 
   // ── Incompatible flag combinations ──────────────────────────────────────
 
-  // Both vendor-specific model flags at once
-  if (claudeModel && codexModel) {
-    errors.push("Cannot set both --claude-model and --codex-model. Choose one provider.");
-  }
-
-  // Vendor-specific model + generic --model (ambiguous)
+  // Vendor-specific model + generic --model (ambiguous — which vendor does --model target?)
   if (claudeModel && model) {
     errors.push("Cannot set both --claude-model and --model. Use one or the other.");
   }
@@ -326,28 +321,46 @@ export function validateInitFlags({ provider, model, claudeModel, codexModel }) 
     errors.push("Cannot set both --codex-model and --model. Use one or the other.");
   }
 
-  // Vendor-specific model + conflicting --provider
-  if (provider === "codex" && claudeModel) {
-    errors.push("Cannot set --claude-model when --provider is codex. Use --codex-model instead.");
-  }
-  if (provider === "claude" && codexModel) {
-    errors.push("Cannot set --codex-model when --provider is claude. Use --claude-model instead.");
-  }
+  // Note: --claude-model + --codex-model is valid (configure both vendors).
+  // Note: --provider=codex + --claude-model is valid (set active vendor to codex,
+  //        configure claude model independently). Same for --provider=claude + --codex-model.
 
-  // ── Unknown model warning ──────────────────────────────────────────────
+  // ── Unknown model warnings ─────────────────────────────────────────────
 
-  // Determine effective provider and model for catalog lookup.
-  // Vendor-specific flags imply the provider even without --provider.
-  const effectiveProvider = provider || (claudeModel ? "claude" : codexModel ? "codex" : undefined);
-  const effectiveModel = model || claudeModel || codexModel;
+  // Check each vendor-specific model against its own catalog independently.
+  if (errors.length === 0) {
+    if (claudeModel) {
+      const catalog = getModelsForVendor("claude");
+      if (catalog && !catalog.some((m) => m.id === claudeModel)) {
+        warnings.push(
+          `Unknown model "${claudeModel}" for claude. ` +
+          `Known models: ${catalog.map((m) => m.id).join(", ")}. Proceeding anyway.`,
+        );
+      }
+    }
 
-  if (effectiveProvider && effectiveModel && errors.length === 0) {
-    const catalog = getModelsForVendor(effectiveProvider);
-    if (catalog && !catalog.some((m) => m.id === effectiveModel)) {
-      warnings.push(
-        `Unknown model "${effectiveModel}" for ${effectiveProvider}. ` +
-        `Known models: ${catalog.map((m) => m.id).join(", ")}. Proceeding anyway.`,
-      );
+    if (codexModel) {
+      const catalog = getModelsForVendor("codex");
+      if (catalog && !catalog.some((m) => m.id === codexModel)) {
+        warnings.push(
+          `Unknown model "${codexModel}" for codex. ` +
+          `Known models: ${catalog.map((m) => m.id).join(", ")}. Proceeding anyway.`,
+        );
+      }
+    }
+
+    // Check --model against the effective provider (flag or implied).
+    if (model) {
+      const effectiveProvider = provider || (claudeModel ? "claude" : codexModel ? "codex" : undefined);
+      if (effectiveProvider) {
+        const catalog = getModelsForVendor(effectiveProvider);
+        if (catalog && !catalog.some((m) => m.id === model)) {
+          warnings.push(
+            `Unknown model "${model}" for ${effectiveProvider}. ` +
+            `Known models: ${catalog.map((m) => m.id).join(", ")}. Proceeding anyway.`,
+          );
+        }
+      }
     }
   }
 

@@ -961,29 +961,9 @@ describe("n-dx init provider selection", () => {
     });
   });
 
-  // ── incompatible flag validation ──────────────────────────────────────────
+  // ── flag combination validation ──────────────────────────────────────────
 
-  describe("incompatible flag combination validation", () => {
-    it("rejects --provider=codex with --claude-model", () => {
-      const result = runFail(["init", "--provider=codex", "--claude-model=claude-sonnet-4-6", tmpDir]);
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("Cannot set --claude-model when --provider is codex");
-      expect(result.stderr).toContain("Use --codex-model instead");
-    });
-
-    it("rejects --provider=claude with --codex-model", () => {
-      const result = runFail(["init", "--provider=claude", "--codex-model=gpt-5-codex", tmpDir]);
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("Cannot set --codex-model when --provider is claude");
-      expect(result.stderr).toContain("Use --claude-model instead");
-    });
-
-    it("rejects both --claude-model and --codex-model together", () => {
-      const result = runFail(["init", "--claude-model=claude-sonnet-4-6", "--codex-model=gpt-5-codex", tmpDir]);
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("Cannot set both --claude-model and --codex-model");
-    });
-
+  describe("flag combination validation", () => {
     it("rejects --claude-model with --model (ambiguous)", () => {
       const result = runFail(["init", "--claude-model=claude-sonnet-4-6", "--model=claude-opus-4-20250514", tmpDir]);
       expect(result.status).not.toBe(0);
@@ -1109,6 +1089,70 @@ describe("n-dx init provider selection", () => {
 
         const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
         expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("--claude-model sets llm.claude.model independently of --provider=codex", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-cross-claude-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--claude-model=claude-sonnet-4-6", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+codex/);
+
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("--codex-model sets llm.codex.model independently of --provider=claude", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-cross-codex-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        const output = run(
+          ["init", "--provider=claude", "--codex-model=gpt-5-codex", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+claude/);
+
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("claude");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("both --claude-model and --codex-model persist to respective vendor sections", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-both-models-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(
+          ["init", "--provider=codex", "--claude-model=claude-sonnet-4-6", "--codex-model=gpt-5-codex", tmpDir],
+          { env: pathEnvWith(binDir) },
+        );
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+codex/);
+
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
         expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
       } finally {
         await rm(binDir, { recursive: true, force: true });
