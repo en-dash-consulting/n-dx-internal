@@ -694,4 +694,270 @@ describe("n-dx init provider selection", () => {
       }
     });
   });
+
+  // ── re-init with existing LLM config ──────────────────────────────────────
+
+  describe("re-init with existing LLM config", () => {
+    function pathEnvWith(...dirs) {
+      return {
+        ...process.env,
+        PATH: `${dirs.join(PATH_SEP)}${PATH_SEP}${process.env.PATH ?? ""}`,
+      };
+    }
+
+    it("reuses vendor from config when --provider flag is omitted", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-vendor-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        // First init: establish vendor + model
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Re-init WITHOUT --provider flag — should reuse vendor from config
+        const output = run(["init", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+codex\s+\(from existing config\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("reuses both vendor and model from config when all flags are omitted", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-both-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        // First init: establish vendor + model
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Re-init WITHOUT any LLM flags
+        const output = run(["init", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+codex\s+\(from existing config\)/);
+        expect(output).toMatch(/Model\s+gpt-5-codex\s+\(from existing config\)/);
+
+        // Verify .n-dx.json is unchanged
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+        expect(ndxConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("reuses claude vendor and model from config on re-init", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-claude-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        // First init: establish claude vendor + model
+        run(["init", "--provider=claude", "--model=claude-sonnet-4-6", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Re-init WITHOUT flags
+        const output = run(["init", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+claude\s+\(from existing config\)/);
+        expect(output).toMatch(/Model\s+claude-sonnet-4-6\s+\(from existing config\)/);
+
+        // Verify persistence is intact
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("claude");
+        expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows 'Model not set' when config has vendor but no model (non-TTY)", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-nomodel-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        // First init: establish vendor + model
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Remove model from config (keep vendor)
+        const configPath = join(tmpDir, ".n-dx.json");
+        const config = JSON.parse(await readFile(configPath, "utf-8"));
+        delete config.llm.codex.model;
+        await writeFile(configPath, JSON.stringify(config, null, 2));
+
+        // Re-init WITHOUT flags — provider from config, model missing
+        const output = run(["init", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+codex\s+\(from existing config\)/);
+        expect(output).toMatch(/Model\s+not set/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("accepts --model flag to supply missing model on re-init", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-modelflag-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        // First init: establish vendor + model
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Remove model from config (keep vendor)
+        const configPath = join(tmpDir, ".n-dx.json");
+        const config = JSON.parse(await readFile(configPath, "utf-8"));
+        delete config.llm.codex.model;
+        await writeFile(configPath, JSON.stringify(config, null, 2));
+
+        // Re-init with --model flag only (no --provider)
+        const output = run(["init", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("n-dx initialized");
+        expect(output).toMatch(/Provider\s+codex\s+\(from existing config\)/);
+        expect(output).toMatch(/Model\s+gpt-5-codex\s+\(from --model flag\)/);
+
+        // Verify model was persisted
+        const finalConfig = JSON.parse(await readFile(configPath, "utf-8"));
+        expect(finalConfig.llm.codex.model).toBe("gpt-5-codex");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("summary shows mixed sources: provider from config, model from flag", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-reinit-mixed-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        // First init: establish claude vendor + model
+        run(["init", "--provider=claude", "--model=claude-sonnet-4-6", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Remove model from config
+        const configPath = join(tmpDir, ".n-dx.json");
+        const config = JSON.parse(await readFile(configPath, "utf-8"));
+        delete config.llm.claude.model;
+        await writeFile(configPath, JSON.stringify(config, null, 2));
+
+        // Re-init: provider from config, model from flag (non-recommended)
+        const output = run(["init", "--model=claude-opus-4-20250514", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        expect(output).toContain("LLM configuration");
+        expect(output).toMatch(/Provider\s+claude\s+\(from existing config\)/);
+        expect(output).toMatch(/Model\s+claude-opus-4-20250514\s+\(from --model flag\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  // ── flag-driven init uses exact values ────────────────────────────────────
+
+  describe("flag-driven init uses exact values without auto-selection", () => {
+    function pathEnvWith(...dirs) {
+      return {
+        ...process.env,
+        PATH: `${dirs.join(PATH_SEP)}${PATH_SEP}${process.env.PATH ?? ""}`,
+      };
+    }
+
+    it("--model flag with non-recommended model persists without auto-correction", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-nonrec-"));
+      try {
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        run(["init", "--provider=claude", "--model=claude-opus-4-20250514", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Exact non-recommended model is persisted (not overridden to recommended)
+        const ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.claude.model).toBe("claude-opus-4-20250514");
+
+        // Summary shows the exact model with flag source
+        const output = run(["init", "--provider=claude", "--model=claude-opus-4-20250514", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+        expect(output).toMatch(/Model\s+claude-opus-4-20250514\s+\(from --model flag\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("--provider flag overrides existing config vendor", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-override-vendor-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+        await writeFakeBinary(join(binDir, "claude"), { stdout: '{"result":"ok"}' });
+
+        // First init with codex
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        let ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("codex");
+
+        // Re-init with different provider flag
+        run(["init", "--provider=claude", "--model=claude-sonnet-4-6", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        ndxConfig = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+        expect(ndxConfig.llm.vendor).toBe("claude");
+        expect(ndxConfig.llm.claude.model).toBe("claude-sonnet-4-6");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("--provider same as config still shows 'from --provider flag' in summary", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-same-flag-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        // First init
+        run(["init", "--provider=codex", "--model=gpt-5-codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Re-init with same provider flag — flag takes precedence over config
+        const output = run(["init", "--provider=codex", tmpDir], {
+          env: pathEnvWith(binDir),
+        });
+
+        // Flag source label even though config has the same value
+        expect(output).toMatch(/Provider\s+codex\s+\(from --provider flag\)/);
+        // Model still comes from config
+        expect(output).toMatch(/Model\s+gpt-5-codex\s+\(from existing config\)/);
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+  });
 });
