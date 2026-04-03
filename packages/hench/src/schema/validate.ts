@@ -68,6 +68,7 @@ export const HenchConfigSchema = z.object({
   maxFailedAttempts: z.number().int().positive().optional().default(3),
   language: ProjectLanguageSchema,
   useEventPipeline: z.boolean().optional(),
+  useRegistryProvider: z.boolean().optional(),
 });
 
 const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "budget_exceeded", "error_transient"]);

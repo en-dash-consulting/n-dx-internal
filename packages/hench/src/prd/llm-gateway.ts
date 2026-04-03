@@ -117,7 +117,18 @@ export {
   toOpenAiToolDefs,
 } from "@n-dx/llm-client";
 
+// ---- Provider registry ------------------------------------------------------
+export {
+  ProviderRegistry,
+  defaultRegistry,
+} from "@n-dx/llm-client";
+
 // ---- Type re-exports --------------------------------------------------------
+export type {
+  LLMProvider,
+  ProviderInfo,
+} from "@n-dx/llm-client";
+
 export type {
   ClaudeConfig,
   LLMConfig,

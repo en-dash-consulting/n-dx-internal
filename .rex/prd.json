@@ -24163,7 +24163,7 @@
             {
               "id": "9df5dd83-8bd7-4104-809e-ae99831cd88f",
               "title": "Generalize agentLoop for registry-based provider resolution",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "Replace the Claude vendor check in loop.ts with ProviderRegistry.getActiveProvider(). Refactor initApiResources() to accept any LLMProvider. Gate behind config.useRegistryProvider flag (default false). Add integration test verifying Claude API loop produces identical results before and after.",
               "acceptanceCriteria": [
@@ -24177,7 +24177,8 @@
                 "phase-2",
                 "api-generalization",
                 "flag-gated"
-              ]
+              ],
+              "startedAt": "2026-04-03T02:59:56.194Z"
             },
             {
               "id": "ea9bc425-60cc-4bb6-95ca-2362465cca84",

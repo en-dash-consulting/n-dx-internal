@@ -269,13 +269,14 @@ describe("hench → llm-client gateway contract", () => {
     "toOpenAiToolDefs",
   ];
 
-  const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
+  const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError", "ProviderRegistry"];
 
   const GATEWAY_CONSTANTS = [
     "PROJECT_DIRS",
     "DEFAULT_EXECUTION_POLICY",
     "CANONICAL_PROMPT_SECTIONS",
     "ALL_FAILURE_CATEGORIES",
+    "defaultRegistry",
   ];
 
   for (const name of GATEWAY_FUNCTIONS) {
@@ -605,7 +606,8 @@ describe("gateway export auto-detection", () => {
         "createPromptEnvelope", "assemblePrompt", "mapErrorReasonToFailureCategory",
         "mapRunFailureToCategory", "classifyVendorError", "failureCategoryLabel",
         "compileCodexPolicyFlags", "mapSandboxToCodexFlag", "mapApprovalToCodexFlag",
-        "toAnthropicToolDef", "toAnthropicToolDefs", "toOpenAiToolDef", "toOpenAiToolDefs"],
+        "toAnthropicToolDef", "toAnthropicToolDefs", "toOpenAiToolDef", "toOpenAiToolDefs",
+        "ProviderRegistry", "defaultRegistry"],
       ...["PROJECT_DIRS", "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS",
         "ALL_FAILURE_CATEGORIES"],
     ]);

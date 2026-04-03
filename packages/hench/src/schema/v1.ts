@@ -99,6 +99,15 @@ export interface HenchConfig {
    * Will be removed once the event pipeline is validated in production.
    */
   useEventPipeline?: boolean;
+  /**
+   * When true, the API loop resolves the LLM provider via ProviderRegistry
+   * instead of a hardcoded Claude vendor check. Enables registry-based
+   * provider resolution for future multi-vendor API support.
+   *
+   * This is a migration flag — both paths produce identical results for
+   * Claude. Will be removed once the registry path is validated.
+   */
+  useRegistryProvider?: boolean;
 }
 
 // ── Language-specific guard defaults ──────────────────────────────────
