@@ -19257,9 +19257,22 @@
     {
       "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
       "title": "CLI & Developer Tools",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
+      "startedAt": "2026-04-02T17:55:36.327Z",
+      "completedAt": "2026-04-02T17:55:36.327Z",
+      "mergedProposals": [
+        {
+          "proposalNodeKey": "p0:epic",
+          "proposalTitle": "CLI & Developer Tools / Test Infrastructure",
+          "proposalKind": "epic",
+          "reason": "semantic_title",
+          "score": 0.95,
+          "mergedAt": "2026-04-02T16:40:24.655Z",
+          "source": "smart-add"
+        }
+      ],
       "children": [
         {
           "id": "4ca9aac4-cd85-4af3-96d9-c4274e2d9f83",
@@ -20535,7 +20548,7 @@
         {
           "id": "c1e3e241-33f2-4b49-8d05-c4fcf4b0fac9",
           "title": "Support .n-dx.local.json for machine-specific config overrides",
-          "status": "pending",
+          "status": "deferred",
           "level": "task",
           "description": "Add support for a .n-dx.local.json file that deep-merges over .n-dx.json at load time. Machine-specific settings (like claude.cli_path with absolute paths) belong in a local, gitignored file — not the shared project config. Discovered when a Windows-specific cli_path from one contributor broke ndx init on another machine.",
           "acceptanceCriteria": [
@@ -20549,7 +20562,335 @@
             "config",
             "dx"
           ],
-          "source": "conversation — hit when Steve's Windows cli_path in .n-dx.json broke ndx init on macOS"
+          "source": "conversation — hit when Steve's Windows cli_path in .n-dx.json broke ndx init on macOS",
+          "startedAt": "2026-04-02T17:55:34.698Z"
+        },
+        {
+          "id": "f9b208b6-43d9-44d3-a1cf-518e956aabd5",
+          "title": "Shared Unit Test Utilities",
+          "status": "completed",
+          "level": "feature",
+          "description": "Reduce duplication across unit tests by consolidating repeated constants and helper functions into test-only shared utilities without changing production code or altering test coverage.",
+          "source": "smart-add",
+          "startedAt": "2026-04-02T17:55:31.910Z",
+          "completedAt": "2026-04-02T17:55:31.910Z",
+          "children": [
+            {
+              "id": "7ed4c848-e4be-4f6e-b495-5d70a9457fec",
+              "title": "Inventory duplicated unit-test constants across suites",
+              "status": "deferred",
+              "level": "task",
+              "description": "Review unit test files to identify repeated constants that appear in more than four files and record where they are used so consolidation candidates are explicitly defined.",
+              "acceptanceCriteria": [
+                "A concrete inventory exists for duplicated constants used in more than four unit test files",
+                "The inventory excludes constants that are unique to a single suite or tightly coupled to one test file"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "maintainability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:55:20.914Z"
+            },
+            {
+              "id": "40d16bdb-e1a6-4619-b52d-163811e82156",
+              "title": "Catalog reusable helper-function patterns in unit tests",
+              "status": "completed",
+              "level": "task",
+              "description": "Identify helper functions reused across multiple unit test files and define which patterns should be moved versus which should remain local to a suite.",
+              "acceptanceCriteria": [
+                "A concrete inventory exists for duplicated helper functions used in more than four unit test files",
+                "The inventory excludes helpers that are unique to a single suite or tightly coupled to one test file"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "maintainability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:37:03.736Z",
+              "completedAt": "2026-04-02T17:42:24.806Z"
+            },
+            {
+              "id": "794b70a1-8956-4afe-bdf4-38def2e397b7",
+              "title": "Define a test-only consolidation baseline and scope",
+              "status": "completed",
+              "level": "task",
+              "description": "Establish the refactor scope by documenting where shared utilities will live under test-only paths and by capturing the pre-change test inventory for later comparison.",
+              "acceptanceCriteria": [
+                "The proposed shared utilities are located only under test-only paths and do not require production file changes",
+                "A before-change baseline of total test file count and total test case count is captured for comparison after refactoring"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "maintainability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:52:10.687Z",
+              "completedAt": "2026-04-02T17:55:18.042Z"
+            },
+            {
+              "id": "71e079b5-bffc-4424-aa42-9ce682f7befc",
+              "title": "Create shared test-only utility modules for duplicated setup code",
+              "status": "completed",
+              "level": "task",
+              "description": "Move the repeated constants and setup helpers identified during the audit into reusable test-only modules without changing any production files.",
+              "acceptanceCriteria": [
+                "Repeated constants and helper functions identified in the audit are moved into shared test-only modules",
+                "Only test files and newly added test helper files are modified for this refactor"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "deduplication"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:42:27.637Z",
+              "completedAt": "2026-04-02T17:52:07.821Z"
+            },
+            {
+              "id": "9311f36a-e0e4-4275-90f7-badca8d60ee6",
+              "title": "Update unit test callers to use shared utilities",
+              "status": "deferred",
+              "level": "task",
+              "description": "Refactor existing unit test files to consume the new shared helpers and constants while preserving existing assertions, names, and suite intent.",
+              "acceptanceCriteria": [
+                "No assertions, test names, or suite coverage are removed as part of the consolidation",
+                "The number of discovered tests before and after the refactor is identical"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "deduplication"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:55:26.079Z"
+            },
+            {
+              "id": "4094dafb-78c0-462f-bc09-dd5a630762bb",
+              "title": "Validate behavioral equivalence after test utility extraction",
+              "status": "deferred",
+              "level": "task",
+              "description": "Run the refactored unit suites and compare outcomes against the pre-refactor baseline to confirm that the shared utility extraction did not alter behavior or coverage.",
+              "acceptanceCriteria": [
+                "Unit tests continue to execute with behavior equivalent to the pre-refactor baseline",
+                "The number of discovered tests before and after the refactor is identical"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "unit",
+                "refactor",
+                "deduplication"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:55:30.232Z"
+            }
+          ]
+        },
+        {
+          "id": "0fb7be48-74a2-495d-a184-dced4d6d2d87",
+          "title": "Timeout Guardrails for Hanging Tests",
+          "status": "completed",
+          "level": "feature",
+          "description": "Prevent indefinite hangs in long-running tests by applying explicit timeout limits to suites that can block CI or local validation.",
+          "source": "smart-add",
+          "startedAt": "2026-04-02T17:37:00.910Z",
+          "completedAt": "2026-04-02T17:37:00.910Z",
+          "children": [
+            {
+              "id": "1f2d2024-1223-40c6-bfde-66f52c150d4e",
+              "title": "Review test suites for observable hang-risk patterns",
+              "status": "completed",
+              "level": "task",
+              "description": "Inspect unit, integration, and end-to-end tests for process spawning, server lifecycle handling, retry loops, polling, or external waits that could cause indefinite execution.",
+              "acceptanceCriteria": [
+                "Tests with realistic hang risk are identified using observable patterns such as process spawning, server lifecycle handling, or retry loops",
+                "The identified set covers all current long-running and externally coordinated test suites"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "reliability",
+                "timeouts",
+                "ci"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:33:05.465Z",
+              "completedAt": "2026-04-02T17:37:00.616Z"
+            },
+            {
+              "id": "1052726c-5e00-4305-873f-3d98ca6bcd5d",
+              "title": "Document timeout strategies for at-risk suites",
+              "status": "completed",
+              "level": "task",
+              "description": "Define whether each at-risk suite should use per-test or per-suite timeout handling and explicitly exclude suites that are already deterministically bounded.",
+              "acceptanceCriteria": [
+                "Each identified suite has a documented timeout strategy at the test or suite level",
+                "Tests that are already deterministically bounded are not given redundant timeout wrappers without cause"
+              ],
+              "priority": "high",
+              "tags": [
+                "tests",
+                "reliability",
+                "timeouts",
+                "ci"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:29:56.913Z",
+              "completedAt": "2026-04-02T17:33:02.617Z"
+            },
+            {
+              "id": "55d8280d-4b05-4109-99da-f803b8330b1a",
+              "title": "Configure explicit timeouts on identified hanging-test candidates",
+              "status": "completed",
+              "level": "task",
+              "description": "Apply explicit timeout settings to every at-risk test or suite so that hangs fail within a bounded window of 120 seconds or less.",
+              "acceptanceCriteria": [
+                "Every identified at-risk test or suite has an explicit timeout configured at or below 120 seconds",
+                "Timeout configuration changes are limited to test files or test-only setup files"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "timeouts",
+                "vitest",
+                "stability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T16:40:48.635Z",
+              "completedAt": "2026-04-02T16:45:50.275Z"
+            },
+            {
+              "id": "f792fbaf-1a66-4a2f-955e-1e812bc6badb",
+              "title": "Verify timeout failures surface as standard Vitest errors",
+              "status": "completed",
+              "level": "task",
+              "description": "Confirm that timeout enforcement causes normal Vitest failures rather than leaving orphaned background work, and ensure unaffected fast tests remain stable.",
+              "acceptanceCriteria": [
+                "Timeout failures produce a standard Vitest failure instead of leaving orphaned hangs",
+                "Existing fast-running tests retain their current behavior and do not become less deterministic after timeout changes"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "timeouts",
+                "vitest",
+                "stability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T16:45:50.920Z",
+              "completedAt": "2026-04-02T16:50:00.410Z"
+            }
+          ]
+        },
+        {
+          "id": "982f45e5-cb5f-41be-84a3-3736378247c9",
+          "title": "Full-Suite Red-to-Green Verification",
+          "status": "completed",
+          "level": "feature",
+          "description": "Restore full test pass status across the project while preserving the integrity of the test refactor and avoiding test edits that merely mask real failures.",
+          "source": "smart-add",
+          "startedAt": "2026-04-02T17:19:13.841Z",
+          "completedAt": "2026-04-02T17:19:13.841Z",
+          "children": [
+            {
+              "id": "cf78aa03-deb6-44b0-bc79-f1fb5c30b891",
+              "title": "Group failing suites by shared production-side root cause",
+              "status": "completed",
+              "level": "task",
+              "description": "Analyze current failures and cluster them by the underlying application, CLI, configuration, or architectural issue rather than by individual failing assertions.",
+              "acceptanceCriteria": [
+                "Current failures are grouped by root cause rather than by individual assertion",
+                "Each failure group clearly identifies whether the fix belongs in application code, configuration, or environment setup"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "triage",
+                "regression",
+                "quality"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T16:50:01.088Z",
+              "completedAt": "2026-04-02T16:56:47.408Z"
+            },
+            {
+              "id": "c097f90b-722b-41b3-9777-492db05e50da",
+              "title": "Separate legitimate timeout work from red-to-green defect fixes",
+              "status": "completed",
+              "level": "task",
+              "description": "Document which failures require implementation or configuration fixes and distinguish those from timeout guardrails so test edits are not used to hide real regressions.",
+              "acceptanceCriteria": [
+                "No test file change is proposed solely to make an existing failing test pass",
+                "The diagnosis explicitly separates legitimate timeout additions from red-to-green production fixes"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "triage",
+                "regression",
+                "quality"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:15:47.631Z",
+              "completedAt": "2026-04-02T17:19:13.578Z"
+            },
+            {
+              "id": "7a0ed21e-ffe1-46a5-8110-728fd7e6e768",
+              "title": "Implement root-cause fixes in production or configuration code",
+              "status": "completed",
+              "level": "task",
+              "description": "Apply fixes only in the application, CLI, configuration, or environment setup areas identified during diagnosis so failing tests are resolved at their actual source.",
+              "acceptanceCriteria": [
+                "No test file is modified for the sole purpose of forcing previously failing tests to pass",
+                "Any production or config changes made to fix failures are limited to the actual root-cause areas identified during diagnosis"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "verification",
+                "ci",
+                "regression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T16:56:48.061Z",
+              "completedAt": "2026-04-02T17:06:58.274Z"
+            },
+            {
+              "id": "ece5c797-5a9d-4272-96f9-1fceffde9204",
+              "title": "Run project-wide test commands and compare against baseline coverage",
+              "status": "deferred",
+              "level": "task",
+              "description": "Validate the completed fixes by running both required test commands and confirming that the total executed test count still matches the pre-refactor baseline.",
+              "acceptanceCriteria": [
+                "Running `vitest run` completes successfully with all tests passing",
+                "Running `pnpm -r run test` completes successfully with all package tests passing",
+                "The total number of executed tests matches the pre-refactor baseline"
+              ],
+              "priority": "critical",
+              "tags": [
+                "tests",
+                "verification",
+                "ci",
+                "regression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-02T17:06:58.905Z"
+            }
+          ]
         }
       ]
     },
@@ -23196,6 +23537,435 @@
               "source": "smart-add",
               "startedAt": "2026-03-26T20:48:15.058Z",
               "completedAt": "2026-03-26T21:07:33.306Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "690df65f-703a-4e94-8162-24e838f7f538",
+      "title": "CLI & Developer Tools",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-04-03T14:08:58.216Z",
+      "completedAt": "2026-04-03T14:08:58.216Z",
+      "children": [
+        {
+          "id": "b67648eb-e1a0-4420-89e0-2052b810ead4",
+          "title": "Child Process Cleanup and Exit Hygiene",
+          "status": "completed",
+          "level": "feature",
+          "description": "Ensure `n-dx` tears down all spawned child processes and lingering worker threads when commands complete, fail, or are interrupted so local machines are not left with orphaned SourceVision-related activity.",
+          "source": "smart-add",
+          "startedAt": "2026-04-03T14:08:58.077Z",
+          "completedAt": "2026-04-03T14:08:58.077Z",
+          "children": [
+            {
+              "id": "78ecaa15-4503-4f81-a368-355ced818762",
+              "title": "Implement unified child-process teardown for n-dx command lifecycles",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a centralized cleanup path for `n-dx` and package-level runners that tracks spawned child processes and terminates them on normal exit, error exit, and signal-driven shutdown. The goal is to prevent orphaned SourceVision test workers and related subprocesses from persisting after command completion.",
+              "acceptanceCriteria": [
+                "All child processes spawned through `n-dx` orchestration are registered in a shared lifecycle tracker",
+                "When an `n-dx` command exits normally, the cleanup path sends termination to registered child processes and waits for shutdown before returning",
+                "When an `n-dx` command exits due to an error, the same cleanup path still runs and attempts termination for all tracked children",
+                "When the parent process receives `SIGINT` or `SIGTERM`, the cleanup path executes before final process exit",
+                "Processes that do not exit after a graceful termination attempt are force-killed after a bounded timeout"
+              ],
+              "priority": "critical",
+              "tags": [
+                "cli",
+                "process-management",
+                "sourcevision",
+                "stability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T13:53:38.847Z",
+              "completedAt": "2026-04-03T14:04:06.691Z"
+            },
+            {
+              "id": "d3618484-b8ab-4ed5-a162-7602873aa162",
+              "title": "Harden SourceVision test execution against lingering workers and orphaned threads",
+              "status": "completed",
+              "level": "task",
+              "description": "Audit the SourceVision test/runtime paths that can continue running after completion and make them participate in the same shutdown contract so nonstop unit-test activity does not linger on developer machines.",
+              "acceptanceCriteria": [
+                "SourceVision test-related subprocesses or workers are routed through the shared cleanup mechanism instead of unmanaged direct spawns",
+                "Known long-running or watch-like test helpers used by SourceVision are explicitly shut down when the parent workflow completes",
+                "No orphaned SourceVision-related child process remains after a representative test workflow finishes in a regression scenario",
+                "Failure paths during SourceVision test execution still trigger cleanup of already-started workers or subprocesses"
+              ],
+              "priority": "critical",
+              "tags": [
+                "sourcevision",
+                "tests",
+                "threads",
+                "process-management"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T13:48:52.972Z",
+              "completedAt": "2026-04-03T13:53:35.580Z"
+            },
+            {
+              "id": "94cad81d-4c83-4c9f-aac5-e97259687f24",
+              "title": "Add regression coverage for parent-exit cleanup and orphan prevention",
+              "status": "completed",
+              "level": "task",
+              "description": "Create automated coverage that proves `n-dx` does not leave child processes behind after successful runs, failures, or interrupted execution, with emphasis on the SourceVision scenarios currently causing lingering machine load.",
+              "acceptanceCriteria": [
+                "An automated regression test verifies child processes are terminated after a successful `n-dx` run",
+                "An automated regression test verifies child processes are terminated after an erroring `n-dx` run",
+                "An automated regression test verifies child processes are terminated after signal interruption of an active run",
+                "Test assertions explicitly fail if a spawned SourceVision-related process remains alive beyond the configured shutdown timeout"
+              ],
+              "priority": "high",
+              "tags": [
+                "testing",
+                "regression",
+                "cli",
+                "sourcevision"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T14:04:10.569Z",
+              "completedAt": "2026-04-03T14:08:57.865Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "95918257-d85b-49aa-88b2-2d865a7912c4",
+      "title": "Code Health: 5 findings across 4 zones",
+      "status": "completed",
+      "level": "epic",
+      "description": "Automated recommendations from SourceVision analysis. 4 zone+category groups covering 5 total findings.",
+      "priority": "high",
+      "source": "sourcevision",
+      "startedAt": "2026-04-03T14:35:15.499Z",
+      "children": [
+        {
+          "id": "ff6c5a83-fbcb-4c16-8ef3-279c92f81249",
+          "title": "Fix suggestion in sourcevision-2 (1 finding)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Zone \"sourcevision-2\" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-04-03T14:35:08.286Z",
+          "completedAt": "2026-04-03T14:35:08.286Z",
+          "children": [
+            {
+              "id": "80abb312-bf55-45c1-836b-a176715bddbf",
+              "title": "Fix suggestion in sourcevision-2: Zone \"sourcevision-2\" has a numeric suffix indicating an overflow community — pi",
+              "status": "deferred",
+              "level": "task",
+              "description": "- Zone \"sourcevision-2\" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID",
+              "priority": "high",
+              "source": "sourcevision",
+              "startedAt": "2026-04-03T14:35:03.990Z",
+              "recommendationMeta": {
+                "findingHashes": [
+                  "2ad43ef6f0af"
+                ],
+                "category": "suggestion",
+                "severityDistribution": {
+                  "warning": 1
+                },
+                "findingCount": 1
+              }
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "2ad43ef6f0af"
+            ],
+            "category": "suggestion",
+            "severityDistribution": {
+              "warning": 1
+            },
+            "findingCount": 1
+          }
+        },
+        {
+          "id": "4e6c049d-1870-462a-9aa0-501b9932b122",
+          "title": "Fix suggestion in sourcevision-3 (1 finding)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- Zone \"sourcevision-3\" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-04-03T14:35:15.361Z",
+          "completedAt": "2026-04-03T14:35:15.361Z",
+          "children": [
+            {
+              "id": "d4bc1bc9-5b60-40fb-9719-9120ac718065",
+              "title": "Fix suggestion in sourcevision-3: Zone \"sourcevision-3\" has a numeric suffix indicating an overflow community — pi",
+              "status": "deferred",
+              "level": "task",
+              "description": "- Zone \"sourcevision-3\" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID",
+              "priority": "high",
+              "source": "sourcevision",
+              "startedAt": "2026-04-03T14:35:10.827Z",
+              "recommendationMeta": {
+                "findingHashes": [
+                  "36620e61fa42"
+                ],
+                "category": "suggestion",
+                "severityDistribution": {
+                  "warning": 1
+                },
+                "findingCount": 1
+              }
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "36620e61fa42"
+            ],
+            "category": "suggestion",
+            "severityDistribution": {
+              "warning": 1
+            },
+            "findingCount": 1
+          }
+        },
+        {
+          "id": "f190d1c3-c8d9-47b9-a994-b5e1f4fe31a9",
+          "title": "Fix move-file in web-viewer (1 finding)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- File \"packages/web/src/viewer/components/progressive-loader.ts\" is pinned to zone \"Web Viewer\" but lives in packages/web/src/viewer/components/ — consider moving to packages/web/src/viewer/views/ to align physical location with architectural zone",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-04-03T14:35:01.471Z",
+          "completedAt": "2026-04-03T14:35:01.471Z",
+          "children": [
+            {
+              "id": "81b1d6f0-2f8a-46e2-b195-473450489779",
+              "title": "Fix move-file in web-viewer: File \"packages/web/src/viewer/components/progressive-loader.ts\" is pinned to zon",
+              "status": "deferred",
+              "level": "task",
+              "description": "- File \"packages/web/src/viewer/components/progressive-loader.ts\" is pinned to zone \"Web Viewer\" but lives in packages/web/src/viewer/components/ — consider moving to packages/web/src/viewer/views/ to align physical location with architectural zone",
+              "priority": "high",
+              "source": "sourcevision",
+              "startedAt": "2026-04-03T14:34:57.156Z",
+              "recommendationMeta": {
+                "findingHashes": [
+                  "8024b2fa4d12"
+                ],
+                "category": "move-file",
+                "severityDistribution": {
+                  "warning": 1
+                },
+                "findingCount": 1
+              }
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "8024b2fa4d12"
+            ],
+            "category": "move-file",
+            "severityDistribution": {
+              "warning": 1
+            },
+            "findingCount": 1
+          }
+        },
+        {
+          "id": "c4e93fb7-645d-495d-ade0-9bdff9cbb75c",
+          "title": "Fix anti-pattern in global (2 findings)",
+          "status": "completed",
+          "level": "feature",
+          "description": "- God function: analyzeImports in packages/sourcevision/src/analyzers/imports.ts calls 41 unique functions — consider decomposing into smaller, focused functions\n- God function: runCI in packages/core/ci.js calls 39 unique functions — consider decomposing into smaller, focused functions",
+          "priority": "high",
+          "source": "sourcevision",
+          "startedAt": "2026-04-03T14:34:54.622Z",
+          "completedAt": "2026-04-03T14:34:54.622Z",
+          "children": [
+            {
+              "id": "c434442f-7856-4ed8-ba18-e9c664b22593",
+              "title": "Fix anti-pattern in global: God function: analyzeImports in packages/sourcevision/src/analyzers/imports.ts c (+1 more)",
+              "status": "deferred",
+              "level": "task",
+              "description": "- God function: analyzeImports in packages/sourcevision/src/analyzers/imports.ts calls 41 unique functions — consider decomposing into smaller, focused functions\n- God function: runCI in packages/core/ci.js calls 39 unique functions — consider decomposing into smaller, focused functions",
+              "priority": "high",
+              "source": "sourcevision",
+              "startedAt": "2026-04-03T14:34:50.151Z",
+              "recommendationMeta": {
+                "findingHashes": [
+                  "264b6245baa8",
+                  "e648f5e361f3"
+                ],
+                "category": "anti-pattern",
+                "severityDistribution": {
+                  "warning": 2
+                },
+                "findingCount": 2
+              }
+            }
+          ],
+          "recommendationMeta": {
+            "findingHashes": [
+              "264b6245baa8",
+              "e648f5e361f3"
+            ],
+            "category": "anti-pattern",
+            "severityDistribution": {
+              "warning": 2
+            },
+            "findingCount": 2
+          }
+        }
+      ],
+      "recommendationMeta": {
+        "findingCount": 5
+      },
+      "completedAt": "2026-04-03T19:28:35.406Z"
+    },
+    {
+      "id": "f8dfe9ab-671d-494d-9c20-84fbb79b37ee",
+      "title": "CLI & Developer Tools",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-04-03T19:06:50.606Z",
+      "completedAt": "2026-04-03T19:20:03.350Z",
+      "children": [
+        {
+          "id": "8abe3c45-9434-4862-aeee-0f56f107d130",
+          "title": "Runtime Process and Thread Lifecycle Enforcement",
+          "status": "completed",
+          "level": "feature",
+          "description": "Ensure that no worker threads or child processes are left behind during normal n-dx operation — not just at exit. Covers the full command lifecycle: spawn, execution, and teardown for all CLI entry points.",
+          "source": "smart-add",
+          "startedAt": "2026-04-03T18:50:24.588Z",
+          "completedAt": "2026-04-03T18:50:24.588Z",
+          "children": [
+            {
+              "id": "b1dc5843-120b-4151-933c-82fdead1faf3",
+              "title": "Audit and enforce worker thread cleanup across all CLI entry points",
+              "status": "completed",
+              "level": "task",
+              "description": "Review every spawn and worker-thread creation site in cli.js, ci.js, web.js, and config.js. Ensure all threads are explicitly joined or terminated before the parent process exits. Identify any code paths (errors, cancellations, SIGINT) where threads escape the cleanup gate.",
+              "acceptanceCriteria": [
+                "All worker thread creation sites in orchestration scripts are catalogued",
+                "Each creation site has a corresponding explicit teardown path for success, error, and signal cases",
+                "Running `ndx analyze` and `ndx work` leaves zero lingering node threads as verified by process inspection",
+                "A new regression test verifies thread count returns to baseline after each CLI command completes"
+              ],
+              "priority": "high",
+              "tags": [
+                "process-lifecycle",
+                "cli",
+                "reliability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T18:34:48.270Z",
+              "completedAt": "2026-04-03T18:42:49.486Z"
+            },
+            {
+              "id": "4e870c51-cd43-47a2-89f2-02e8e4f3ce57",
+              "title": "Implement orphan process detection and cleanup for spawned subcommands",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a process-group-aware cleanup layer so that any child processes spawned during a CLI run (e.g., sourcevision analyze, hench run) are tracked and forcibly reaped if they outlive their parent command. Extend the existing graceful shutdown to cover abnormal termination paths.",
+              "acceptanceCriteria": [
+                "All child processes are registered in a process registry at spawn time",
+                "On parent exit (clean, SIGINT, or unhandled exception), all registered children are sent SIGTERM then SIGKILL after a grace period",
+                "A test simulates a mid-run SIGINT and confirms no orphan processes remain after 5 seconds",
+                "The registry is a no-op in environments where process groups are not supported (Windows CI) — no crash, just a warning log"
+              ],
+              "priority": "high",
+              "tags": [
+                "process-lifecycle",
+                "cli",
+                "reliability"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T18:42:52.392Z",
+              "completedAt": "2026-04-03T18:50:24.323Z"
+            }
+          ]
+        },
+        {
+          "id": "888de653-60ad-43bf-843c-a859341d22a3",
+          "title": "Configurable CLI Operation Timeouts",
+          "status": "completed",
+          "level": "feature",
+          "description": "Introduce a per-command timeout system with a long, safe default so a single stalled process cannot hang the CLI indefinitely. Expose the timeout threshold as a first-class config key editable from both the CLI config command and the web settings UI.",
+          "source": "smart-add",
+          "startedAt": "2026-04-03T19:06:50.409Z",
+          "completedAt": "2026-04-03T19:06:50.409Z",
+          "children": [
+            {
+              "id": "d8f5d40d-a68f-4da7-8c97-63e5513ff034",
+              "title": "Implement default long timeout with per-command override support",
+              "status": "completed",
+              "level": "task",
+              "description": "Add a timeout enforcement layer around the main execution path of each CLI command. The default timeout should be long enough for real workloads (e.g., 30 minutes) but terminate and surface an actionable error if exceeded. Support per-command overrides so commands like `ndx work` can use a different threshold than `ndx analyze`.",
+              "acceptanceCriteria": [
+                "All CLI commands respect a `cli.timeoutMs` config key; default is 1800000ms (30 minutes)",
+                "When a command exceeds its timeout, it exits with a non-zero code and prints a clear message naming the command and elapsed time",
+                "Per-command overrides (`cli.timeouts.analyze`, `cli.timeouts.work`, etc.) take precedence over the global default",
+                "A unit test verifies timeout enforcement fires at the configured threshold using a mock timer"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "timeout",
+                "config"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T18:50:27.384Z",
+              "completedAt": "2026-04-03T18:58:23.179Z"
+            },
+            {
+              "id": "4b559467-5391-4612-ab7d-27b71daac4dc",
+              "title": "Expose timeout configuration in .n-dx.json schema and ndx config command",
+              "status": "deferred",
+              "level": "task",
+              "description": "Add `cli.timeoutMs` and `cli.timeouts.*` keys to the .n-dx.json config schema with documentation, validation, and support through `ndx config get/set`. Ensure `ndx config --help` describes the timeout keys and their defaults.",
+              "acceptanceCriteria": [
+                "`ndx config set cli.timeoutMs 3600000` persists the value to .n-dx.json and is read at next command invocation",
+                "`ndx config get cli.timeoutMs` prints the current value with its default noted if unset",
+                "The config schema validation rejects non-numeric or negative values with a descriptive error",
+                "`ndx config --help` lists all timeout-related keys with their defaults and descriptions",
+                "A unit test covers schema validation for valid, zero, and negative timeout values"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "config",
+                "timeout"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T19:06:47.150Z"
+            },
+            {
+              "id": "1160eb2b-e2d9-40ab-8f3a-fade05c697b8",
+              "title": "Add timeout configuration panel to web settings UI",
+              "status": "deferred",
+              "level": "task",
+              "description": "Surface the CLI timeout settings in the n-dx web dashboard settings panel so users can view and update timeouts without touching the CLI. The panel should show the current global default and any per-command overrides, with save/reset controls that write back to .n-dx.json via the existing config API.",
+              "acceptanceCriteria": [
+                "The settings UI includes a 'CLI Timeouts' section showing the global timeout and any active per-command overrides",
+                "Editing and saving a timeout value calls the config API and persists to .n-dx.json",
+                "A reset button restores a field to its default value",
+                "Invalid inputs (non-numeric, negative) are rejected client-side with an inline error before submission",
+                "The settings panel reflects external config changes on next page load (no stale cache)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "web-ui",
+                "config",
+                "timeout",
+                "settings"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-03T18:58:26.092Z"
             }
           ]
         }
