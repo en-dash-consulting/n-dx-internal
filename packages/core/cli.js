@@ -73,6 +73,12 @@ import {
   formatOrchestratorCommandHelp,
 } from "./help.js";
 import { setupClaudeIntegration, printClaudeSetupSummary } from "./claude-integration.js";
+import {
+  formatInitBanner,
+  formatRecap,
+  createSpinner,
+  INIT_PHASES,
+} from "./cli-brand.js";
 import { runExport } from "./export.js";
 import {
   createChildProcessTracker,
@@ -213,6 +219,13 @@ async function flushAndExit(code = 0) {
     exitPromise = (async () => {
       signalHandlers.dispose();
       await childTracker.cleanup();
+      // Drain stdout/stderr before exiting so piped output isn't truncated
+      await new Promise((resolve) => {
+        const done = () => { if (--pending === 0) resolve(); };
+        let pending = 2;
+        if (process.stdout.writableFinished) done(); else process.stdout.end(done);
+        if (process.stderr.writableFinished) done(); else process.stderr.end(done);
+      });
       process.exit(code);
     })();
   }
@@ -261,10 +274,7 @@ function shouldShowInitBanner(providerFromFlag) {
   return providerFromFlag === undefined;
 }
 
-function showInitBanner() {
-  console.log(INIT_BANNER_LINES.join("\n"));
-  console.log("");
-}
+// showInitBanner is now handled by createInitUI().printBanner()
 
 async function promptInitProvider() {
   const rl = createInterface({
@@ -574,6 +584,8 @@ async function handleInit(rest) {
   let selectedProvider;
   let providerSource;
 
+  const quiet = flags.includes("--quiet") || flags.includes("-q");
+
   if (providerFromFlag) {
     selectedProvider = providerFromFlag;
     providerSource = "from --provider flag";
@@ -581,8 +593,8 @@ async function handleInit(rest) {
     selectedProvider = existingVendor;
     providerSource = "from existing config";
   } else {
-    // First run — show banner and prompt
-    showInitBanner();
+    // First run — show static banner and prompt for provider
+    console.log(formatInitBanner());
     selectedProvider = await promptInitProvider();
     providerSource = "selected";
   }
@@ -592,49 +604,100 @@ async function handleInit(rest) {
     exitWithCleanup(1);
   }
 
-  // Check pre-existing state for status reporting
+  // ── Ink animated UI (TTY) vs static fallback (non-TTY / quiet) ────
+  const useTUI = !quiet && process.stdout.isTTY;
+
+  if (useTUI) {
+    let inkResult;
+    try {
+      const { renderInit } = await import("./cli-ink.js");
+      inkResult = await renderInit({
+        dir,
+        flags,
+        provider: selectedProvider,
+        providerSource,
+        noClaude,
+        tools,
+        runInitCapture,
+        runConfig,
+        setupClaudeIntegration,
+      });
+    } catch (err) {
+      // Ink failed — fall through to static fallback
+      console.error(err.message || err);
+    }
+    if (inkResult) {
+      if (inkResult.code !== 0) {
+        if (inkResult.error) console.error(inkResult.error);
+        exitWithCleanup(1);
+      }
+      exitWithCleanup(0);
+    }
+  }
+
+  // ── Static fallback (non-TTY or --quiet) ──────────────────────────
   const svExists = existsSync(join(dir, ".sourcevision"));
   const rexExists = existsSync(join(dir, ".rex"));
   const henchExists = existsSync(join(dir, ".hench"));
 
-  // Run sub-inits with captured output
-  const svResult = await runInitCapture(tools.sourcevision, ["init", ...flags, dir]);
-  const rexResult = await runInitCapture(tools.rex, ["init", ...flags, dir]);
-  const henchResult = await runInitCapture(tools.hench, ["init", ...flags, dir]);
-
-  // Check for failures
-  if (svResult.code !== 0 || rexResult.code !== 0 || henchResult.code !== 0) {
-    if (svResult.code !== 0) console.error(svResult.stderr || svResult.stdout);
-    if (rexResult.code !== 0) console.error(rexResult.stderr || rexResult.stdout);
-    if (henchResult.code !== 0) console.error(henchResult.stderr || henchResult.stdout);
-    exitWithCleanup(1);
+  async function staticPhase(name, work, detail) {
+    const phase = INIT_PHASES[name];
+    if (!quiet) {
+      const spinner = createSpinner(phase.spinner);
+      spinner.start();
+      const result = await work();
+      if (result.code !== 0) {
+        spinner.fail(`${name} failed`);
+        console.error(result.stderr || result.stdout);
+        exitWithCleanup(1);
+      }
+      spinner.success(phase.success, detail);
+    } else {
+      const result = await work();
+      if (result.code !== 0) {
+        console.error(result.stderr || result.stdout);
+        exitWithCleanup(1);
+      }
+    }
   }
 
-  // Set provider (suppress output)
+  await staticPhase("sourcevision",
+    async () => {
+      const initResult = await runInitCapture(tools.sourcevision, ["init", ...flags, dir]);
+      if (initResult.code !== 0) return initResult;
+      return runInitCapture(tools.sourcevision, ["analyze", "--fast", ...flags, dir]);
+    },
+    svExists ? "reused — .sourcevision/ already present" : undefined);
+  await staticPhase("rex",
+    () => runInitCapture(tools.rex, ["init", ...flags, dir]),
+    rexExists ? "reused — .rex/ already present" : undefined);
+  await staticPhase("hench",
+    () => runInitCapture(tools.hench, ["init", ...flags, dir]),
+    henchExists ? "reused — .hench/ already present" : undefined);
+
   const origLog = console.log;
   console.log = () => {};
   try { await runConfig(["llm.vendor", selectedProvider, dir]); } finally { console.log = origLog; }
 
-  // Claude Code integration
   let claudeSummary = "skipped";
   if (!noClaude) {
     try {
       const result = setupClaudeIntegration(dir);
       claudeSummary = `${result.skills.written} skills, ${result.settings.total} permissions`;
-    } catch {
-      claudeSummary = "skipped";
-    }
+    } catch { /* skip */ }
   }
 
-  // Print unified summary
-  console.log("");
-  console.log("n-dx initialized");
-  console.log(`  .sourcevision/  ${svExists ? "already exists (reused)" : "created"}`);
-  console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
-  console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
-  console.log(`  LLM provider    ${selectedProvider} (${providerSource})`);
-  console.log(`  Claude Code     ${claudeSummary}`);
-  console.log("");
+  if (quiet) {
+    console.log("n-dx initialized");
+  } else {
+    console.log(formatRecap({
+      sourcevision: svExists ? "already exists (reused)" : "created",
+      rex: rexExists ? "already exists (reused)" : "created",
+      hench: henchExists ? "already exists (reused)" : "created",
+      provider: `${selectedProvider} (${providerSource})`,
+      claudeCode: claudeSummary,
+    }));
+  }
 
   exitWithCleanup(0);
 }
@@ -1304,12 +1367,7 @@ const tools = {
   web: resolveToolPath("packages/web"),
 };
 const SUPPORTED_PROVIDERS = ["codex", "claude"];
-const INIT_BANNER_LINES = [
-  "┌──────────────────────────────────────────────┐",
-  "│                   n-dx init                  │",
-  "│        Guided project setup is starting      │",
-  "└──────────────────────────────────────────────┘",
-];
+// Init banner lives in cli-brand.js (formatInitBanner)
 const signalHandlers = installTrackedChildProcessHandlers({
   tracker: childTracker,
   signals: ["SIGINT", "SIGTERM", "SIGHUP"],

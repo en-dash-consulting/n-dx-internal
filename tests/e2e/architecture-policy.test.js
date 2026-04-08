@@ -41,6 +41,7 @@ const ALLOWED = new Set([
   "packages/core/bin/hench.js",
   "packages/core/bin/sourcevision.js",
   "packages/core/cli.js",
+  "packages/core/cli-ink.js",
   "packages/core/ci.js",
   "packages/core/web.js",
   "packages/core/config.js",
@@ -798,15 +799,14 @@ const COHESION_THRESHOLD = 0.5;
  * what structural condition would allow removing the exemption.
  */
 const COHESION_EXCEPTIONS = new Map([
-  ["panel", "Small UI zone (3 files); execution-panel, reorganize-panel, rex-dashboard grouped by Louvain; metrics unreliable at this scale"],
-  ["refresh", "Small zone (3 files); performance throttle hook with paired test file; metrics unreliable at this scale"],
-  ["rex", "Mixed-type zone; config files, test files, and llms.txt with no internal import structure grouped by Louvain"],
-  ["rex-cli", "CLI satellite zone (27+ command files); high coupling to core by design; documented dual-fragility zone in CLAUDE.md"],
-  ["root", "Repository root files (.gitignore, LICENSE, config); no import structure by design"],
-  ["server-domain-gateway", "Gateway-heavy web server zone; route handlers, caches, metrics, and MCP/rex integration are intentionally co-located and currently produce low cohesion in generated SourceVision metrics"],
-  ["tick", "Small polling zone (7 files); tick-timer, batched-tick-dispatcher, tick-visibility-gate; approaching threshold"],
-  ["use", "Small hooks zone (3 files); polling and project-status hooks grouped by Louvain; metrics unreliable at this scale"],
-  ["web-unit", "Small performance zone (5 files); dom-update-gate, update-batcher, test helpers; metrics unreliable at this scale"],
+  ["health", "Small zone; health-check utilities grouped by Louvain; metrics unreliable at this scale"],
+  ["polling", "Small zone; polling hooks grouped by Louvain; metrics unreliable at this scale"],
+  ["project-status-hooks", "Small hooks zone; polling and project-status hooks grouped by Louvain; metrics unreliable at this scale"],
+  ["refresh", "Small zone; refresh utilities grouped by Louvain; metrics unreliable at this scale"],
+  ["rex-chunked-review", "CLI satellite zone; documented dual-fragility zone in CLAUDE.md; cohesion approaching threshold"],
+  ["rex-recommend", "CLI command zone; heterogeneous recommendation concerns grouped by Louvain"],
+  ["web-2", "Small zone; Louvain-detected web utility cluster; metrics unreliable at this scale"],
+  ["web-unit", "Small performance zone; dom-update-gate, update-batcher, test helpers; metrics unreliable at this scale"],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {
@@ -1174,6 +1174,8 @@ const DOCUMENTED_DYNAMIC_IMPORTS = new Map([
   ["packages/rex/src/cli/commands/smart-add.ts", "Lazy-loads LLM client for smart add proposals"],
   ["packages/rex/src/cli/commands/validate-interactive.ts", "Lazy-loads LLM client for interactive validation"],
   ["packages/rex/src/cli/commands/verify.ts", "Lazy-loads LLM client for verify analysis"],
+  // Core — lazy-loads Ink TUI to avoid loading React for non-init commands
+  ["packages/core/cli.js", "Lazy-loads Ink renderer for animated init UI (TTY only)"],
   ["packages/rex/src/cli/mcp-tools.ts", "Lazy-loads MCP tool handlers on demand"],
   ["packages/rex/src/analyze/reason.ts", "Lazy-loads LLM client for reason analysis"],
   // Sourcevision — lazy-loads analyzers and heavy dependencies

@@ -80,6 +80,7 @@ describe("n-dx init provider selection", () => {
           PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
         },
       });
+      expect(output).toContain("En Dash DX");
       expect(output).toContain("n-dx init");
       expect(output.indexOf("n-dx init")).toBeLessThan(output.indexOf("Select active LLM provider:"));
       expect(output).toContain("Select active LLM provider:");
@@ -158,8 +159,8 @@ describe("n-dx init provider selection", () => {
       });
 
       expect(output).toMatch(/LLM provider\s+codex|llm\.vendor = codex/);
-      // Banner box should be suppressed; "n-dx initialized" summary is fine
-      expect(output).not.toContain("Guided project setup");
+      // Banner/mascot should be suppressed when --provider is used (CI/scripted)
+      expect(output).not.toContain("En Dash DX");
     } finally {
       await rm(binDir, { recursive: true, force: true });
     }
@@ -238,6 +239,93 @@ describe("n-dx init provider selection", () => {
         expect(result.status).not.toBe(0);
         expect(result.stderr).toContain("Provider auth preflight failed for \"claude\"");
         expect(result.stderr).toContain("Next step: run 'claude login'");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("branded init experience", () => {
+    it("shows phase messages during non-interactive init", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-phases-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(["init", "--provider=codex", tmpDir], {
+          env: {
+            ...process.env,
+            PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
+          },
+        });
+
+        expect(output).toContain("Mapping your codebase...");
+        expect(output).toContain("Codebase mapped");
+        expect(output).toContain("Setting up the task den...");
+        expect(output).toContain("Task den ready");
+        expect(output).toContain("Waking the agent...");
+        expect(output).toContain("Agent standing by");
+        expect(output).toContain("Project initialized!");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("shows branded recap with next-step hint", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-recap-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(["init", "--provider=codex", tmpDir], {
+          env: {
+            ...process.env,
+            PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
+          },
+        });
+
+        expect(output).toContain("n-dx start");
+        expect(output).toContain("n-dx add");
+        expect(output).toContain("n-dx work");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("produces no ANSI escape codes when NO_COLOR is set", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-nocolor-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(["init", "--provider=codex", tmpDir], {
+          env: {
+            ...process.env,
+            NO_COLOR: "1",
+            PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
+          },
+        });
+
+        expect(output).not.toMatch(/\x1b\[/);
+        // Content still present
+        expect(output).toContain("Project initialized!");
+      } finally {
+        await rm(binDir, { recursive: true, force: true });
+      }
+    });
+
+    it("suppresses decorative output in --quiet mode", async () => {
+      const binDir = await mkdtemp(join(tmpdir(), "ndx-init-bin-quiet-"));
+      try {
+        await writeFakeBinary(join(binDir, "codex"), { stdout: "ok" });
+
+        const output = run(["init", "--quiet", "--provider=codex", tmpDir], {
+          env: {
+            ...process.env,
+            PATH: `${binDir}${PATH_SEP}${process.env.PATH ?? ""}`,
+          },
+        });
+
+        expect(output.trim()).toBe("n-dx initialized");
+        expect(output).not.toContain("Sniffing");
+        expect(output).not.toContain("Project initialized!");
       } finally {
         await rm(binDir, { recursive: true, force: true });
       }
