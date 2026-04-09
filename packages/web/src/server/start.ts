@@ -31,6 +31,7 @@ import { handleCliTimeoutRoute } from "./routes-cli-timeout.js";
 import { createWebSocketManager, WsHealthTracker } from "./websocket.js";
 import { ALL_DATA_FILES } from "../shared/index.js";
 import { findAvailablePort } from "./port.js";
+import { applyCompression } from "./compress-response.js";
 
 /**
  * File written by the server process to communicate the actual port it bound to.
@@ -497,6 +498,7 @@ function createHttpServer(
   wsHealthTracker: WsHealthTracker,
 ) {
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    applyCompression(req, res);
     setCorsHeaders(res);
     if (handlePreflight(req, res)) return;
     if (handleConfigEndpoint(req, res, ctx)) return;
