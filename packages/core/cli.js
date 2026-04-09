@@ -42,6 +42,7 @@ import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { runConfig, loadProjectConfig } from "./config.js";
 import { resolveCommandTimeout, withCommandTimeout } from "./cli-timeout.js";
+import { checkForUpdate, formatUpdateNotice } from "./update-check.js";
 
 const CLI_ERROR_CODES = Object.freeze({
   NOT_INITIALIZED: "NDX_CLI_NOT_INITIALIZED",
@@ -63,6 +64,18 @@ import {
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const MONOREPO_ROOT = resolve(__dir, "../..");
+
+/** Current @n-dx/core version, read once at startup. */
+const CURRENT_VERSION = JSON.parse(
+  readFileSync(join(__dir, "package.json"), "utf-8"),
+).version;
+
+/**
+ * Holds the in-flight update check promise.
+ * Started early in main() and raced in flushAndExit().
+ * Null when quiet mode or piped output suppresses the check.
+ */
+let updateCheckPromise = null;
 
 /** Map monorepo directory names to npm package names. */
 const PKG_NAMES = {
@@ -195,6 +208,25 @@ async function flushAndExit(code = 0) {
     exitPromise = (async () => {
       signalHandlers.dispose();
       await childTracker.cleanup();
+
+      // Print update notice if one was found (max 100ms wait so we never
+      // delay exit for a still-in-flight network request).
+      if (updateCheckPromise) {
+        try {
+          const timeout = new Promise((r) => {
+            const t = setTimeout(r, 100);
+            if (typeof t.unref === "function") t.unref();
+          });
+          const latestVersion = await Promise.race([updateCheckPromise, timeout]);
+          if (latestVersion) {
+            process.stdout.write(formatUpdateNotice(CURRENT_VERSION, latestVersion));
+          }
+        } catch {
+          // Update notice is best-effort — never block exit on failure
+        }
+        updateCheckPromise = null;
+      }
+
       // Drain stdout/stderr before exiting so piped output isn't truncated
       await new Promise((resolve) => {
         const done = () => { if (--pending === 0) resolve(); };
@@ -1418,6 +1450,16 @@ async function main() {
   const dir = resolveDir(rest);
   const projectConfig = await loadProjectConfig(dir).catch(() => ({}));
   const timeoutMs = resolveCommandTimeout(command ?? "", projectConfig);
+
+  // ── Start update check in background ───────────────────────────────────
+  // Kick off the registry check immediately so it runs concurrently with the
+  // command. The result is awaited (with a 100ms cap) in flushAndExit().
+  // Suppressed when: --quiet / -q flag, --json flag, or non-TTY output.
+  const isQuiet = rest.some((a) => a === "--quiet" || a === "-q");
+  const isJson = rest.some((a) => a === "--json");
+  if (!isQuiet && !isJson && process.stdout.isTTY) {
+    updateCheckPromise = checkForUpdate(CURRENT_VERSION);
+  }
 
   // ── Dispatch to command handler ─────────────────────────────────────────
   const runCommand = async () => {
