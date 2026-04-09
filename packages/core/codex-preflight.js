@@ -4,6 +4,23 @@ function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/**
+ * On Windows, `execFileSync` with `shell: true` delegates to cmd.exe.
+ * cmd.exe tokenises the command string by whitespace, so a binary path that
+ * contains spaces must be wrapped in double-quotes to be treated as a single
+ * token.  On all other platforms the path is passed verbatim.
+ *
+ * @param {string} binary    Raw binary path or bare command name
+ * @param {string} platform  Node.js `process.platform` value
+ * @returns {string}         The (possibly quoted) binary for shell invocation
+ */
+export function quoteForShell(binary, platform = process.platform) {
+  if (platform === "win32" && /\s/.test(binary)) {
+    return `"${binary}"`;
+  }
+  return binary;
+}
+
 export function detectCodexHostOS(platform = process.platform) {
   if (platform === "win32") return "windows";
   if (platform === "darwin") return "macos";
@@ -137,8 +154,12 @@ export function runCodexPreflight(llmConfig = {}, platform = process.platform) {
   const { binary, args } = getCodexPreflightCommand(llmConfig);
   const env = buildCodexPreflightEnv(llmConfig);
 
+  // When shell:true is used on Windows, cmd.exe tokenises by whitespace.
+  // Quote paths that contain spaces so the full path is treated as one token.
+  const shellBinary = quoteForShell(binary, platform);
+
   try {
-    execFileSync(binary, args, {
+    execFileSync(shellBinary, args, {
       encoding: "utf-8",
       timeout: 15000,
       stdio: "pipe",

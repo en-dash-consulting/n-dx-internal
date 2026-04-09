@@ -290,6 +290,46 @@ async function runRollbackCase(baseDir) {
   };
 }
 
+async function runSpacesInPathCase(baseDir) {
+  // Explicitly use directory names that contain spaces to prove the
+  // Windows shell path-quoting fix works end-to-end.
+  const projectDir = join(baseDir, "spaces project");
+  const binDir = join(baseDir, "spaces bin");
+  await mkdir(binDir, { recursive: true });
+  await setupProject(projectDir);
+
+  // Binary name and enclosing directory both contain spaces.
+  const fakeCodexBase = join(binDir, "codex binary");
+  const fakeCodex = await writeFakeBinary(fakeCodexBase, {
+    stdout: "ok",
+    captureArgs: true,
+  });
+
+  const setPath = runConfig(["llm.codex.cli_path", fakeCodex, projectDir]);
+  const setVendor = runConfig(["llm.vendor", "codex", projectDir]);
+
+  assert(setPath.ok, `expected llm.codex.cli_path to succeed with spaces in path; stderr: ${setPath.stderr}`);
+  assert(setVendor.ok, `expected llm.vendor codex to succeed with spaces in binary path; stderr: ${setVendor.stderr}`);
+  assert(setVendor.stdout.includes("llm.vendor = codex"), "expected codex success output");
+
+  const argsFile = isWin ? `${fakeCodex}.args` : `${fakeCodexBase}.args`;
+  const args = await readFile(argsFile, "utf-8");
+
+  assert(args.includes("exec"), "expected codex preflight to invoke exec with spaces-in-path binary");
+  assert(args.includes("--skip-git-repo-check"), "expected codex preflight to pass --skip-git-repo-check with spaces-in-path binary");
+
+  return {
+    logs: [
+      { label: "set-codex-cli-path-spaces", ...setPath },
+      { label: "set-codex-vendor-spaces", ...setVendor },
+    ],
+    notes: [
+      "Verified Codex selection succeeds when binary path and enclosing directory contain spaces.",
+      `Binary path used: ${fakeCodex}`,
+    ],
+  };
+}
+
 async function main() {
   const { artifactDir } = parseArgs(process.argv.slice(2));
   const startedAt = Date.now();
@@ -302,6 +342,7 @@ async function main() {
     results.push(await recordCase("preflight-gate", () => runFailureGateCase(baseDir)));
     results.push(await recordCase("codex-success", () => runSuccessCase(baseDir)));
     results.push(await recordCase("rollback-to-claude", () => runRollbackCase(baseDir)));
+    results.push(await recordCase("spaces-in-path", () => runSpacesInPathCase(baseDir)));
   } finally {
     await rm(baseDir, { recursive: true, force: true });
   }

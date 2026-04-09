@@ -20,6 +20,7 @@ import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import {
   formatCodexPreflightFailure,
+  quoteForShell,
   runCodexPreflight,
 } from "./codex-preflight.js";
 
@@ -224,12 +225,16 @@ async function validateCliPath(value) {
         "  Provide an absolute path to the Claude Code CLI binary.",
     );
   }
-  try {
-    await access(value, constants.X_OK);
-  } catch {
-    throw new Error(
-      `File is not executable: ${value}\n` + "  Run: chmod +x " + value,
-    );
+  // constants.X_OK is not reliable on Windows (different permission model).
+  // Rely on the spawn attempt at runtime to detect non-executable files there.
+  if (process.platform !== "win32") {
+    try {
+      await access(value, constants.X_OK);
+    } catch {
+      throw new Error(
+        `File is not executable: ${value}\n` + "  Run: chmod +x " + value,
+      );
+    }
   }
 }
 
@@ -263,12 +268,16 @@ async function validateCodexCliPath(value) {
     );
   }
 
-  try {
-    await access(value, constants.X_OK);
-  } catch {
-    throw new Error(
-      `File is not executable: ${value}\n` + "  Run: chmod +x " + value,
-    );
+  // constants.X_OK is not reliable on Windows (different permission model).
+  // Rely on the spawn attempt at runtime to detect non-executable files there.
+  if (process.platform !== "win32") {
+    try {
+      await access(value, constants.X_OK);
+    } catch {
+      throw new Error(
+        `File is not executable: ${value}\n` + "  Run: chmod +x " + value,
+      );
+    }
   }
 }
 
@@ -380,8 +389,11 @@ function validateModel(value) {
  * Returns { ok, version?, error? }.
  */
 function testCliPath(cliPath) {
+  // On Windows with shell:true, cmd.exe tokenises by whitespace.
+  // Quote paths that contain spaces so the full path is a single token.
+  const shellPath = quoteForShell(cliPath);
   try {
-    const output = execFileSync(cliPath, ["--version"], {
+    const output = execFileSync(shellPath, ["--version"], {
       encoding: "utf-8",
       timeout: 10000,
       stdio: "pipe",
@@ -462,8 +474,10 @@ function runVendorAuthPreflight(vendor, llmConfig, legacyClaudeConfig) {
     llmConfig,
     legacyClaudeConfig,
   );
+  // On Windows with shell:true, quote binary paths that contain spaces.
+  const shellBinary = quoteForShell(binary);
   try {
-    execFileSync(binary, args, {
+    execFileSync(shellBinary, args, {
       encoding: "utf-8",
       timeout: 15000,
       stdio: "pipe",
@@ -547,11 +561,14 @@ function hasClaudeAuthRequiredEvidence(detailLower) {
   );
 }
 
-function formatClaudePreflightFailure(preflight) {
+function formatClaudePreflightFailure(preflight, platform = process.platform) {
   const detail = preflight.detail || "unknown error";
   const detailLower = detail.toLowerCase();
   const binary = preflight.binary;
   const retryCommand = "ndx config llm.vendor claude";
+  // PATH resolution diagnostic command differs between Windows and POSIX.
+  const pathCheckCmd =
+    platform === "win32" ? `where ${binary}` : `command -v ${binary}`;
 
   if (preflight.errorCode === "ENOENT" || detail.includes("ENOENT")) {
     if (binary === "claude" || !isBareCommand(binary)) {
@@ -570,7 +587,7 @@ function formatClaudePreflightFailure(preflight) {
       code: "NDX_CLAUDE_PREFLIGHT_NOT_ON_PATH",
       lines: [
         "Verify what ndx can resolve from this shell and fix PATH resolution before retrying.",
-        `Check PATH resolution: command -v ${binary}`,
+        `Check PATH resolution: ${pathCheckCmd}`,
         `If the binary exists elsewhere, either update PATH or set 'n-dx config llm.claude.cli_path /absolute/path/to/claude'.`,
         `Retry after fixing PATH: ${retryCommand}`,
       ],
@@ -841,6 +858,7 @@ Examples:
   n-dx config rex.budget.abort true            Abort operations when exceeded
   n-dx config claude.cli_path /usr/local/bin/claude
                                                Set Claude CLI binary path (validates path)
+                                               Windows: n-dx config claude.cli_path "C:\Users\you\AppData\Roaming\npm\claude.cmd"
   n-dx config claude.cli_path /path --force    Set without validation
   n-dx config claude.api_key sk-ant-...        Set Anthropic API key (validates format)
   n-dx config claude.api_endpoint https://proxy.example.com
@@ -854,6 +872,7 @@ Examples:
                                                Set Claude model (llm namespace)
   n-dx config llm.codex.cli_path /usr/local/bin/codex
                                                Set Codex CLI path
+                                               Windows: n-dx config llm.codex.cli_path "C:\Users\you\AppData\Roaming\npm\codex.cmd"
   n-dx config features.rex.showTokenBudget true
                                                Enable token budget display on tasks
   n-dx config language go                      Set primary project language to Go

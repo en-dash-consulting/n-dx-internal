@@ -4,6 +4,7 @@ import {
   detectCodexHostOS,
   formatCodexPreflightFailure,
   getCodexPreflightCommand,
+  quoteForShell,
 } from "../../packages/core/codex-preflight.js";
 
 describe("codex preflight", () => {
@@ -63,5 +64,43 @@ describe("codex preflight", () => {
     expect(failure.lines.join("\n")).toContain("On macOS");
     expect(failure.lines.join("\n")).toContain("which codex");
     expect(failure.lines.join("\n")).toContain("llm.codex.cli_path");
+  });
+});
+
+describe("quoteForShell", () => {
+  it("returns bare command unchanged on Windows", () => {
+    expect(quoteForShell("codex", "win32")).toBe("codex");
+  });
+
+  it("returns path without spaces unchanged on Windows", () => {
+    expect(quoteForShell("C:\\codex\\codex.cmd", "win32")).toBe(
+      "C:\\codex\\codex.cmd",
+    );
+  });
+
+  it("wraps path with spaces in double-quotes on Windows", () => {
+    expect(quoteForShell("C:\\Program Files\\codex\\codex.cmd", "win32")).toBe(
+      '"C:\\Program Files\\codex\\codex.cmd"',
+    );
+  });
+
+  it("wraps path with spaces in double-quotes when binary name itself has a space on Windows", () => {
+    expect(quoteForShell("my codex", "win32")).toBe('"my codex"');
+  });
+
+  it("does not quote paths with spaces on macOS", () => {
+    expect(quoteForShell("/Applications/my codex/codex", "darwin")).toBe(
+      "/Applications/my codex/codex",
+    );
+  });
+
+  it("does not quote paths with spaces on Linux", () => {
+    expect(quoteForShell("/opt/my tools/codex", "linux")).toBe(
+      "/opt/my tools/codex",
+    );
+  });
+
+  it("returns path unchanged when no platform is given and path has no spaces", () => {
+    expect(quoteForShell("/usr/local/bin/codex")).toBe("/usr/local/bin/codex");
   });
 });
