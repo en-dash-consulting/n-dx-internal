@@ -9,6 +9,8 @@ export type {
   PolicyLimitsConfig,
   RetryConfig,
   HenchConfig,
+  PromptsVerbosity,
+  PromptsConfig,
   Provider,
   ProjectLanguage,
   RunStatus,

@@ -72,6 +72,19 @@ export interface RetryConfig {
 
 export type Provider = "cli" | "api";
 
+/**
+ * Verbosity level for LLM prompt rendering.
+ * - 'compact': concise prompts (default)
+ * - 'verbose': extended prompts with additional guidance and context
+ */
+export type PromptsVerbosity = "compact" | "verbose";
+
+/** Runtime prompts configuration, resolved from .n-dx.json["prompts"] at startup. */
+export interface PromptsConfig {
+  /** Controls prompt detail level. Default: 'compact'. */
+  verbosity: PromptsVerbosity;
+}
+
 export interface HenchConfig {
   schema: string;
   provider: Provider;
@@ -90,6 +103,12 @@ export interface HenchConfig {
   selfHeal?: boolean;
   /** Detected project language. Drives guard defaults during init. */
   language?: ProjectLanguage;
+  /**
+   * Runtime prompts configuration. Never stored in .hench/config.json — loaded
+   * from .n-dx.json["prompts"] at process startup via loadPromptsConfig() and
+   * injected into the prompt renderer via initPromptRenderer().
+   */
+  prompts?: PromptsConfig;
 }
 
 // ── Language-specific guard defaults ──────────────────────────────────

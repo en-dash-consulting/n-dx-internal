@@ -38,6 +38,7 @@ const PROJECT_SECTIONS = new Set([
   "web",
   "features",
   "sourcevision",
+  "prompts",
 ]);
 
 /**
@@ -432,6 +433,26 @@ const LLM_VALIDATORS = {
 };
 
 /**
+ * Validate prompts.verbosity.
+ */
+function validatePromptsVerbosity(value) {
+  if (value !== "compact" && value !== "verbose") {
+    throw new Error(
+      `Invalid verbosity "${value}". Expected one of: compact, verbose.\n` +
+        "  'compact' produces concise prompts (default).\n" +
+        "  'verbose' adds extended guidance sections to every prompt.",
+    );
+  }
+}
+
+/**
+ * Validators for prompts.* config keys in .n-dx.json.
+ */
+const PROMPTS_VALIDATORS = {
+  verbosity: validatePromptsVerbosity,
+};
+
+/**
  * Build provider-specific auth preflight command.
  * Returns binary + args for the selected vendor.
  */
@@ -788,6 +809,13 @@ Sourcevision zone overrides (.n-dx.json):
 Web dashboard settings (.n-dx.json):
   web.port                 number    Dashboard server port (default: 3117)
 
+Prompt settings (.n-dx.json):
+  prompts.verbosity        enum      LLM prompt verbosity: "compact" (default) or "verbose"
+                                     compact: concise prompts — current default behaviour
+                                     verbose: extended prompts with additional guidance,
+                                              rationale sections, and error-handling notes
+                                     Valid values: compact, verbose
+
 Language detection override (.n-dx.json):
   language                 string    Primary project language (default: "auto")
                                     Valid values: typescript, javascript, go, auto
@@ -856,6 +884,8 @@ Examples:
                                                Enable token budget display on tasks
   n-dx config language go                      Set primary project language to Go
   n-dx config language auto                    Reset to auto-detection
+  n-dx config prompts.verbosity verbose        Enable extended prompt guidance
+  n-dx config prompts.verbosity compact        Restore concise prompts (default)
   n-dx config --test-connection                Test API key and/or CLI path
   n-dx config --json                           Show all settings as JSON
   n-dx config hench --json                     Show hench settings as JSON
@@ -1041,7 +1071,9 @@ async function coerceAndValidateProjectValue(
       ? CLAUDE_VALIDATORS
       : pkg === "llm"
         ? LLM_VALIDATORS
-        : null;
+        : pkg === "prompts"
+          ? PROMPTS_VALIDATORS
+          : null;
   if (validators && validators[settingPath] && flags.force !== "true") {
     try {
       await validators[settingPath](coerced);

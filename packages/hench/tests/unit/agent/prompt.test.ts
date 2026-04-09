@@ -1,9 +1,18 @@
-import { describe, it, expect } from "vitest";
-import { buildSystemPrompt } from "../../../src/agent/planning/prompt.js";
+import { describe, it, expect, afterEach } from "vitest";
+import {
+  buildSystemPrompt,
+  initPromptRenderer,
+  resetPromptRenderer,
+} from "../../../src/agent/planning/prompt.js";
 import { DEFAULT_HENCH_CONFIG } from "../../../src/schema/v1.js";
 import type { TaskBriefProject } from "../../../src/schema/v1.js";
 
 describe("buildSystemPrompt", () => {
+  afterEach(() => {
+    // Reset module-level verbosity state between tests so they don't interfere.
+    resetPromptRenderer();
+  });
+
   const project: TaskBriefProject = {
     name: "test-project",
     validateCommand: "npm run typecheck",
@@ -95,6 +104,29 @@ describe("buildSystemPrompt", () => {
       const prompt = buildSystemPrompt(project, config);
       expect(prompt).toContain("[GUARD]");
       expect(prompt).toContain("[ERROR]");
+    });
+  });
+
+  describe("verbosity", () => {
+    it("compact mode (default) omits Extended Context section", () => {
+      const config = DEFAULT_HENCH_CONFIG();
+      const prompt = buildSystemPrompt(project, config);
+      expect(prompt).not.toContain("## Extended Context");
+    });
+
+    it("verbose mode includes Extended Context section", () => {
+      initPromptRenderer("verbose");
+      const config = DEFAULT_HENCH_CONFIG();
+      const prompt = buildSystemPrompt(project, config);
+      expect(prompt).toContain("## Extended Context");
+    });
+
+    it("reset restores compact behaviour", () => {
+      initPromptRenderer("verbose");
+      resetPromptRenderer();
+      const config = DEFAULT_HENCH_CONFIG();
+      const prompt = buildSystemPrompt(project, config);
+      expect(prompt).not.toContain("## Extended Context");
     });
   });
 });

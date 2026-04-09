@@ -1,4 +1,37 @@
-import type { HenchConfig, TaskBriefProject } from "../../schema/index.js";
+import type { HenchConfig, TaskBriefProject, PromptsVerbosity } from "../../schema/index.js";
+
+// ---------------------------------------------------------------------------
+// Module-level verbosity state
+// ---------------------------------------------------------------------------
+
+/**
+ * Current verbosity level for prompt rendering.
+ * Initialized to 'compact' (default). Set once at process startup via
+ * initPromptRenderer — all subsequent buildSystemPrompt calls use this value.
+ */
+let _verbosity: PromptsVerbosity = "compact";
+
+/**
+ * Initialize the prompt renderer with the resolved prompts verbosity.
+ * Call once at process startup (before any buildSystemPrompt invocations)
+ * so that all LLM call sites automatically pick up the setting.
+ */
+export function initPromptRenderer(verbosity: PromptsVerbosity): void {
+  _verbosity = verbosity;
+}
+
+/**
+ * Reset the prompt renderer to its default state ('compact').
+ * Intended for use in tests to prevent state leakage between test cases.
+ */
+export function resetPromptRenderer(): void {
+  _verbosity = "compact";
+}
+
+/** Return the current prompt verbosity level. */
+export function getPromptVerbosity(): PromptsVerbosity {
+  return _verbosity;
+}
 
 // ---------------------------------------------------------------------------
 // Go-specific prompt context
@@ -130,6 +163,27 @@ export function buildSystemPrompt(
     lines.push(`- Max file size: ${config.guard.maxFileSize} bytes`);
     lines.push("- If a tool returns [GUARD], you hit a safety constraint. Adjust your approach.");
     lines.push("- If a tool returns [ERROR], something failed. Check your inputs and retry or adjust.");
+  }
+
+  // Extended guidance — only emitted in verbose mode.
+  if (_verbosity === "verbose") {
+    lines.push("\n## Extended Context");
+    lines.push("These notes supplement the rules above with additional rationale and guidance.");
+    lines.push("");
+    lines.push("### Why minimal changes matter");
+    lines.push("- Every line changed is a line that can break unrelated functionality.");
+    lines.push("- Refactoring outside task scope adds noise to diffs and makes review harder.");
+    lines.push("- When in doubt, do less and document what you did not change and why.");
+    lines.push("");
+    lines.push("### Why tests come first");
+    lines.push("- A failing test proves the problem exists and defines the success condition.");
+    lines.push("- Writing the test first ensures you understand the acceptance criteria before touching production code.");
+    lines.push("- Green tests before committing are a hard requirement — do not skip.");
+    lines.push("");
+    lines.push("### Error handling discipline");
+    lines.push("- Never swallow errors silently. Every catch block must either re-throw, log, or return a typed error.");
+    lines.push("- Pre-existing test failures are still your responsibility to fix: they slow down everyone.");
+    lines.push("- Build failures block the whole team — fix them before committing anything else.");
   }
 
   return lines.join("\n");

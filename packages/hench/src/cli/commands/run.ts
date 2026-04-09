@@ -11,7 +11,8 @@ import { getStuckTaskIds } from "../../agent/analysis/stuck.js";
 import { HENCH_DIR, safeParseInt, safeParseNonNegInt } from "./constants.js";
 import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output } from "../output.js";
-import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
+import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath, loadPromptsConfig } from "../../store/project-config.js";
+import { initPromptRenderer } from "../../agent/planning/prompt.js";
 import { ExecutionQueue, formatQueueStatus, resolveSchedulingPriority } from "../../queue/index.js";
 import type { TaskPriority } from "../../queue/index.js";
 import { ProcessLimiter } from "../../process/limiter.js";
@@ -650,6 +651,12 @@ export async function cmdRun(
   const rexDir = join(dir, config.rexDir);
   const llmConfig = await loadLLMConfig(henchDir);
   const llmVendor = resolveLLMVendor(llmConfig);
+
+  // Initialize prompt renderer verbosity once at process startup.
+  // All subsequent buildSystemPrompt calls in this process will use
+  // the resolved setting without reading config individually.
+  const promptsConfig = await loadPromptsConfig(henchDir);
+  initPromptRenderer(promptsConfig.verbosity);
 
   const provider = (flags.provider as "cli" | "api") ?? config.provider;
   const dryRun = flags["dry-run"] === "true";

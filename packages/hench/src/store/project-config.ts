@@ -11,10 +11,12 @@ import { dirname } from "node:path";
 import {
   loadClaudeConfig as loadClaudeConfigFromDir,
   loadLLMConfig as loadLLMConfigFromDir,
+  loadProjectOverrides,
   resolveApiKey as sharedResolveApiKey,
   resolveCliPath as sharedResolveCliPath,
 } from "../prd/llm-gateway.js";
 import type { ClaudeConfig, LLMConfig, LLMVendor } from "../prd/llm-gateway.js";
+import type { PromptsConfig } from "../schema/v1.js";
 
 // Re-export the shared ClaudeConfig type so existing consumers keep working
 export type { ClaudeConfig, LLMConfig, LLMVendor } from "../prd/llm-gateway.js";
@@ -120,4 +122,22 @@ export function resolveApiKey(
  */
 export function resolveCliPath(claudeConfig: ClaudeConfig): string {
   return sharedResolveCliPath(claudeConfig);
+}
+
+/**
+ * Load the "prompts" section from .n-dx.json and return a PromptsConfig
+ * with defaults applied.
+ *
+ * Provides the resolved verbosity level that should be injected into the
+ * prompt renderer at process startup via initPromptRenderer().
+ *
+ * @param configDir The package config directory (e.g., /project/.hench)
+ */
+export async function loadPromptsConfig(
+  configDir: string,
+): Promise<PromptsConfig> {
+  const overrides = await loadProjectOverrides(configDir, "prompts");
+  const verbosity = overrides?.verbosity;
+  if (verbosity === "verbose") return { verbosity: "verbose" };
+  return { verbosity: "compact" };
 }

@@ -49,6 +49,14 @@ const RetryConfigSchema = z.object({
 
 const ProjectLanguageSchema = z.enum(["typescript", "javascript", "go"]).optional();
 
+/**
+ * Schema for the prompts section of .n-dx.json.
+ * Controls LLM prompt verbosity throughout the process.
+ */
+const PromptsConfigSchema = z.object({
+  verbosity: z.enum(["compact", "verbose"]).default("compact"),
+}).optional();
+
 export const HenchConfigSchema = z.object({
   schema: z.string(),
   provider: z.enum(["cli", "api"]).default("cli"),
@@ -67,6 +75,8 @@ export const HenchConfigSchema = z.object({
   loopPauseMs: z.number().int().nonnegative().optional().default(2000),
   maxFailedAttempts: z.number().int().positive().optional().default(3),
   language: ProjectLanguageSchema,
+  /** Runtime prompts configuration — loaded from .n-dx.json["prompts"], not stored in .hench/config.json. */
+  prompts: PromptsConfigSchema,
 });
 
 const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "budget_exceeded", "error_transient"]);
