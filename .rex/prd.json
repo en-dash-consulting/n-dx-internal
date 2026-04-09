@@ -24115,7 +24115,7 @@
     {
       "id": "c4457153-ebbb-41dc-9620-bc499cc16b4e",
       "title": "LLM Integration",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -24182,10 +24182,12 @@
         {
           "id": "f3a31834-64d6-4ae3-9c87-fc310ff15037",
           "title": "Verbosity Config Key, Token-Cost Warning, and Settings UI",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add a first-class `prompts.verbosity` config key ('compact' | 'verbose', default: 'compact') to the n-dx config schema. When a user enables verbose mode via CLI or web settings, display a prominent warning that verbose prompts consume significantly more tokens. Wire the config into the renderer and expose the toggle in the web settings panel.",
           "source": "smart-add",
+          "startedAt": "2026-04-09T17:56:21.010Z",
+          "completedAt": "2026-04-09T17:56:21.010Z",
           "children": [
             {
               "id": "60e95788-3c68-4b01-898e-38c39990c7a5",
@@ -24213,7 +24215,7 @@
             {
               "id": "47bf2bb3-6c85-4008-bbb3-0bb54928bbc5",
               "title": "Implement token-cost warning on verbose mode activation and expose toggle in web settings UI",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "When a user enables verbose mode — via `ndx config prompts.verbosity verbose` or the web settings panel — display a prominent warning that verbose prompts consume significantly more tokens than the compact default and that compact is recommended for cost control. The warning must appear at the point of activation. Add a Prompt Verbosity section to the web settings panel with compact/verbose toggle, inline warning callout, and persistence via the config API endpoint.",
               "acceptanceCriteria": [
@@ -24233,11 +24235,14 @@
                 "token-optimization"
               ],
               "source": "smart-add",
-              "startedAt": "2026-04-09T17:41:12.251Z"
+              "startedAt": "2026-04-09T17:41:12.251Z",
+              "completedAt": "2026-04-09T17:56:20.843Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-04-09T17:56:21.167Z",
+      "completedAt": "2026-04-09T17:56:21.167Z"
     }
   ]
 }
