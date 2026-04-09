@@ -24244,7 +24244,7 @@
             {
               "id": "8f910767-6a30-443d-93f4-1a61187d967f",
               "title": "Profile and establish CLI startup baselines across all entry points",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Measure cold-start time for each ndx command (init, analyze, status, work, start, plan, etc.) using Node.js --prof and clinic.js. Record baseline p50/p95 timings per command and identify the top import-cost contributors in the module graph. This benchmark suite will gate all subsequent optimization work.",
               "acceptanceCriteria": [
@@ -24259,12 +24259,14 @@
                 "cli",
                 "profiling"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T22:59:32.522Z",
+              "completedAt": "2026-04-09T23:08:58.822Z"
             },
             {
               "id": "2b682c87-30cd-485d-bc06-57181c22adf3",
               "title": "Implement lazy module loading for heavy infrequently-used CLI commands",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Audit the ndx CLI entry point (cli.js and per-package CLI index files) for top-level requires/imports that are only needed for specific sub-commands. Convert these to dynamic imports so they are only loaded when the relevant command is actually invoked. No behavioral changes — only import timing shifts.",
               "acceptanceCriteria": [
@@ -24280,7 +24282,9 @@
                 "cli",
                 "lazy-loading"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T21:19:59.627Z",
+              "completedAt": "2026-04-09T22:59:02.756Z"
             },
             {
               "id": "31694fc1-5cdd-46ad-9078-14586649b880",
@@ -24315,7 +24319,7 @@
             {
               "id": "dabe2bf9-d563-4265-820a-81be690293a6",
               "title": "Parallelize file read operations in sourcevision inventory scanner",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Replace sequential file-stat and file-read loops in sourcevision's inventory pipeline (file discovery, format detection, content reads) with Promise.all / p-limit-bounded concurrent reads. The analysis logic remains identical — only the I/O scheduling changes. Use a concurrency limit of 32 to avoid hitting OS file descriptor limits.",
               "acceptanceCriteria": [
@@ -24332,7 +24336,9 @@
                 "io",
                 "parallelism"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T23:09:36.068Z",
+              "completedAt": "2026-04-09T23:13:58.725Z"
             },
             {
               "id": "5f5ab5c9-ac0b-4bf6-904a-db5d20dcfea4",
@@ -24426,7 +24432,7 @@
             {
               "id": "6d82f39a-d114-4ef5-81a6-080607f5f4e6",
               "title": "Enable TypeScript incremental compilation across all packages",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add \"incremental\": true and a tsBuildInfoFile path to each package's tsconfig.json (sourcevision, rex, hench, llm-client, web, core). This allows tsc to skip re-checking unchanged files on subsequent builds. The compiled output is byte-identical; only the build process changes.",
               "acceptanceCriteria": [
@@ -24443,7 +24449,9 @@
                 "build",
                 "typescript"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T21:17:07.779Z",
+              "completedAt": "2026-04-09T21:19:36.209Z"
             },
             {
               "id": "152da79d-794c-4eb2-8227-e74f4d4b224b",
