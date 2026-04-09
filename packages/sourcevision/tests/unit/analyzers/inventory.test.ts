@@ -290,6 +290,25 @@ describe("analyzeInventory", () => {
     expect(entry!.lastModified).toBeTypeOf("number");
     expect(entry!.lastModified).toBeGreaterThan(0);
   });
+
+  it("produces byte-identical output with concurrencyLimit=1 vs default concurrency", async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "sv-inv-conc-"));
+    await mkdir(join(tmpDir, "src"), { recursive: true });
+    await mkdir(join(tmpDir, "tests"), { recursive: true });
+
+    // Create enough files to exercise the concurrency path
+    for (let i = 0; i < 20; i++) {
+      await writeFile(join(tmpDir, "src", `module${i}.ts`), `export const x${i} = ${i};\n`);
+      await writeFile(join(tmpDir, "tests", `module${i}.test.ts`), `import { x${i} } from '../src/module${i}.js';\n`);
+    }
+    await writeFile(join(tmpDir, "package.json"), '{"name":"test"}\n');
+
+    const sequential = await analyzeInventory(tmpDir, { concurrencyLimit: 1 });
+    const parallel   = await analyzeInventory(tmpDir, { concurrencyLimit: 32 });
+
+    expect(parallel.files).toEqual(sequential.files);
+    expect(parallel.summary).toEqual(sequential.summary);
+  });
 });
 
 // ── incremental ──────────────────────────────────────────────────────────────

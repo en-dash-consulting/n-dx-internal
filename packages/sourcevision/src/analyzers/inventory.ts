@@ -464,12 +464,46 @@ async function walkDir(dir: string, rootDir: string, ig: IgnoreFilter, skipDirs:
   return files;
 }
 
+// ── Concurrency limiter ──────────────────────────────────────────────────────
+
+/**
+ * Minimal concurrency limiter — equivalent to p-limit, no external dependency.
+ * Returns a `limit` function that wraps async tasks and ensures at most
+ * `concurrency` tasks run simultaneously.
+ */
+function createLimiter(concurrency: number): <T>(fn: () => Promise<T>) => Promise<T> {
+  const queue: Array<() => void> = [];
+  let active = 0;
+
+  const next = (): void => {
+    active--;
+    if (queue.length > 0) queue.shift()!();
+  };
+
+  return function limit<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const run = (): void => {
+        active++;
+        fn().then(resolve, reject).finally(next);
+      };
+      if (active < concurrency) run();
+      else queue.push(run);
+    });
+  };
+}
+
 // ── Incremental types ────────────────────────────────────────────────────────
 
 export interface InventoryOptions {
   previousInventory?: Inventory;
   /** Pre-resolved language config. When omitted, detectLanguage() auto-detects. */
   languageConfig?: LanguageConfig;
+  /**
+   * Maximum number of concurrent file I/O operations during the scan phase.
+   * Lower values reduce file-descriptor pressure; higher values improve
+   * throughput on fast storage. Defaults to 32.
+   */
+  concurrencyLimit?: number;
 }
 
 export interface InventoryStats {
@@ -511,6 +545,68 @@ export async function analyzeInventory(
     }
   }
 
+  // ── Parallel file processing ─────────────────────────────────────────────
+
+  type FileResult =
+    | { kind: "cached"; entry: FileEntry }
+    | { kind: "changed"; entry: FileEntry }
+    | { kind: "added"; entry: FileEntry }
+    | { kind: "touched"; entry: FileEntry };
+
+  const limit = createLimiter(options?.concurrencyLimit ?? 32);
+
+  const fileResults = await Promise.all(
+    filePaths.map((relPath) =>
+      limit(async (): Promise<FileResult> => {
+        const fullPath = join(absDir, relPath);
+        const st = await stat(fullPath);
+        const mtime = Math.floor(st.mtimeMs);
+
+        const prevEntry = prevMap.get(relPath);
+
+        // Cache hit: reuse entry when both mtime and size match
+        if (prevEntry && prevEntry.lastModified === mtime && prevEntry.size === st.size) {
+          return { kind: "cached", entry: prevEntry };
+        }
+
+        // Cache miss: read and process the file
+        const buf = await readFile(fullPath);
+        const hash = createHash("sha256").update(buf).digest("hex");
+        const language = detectLanguage(relPath);
+        const role = classifyRole(relPath, language, langConfig);
+        const category = deriveCategory(relPath);
+
+        let lineCount = 0;
+        if (!isBinary(buf)) {
+          const text = buf.toString("utf-8");
+          if (text.length > 0) {
+            lineCount = text.split("\n").length;
+            if (text.endsWith("\n")) lineCount--;
+          }
+        }
+
+        const entry: FileEntry = {
+          path: relPath,
+          size: st.size,
+          language,
+          lineCount,
+          hash,
+          role,
+          category,
+          lastModified: mtime,
+        };
+
+        if (prevEntry) {
+          // Mtime/size changed but content is identical (e.g. `touch`, rebuild).
+          // Don't flag as changed — downstream phases need not re-process.
+          return { kind: prevEntry.hash === hash ? "touched" : "changed", entry };
+        }
+        return { kind: "added", entry };
+      })
+    )
+  );
+
+  // Collect results in original walk order (Promise.all preserves order)
   const files: FileEntry[] = [];
   const changedFiles = new Set<string>();
   let cached = 0;
@@ -518,59 +614,13 @@ export async function analyzeInventory(
   let added = 0;
   let touched = 0;
 
-  for (const relPath of filePaths) {
-    const fullPath = join(absDir, relPath);
-    const st = await stat(fullPath);
-    const mtime = Math.floor(st.mtimeMs);
-
-    const prevEntry = prevMap.get(relPath);
-
-    // Cache hit: reuse entry when both mtime and size match
-    if (prevEntry && prevEntry.lastModified === mtime && prevEntry.size === st.size) {
-      files.push(prevEntry);
-      cached++;
-      continue;
-    }
-
-    // Cache miss: read and process the file
-    const buf = await readFile(fullPath);
-    const hash = createHash("sha256").update(buf).digest("hex");
-    const language = detectLanguage(relPath);
-    const role = classifyRole(relPath, language, langConfig);
-    const category = deriveCategory(relPath);
-
-    let lineCount = 0;
-    if (!isBinary(buf)) {
-      const text = buf.toString("utf-8");
-      if (text.length > 0) {
-        lineCount = text.split("\n").length;
-        if (text.endsWith("\n")) lineCount--;
-      }
-    }
-
-    files.push({
-      path: relPath,
-      size: st.size,
-      language,
-      lineCount,
-      hash,
-      role,
-      category,
-      lastModified: mtime,
-    });
-
-    if (prevEntry) {
-      if (prevEntry.hash === hash) {
-        // Mtime/size changed but content is identical (e.g. `touch`, rebuild).
-        // Don't flag as changed — downstream phases need not re-process.
-        touched++;
-      } else {
-        changedFiles.add(relPath);
-        changed++;
-      }
-    } else {
-      changedFiles.add(relPath);
-      added++;
+  for (const result of fileResults) {
+    files.push(result.entry);
+    switch (result.kind) {
+      case "cached":  cached++;                              break;
+      case "touched": touched++;                             break;
+      case "changed": changedFiles.add(result.entry.path); changed++; break;
+      case "added":   changedFiles.add(result.entry.path); added++;   break;
     }
   }
 
