@@ -5,7 +5,8 @@
     "rootDir": "src",
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "incremental": true
+    "incremental": true,
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
   },
   "include": ["src"]
 }
