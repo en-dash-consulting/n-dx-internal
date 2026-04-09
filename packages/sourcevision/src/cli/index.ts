@@ -17,14 +17,6 @@
 import { resolve } from "node:path";
 import { usage } from "./commands/constants.js";
 import { showCommandHelp } from "./help.js";
-import { cmdInit } from "./commands/init.js";
-import { cmdReset } from "./commands/reset.js";
-import { cmdAnalyze } from "./commands/analyze.js";
-import { cmdValidate } from "./commands/validate.js";
-import { cmdExportPdf } from "./commands/export-pdf.js";
-import { cmdGitCredentialHelper } from "./commands/git-credential-helper.js";
-import { cmdPrMarkdown } from "./commands/pr-markdown.js";
-import { cmdWorkspace } from "./commands/workspace.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
 import { setQuiet } from "./output.js";
 import { CLI_ERROR_CODES, formatTypoSuggestion } from "@n-dx/llm-client";
@@ -89,33 +81,49 @@ try {
   }
 
   switch (command) {
-    case "init":
+    case "init": {
+      const { cmdInit } = await import("./commands/init.js");
       cmdInit(targetArg || ".");
       break;
-    case "analyze":
+    }
+    case "analyze": {
+      const { cmdAnalyze } = await import("./commands/analyze.js");
       await cmdAnalyze(targetArg || ".", passthrough);
       break;
+    }
     case "serve":
       await cmdServe(targetArg || ".", port);
       break;
-    case "validate":
+    case "validate": {
+      const { cmdValidate } = await import("./commands/validate.js");
       cmdValidate(targetArg || ".");
       break;
-    case "reset":
+    }
+    case "reset": {
+      const { cmdReset } = await import("./commands/reset.js");
       cmdReset(targetArg || ".");
       break;
-    case "export-pdf":
+    }
+    case "export-pdf": {
+      const { cmdExportPdf } = await import("./commands/export-pdf.js");
       await cmdExportPdf(targetArg || ".", { output: outputPath });
       break;
-    case "pr-markdown":
+    }
+    case "pr-markdown": {
+      const { cmdPrMarkdown } = await import("./commands/pr-markdown.js");
       await cmdPrMarkdown(targetArg || ".");
       break;
-    case "git-credential-helper":
+    }
+    case "git-credential-helper": {
+      const { cmdGitCredentialHelper } = await import("./commands/git-credential-helper.js");
       cmdGitCredentialHelper();
       break;
-    case "workspace":
+    }
+    case "workspace": {
+      const { cmdWorkspace } = await import("./commands/workspace.js");
       cmdWorkspace(targetArg || ".", args.slice(1));
       break;
+    }
     case "mcp":
       await cmdMcp(targetArg || ".");
       break;

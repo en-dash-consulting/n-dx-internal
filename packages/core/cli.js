@@ -42,22 +42,6 @@ import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { runConfig, loadProjectConfig } from "./config.js";
 import { resolveCommandTimeout, withCommandTimeout } from "./cli-timeout.js";
-import { runCI } from "./ci.js";
-import {
-  runWeb,
-  isProcessRunning,
-  readPidFile,
-  removePidFile,
-  removePortFile,
-  waitForProcessExit,
-} from "./web.js";
-import { buildRefreshPlan, RefreshPlanError } from "./refresh-plan.js";
-import { refreshSourcevisionDashboardArtifacts } from "./refresh-artifacts.js";
-import {
-  snapshotRefreshState,
-  validateRefreshCompletion,
-  rollbackRefreshState,
-} from "./refresh-validate.js";
 
 const CLI_ERROR_CODES = Object.freeze({
   NOT_INITIALIZED: "NDX_CLI_NOT_INITIALIZED",
@@ -72,14 +56,6 @@ import {
   formatMainHelp,
   formatOrchestratorCommandHelp,
 } from "./help.js";
-import { setupClaudeIntegration, printClaudeSetupSummary } from "./claude-integration.js";
-import {
-  formatInitBanner,
-  formatRecap,
-  createSpinner,
-  INIT_PHASES,
-} from "./cli-brand.js";
-import { runExport } from "./export.js";
 import {
   createChildProcessTracker,
   installTrackedChildProcessHandlers,
@@ -369,6 +345,7 @@ function showCommandHelp(command) {
  * @returns {Promise<{status:"none"|"stale"|"stopped"|"stop-failed", pid?: number, port?: number}>}
  */
 async function detectAndCleanConflictingDashboard(absDir) {
+  const { isProcessRunning, readPidFile, removePidFile, removePortFile, waitForProcessExit } = await import("./web.js");
   const info = await readPidFile(absDir);
   if (!info) {
     return { status: "none" };
@@ -568,6 +545,12 @@ function runInitCapture(toolPath, args) {
 }
 
 async function handleInit(rest) {
+  // Lazy-load init-only modules — these are not needed for status, help, or any other command.
+  const [{ setupClaudeIntegration }, { formatInitBanner, formatRecap, createSpinner, INIT_PHASES }] = await Promise.all([
+    import("./claude-integration.js"),
+    import("./cli-brand.js"),
+  ]);
+
   const providerFromFlag = extractInitProvider(rest);
   if (providerFromFlag !== undefined && !SUPPORTED_PROVIDERS.includes(providerFromFlag)) {
     console.error(`Error: Invalid provider "${providerFromFlag}". Expected one of: codex, claude.`);
@@ -769,6 +752,7 @@ async function runRefreshStep(step, plan, dir, stepStatuses) {
     return true;
   }
   if (step.kind === "sourcevision-dashboard-artifacts") {
+    const { refreshSourcevisionDashboardArtifacts } = await import("./refresh-artifacts.js");
     refreshSourcevisionDashboardArtifacts(dir);
     printRefreshStepTransition(step.kind, "succeeded");
     stepStatuses.push({ kind: step.kind, status: "succeeded" });
@@ -793,6 +777,8 @@ async function handleRefresh(rest) {
   const dir = resolveDir(rest);
   const absDir = resolve(dir);
   const flags = extractFlags(rest);
+  const { buildRefreshPlan, RefreshPlanError } = await import("./refresh-plan.js");
+  const { snapshotRefreshState, validateRefreshCompletion, rollbackRefreshState } = await import("./refresh-validate.js");
 
   // Pre-refresh: detect and stop any conflicting dashboard process so the
   // refresh does not race against a running server rebuilding its own assets.
@@ -953,6 +939,7 @@ async function handleSync(rest) {
 }
 
 async function handleCI(rest) {
+  const { runCI } = await import("./ci.js");
   const dir = resolveDir(rest);
   const flags = extractFlags(rest);
   const isJSON = flags.some((f) => f === "--format=json");
@@ -982,6 +969,7 @@ async function handleDev(rest) {
 }
 
 async function handleStart(rest, commandName = "start") {
+  const { runWeb } = await import("./web.js");
   const dir = resolveDir(rest);
   try {
     const code = await runWeb(dir, rest, {
@@ -1187,6 +1175,7 @@ async function handleSelfHeal(rest) {
 }
 
 async function handleExport(rest) {
+  const { runExport } = await import("./export.js");
   try {
     const code = await runExport(rest);
     exitWithCleanup(code);
