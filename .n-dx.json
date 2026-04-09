@@ -98,7 +98,9 @@
         "packages/rex/tests/e2e/fixtures/sample-prd/.rex/execution-log.jsonl": "rex-cli-e2e"
       },
       "types": {
+        "e2e": "test",
         "repo-ops-shell": "infrastructure",
+        "root": "infrastructure",
         "server-route-guardrails-tests": "test",
         "web-build-tooling": "infrastructure"
       }

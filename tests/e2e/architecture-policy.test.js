@@ -50,6 +50,11 @@ const ALLOWED = new Set([
   // Development scripts
   "packages/web/dev.js",
   "scripts/cli-smoke-parity.mjs",
+  "scripts/codex-config-smoke.mjs",
+  // Local CI preflight — mirrors full CI pipeline via execSync
+  "scripts/preflight.mjs",
+  // Codex preflight — validates codex CLI availability before init
+  "packages/core/codex-preflight.js",
   // Process monitoring — needs raw execFile for system commands (vm_stat, sysctl)
   "packages/hench/src/process/memory-monitor.ts",
   // Git operations — need execFileSync for git CLI calls
@@ -420,18 +425,15 @@ describe("architecture policy: zone import cycle detection", () => {
       }
     }
 
-    // Derive package family from zone file paths (e.g. "packages/web/..." → "web")
-    // Zone IDs are plain kebab-case names — the package must be inferred from
-    // the files that belong to each zone, not from the zone ID itself.
-    const zoneToPackage = new Map();
-    for (const zone of data.zones || []) {
-      const firstFile = (zone.files || [])[0];
-      if (firstFile && firstFile.startsWith("packages/")) {
-        zoneToPackage.set(zone.id, firstFile.split("/")[1]);
+    // Derive package family from a file path (e.g. "packages/web/..." → "web").
+    // Using the crossing's actual file paths is more accurate than inferring
+    // from a zone's first file, which breaks when a zone spans multiple packages
+    // (e.g. a large Louvain zone that absorbed files from several packages).
+    function filePackageFamily(filePath) {
+      if (filePath && filePath.startsWith("packages/")) {
+        return filePath.split("/")[1];
       }
-    }
-    function packageFamily(zoneId) {
-      return zoneToPackage.get(zoneId) ?? zoneId;
+      return null;
     }
 
     // Load zone pins from .n-dx.json to remap file→zone assignments
@@ -476,7 +478,9 @@ describe("architecture policy: zone import cycle detection", () => {
     for (const c of correctedCrossings) {
       if (c.fromZone === c.toZone) continue; // skip self-edges
       if (!productionZones.has(c.fromZone) || !productionZones.has(c.toZone)) continue;
-      if (packageFamily(c.fromZone) === packageFamily(c.toZone)) continue; // skip intra-package
+      const fromPkg = filePackageFamily(c.from);
+      const toPkg = filePackageFamily(c.to);
+      if (fromPkg && toPkg && fromPkg === toPkg) continue; // skip intra-package crossings
       if (!graph.has(c.fromZone)) graph.set(c.fromZone, new Set());
       graph.get(c.fromZone).add(c.toZone);
     }
@@ -799,14 +803,16 @@ const COHESION_THRESHOLD = 0.5;
  * what structural condition would allow removing the exemption.
  */
 const COHESION_EXCEPTIONS = new Map([
-  ["health", "Small zone; health-check utilities grouped by Louvain; metrics unreliable at this scale"],
-  ["polling", "Small zone; polling hooks grouped by Louvain; metrics unreliable at this scale"],
-  ["project-status-hooks", "Small hooks zone; polling and project-status hooks grouped by Louvain; metrics unreliable at this scale"],
   ["refresh", "Small zone; refresh utilities grouped by Louvain; metrics unreliable at this scale"],
-  ["rex-chunked-review", "CLI satellite zone; documented dual-fragility zone in CLAUDE.md; cohesion approaching threshold"],
-  ["rex-recommend", "CLI command zone; heterogeneous recommendation concerns grouped by Louvain"],
   ["web-2", "Small zone; Louvain-detected web utility cluster; metrics unreliable at this scale"],
-  ["web-unit", "Small performance zone; dom-update-gate, update-batcher, test helpers; metrics unreliable at this scale"],
+  // New zones from re-analysis
+  ["polling-state-management", "Small zone (5 files); polling state/restart + test files grouped together; metrics unreliable at this scale"],
+  ["polling-tick-dispatcher", "Small zone (7 files); tick timer/visibility gate/batcher approaching threshold; includes test files"],
+  ["prd-status-reset", "Small zone (3 files); cascade-reset and parent-reset utilities + test; metrics unreliable at this scale"],
+  ["rex", "Small residual zone; fix/verify/keywords files not yet pinned to rex-prd-engine"],
+  ["rex-cli", "CLI satellite zone; documented dual-fragility zone in CLAUDE.md (27+ command files in flat directory)"],
+  ["use", "Small hooks zone (3 files); use-polling and use-project-status + test; metrics unreliable at this scale"],
+  ["web-viewer", "Hub zone documented in CLAUDE.md; 11+ cross-zone import edges by design; high coupling is expected"],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {

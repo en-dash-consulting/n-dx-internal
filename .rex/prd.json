@@ -24106,6 +24106,123 @@
           ]
         }
       ]
+    },
+    {
+      "id": "8b5d866d-ef7c-415b-9703-c913026a3427",
+      "title": "CLI & Developer Tools",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "a5846ad8-5f88-43bd-9aaa-7b1babdf1193",
+          "title": "Codex Vendor Cross-OS Config & Preflight",
+          "status": "pending",
+          "level": "feature",
+          "description": "Harden `ndx config llm.vendor codex` with Windows-specific preflight that does not regress macOS behavior, and vice versa; ensure consistent UX, validation, and CI coverage across platforms.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "27fbfd08-df5c-4de0-a591-944b65fb8a21",
+              "title": "Implement OS-gated Codex preflight and wire into `ndx config` and init",
+              "status": "completed",
+              "level": "task",
+              "description": "Create a dedicated preflight module for the Codex vendor that branches by OS (Windows vs macOS), validates required local prerequisites/credentials non-destructively, and integrates into both `ndx config llm.vendor` and init flows without impacting other vendors.",
+              "acceptanceCriteria": [
+                "`ndx config llm.vendor codex` triggers preflight before persisting and exits 0 on both Windows and macOS when prerequisites are met.",
+                "On failure, command exits non-zero and prints actionable remediation steps specific to the detected OS.",
+                "Preflight runs for vendor change and during init; non-Codex vendors are unaffected.",
+                "Setting vendor back to a previous value (e.g., `claude`) works without residual Codex checks.",
+                "Preflight is idempotent: re-running with unchanged state makes no changes and exits 0.",
+                "`.n-dx.json` reflects the selected vendor after a successful run."
+              ],
+              "priority": "critical",
+              "tags": [
+                "cli",
+                "config",
+                "llm",
+                "codex",
+                "preflight",
+                "windows",
+                "macos"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T19:09:01.549Z",
+              "completedAt": "2026-04-09T19:15:08.281Z"
+            },
+            {
+              "id": "ee34e62c-7cbf-4198-b147-89ba5c8b147b",
+              "title": "Fix Windows shell/quoting and spawn behavior for Codex operations",
+              "status": "pending",
+              "level": "task",
+              "description": "Harden Windows path quoting, environment propagation, and shell selection (PowerShell and cmd.exe) for all Codex-related checks and commands invoked by preflight and config logic.",
+              "acceptanceCriteria": [
+                "`ndx config llm.vendor codex` succeeds under both PowerShell and cmd.exe on Windows with paths containing spaces.",
+                "No reliance on POSIX-only flags or path assumptions in Windows code paths.",
+                "Environment variables required for Codex checks are visible to spawned child processes.",
+                "End-to-end smoke test proves switching vendor to Codex and back to another vendor succeeds on Windows."
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "windows",
+                "spawn",
+                "quoting",
+                "shell",
+                "llm"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "f26ff27b-d9d9-43f4-99ae-6aa7cfdadcdf",
+              "title": "Add cross-OS CI matrix with Codex vendor config smoke tests",
+              "status": "completed",
+              "level": "task",
+              "description": "Introduce CI jobs for Windows and macOS that run minimal smoke tests for `ndx config llm.vendor codex`, ensuring preflight gates, success paths, and rollback to a different vendor remain stable.",
+              "acceptanceCriteria": [
+                "CI workflow includes `windows-latest` and `macos-latest` jobs executing Codex vendor set and revert smoke tests.",
+                "Failures in either OS job block merge and surface logs with preflight diagnostics.",
+                "CI artifacts include concise preflight logs for debugging.",
+                "Matrix jobs complete within acceptable time budget (<5 minutes per OS)."
+              ],
+              "priority": "high",
+              "tags": [
+                "ci",
+                "windows",
+                "macos",
+                "cli",
+                "llm",
+                "codex"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T19:15:08.830Z",
+              "completedAt": "2026-04-09T19:19:08.722Z"
+            },
+            {
+              "id": "6470ac0a-587a-4f58-bf01-45e2a2ec42ec",
+              "title": "Update `ndx config` help, errors, and docs for Codex preflight",
+              "status": "pending",
+              "level": "task",
+              "description": "Revise CLI help and error messages to document Codex vendor preflight behavior, OS-specific prerequisites, and remediation steps; ensure messages are consistent and non-ambiguous across platforms.",
+              "acceptanceCriteria": [
+                "`ndx config --help` lists `llm.vendor` options including Codex with a note about OS-specific preflight.",
+                "Preflight failure messages name the exact missing prerequisite(s) and provide concrete remediation steps.",
+                "Documentation references `.n-dx.json` update semantics and idempotent behavior.",
+                "Terminology and option names match existing CLI conventions; lint/help tests pass."
+              ],
+              "priority": "medium",
+              "tags": [
+                "docs",
+                "ux",
+                "cli",
+                "llm",
+                "codex"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

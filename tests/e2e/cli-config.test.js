@@ -12,14 +12,17 @@ const isWin = process.platform === "win32";
  * On Windows: .cmd batch file (the path returned includes .cmd).
  *
  * @param {string} filePath - Base path (without .cmd extension)
- * @param {{ stdout?: string, stderrLine?: string, exitCode?: number, captureArgs?: boolean }} opts
+ * @param {{ stdout?: string, stderrLine?: string, exitCode?: number, captureArgs?: boolean, captureEnv?: string[] }} opts
  * @returns {Promise<string>} The actual file path created (may have .cmd appended on Windows)
  */
-async function writeFakeBinary(filePath, { stdout = "", stderrLine = "", exitCode = 0, captureArgs = false } = {}) {
+async function writeFakeBinary(filePath, { stdout = "", stderrLine = "", exitCode = 0, captureArgs = false, captureEnv = [] } = {}) {
   if (isWin) {
     const cmdPath = filePath + ".cmd";
     const lines = ["@echo off"];
     if (captureArgs) lines.push("echo %* > \"%~f0.args\"");
+    for (const envName of captureEnv) {
+      lines.push(`echo %${envName}% > \"%~f0.${envName}\"`);
+    }
     if (stderrLine) lines.push(`echo ${stderrLine} 1>&2`);
     if (stdout) lines.push(`echo ${stdout}`);
     if (exitCode !== 0) lines.push(`exit /b ${exitCode}`);
@@ -28,6 +31,9 @@ async function writeFakeBinary(filePath, { stdout = "", stderrLine = "", exitCod
   }
   const lines = ["#!/bin/sh"];
   if (captureArgs) lines.push('echo "$@" > "$0.args"');
+  for (const envName of captureEnv) {
+    lines.push(`printf '%s' "$${envName}" > "$0.${envName}"`);
+  }
   if (stderrLine) lines.push(`echo '${stderrLine}' 1>&2`);
   if (stdout) lines.push(`echo '${stdout}'`);
   if (exitCode !== 0) lines.push(`exit ${exitCode}`);
@@ -1009,6 +1015,22 @@ describe("n-dx config", () => {
       expect(args).toContain("--skip-git-repo-check");
     });
 
+    it("passes llm.codex.api_key to codex preflight as OPENAI_API_KEY", async () => {
+      const basePath = join(tmpDir, "fake-codex-preflight-env");
+      const fakeCodex = await writeFakeBinary(basePath, {
+        stdout: "ok",
+        captureEnv: ["OPENAI_API_KEY"],
+      });
+
+      run(["llm.codex.cli_path", fakeCodex, tmpDir]);
+      run(["llm.codex.api_key", "sk-test-codex-key", tmpDir]);
+      run(["llm.vendor", "codex", tmpDir]);
+
+      const envFile = isWin ? `${fakeCodex}.OPENAI_API_KEY` : `${basePath}.OPENAI_API_KEY`;
+      const openAiApiKey = await readFile(envFile, "utf-8");
+      expect(openAiApiKey.trim()).toBe("sk-test-codex-key");
+    });
+
     it("handles auth preflight failure with deterministic error path", async () => {
       const basePath = join(tmpDir, "fake-codex-preflight-fail");
       const fakeCodex = await writeFakeBinary(basePath, {
@@ -1021,9 +1043,59 @@ describe("n-dx config", () => {
       const stderr = runFail(["llm.vendor", "codex", tmpDir]);
       expect(stderr).toContain("Provider auth preflight failed for \"codex\"");
       expect(stderr).toContain("Details:");
-      expect(stderr).toContain(`Next step: run '${fakeCodex} login'`);
+      expect(stderr).toContain(`Authenticate Codex`);
+      expect(stderr).toContain(`${fakeCodex} login`);
+      expect(stderr).toContain("llm.codex.api_key");
 
       await expect(readFile(SHARED_CONFIG_PATH(tmpDir), "utf-8")).rejects.toThrow(/ENOENT/);
+    });
+
+    it("switches back to claude without re-running codex checks", async () => {
+      const codexBasePath = join(tmpDir, "fake-codex-switch");
+      const fakeCodex = await writeFakeBinary(codexBasePath, {
+        stdout: "ok",
+        captureArgs: true,
+      });
+      const claudeBasePath = join(tmpDir, "fake-claude-switch");
+      const fakeClaude = await writeFakeBinary(claudeBasePath, {
+        stdout: '{"result":"ok"}',
+        captureArgs: true,
+      });
+
+      run(["llm.codex.cli_path", fakeCodex, tmpDir]);
+      run(["llm.vendor", "codex", tmpDir]);
+      run(["llm.claude.cli_path", fakeClaude, tmpDir]);
+      const output = run(["llm.vendor", "claude", tmpDir]);
+
+      expect(output).toContain("llm.vendor = claude");
+
+      const codexArgsFile = isWin ? `${fakeCodex}.args` : `${codexBasePath}.args`;
+      const claudeArgsFile = isWin ? `${fakeClaude}.args` : `${claudeBasePath}.args`;
+      const codexArgs = await readFile(codexArgsFile, "utf-8");
+      const claudeArgs = await readFile(claudeArgsFile, "utf-8");
+
+      expect(codexArgs).toContain("exec");
+      expect(claudeArgs).toContain("--output-format");
+
+      const ndxConfig = JSON.parse(await readFile(SHARED_CONFIG_PATH(tmpDir), "utf-8"));
+      expect(ndxConfig.llm.vendor).toBe("claude");
+    });
+
+    it("exits 0 without rewriting when llm.vendor is unchanged", async () => {
+      const basePath = join(tmpDir, "fake-codex-preflight-unchanged");
+      const fakeCodex = await writeFakeBinary(basePath, {
+        stdout: "ok",
+      });
+
+      run(["llm.codex.cli_path", fakeCodex, tmpDir]);
+      run(["llm.vendor", "codex", tmpDir]);
+
+      const firstRaw = await readFile(SHARED_CONFIG_PATH(tmpDir), "utf-8");
+      const output = run(["llm.vendor", "codex", tmpDir]);
+      const secondRaw = await readFile(SHARED_CONFIG_PATH(tmpDir), "utf-8");
+
+      expect(output).toContain("llm.vendor = codex (unchanged)");
+      expect(secondRaw).toBe(firstRaw);
     });
 
     it("prints claude login guidance on claude auth preflight failure", async () => {

@@ -203,7 +203,9 @@ describe("n-dx init provider selection", () => {
 
         expect(result.status).not.toBe(0);
         expect(result.stderr).toContain("Provider auth preflight failed for \"codex\"");
-        expect(result.stderr).toContain("Next step: run 'codex login'");
+        expect(result.stderr).toContain("Authenticate Codex");
+        expect(result.stderr).toContain("codex login");
+        expect(result.stderr).toContain("llm.codex.api_key");
       } finally {
         await rm(binDir, { recursive: true, force: true });
       }

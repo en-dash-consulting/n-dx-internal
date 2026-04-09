@@ -18,6 +18,10 @@ import {
 } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import {
+  formatCodexPreflightFailure,
+  runCodexPreflight,
+} from "./codex-preflight.js";
 
 const PROJECT_CONFIG_FILE = ".n-dx.json";
 const LOCAL_PROJECT_CONFIG_FILE = ".n-dx.local.json";
@@ -436,14 +440,6 @@ const LLM_VALIDATORS = {
  * Returns binary + args for the selected vendor.
  */
 function getVendorAuthPreflightCommand(vendor, llmConfig, legacyClaudeConfig) {
-  if (vendor === "codex") {
-    const binary = llmConfig?.codex?.cli_path || "codex";
-    return {
-      binary,
-      args: ["exec", "--skip-git-repo-check", "Reply with exactly: ok"],
-    };
-  }
-
   const binary =
     llmConfig?.claude?.cli_path || legacyClaudeConfig?.cli_path || "claude";
   return {
@@ -457,6 +453,10 @@ function getVendorAuthPreflightCommand(vendor, llmConfig, legacyClaudeConfig) {
  * Returns an object instead of throwing so callers can branch deterministically.
  */
 function runVendorAuthPreflight(vendor, llmConfig, legacyClaudeConfig) {
+  if (vendor === "codex") {
+    return runCodexPreflight(llmConfig);
+  }
+
   const { binary, args } = getVendorAuthPreflightCommand(
     vendor,
     llmConfig,
@@ -506,6 +506,11 @@ function runVendorAuthPreflight(vendor, llmConfig, legacyClaudeConfig) {
  * Return the exact login command for the selected provider.
  */
 function getVendorLoginCommand(vendor, llmConfig, legacyClaudeConfig) {
+  if (vendor === "codex") {
+    const binary = llmConfig?.codex?.cli_path || "codex";
+    return `${binary} login`;
+  }
+
   const { binary } = getVendorAuthPreflightCommand(
     vendor,
     llmConfig,
@@ -619,15 +624,12 @@ function printVendorPreflightFailure(
     console.error(`Details: ${preflight.detail}`);
   }
 
-  if (vendor !== "claude") {
-    const loginCommand = getVendorLoginCommand(
-      vendor,
-      llmConfig,
-      legacyClaudeConfig,
-    );
-    console.error(
-      `Next step: run '${loginCommand}', then retry 'ndx config llm.vendor ${vendor}'.`,
-    );
+  if (vendor === "codex") {
+    const classified = formatCodexPreflightFailure(preflight, llmConfig);
+    console.error(`[${classified.code}]`);
+    for (const line of classified.lines) {
+      console.error(line);
+    }
     return;
   }
 
@@ -1107,8 +1109,6 @@ async function handleSetProjectSection(
     runLLMVendorPreflight(coerced, configs);
   }
 
-  setByPath(configs[pkg], settingPath, coerced);
-
   const targetFile = isLocalProjectSetting(pkg, settingPath)
     ? LOCAL_PROJECT_CONFIG_FILE
     : PROJECT_CONFIG_FILE;
@@ -1117,6 +1117,15 @@ async function handleSetProjectSection(
   if (!current[pkg] || typeof current[pkg] !== "object") {
     current[pkg] = {};
   }
+
+  const existingPersistedValue = getByPath(current[pkg], settingPath);
+  if (existingPersistedValue === coerced) {
+    setByPath(configs[pkg], settingPath, coerced);
+    console.log(`${keyArg} = ${formatValue(coerced)} (unchanged)`);
+    return;
+  }
+
+  setByPath(configs[pkg], settingPath, coerced);
   setByPath(current[pkg], settingPath, coerced);
 
   // Compatibility: keep legacy claude.* in sync when setting llm.claude.*
