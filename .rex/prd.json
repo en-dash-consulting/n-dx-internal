@@ -24153,7 +24153,7 @@
             {
               "id": "ee34e62c-7cbf-4198-b147-89ba5c8b147b",
               "title": "Fix Windows shell/quoting and spawn behavior for Codex operations",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Harden Windows path quoting, environment propagation, and shell selection (PowerShell and cmd.exe) for all Codex-related checks and commands invoked by preflight and config logic.",
               "acceptanceCriteria": [
@@ -24171,7 +24171,9 @@
                 "shell",
                 "llm"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T20:55:11.023Z",
+              "completedAt": "2026-04-09T21:04:26.294Z"
             },
             {
               "id": "f26ff27b-d9d9-43f4-99ae-6aa7cfdadcdf",
@@ -24217,6 +24219,252 @@
                 "cli",
                 "llm",
                 "codex"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "75158c41-a967-4a28-a547-7f3abdba20b2",
+      "title": "ndx Performance Optimization",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "a79260fa-b393-4d3d-8364-0e6d519c0331",
+          "title": "CLI Cold-Start Latency Reduction",
+          "status": "pending",
+          "level": "feature",
+          "description": "Reduce the time from running any ndx command to first meaningful output by deferring expensive module loads and optimizing the entry-point module graph. No logic changes — only import timing and module resolution.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "8f910767-6a30-443d-93f4-1a61187d967f",
+              "title": "Profile and establish CLI startup baselines across all entry points",
+              "status": "pending",
+              "level": "task",
+              "description": "Measure cold-start time for each ndx command (init, analyze, status, work, start, plan, etc.) using Node.js --prof and clinic.js. Record baseline p50/p95 timings per command and identify the top import-cost contributors in the module graph. This benchmark suite will gate all subsequent optimization work.",
+              "acceptanceCriteria": [
+                "Baseline timings captured for at least 10 distinct ndx commands",
+                "Top 5 import-cost contributors identified via module load profiling",
+                "Results stored as a reproducible benchmark script in the repo",
+                "Benchmark script exits non-zero if cold-start exceeds recorded baseline by more than 20%"
+              ],
+              "priority": "high",
+              "tags": [
+                "performance",
+                "cli",
+                "profiling"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "2b682c87-30cd-485d-bc06-57181c22adf3",
+              "title": "Implement lazy module loading for heavy infrequently-used CLI commands",
+              "status": "pending",
+              "level": "task",
+              "description": "Audit the ndx CLI entry point (cli.js and per-package CLI index files) for top-level requires/imports that are only needed for specific sub-commands. Convert these to dynamic imports so they are only loaded when the relevant command is actually invoked. No behavioral changes — only import timing shifts.",
+              "acceptanceCriteria": [
+                "At least 3 heavy import chains converted to dynamic imports with verified no-regression",
+                "ndx status cold-start improves by ≥ 15% versus baseline",
+                "ndx --help cold-start improves by ≥ 20% versus baseline",
+                "All existing CLI tests pass without modification",
+                "No change in command output or behavior for any affected command"
+              ],
+              "priority": "high",
+              "tags": [
+                "performance",
+                "cli",
+                "lazy-loading"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "31694fc1-5cdd-46ad-9078-14586649b880",
+              "title": "Enable Node.js module caching and reduce redundant resolution in orchestration scripts",
+              "status": "pending",
+              "level": "task",
+              "description": "Audit core orchestration scripts (cli.js, web.js, ci.js, config.js) for repeated fs.existsSync, path.resolve, and require calls that re-run on every invocation. Hoist these to module scope or cache results in a module-level variable so they pay cost once per process. No logic changes.",
+              "acceptanceCriteria": [
+                "All redundant path resolution calls consolidated to module-scope constants",
+                "No repeated fs.existsSync calls for the same path within a single command invocation",
+                "ndx ci cold-start improves by ≥ 10% versus baseline",
+                "All orchestration e2e tests pass without modification"
+              ],
+              "priority": "medium",
+              "tags": [
+                "performance",
+                "cli",
+                "orchestration"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "c5f1b004-10c0-4cfa-bd0e-9d3f367679d1",
+          "title": "Analysis Pipeline I/O Throughput",
+          "status": "pending",
+          "level": "feature",
+          "description": "Increase throughput of the sourcevision and rex analysis pipelines by parallelizing file-system reads and introducing result memoization where the same data is read multiple times per run. No algorithmic changes.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "dabe2bf9-d563-4265-820a-81be690293a6",
+              "title": "Parallelize file read operations in sourcevision inventory scanner",
+              "status": "pending",
+              "level": "task",
+              "description": "Replace sequential file-stat and file-read loops in sourcevision's inventory pipeline (file discovery, format detection, content reads) with Promise.all / p-limit-bounded concurrent reads. The analysis logic remains identical — only the I/O scheduling changes. Use a concurrency limit of 32 to avoid hitting OS file descriptor limits.",
+              "acceptanceCriteria": [
+                "File discovery phase completes at least 40% faster on a 500-file project compared to baseline",
+                "Concurrency is bounded by a configurable limit (default 32) using p-limit or equivalent",
+                "Analysis output (zones, imports, components) is byte-identical to sequential baseline output",
+                "No additional memory overhead exceeding 20% versus sequential baseline",
+                "Existing sourcevision unit and integration tests pass"
+              ],
+              "priority": "high",
+              "tags": [
+                "performance",
+                "sourcevision",
+                "io",
+                "parallelism"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "5f5ab5c9-ac0b-4bf6-904a-db5d20dcfea4",
+              "title": "Add memoization for repeated PRD store reads within a single command invocation",
+              "status": "pending",
+              "level": "task",
+              "description": "The PRD store (prd.json) is read from disk multiple times within some rex command flows (validate, status, next, recommend). Add a module-level in-process cache keyed by file mtime so the JSON parse happens at most once per invocation. Cache is invalidated on each new process start. No logic changes to store operations.",
+              "acceptanceCriteria": [
+                "prd.json is parsed at most once per process invocation for read-only commands",
+                "Cache invalidation triggers correctly when mtime changes between reads within a single run",
+                "ndx status execution time decreases by ≥ 10% on a PRD with 200+ items",
+                "All rex unit tests pass without modification",
+                "Cache is not shared across process boundaries (no file-level caching)"
+              ],
+              "priority": "medium",
+              "tags": [
+                "performance",
+                "rex",
+                "caching",
+                "prd"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "9784ab58-f39f-4242-a68c-c41faa4f8e38",
+          "title": "Web Server HTTP Response Optimization",
+          "status": "pending",
+          "level": "feature",
+          "description": "Reduce response latency and payload size for the ndx web server (Express) through HTTP-level optimizations: compression, cache-control headers, and JSON serialization tuning. No changes to API contract, route logic, or data model.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "45408de5-a3f1-4e28-be0e-85c22e7bec58",
+              "title": "Add gzip/brotli response compression to Express server",
+              "status": "completed",
+              "level": "task",
+              "description": "Install the compression middleware and mount it as the first middleware in the Express app in packages/web/src/server/. Configure it to compress all JSON API responses and static assets above 1KB. No changes to route handlers or response data.",
+              "acceptanceCriteria": [
+                "All JSON API responses larger than 1KB are gzip-compressed when the client sends Accept-Encoding: gzip",
+                "Static asset serving includes brotli when available, falls back to gzip",
+                "Compressed response size is ≤ 40% of uncompressed size for typical PRD payloads",
+                "All existing MCP transport e2e tests pass",
+                "No regression in any API response contract or content"
+              ],
+              "priority": "high",
+              "tags": [
+                "performance",
+                "web",
+                "http",
+                "compression"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T21:04:55.631Z",
+              "completedAt": "2026-04-09T21:16:42.705Z"
+            },
+            {
+              "id": "21b97649-a7fc-46c9-8972-5d41e35b4fc5",
+              "title": "Set appropriate cache-control headers for static assets and stable API endpoints",
+              "status": "pending",
+              "level": "task",
+              "description": "Add Cache-Control headers to the Express static asset serving (viewer bundle, fonts, icons) with long max-age values (1 year for content-hashed assets). Add short max-age (5s) for polling endpoints that return live data (status, task-usage) to allow browser caching between rapid sequential polls. No logic changes to response generation.",
+              "acceptanceCriteria": [
+                "Static assets with content-hash filenames receive Cache-Control: max-age=31536000, immutable",
+                "Assets without content-hash receive Cache-Control: no-cache to force revalidation",
+                "GET /api/status returns Cache-Control: max-age=5",
+                "POST and MCP endpoints receive Cache-Control: no-store",
+                "All existing web server tests pass",
+                "Browser DevTools confirms cache headers on a manual spot-check of 5 asset types"
+              ],
+              "priority": "medium",
+              "tags": [
+                "performance",
+                "web",
+                "http",
+                "caching"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        },
+        {
+          "id": "e2ec0ac6-bcae-49f9-a34b-c29c9e54bc38",
+          "title": "Build Pipeline Speed",
+          "status": "pending",
+          "level": "feature",
+          "description": "Reduce the time for pnpm build, pnpm typecheck, and pnpm test by enabling parallelism and incremental compilation where not already configured. No changes to source code or build output.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "6d82f39a-d114-4ef5-81a6-080607f5f4e6",
+              "title": "Enable TypeScript incremental compilation across all packages",
+              "status": "pending",
+              "level": "task",
+              "description": "Add \"incremental\": true and a tsBuildInfoFile path to each package's tsconfig.json (sourcevision, rex, hench, llm-client, web, core). This allows tsc to skip re-checking unchanged files on subsequent builds. The compiled output is byte-identical; only the build process changes.",
+              "acceptanceCriteria": [
+                "All 6 packages have incremental: true in their tsconfig.json",
+                ".tsbuildinfo files are written to each package's dist/ or build/ directory",
+                ".tsbuildinfo files are listed in each package's .gitignore",
+                "Second build after no source changes completes at least 50% faster than first build",
+                "pnpm typecheck output is identical to non-incremental run",
+                "CI continues to produce correct type errors on changed files"
+              ],
+              "priority": "high",
+              "tags": [
+                "performance",
+                "build",
+                "typescript"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "152da79d-794c-4eb2-8227-e74f4d4b224b",
+              "title": "Configure pnpm workspace parallel build order with explicit package topology",
+              "status": "pending",
+              "level": "task",
+              "description": "Add a pnpm build ordering configuration (via --filter topological sort or turbo/nx pipeline equivalent) so that foundation packages (llm-client) build first in parallel, followed by domain packages (rex, sourcevision) in parallel, then execution (hench), then orchestration (core, web). Currently builds may be serialized unnecessarily. No source changes.",
+              "acceptanceCriteria": [
+                "llm-client builds before rex, sourcevision, hench, and web",
+                "rex and sourcevision build in parallel after llm-client",
+                "hench builds after rex",
+                "web builds after rex and sourcevision",
+                "Total pnpm build wall-clock time decreases by ≥ 20% on a cold build versus sequential baseline",
+                "All package test suites continue to pass after the ordering change"
+              ],
+              "priority": "medium",
+              "tags": [
+                "performance",
+                "build",
+                "pnpm",
+                "parallelism"
               ],
               "source": "smart-add"
             }
