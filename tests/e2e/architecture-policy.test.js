@@ -53,6 +53,8 @@ const ALLOWED = new Set([
   "scripts/codex-config-smoke.mjs",
   // Local CI preflight — mirrors full CI pipeline via execSync
   "scripts/preflight.mjs",
+  // CLI cold-start benchmark — measures wall-clock startup time via spawnSync
+  "scripts/cli-startup-bench.mjs",
   // Codex preflight — validates codex CLI availability before init
   "packages/core/codex-preflight.js",
   // Process monitoring — needs raw execFile for system commands (vm_stat, sysctl)

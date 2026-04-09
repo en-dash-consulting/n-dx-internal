@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "ndx/cli-startup-bench/v1",
+  "recordedAt": "2026-04-09T23:07:08.392Z",
+  "nodeVersion": "v22.22.2",
+  "platform": "darwin",
+  "iterations": 7,
+  "regressionThreshold": 0.2,
+  "commands": {
+    "version": {
+      "label": "ndx version",
+      "p50": 30.5,
+      "p95": 35.5
+    },
+    "help": {
+      "label": "ndx help",
+      "p50": 30.5,
+      "p95": 31.8
+    },
+    "help-status": {
+      "label": "ndx help status",
+      "p50": 29.9,
+      "p95": 31.7
+    },
+    "help-plan": {
+      "label": "ndx help plan",
+      "p50": 30.1,
+      "p95": 31.2
+    },
+    "help-work": {
+      "label": "ndx help work",
+      "p50": 29.6,
+      "p95": 33.1
+    },
+    "help-analyze": {
+      "label": "ndx help analyze",
+      "p50": 29.4,
+      "p95": 34.2
+    },
+    "help-init": {
+      "label": "ndx help init",
+      "p50": 29.9,
+      "p95": 30.9
+    },
+    "help-flag": {
+      "label": "ndx --help",
+      "p50": 29.9,
+      "p95": 32.3
+    },
+    "status-json": {
+      "label": "ndx status --format=json",
+      "p50": 99.6,
+      "p95": 136.7
+    },
+    "status-text": {
+      "label": "ndx status",
+      "p50": 100.8,
+      "p95": 102.5
+    },
+    "next": {
+      "label": "ndx next",
+      "p50": 99.6,
+      "p95": 101.9
+    },
+    "validate": {
+      "label": "ndx validate",
+      "p50": 100.6,
+      "p95": 102.5
+    },
+    "usage": {
+      "label": "ndx usage",
+      "p50": 99,
+      "p95": 102.8
+    },
+    "health-json": {
+      "label": "ndx health --format=json",
+      "p50": 97.8,
+      "p95": 103.4
+    }
+  },
+  "moduleImportCosts": [
+    {
+      "module": "packages/rex/dist/public.js",
+      "ms": 124.7
+    },
+    {
+      "module": "packages/sourcevision/dist/public.js",
+      "ms": 88.3
+    },
+    {
+      "module": "node_modules/.pnpm/ajv@8.17.1/node_modules/ajv/dist/ajv.js",
+      "ms": 36.6
+    },
+    {
+      "module": "packages/hench/dist/public.js",
+      "ms": 24.6
+    },
+    {
+      "module": "./core",
+      "ms": 21.6
+    },
+    {
+      "module": "packages/llm-client/dist/public.js",
+      "ms": 16.8
+    },
+    {
+      "module": "./vocabularies/draft7",
+      "ms": 14.7
+    },
+    {
+      "module": "./compile/validate",
+      "ms": 14
+    },
+    {
+      "module": "./boolSchema",
+      "ms": 6.4
+    },
+    {
+      "module": "./applicator",
+      "ms": 6.2
+    }
+  ]
+}

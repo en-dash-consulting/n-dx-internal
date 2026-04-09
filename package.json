@@ -24,7 +24,9 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "preflight": "node scripts/preflight.mjs"
+    "preflight": "node scripts/preflight.mjs",
+    "bench": "node scripts/cli-startup-bench.mjs",
+    "bench:update": "node scripts/cli-startup-bench.mjs --update-baseline"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
