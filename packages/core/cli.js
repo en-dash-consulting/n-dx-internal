@@ -35,7 +35,7 @@
  */
 
 import { spawn } from "child_process";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { createRequire } from "module";
 import { dirname, isAbsolute, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -43,6 +43,7 @@ import { createInterface } from "readline/promises";
 import { runConfig, loadProjectConfig } from "./config.js";
 import { resolveCommandTimeout, withCommandTimeout } from "./cli-timeout.js";
 import { checkForUpdate, formatUpdateNotice } from "./update-check.js";
+import { checkProjectHealth, formatStaleSuggestion } from "./stale-check.js";
 
 const CLI_ERROR_CODES = Object.freeze({
   NOT_INITIALIZED: "NDX_CLI_NOT_INITIALIZED",
@@ -76,6 +77,14 @@ const CURRENT_VERSION = JSON.parse(
  * Null when quiet mode or piped output suppresses the check.
  */
 let updateCheckPromise = null;
+
+/**
+ * Stale project check result, populated early in main() for non-init commands.
+ * Used by requireInit() to surface version-aware error messages when required
+ * directories are missing.
+ * @type {{ issues: import('./stale-check.js').StaleIssue[]; initVersion: string | null } | null}
+ */
+let _staleResult = null;
 
 /** Map monorepo directory names to npm package names. */
 const PKG_NAMES = {
@@ -341,13 +350,53 @@ function readLLMVendor(dir) {
 /**
  * Check that required directories exist before running orchestration commands.
  * Provides a clear, actionable error message suggesting `ndx init`.
+ *
+ * When a stale check result is available with an initVersion, the error message
+ * includes the version that was used to initialize the project so users know
+ * why their setup is out of date.
  */
 function requireInit(dir, dirs) {
   const missing = dirs.filter((d) => !existsSync(join(dir, d)));
   if (missing.length > 0) {
-    console.error(`Error: [${CLI_ERROR_CODES.NOT_INITIALIZED}] Missing ${missing.join(", ")} in ${dir}`);
-    console.error(`Hint: Run 'ndx init ${dir === process.cwd() ? "" : dir}' to set up the project.`.trimEnd());
+    const initVersion = _staleResult?.initVersion ?? null;
+    if (initVersion) {
+      console.error(
+        `Error: [${CLI_ERROR_CODES.NOT_INITIALIZED}] ` +
+        `Project was initialized with n-dx ${initVersion} \u2014 run 'ndx init' to update`,
+      );
+      console.error(`  Missing: ${missing.join(", ")} in ${dir}`);
+    } else {
+      console.error(`Error: [${CLI_ERROR_CODES.NOT_INITIALIZED}] Missing ${missing.join(", ")} in ${dir}`);
+      console.error(`Hint: Run 'ndx init ${dir === process.cwd() ? "" : dir}' to set up the project.`.trimEnd());
+    }
     exitWithCleanup(1);
+  }
+}
+
+/**
+ * Record the n-dx version used to initialize the project in .n-dx.json.
+ * This allows future runs to show "Project was initialized with n-dx X.Y".
+ *
+ * Non-fatal: silently ignores all errors (missing file, permission denied, etc.).
+ *
+ * @param {string} dir - Project root directory
+ * @param {string} version - Current @n-dx/core version
+ */
+function stampInitVersion(dir, version) {
+  const configPath = join(dir, ".n-dx.json");
+  try {
+    let data = {};
+    if (existsSync(configPath)) {
+      try {
+        data = JSON.parse(readFileSync(configPath, "utf-8"));
+      } catch {
+        // Malformed JSON — start fresh (runConfig already wrote the valid config)
+      }
+    }
+    data.initVersion = version;
+    writeFileSync(configPath, JSON.stringify(data, null, 2) + "\n", "utf-8");
+  } catch {
+    // Version stamp is best-effort — never block init on a write failure
   }
 }
 
@@ -646,6 +695,7 @@ async function handleInit(rest) {
         if (inkResult.error) console.error(inkResult.error);
         exitWithCleanup(1);
       }
+      stampInitVersion(dir, CURRENT_VERSION);
       exitWithCleanup(0);
     }
   }
@@ -701,6 +751,8 @@ async function handleInit(rest) {
       claudeSummary = `${result.skills.written} skills, ${result.settings.total} permissions`;
     } catch { /* skip */ }
   }
+
+  stampInitVersion(dir, CURRENT_VERSION);
 
   if (quiet) {
     console.log("n-dx initialized");
@@ -1459,6 +1511,32 @@ async function main() {
   const isJson = rest.some((a) => a === "--json");
   if (!isQuiet && !isJson && process.stdout.isTTY) {
     updateCheckPromise = checkForUpdate(CURRENT_VERSION);
+  }
+
+  // ── Stale project check ─────────────────────────────────────────────────
+  // Run synchronous health checks against project config files to detect:
+  //   - Missing .sourcevision/, .rex/, .hench/ directories
+  //   - Schema version mismatches in manifest.json, prd.json, config.json
+  //   - Missing required config keys added in newer n-dx versions
+  //
+  // The result is stored in _staleResult for use by requireInit() (which adds
+  // version context to missing-directory errors) and printed here for soft
+  // issues (schema mismatches, missing config keys) that don't block the command.
+  //
+  // Skipped for: init (user is re-initializing), help/version (no project
+  // context needed), config (config management works before full init).
+  // Also skipped in quiet / JSON / non-TTY modes to avoid polluting scripts.
+  const STALE_CHECK_SKIP = new Set(["init", "help", "version", "config"]);
+  if (!isQuiet && !isJson && process.stdout.isTTY && command && !STALE_CHECK_SKIP.has(command)) {
+    _staleResult = checkProjectHealth(dir);
+    // Surface schema/config-key issues as early warnings. Missing directories
+    // are left to requireInit() which will use _staleResult.initVersion for
+    // a version-aware error message.
+    const softIssues = _staleResult.issues.filter((i) => i.type !== "missing_dirs");
+    if (softIssues.length > 0) {
+      const msg = formatStaleSuggestion(softIssues, _staleResult.initVersion);
+      if (msg) process.stderr.write(msg + "\n");
+    }
   }
 
   // ── Dispatch to command handler ─────────────────────────────────────────
