@@ -84,8 +84,21 @@ import {
   createChildProcessTracker,
   installTrackedChildProcessHandlers,
 } from "./child-lifecycle.js";
+import { getUpdateNotice } from "./update-check.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Current @n-dx/core version — read once at startup.
+ * Used by the update-notice feature in flushAndExit.
+ */
+const CORE_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(__dir, "package.json"), "utf-8")).version;
+  } catch {
+    return null;
+  }
+})();
 const MONOREPO_ROOT = resolve(__dir, "../..");
 
 /** Map monorepo directory names to npm package names. */
@@ -219,6 +232,16 @@ async function flushAndExit(code = 0) {
     exitPromise = (async () => {
       signalHandlers.dispose();
       await childTracker.cleanup();
+      // Print update notice when a newer @n-dx/core is available.
+      // Only shown on interactive terminals; never shown in quiet mode or
+      // when output is piped/redirected (process.stdout.isTTY is false).
+      if (process.stdout.isTTY && CORE_VERSION) {
+        const isQuiet = process.argv.some((a) => a === "--quiet" || a === "-q");
+        if (!isQuiet) {
+          const notice = getUpdateNotice(CORE_VERSION);
+          if (notice) process.stdout.write(notice + "\n");
+        }
+      }
       // Drain stdout/stderr before exiting so piped output isn't truncated
       await new Promise((resolve) => {
         const done = () => { if (--pending === 0) resolve(); };

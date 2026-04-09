@@ -256,6 +256,9 @@ describe("hench → llm-client gateway contract", () => {
     "parseStreamTokenUsage",
     "resolveModel",
     "formatUsage",
+    "renderPrompt",
+    "applyCompactStyle",
+    "estimateTokenCount",
   ];
 
   const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
@@ -582,7 +585,8 @@ describe("gateway export auto-detection", () => {
         "CLIError", "ClaudeClientError", "CLI_ERROR_CODES",
         "exec", "execStdout", "execShellCmd", "getCurrentHead", "getCurrentBranch",
         "isExecutableOnPath", "spawnTool", "spawnManaged", "ProcessPool", "ProcessLimitError",
-        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage"],
+        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "formatUsage",
+        "renderPrompt", "applyCompactStyle", "estimateTokenCount"],
       ...["PROJECT_DIRS"],
     ]);
 

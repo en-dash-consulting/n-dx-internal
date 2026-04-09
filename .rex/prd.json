@@ -20921,7 +20921,7 @@
         {
           "id": "dcf6018e-e658-4708-ae6e-1bd23431748f",
           "title": "Auto-Update Detection from npm Registry",
-          "status": "pending",
+          "status": "in_progress",
           "level": "feature",
           "description": "Automatically detect when a newer version of n-dx is available on the npm registry and notify the user non-intrusively after command output. Cache the check with a 24-hour TTL to avoid repeated network calls.",
           "acceptanceCriteria": [
@@ -20936,7 +20936,8 @@
             "cli",
             "ux"
           ],
-          "source": "conversation"
+          "source": "conversation",
+          "startedAt": "2026-04-09T16:57:10.926Z"
         },
         {
           "id": "013bc11c-ec20-4ac2-8463-9c17adf31fe4",
@@ -24117,10 +24118,12 @@
         {
           "id": "6445ba93-d767-41e4-b42b-abf6ee564753",
           "title": "Compressed-Default Prompt Style System",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Replace verbose LLM prompt templates across all packages with a terse, token-efficient default style (abbreviated keywords, dropped articles, minimal connectors). Current detailed phrasing becomes an opt-in verbosity level. Reduces baseline token spend for all vendors without requiring user action.",
           "source": "smart-add",
+          "startedAt": "2026-04-09T16:56:33.895Z",
+          "completedAt": "2026-04-09T16:56:33.895Z",
           "children": [
             {
               "id": "8d81c92f-686b-43e5-b45e-cba66f0fa553",
@@ -24148,7 +24151,7 @@
             {
               "id": "6e92f5ab-1f3b-4df9-ad39-5ac22f880f51",
               "title": "Migrate all LLM call sites in hench, rex, and sourcevision to the compact prompt renderer",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Replace every inline LLM prompt template in hench (brief construction, tool-use loop instructions), rex (analyze, recommend, smart-add), and sourcevision (analysis passes, findings synthesis) with calls to the shared prompt renderer. Compact mode must be the default so token reduction is immediate for all existing users without any config change. No change to observable LLM output quality should occur.",
               "acceptanceCriteria": [
@@ -24167,7 +24170,8 @@
                 "token-optimization"
               ],
               "source": "smart-add",
-              "startedAt": "2026-04-09T16:07:36.946Z"
+              "startedAt": "2026-04-09T16:07:36.946Z",
+              "completedAt": "2026-04-09T16:56:33.612Z"
             }
           ]
         },

@@ -81,6 +81,7 @@
         "packages/rex/src/core/keywords.ts": "rex-prd-engine",
         "packages/rex/src/core/verify.ts": "rex-prd-engine",
         "packages/web/src/viewer/components/prd-tree/bulk-actions.ts": "web-viewer",
+        "packages/web/src/schema/features.ts": "web-viewer",
         "packages/web/src/viewer/hooks/use-feature-toggle.ts": "web-viewer",
         "packages/web/src/viewer/hooks/use-toast.ts": "web-viewer",
         "packages/web/src/viewer/views/prd.ts": "web-viewer",

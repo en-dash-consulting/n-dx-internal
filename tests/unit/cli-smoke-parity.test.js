@@ -12,6 +12,12 @@ import {
   shouldUseShellForCliCommand,
 } from "../../scripts/cli-smoke-parity.mjs";
 
+// Read the current package version so the deterministic mock runner and
+// hardcoded fixture values stay in sync with the actual installed version.
+const CORE_VERSION = JSON.parse(
+  readFileSync(new URL("../../packages/core/package.json", import.meta.url), "utf-8"),
+).version;
+
 const CLI_ERROR_CODES = Object.freeze({
   GENERIC: "NDX_CLI_GENERIC",
   NOT_INITIALIZED: "NDX_CLI_NOT_INITIALIZED",
@@ -36,20 +42,20 @@ function createDeterministicSmokeRunner({ incompleteVersionJson = false, statusT
     const key = JSON.stringify(args);
     switch (key) {
       case JSON.stringify(["version"]):
-        return { exitCode: 0, stdout: "0.2.1\n", stderr: "" };
+        return { exitCode: 0, stdout: `${CORE_VERSION}\n`, stderr: "" };
       case JSON.stringify(["version", "--json"]):
         return {
           exitCode: 0,
           stdout: incompleteVersionJson
             ? [
               "Debugger attached.",
-              "{\"version\":\"0.2.1\"",
+              `{"version":"${CORE_VERSION}"`,
             ].join("\n")
             : [
               "Debugger attached.",
               "(node:12345) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
               "(Use `node --trace-deprecation ...` to show where the warning was created)",
-              "{\"version\":\"0.2.1\"}",
+              `{"version":"${CORE_VERSION}"}`,
               "Waiting for the debugger to disconnect...",
             ].join("\n"),
           stderr: "",
@@ -228,16 +234,16 @@ describe("cli smoke parity helpers", () => {
         {
           id: "version-text",
           exitCode: 0,
-          stdoutNormalized: "0.2.1",
+          stdoutNormalized: CORE_VERSION,
           stderrNormalized: "",
-          comparable: { stdout: "0.2.1", stderr: "" },
+          comparable: { stdout: CORE_VERSION, stderr: "" },
         },
         {
           id: "version-json",
           exitCode: 0,
-          stdoutNormalized: "{\"version\":\"0.2.1\"}",
+          stdoutNormalized: `{"version":"${CORE_VERSION}"}`,
           stderrNormalized: "",
-          comparable: { stdoutJson: { version: "0.2.1" } },
+          comparable: { stdoutJson: { version: CORE_VERSION } },
         },
         {
           id: "unknown-command",
@@ -460,16 +466,16 @@ describe("cli smoke parity helpers", () => {
         {
           id: "version-text",
           exitCode: 0,
-          stdoutNormalized: "0.2.1",
+          stdoutNormalized: CORE_VERSION,
           stderrNormalized: "",
-          comparable: { stdout: "0.2.1", stderr: "" },
+          comparable: { stdout: CORE_VERSION, stderr: "" },
         },
         {
           id: "version-json",
           exitCode: 0,
-          stdoutNormalized: "{\"version\":\"0.2.1\"}",
+          stdoutNormalized: `{"version":"${CORE_VERSION}"}`,
           stderrNormalized: "",
-          comparable: { stdoutJson: { version: "0.2.1" } },
+          comparable: { stdoutJson: { version: CORE_VERSION } },
         },
         {
           id: "unknown-command",
@@ -595,16 +601,16 @@ describe("cli smoke parity helpers", () => {
         {
           id: "version-text",
           exitCode: 0,
-          stdoutNormalized: "0.2.1",
+          stdoutNormalized: CORE_VERSION,
           stderrNormalized: "",
-          comparable: { stdout: "0.2.1", stderr: "" },
+          comparable: { stdout: CORE_VERSION, stderr: "" },
         },
         {
           id: "version-json",
           exitCode: 0,
-          stdoutNormalized: "{\"version\":\"0.2.1\"}",
+          stdoutNormalized: `{"version":"${CORE_VERSION}"}`,
           stderrNormalized: "",
-          comparable: { stdoutJson: { version: "0.2.1" } },
+          comparable: { stdoutJson: { version: CORE_VERSION } },
         },
         {
           id: "unknown-command",
@@ -735,7 +741,7 @@ describe("cli smoke parity helpers", () => {
     const typoCase = artifact.cases.find((entry) => entry.id === "typo-suggestion");
     const versionTextCase = artifact.cases.find((entry) => entry.id === "version-text");
 
-    expect(versionJsonCase.comparable).toEqual({ stdoutJson: { version: "0.2.1" } });
+    expect(versionJsonCase.comparable).toEqual({ stdoutJson: { version: CORE_VERSION } });
     expect(statusJsonCase.comparable).toEqual({
       stdoutJson: {
         schema: "rex/v1",
@@ -789,14 +795,14 @@ describe("cli smoke parity helpers", () => {
         fixture: "none",
         args: ["version"],
         expectedExitCode: 0,
-        expected: { stdoutExact: "0.2.1" },
+        expected: { stdoutExact: CORE_VERSION },
       },
       {
         id: "version-json",
         fixture: "none",
         args: ["version", "--json"],
         expectedExitCode: 0,
-        expected: { stdoutJson: { version: "0.2.1" } },
+        expected: { stdoutJson: { version: CORE_VERSION } },
       },
       {
         id: "unknown-command",
