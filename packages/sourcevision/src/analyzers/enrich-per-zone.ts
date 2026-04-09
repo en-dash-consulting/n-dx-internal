@@ -28,6 +28,8 @@ import {
 import type { PassConfig } from "./enrich-config.js";
 import { callClaude, ClaudeClientError } from "./claude-client.js";
 import { tryParseJSON, extractFindings, deduplicateZoneIds } from "./enrich-parsing.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage } from "./token-usage.js";
 import { startSpinner } from "../cli/output.js";
 
@@ -110,7 +112,7 @@ async function enrichSingleZone(
         ? `\nEntry points: ${zone.entryPoints.map((f) => `"${f}"`).join(", ") || "none"}`
         : "";
 
-      prompt = `Analyze this code zone. It was discovered by import-graph community detection.
+      prompt = renderAtVerbosity(`Analyze this code zone. It was discovered by import-graph community detection.
 
 ${passConfig.focus}
 
@@ -126,7 +128,7 @@ Each finding MUST include a "severity" field: "info" (informational), "warning" 
 Respond with ONLY a JSON object (no markdown, no explanation):
 {"id":"kebab-case-id","name":"Title Case Name","description":"One sentence describing the zone's purpose.","insights":["actionable insight about this zone"],"findings":[{"type":"observation","scope":"${zone.id}","text":"finding text","severity":"info"}]}
 
-Use finding types: ${passConfig.expectedTypes.join(", ")}.`;
+Use finding types: ${passConfig.expectedTypes.join(", ")}.`);
     } else {
       // Pass 2+: only new insights
       const prevInsights = previousZone?.insights ?? [];
@@ -135,7 +137,7 @@ Use finding types: ${passConfig.expectedTypes.join(", ")}.`;
         : zone.files;
       const maxInsights = config.maxFiles >= 8 ? prevInsights.length : Math.min(prevInsights.length, 3);
 
-      prompt = `You previously analyzed this zone. Here is the current state:
+      prompt = renderAtVerbosity(`You previously analyzed this zone. Here is the current state:
 
 Zone: "${zone.id}" (cohesion: ${zone.cohesion}, coupling: ${zone.coupling}, ${zone.files.length} files)
 Files: ${filesSample.map((f: string) => { const a = fileArchetypes?.get(f); return a ? `"${f}" [${a}]` : `"${f}"`; }).join(", ")}
@@ -154,7 +156,7 @@ Each finding MUST include a "severity" field: "info" (informational), "warning" 
 Respond with ONLY a JSON object:
 {"id":"${zone.id}","newInsights":["new insight"],"findings":[{"type":"${passConfig.expectedTypes[0]}","scope":"${zone.id}","text":"finding text","severity":"info"}]}
 
-Use finding types: ${passConfig.expectedTypes.join(", ")}. Empty arrays are fine if nothing new to add.`;
+Use finding types: ${passConfig.expectedTypes.join(", ")}. Empty arrays are fine if nothing new to add.`);
     }
 
     const promptLevel = config.maxFiles >= PER_ZONE_MAX_FILES ? "full" : config.maxFiles >= 8 ? "medium" : "minimal";

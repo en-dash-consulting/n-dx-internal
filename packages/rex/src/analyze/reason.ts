@@ -48,6 +48,8 @@ import {
 } from "./analyze-shared.js";
 import type { ClaudeResult, FileFormat } from "./analyze-shared.js";
 import { spawnClaude } from "./llm-bridge.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Zod schemas for LLM response validation ──
 
@@ -781,7 +783,7 @@ export async function reasonFromFile(
   // Fall back to LLM-based extraction
   const existingSummary = summarizeExisting(existingItems);
 
-  const prompt = `You are a product requirements analyst. Read the following document and extract a structured PRD (Product Requirements Document) as a JSON array.
+  const prompt = renderAtVerbosity(`You are a product requirements analyst. Read the following document and extract a structured PRD (Product Requirements Document) as a JSON array.
 
 ${PRD_SCHEMA}
 
@@ -804,7 +806,7 @@ ${existingSummary}
 Document to analyze:
 ${content}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 
   const result = await spawnClaude(prompt, model ?? DEFAULT_MODEL);
   accumulateTokenUsage(tokenUsage, result.tokenUsage);
@@ -963,7 +965,7 @@ Most items from an existing codebase scan should be "completed". Only mark items
 they represent genuinely missing functionality, TODOs, or improvements identified in the scan results.
 ` : "";
 
-    const prompt = `You are a product requirements analyst. Given the following raw scan results from automated code analysis, organize them into a clean, well-structured PRD as a JSON array.
+    const prompt = renderAtVerbosity(`You are a product requirements analyst. Given the following raw scan results from automated code analysis, organize them into a clean, well-structured PRD as a JSON array.
 
 ${PRD_SCHEMA}
 
@@ -991,7 +993,7 @@ ${existingSummary}
 Scan results:
 ${scanSummary}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 
     const claudeResult = await spawnClaude(prompt, model);
     accumulateTokenUsage(tokenUsage, claudeResult.tokenUsage);
@@ -1046,7 +1048,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
-  return `You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
+  return renderAtVerbosity(`You are a product requirements analyst. Given the following natural-language description, create a structured PRD breakdown as a JSON array.
 
 ${PRD_SCHEMA}
 
@@ -1074,7 +1076,7 @@ ${existingSummary}
 Description to add:
 ${description}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 function findItemInTree(
@@ -1154,7 +1156,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     .map((d, i) => `${i + 1}. ${d}`)
     .join("\n");
 
-  return `You are a product requirements analyst. You have been given ${descriptions.length} feature descriptions at once. Analyze ALL of them and create a unified, coherent PRD breakdown as a JSON array.
+  return renderAtVerbosity(`You are a product requirements analyst. You have been given ${descriptions.length} feature descriptions at once. Analyze ALL of them and create a unified, coherent PRD breakdown as a JSON array.
 
 ${PRD_SCHEMA}
 
@@ -1182,7 +1184,7 @@ ${existingSummary}
 Descriptions to add:
 ${numbered}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 /**
@@ -1222,7 +1224,7 @@ export async function reasonFromDescriptions(
 export function buildBreakdownPrompt(proposals: Proposal[]): string {
   const proposalJson = JSON.stringify(proposals, null, 2);
 
-  return `You are a product requirements analyst. Break down the following PRD proposals into finer-grained, more detailed tasks.
+  return renderAtVerbosity(`You are a product requirements analyst. Break down the following PRD proposals into finer-grained, more detailed tasks.
 
 Current proposals:
 ${proposalJson}
@@ -1239,7 +1241,7 @@ Rules:
 
 ${FEW_SHOT_EXAMPLE}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 /**
@@ -1250,7 +1252,7 @@ ${OUTPUT_INSTRUCTION}`;
 export function buildConsolidatePrompt(proposals: Proposal[]): string {
   const proposalJson = JSON.stringify(proposals, null, 2);
 
-  return `You are a product requirements analyst. Consolidate the following PRD proposals into coarser-grained, higher-level tasks.
+  return renderAtVerbosity(`You are a product requirements analyst. Consolidate the following PRD proposals into coarser-grained, higher-level tasks.
 
 Current proposals:
 ${proposalJson}
@@ -1269,7 +1271,7 @@ Rules:
 
 ${FEW_SHOT_EXAMPLE}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 /**
@@ -1339,7 +1341,7 @@ export function buildAssessmentPrompt(proposals: Proposal[]): string {
     2,
   );
 
-  return `You are a product requirements analyst specializing in task sizing. Assess whether each proposal's tasks are at the right granularity.
+  return renderAtVerbosity(`You are a product requirements analyst specializing in task sizing. Assess whether each proposal's tasks are at the right granularity.
 
 Proposals to assess:
 ${proposalJson}
@@ -1384,7 +1386,7 @@ Respond with ONLY a valid JSON array of assessment objects, one per proposal:
   }
 ]
 
-No explanation or markdown fences — ONLY the JSON array.`;
+No explanation or markdown fences — ONLY the JSON array.`);
 }
 
 /**
@@ -1532,7 +1534,7 @@ Do NOT create a new epic — instead use the parent's title as the epic title in
     placementBlock = AUTO_PLACEMENT_INSTRUCTION;
   }
 
-  return `You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, and informal shorthand. Distill every idea into a well-structured PRD as a JSON array.
+  return renderAtVerbosity(`You are a product requirements analyst reading raw brainstorming notes. These are NOT formal specs — they are rough ideas, bullet points, half-formed thoughts, and informal shorthand. Distill every idea into a well-structured PRD as a JSON array.
 
 ${PRD_SCHEMA}
 
@@ -1563,7 +1565,7 @@ ${existingSummary}
 Brainstorming notes:
 ${content}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 /**

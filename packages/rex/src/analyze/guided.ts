@@ -15,6 +15,8 @@ import {
 import type { ReasonResult } from "./reason.js";
 import type { Proposal } from "./propose.js";
 import { info } from "../cli/output.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Types ──
 
@@ -89,7 +91,7 @@ If you have enough information, respond with:
 
 Respond with ONLY the JSON object. No markdown fences, no explanation.`;
 
-  return prompt;
+  return renderAtVerbosity(prompt);
 }
 
 export async function clarify(
@@ -157,7 +159,7 @@ ${context.description}
 
   prompt += `\n${OUTPUT_INSTRUCTION}`;
 
-  return prompt;
+  return renderAtVerbosity(prompt);
 }
 
 export async function generateSpecFromContext(

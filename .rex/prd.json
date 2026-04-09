@@ -24106,6 +24106,129 @@
           ]
         }
       ]
+    },
+    {
+      "id": "c4457153-ebbb-41dc-9620-bc499cc16b4e",
+      "title": "LLM Integration",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "6445ba93-d767-41e4-b42b-abf6ee564753",
+          "title": "Compressed-Default Prompt Style System",
+          "status": "pending",
+          "level": "feature",
+          "description": "Replace verbose LLM prompt templates across all packages with a terse, token-efficient default style (abbreviated keywords, dropped articles, minimal connectors). Current detailed phrasing becomes an opt-in verbosity level. Reduces baseline token spend for all vendors without requiring user action.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "8d81c92f-686b-43e5-b45e-cba66f0fa553",
+              "title": "Design compact prompt vocabulary and implement verbosity-aware rendering layer in llm-client",
+              "status": "completed",
+              "level": "task",
+              "description": "Define compact prompt style rules (abbreviated identifiers, dropped articles, minimal connectors — 'caveman speak') and build a prompt renderer in llm-client that applies the active verbosity level to template strings. The renderer must be vendor-neutral, accept the same template source for both compact and verbose output, and be exported from the llm-client public API so hench, rex, and sourcevision can consume it without direct cross-package imports.",
+              "acceptanceCriteria": [
+                "Compact style rules are documented with before/after examples for at least 5 representative prompt patterns used across the codebase",
+                "Prompt renderer accepts a verbosity enum ('compact' | 'verbose') and returns correctly styled output for each level",
+                "Token count is reduced by ≥20% on a representative sample of 10 existing prompt templates when rendered in compact mode",
+                "Renderer is exported from llm-client public API and importable by hench, rex, and sourcevision",
+                "Unit tests cover compact rendering, verbose rendering, template parameter substitution, and edge cases (empty template, all-parameter template)"
+              ],
+              "priority": "high",
+              "tags": [
+                "llm-client",
+                "prompts",
+                "token-optimization"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T15:52:58.302Z",
+              "completedAt": "2026-04-09T16:07:36.323Z"
+            },
+            {
+              "id": "6e92f5ab-1f3b-4df9-ad39-5ac22f880f51",
+              "title": "Migrate all LLM call sites in hench, rex, and sourcevision to the compact prompt renderer",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Replace every inline LLM prompt template in hench (brief construction, tool-use loop instructions), rex (analyze, recommend, smart-add), and sourcevision (analysis passes, findings synthesis) with calls to the shared prompt renderer. Compact mode must be the default so token reduction is immediate for all existing users without any config change. No change to observable LLM output quality should occur.",
+              "acceptanceCriteria": [
+                "All LLM call sites in hench, rex, and sourcevision route through the prompt renderer instead of inline template strings",
+                "Running with no verbosity config produces compact prompts at every call site",
+                "A representative end-to-end hench run logs ≥15% fewer prompt tokens than the pre-migration baseline",
+                "All existing unit and integration tests for proposal generation, task selection, and findings synthesis pass without modification",
+                "Each migrated call site is annotated with the config key it reads for verbosity"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "rex",
+                "sourcevision",
+                "prompts",
+                "token-optimization"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T16:07:36.946Z"
+            }
+          ]
+        },
+        {
+          "id": "f3a31834-64d6-4ae3-9c87-fc310ff15037",
+          "title": "Verbosity Config Key, Token-Cost Warning, and Settings UI",
+          "status": "pending",
+          "level": "feature",
+          "description": "Add a first-class `prompts.verbosity` config key ('compact' | 'verbose', default: 'compact') to the n-dx config schema. When a user enables verbose mode via CLI or web settings, display a prominent warning that verbose prompts consume significantly more tokens. Wire the config into the renderer and expose the toggle in the web settings panel.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "60e95788-3c68-4b01-898e-38c39990c7a5",
+              "title": "Add prompts.verbosity config key to schema and wire into prompt renderer",
+              "status": "completed",
+              "level": "task",
+              "description": "Extend the .n-dx.json schema with a `prompts.verbosity` key (enum: 'compact' | 'verbose', default: 'compact'). Update ndx config get/set to read and write this key. Inject the resolved config value into the prompt renderer at process startup so all LLM call sites automatically pick up the runtime setting without reading config individually.",
+              "acceptanceCriteria": [
+                "`prompts.verbosity` is present in .n-dx.json schema with a 'compact' default and enum validation",
+                "`ndx config prompts.verbosity verbose` sets the key; `ndx config prompts.verbosity` reads it back correctly",
+                "Schema validation rejects values outside the enum and emits a descriptive error message",
+                "Prompt renderer reads verbosity from config at initialization and applies it throughout that process",
+                "Unit tests cover schema default, set, get, and validation-rejection cases"
+              ],
+              "priority": "high",
+              "tags": [
+                "config",
+                "llm-client",
+                "prompts"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-09T15:38:57.289Z",
+              "completedAt": "2026-04-09T15:52:57.678Z"
+            },
+            {
+              "id": "47bf2bb3-6c85-4008-bbb3-0bb54928bbc5",
+              "title": "Implement token-cost warning on verbose mode activation and expose toggle in web settings UI",
+              "status": "pending",
+              "level": "task",
+              "description": "When a user enables verbose mode — via `ndx config prompts.verbosity verbose` or the web settings panel — display a prominent warning that verbose prompts consume significantly more tokens than the compact default and that compact is recommended for cost control. The warning must appear at the point of activation. Add a Prompt Verbosity section to the web settings panel with compact/verbose toggle, inline warning callout, and persistence via the config API endpoint.",
+              "acceptanceCriteria": [
+                "Running `ndx config prompts.verbosity verbose` prints a token-cost warning before confirming the change, quantifying the impact directionally (e.g. '20–40% more tokens per run')",
+                "No warning is shown when setting or confirming compact mode",
+                "Web settings panel includes a Prompt Verbosity section with compact/verbose toggle; selecting verbose renders an inline token-cost warning callout",
+                "Compact mode is visually marked as the recommended default (e.g. a 'recommended' badge or label)",
+                "Toggle persists via the config API and is reflected on page reload",
+                "Integration test verifies warning text is present in CLI stdout when switching to verbose; unit test covers toggle render, warning visibility, and API call on change"
+              ],
+              "priority": "medium",
+              "tags": [
+                "config",
+                "web",
+                "settings",
+                "ux",
+                "token-optimization"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

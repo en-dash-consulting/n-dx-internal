@@ -8,6 +8,8 @@ import type {
   Finding,
   FindingType,
 } from "../schema/index.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -180,7 +182,7 @@ export function buildMetaPrompt(
     formatAnnotatedFinding(f, i)
   ).join("\n");
 
-  return `META-EVALUATION: Review all ${findings.length} findings from previous analysis passes.
+  return renderAtVerbosity(`META-EVALUATION: Review all ${findings.length} findings from previous analysis passes.
 
 Zone Summaries with Findings:
 ${zonesSummary}
@@ -209,7 +211,7 @@ Each finding MUST include a "category" field: "structural" (zone boundary opinio
 Respond with ONLY a JSON object (no markdown, no explanation):
 {"severityUpdates":[{"findingIndex":0,"newSeverity":"warning"}],"zones":[{"id":"zone-id","newInsights":[],"findings":[{"type":"suggestion","scope":"zone-id","text":"...","severity":"warning","category":"code"}]}],"insights":["meta-observation"],"findings":[{"type":"pattern","scope":"global","text":"...","severity":"info","category":"code"}]}
 
-Empty arrays are fine. Do NOT repeat existing findings.`;
+Empty arrays are fine. Do NOT repeat existing findings.`);
 }
 
 // ── Attempt configuration ────────────────────────────────────────────────────

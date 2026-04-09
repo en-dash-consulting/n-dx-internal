@@ -25,6 +25,8 @@ import {
   accumulateTokenUsage,
   DEFAULT_MODEL,
 } from "./reason.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Zod schemas for LLM response validation ──
 
@@ -225,7 +227,7 @@ export async function reasonForReshape(
       ? SMART_PRUNE_PROMPT
       : RESHAPE_SYSTEM_PROMPT;
 
-  const prompt = [
+  const prompt = renderAtVerbosity([
     systemPrompt,
     "",
     "## Current PRD",
@@ -233,7 +235,7 @@ export async function reasonForReshape(
     "",
     projectContext ? `## Project Context\n${projectContext}\n` : "",
     RESHAPE_FEW_SHOT,
-  ].filter(Boolean).join("\n");
+  ].filter(Boolean).join("\n"));
 
   const result = await spawnClaude(prompt, model);
   accumulateTokenUsage(tokenUsage, result.tokenUsage);

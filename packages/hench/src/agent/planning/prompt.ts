@@ -1,4 +1,5 @@
 import type { HenchConfig, TaskBriefProject, PromptsVerbosity } from "../../schema/index.js";
+import { renderPrompt } from "../../prd/llm-gateway.js";
 
 // ---------------------------------------------------------------------------
 // Module-level verbosity state
@@ -166,25 +167,29 @@ export function buildSystemPrompt(
   }
 
   // Extended guidance — only emitted in verbose mode.
-  if (_verbosity === "verbose") {
-    lines.push("\n## Extended Context");
-    lines.push("These notes supplement the rules above with additional rationale and guidance.");
-    lines.push("");
-    lines.push("### Why minimal changes matter");
-    lines.push("- Every line changed is a line that can break unrelated functionality.");
-    lines.push("- Refactoring outside task scope adds noise to diffs and makes review harder.");
-    lines.push("- When in doubt, do less and document what you did not change and why.");
-    lines.push("");
-    lines.push("### Why tests come first");
-    lines.push("- A failing test proves the problem exists and defines the success condition.");
-    lines.push("- Writing the test first ensures you understand the acceptance criteria before touching production code.");
-    lines.push("- Green tests before committing are a hard requirement — do not skip.");
-    lines.push("");
-    lines.push("### Error handling discipline");
-    lines.push("- Never swallow errors silently. Every catch block must either re-throw, log, or return a typed error.");
-    lines.push("- Pre-existing test failures are still your responsibility to fix: they slow down everyone.");
-    lines.push("- Build failures block the whole team — fix them before committing anything else.");
-  }
+  // Config key: prompts.verbosity (.n-dx.json)
+  lines.push("{{verbose}}");
+  lines.push("\n## Extended Context");
+  lines.push("These notes supplement the rules above with additional rationale and guidance.");
+  lines.push("");
+  lines.push("### Why minimal changes matter");
+  lines.push("- Every line changed is a line that can break unrelated functionality.");
+  lines.push("- Refactoring outside task scope adds noise to diffs and makes review harder.");
+  lines.push("- When in doubt, do less and document what you did not change and why.");
+  lines.push("");
+  lines.push("### Why tests come first");
+  lines.push("- A failing test proves the problem exists and defines the success condition.");
+  lines.push("- Writing the test first ensures you understand the acceptance criteria before touching production code.");
+  lines.push("- Green tests before committing are a hard requirement — do not skip.");
+  lines.push("");
+  lines.push("### Error handling discipline");
+  lines.push("- Never swallow errors silently. Every catch block must either re-throw, log, or return a typed error.");
+  lines.push("- Pre-existing test failures are still your responsibility to fix: they slow down everyone.");
+  lines.push("- Build failures block the whole team — fix them before committing anything else.");
+  lines.push("{{/verbose}}");
 
-  return lines.join("\n");
+  // Pass through the prompt renderer for verbosity-aware rendering.
+  // In compact mode: verbose blocks are stripped and word-level transforms are applied.
+  // In verbose mode: verbose blocks are kept, compact-only blocks are stripped.
+  return renderPrompt(lines.join("\n"), { verbosity: _verbosity });
 }

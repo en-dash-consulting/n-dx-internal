@@ -39,6 +39,8 @@ import { LOE_DEFAULTS } from "../../schema/index.js";
 import type { BatchAcceptanceRecord } from "../../analyze/index.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
+import { initPromptRenderer } from "../../analyze/prompt-renderer.js";
+import { loadProjectOverrides } from "@n-dx/llm-client";
 
 const PENDING_FILE = "pending-proposals.json";
 /**
@@ -329,6 +331,13 @@ export async function cmdAnalyze(
 ): Promise<void> {
   const accept = flags.accept === "true";
   const noLlm = flags["no-llm"] === "true";
+
+  // Init prompt renderer verbosity from config (config key: prompts.verbosity in .n-dx.json)
+  // loadProjectOverrides expects the package config dir so it can find .n-dx.json via dirname()
+  const promptsOverrides = await loadProjectOverrides(join(dir, REX_DIR), "prompts");
+  if (promptsOverrides?.verbosity === "verbose") {
+    initPromptRenderer("verbose");
+  }
 
   const llmConfig = await initLLMClients(dir, noLlm, flags.format);
 

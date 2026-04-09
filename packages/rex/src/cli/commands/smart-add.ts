@@ -32,7 +32,9 @@ import {
 } from "./smart-add-duplicates.js";
 import type { ProposalDuplicateMatch } from "./smart-add-duplicates.js";
 import type { LLMVendor } from "@n-dx/llm-client";
+import { loadProjectOverrides } from "@n-dx/llm-client";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
+import { initPromptRenderer } from "../../analyze/prompt-renderer.js";
 
 const PENDING_FILE = "pending-smart-proposals.json";
 
@@ -1630,6 +1632,13 @@ export async function cmdSmartAdd(
       `Rex directory not found in ${dir}`,
       "Run 'n-dx init' to set up the project, or 'rex init' if using rex standalone.",
     );
+  }
+
+  // Init prompt renderer verbosity from config (config key: prompts.verbosity in .n-dx.json)
+  // loadProjectOverrides expects the package config dir so it can find .n-dx.json via dirname()
+  const promptsOverrides = await loadProjectOverrides(join(dir, REX_DIR), "prompts");
+  if (promptsOverrides?.verbosity === "verbose") {
+    initPromptRenderer("verbose");
   }
 
   await initializeSmartAddLLM(dir, flags.format);

@@ -87,6 +87,13 @@ export { resolveModel } from "@n-dx/llm-client";
 // ---- Usage formatting -------------------------------------------------------
 export { formatUsage } from "@n-dx/llm-client";
 
+// ---- Prompt renderer --------------------------------------------------------
+export {
+  renderPrompt,
+  applyCompactStyle,
+  estimateTokenCount,
+} from "@n-dx/llm-client";
+
 // ---- Type re-exports --------------------------------------------------------
 export type {
   ClaudeConfig,
@@ -98,4 +105,6 @@ export type {
   SpawnToolResult,
   ManagedChild,
   HelpDefinition,
+  PromptVerbosity,
+  PromptRenderOptions,
 } from "@n-dx/llm-client";

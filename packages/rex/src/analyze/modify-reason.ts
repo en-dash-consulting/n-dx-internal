@@ -31,6 +31,8 @@ import {
   MAX_RETRIES,
 } from "./reason.js";
 import { validateModificationRequest } from "./validate-modification.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Types ──
 
@@ -84,7 +86,7 @@ export function buildModifyPrompt(
     ? `\nProject context (from documentation):\n${options.projectContext}\n`
     : "";
 
-  return `You are a product requirements analyst. You have an existing set of PRD proposals and a user's modification request. Revise the proposals to incorporate the requested changes.
+  return renderAtVerbosity(`You are a product requirements analyst. You have an existing set of PRD proposals and a user's modification request. Revise the proposals to incorporate the requested changes.
 
 ## Current Proposals
 ${proposalJson}
@@ -111,7 +113,7 @@ ${TASK_QUALITY_RULES}
 
 ${ANTI_PATTERNS}
 ${existingBlock}${contextBlock}
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 // ── Summarization ──

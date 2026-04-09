@@ -27,3 +27,4 @@ scripts/HENCH_CALLGRAPH_FINDINGS.md
 .github/issues/
 
 *.local.json
+.run-logs/

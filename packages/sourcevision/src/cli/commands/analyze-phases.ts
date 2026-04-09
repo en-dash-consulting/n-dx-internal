@@ -33,6 +33,7 @@ import { createSnapshot, computeDeltas, loadLatestReport, saveReport, formatDelt
 import type { ConvergenceReport } from "../../analyzers/convergence.js";
 import type { AnalyzeTokenUsage } from "../../schema/index.js";
 import { loadProjectOverrides } from "@n-dx/llm-client";
+import { initPromptRenderer } from "../../analyzers/prompt-renderer.js";
 
 // ── Shared context passed between phases ─────────────────────────────
 
@@ -251,6 +252,13 @@ export async function runZonesPhase(ctx: AnalyzeContext, extraArgs: string[]): P
 
   info("[phase 4] Zones...");
   updateManifestModule(ctx.absDir, "zones", "running");
+
+  // Init prompt renderer verbosity from config (config key: prompts.verbosity in .n-dx.json)
+  // loadProjectOverrides expects the package config dir so it can find .n-dx.json via dirname()
+  const promptsOverrides = await loadProjectOverrides(ctx.svDir, "prompts");
+  if (promptsOverrides?.verbosity === "verbose") {
+    initPromptRenderer("verbose");
+  }
 
   const enrich = !ctx.fastMode;
   const perZone = extraArgs.includes("--per-zone");

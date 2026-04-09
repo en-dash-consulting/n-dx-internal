@@ -25,6 +25,8 @@ import {
   OUTPUT_INSTRUCTION,
 } from "./reason.js";
 import { z } from "zod";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Types ──
 
@@ -77,7 +79,7 @@ export function buildDecompositionPrompt(
 ): string {
   const taskJson = JSON.stringify(task, null, 2);
 
-  return `You are a product requirements analyst. The following task has a level-of-effort (LoE) estimate that exceeds the project's threshold of ${thresholdWeeks} engineer-week${thresholdWeeks === 1 ? "" : "s"}. Break it down into smaller, independently deliverable child tasks.
+  return renderAtVerbosity(`You are a product requirements analyst. The following task has a level-of-effort (LoE) estimate that exceeds the project's threshold of ${thresholdWeeks} engineer-week${thresholdWeeks === 1 ? "" : "s"}. Break it down into smaller, independently deliverable child tasks.
 
 Task to decompose:
 ${taskJson}
@@ -95,7 +97,7 @@ Rules:
 
 ${TASK_QUALITY_RULES}
 
-Respond with ONLY a valid JSON array of task objects. No explanation, no markdown fences — just the JSON.`;
+Respond with ONLY a valid JSON array of task objects. No explanation, no markdown fences — just the JSON.`);
 }
 
 // ── Response parsing ──

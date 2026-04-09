@@ -20,6 +20,8 @@ import {
 } from "./enrich-config.js";
 import type { PassConfig } from "./enrich-config.js";
 import { callClaude, ClaudeClientError } from "./claude-client.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 import { tryParseJSON, extractFindings } from "./enrich-parsing.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage } from "./token-usage.js";
 import { startSpinner } from "../cli/output.js";
@@ -351,7 +353,7 @@ function buildFirstPassPrompt(
       })
       .join("\n");
 
-    return `Analyze this codebase's zone structure. Each zone groups related files discovered by import-graph community detection.
+    return renderAtVerbosity(`Analyze this codebase's zone structure. Each zone groups related files discovered by import-graph community detection.
 
 ${passConfig.focus}
 
@@ -370,7 +372,7 @@ Each finding MUST include a "category" field: "structural" (zone boundary opinio
 Respond with ONLY a JSON object (no markdown, no explanation):
 {"zones":[{"algorithmicId":"...","id":"kebab-case-id","name":"Title Case","description":"One sentence.","insights":["actionable insight"],"findings":[{"type":"observation","scope":"zone-id","text":"finding text","severity":"info","category":"code"}]}],"insights":["cross-zone observation"],"findings":[{"type":"observation","scope":"global","text":"finding text","severity":"info","category":"code"}]}
 
-Return exactly ${batchZones.length} zone entries. Use finding types: ${passConfig.expectedTypes.join(", ")}.`;
+Return exactly ${batchZones.length} zone entries. Use finding types: ${passConfig.expectedTypes.join(", ")}.`);
   }
 
   // Minimal prompt (no files)
@@ -390,7 +392,7 @@ Return exactly ${batchZones.length} zone entries. Use finding types: ${passConfi
     })
     .join("\n");
 
-  return `Name these code zones. Each groups files by import structure.
+  return renderAtVerbosity(`Name these code zones. Each groups files by import structure.
 
 Zones:
 ${zoneList}
@@ -399,7 +401,7 @@ ${priorNames}${hints ? `\nProject context from the developer:\n${hints}\n` : ""}
 Return ONLY JSON:
 {"zones":[{"algorithmicId":"...","id":"kebab-case-id","name":"Title Case","description":"One sentence.","insights":[]}],"insights":[]}
 
-Exactly ${batchZones.length} entries.`;
+Exactly ${batchZones.length} entries.`);
 }
 
 function buildLaterPassPrompt(
@@ -433,7 +435,7 @@ function buildLaterPassPrompt(
       })
       .join("\n");
 
-    return `You previously analyzed this codebase. Here is the current state:
+    return renderAtVerbosity(`You previously analyzed this codebase. Here is the current state:
 
 Zones:
 ${zoneContext}
@@ -456,7 +458,7 @@ Each finding MUST include a "category" field: "structural" (zone boundary opinio
 Respond with ONLY a JSON object (no markdown, no explanation):
 {"zones":[{"id":"existing-zone-id","newInsights":["new insight"],"findings":[{"type":"${passConfig.expectedTypes[0]}","scope":"zone-id","text":"finding text","severity":"info","category":"code"}]}],"insights":["new cross-zone observation"],"findings":[{"type":"${passConfig.expectedTypes[0]}","scope":"global","text":"finding text","severity":"info","category":"code"}]}
 
-Return one entry per zone. Use finding types: ${passConfig.expectedTypes.join(", ")}. Empty arrays are fine if nothing new to add.`;
+Return one entry per zone. Use finding types: ${passConfig.expectedTypes.join(", ")}. Empty arrays are fine if nothing new to add.`);
   }
 
   // Minimal prompt
@@ -469,12 +471,12 @@ Return one entry per zone. Use finding types: ${passConfig.expectedTypes.join(",
     })
     .join("\n");
 
-  return `Enrichment pass ${passNumber} for code zones. ${passConfig.focus}
+  return renderAtVerbosity(`Enrichment pass ${passNumber} for code zones. ${passConfig.focus}
 
 Zones:
 ${zoneContext}
 ${otherContext}
 ${hints ? `\nProject context from the developer:\n${hints}\n` : ""}
 Return ONLY JSON:
-{"zones":[{"id":"zone-id","newInsights":[],"findings":[]}],"insights":[],"findings":[]}`;
+{"zones":[{"id":"zone-id","newInsights":[],"findings":[]}],"insights":[],"findings":[]}`);
 }

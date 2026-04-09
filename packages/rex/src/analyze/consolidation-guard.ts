@@ -23,6 +23,8 @@ import {
   PRD_SCHEMA,
   TASK_QUALITY_RULES,
 } from "./reason.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 
 // ── Types ──
 
@@ -71,7 +73,7 @@ export function buildConsolidationGuardPrompt(
 ): string {
   const proposalJson = JSON.stringify(proposals, null, 2);
 
-  return `You are a product requirements analyst. The following PRD proposals contain ${currentTaskCount} tasks, which exceeds the project's consolidation ceiling of ${ceiling} tasks. Consolidate them into fewer, larger work packages.
+  return renderAtVerbosity(`You are a product requirements analyst. The following PRD proposals contain ${currentTaskCount} tasks, which exceeds the project's consolidation ceiling of ${ceiling} tasks. Consolidate them into fewer, larger work packages.
 
 Current proposals:
 ${proposalJson}
@@ -96,7 +98,7 @@ ${PRD_SCHEMA}
 
 ${FEW_SHOT_EXAMPLE}
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 // ── Guard logic ──

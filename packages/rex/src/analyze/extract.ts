@@ -32,6 +32,8 @@ import {
 } from "./analyze-shared.js";
 import type { FileFormat } from "./analyze-shared.js";
 import { spawnClaude } from "./llm-bridge.js";
+// Config key: prompts.verbosity (.n-dx.json) — controls compact vs verbose rendering
+import { renderAtVerbosity } from "./prompt-renderer.js";
 import {
   validateFileInput,
   validateMarkdownContent,
@@ -1561,7 +1563,7 @@ function buildDisambiguationPrompt(
     ? `\nExisting items to avoid duplicating:\n${[...existingTitles].map((t) => `- ${t}`).join("\n")}\n`
     : "";
 
-  return `You are a product requirements analyst. The following document contains requirements but its structure is ambiguous. Analyze the content and organize it into a hierarchical PRD structure.
+  return renderAtVerbosity(`You are a product requirements analyst. The following document contains requirements but its structure is ambiguous. Analyze the content and organize it into a hierarchical PRD structure.
 
 ${PRD_SCHEMA}
 
@@ -1580,7 +1582,7 @@ Document to analyze:
 ${content.slice(0, 20_000)}
 ---
 
-${OUTPUT_INSTRUCTION}`;
+${OUTPUT_INSTRUCTION}`);
 }
 
 /**
