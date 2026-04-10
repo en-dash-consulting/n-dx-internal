@@ -1,0 +1,150 @@
+{
+  "platform": "darwin",
+  "node": "v22.22.2",
+  "pathSeparator": ":",
+  "totalDurationMs": 1549,
+  "passed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "name": "preflight-gate",
+      "ok": true,
+      "durationMs": 310,
+      "details": {
+        "logs": [
+          {
+            "label": "set-codex-cli-path",
+            "ok": true,
+            "stdout": "llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 59
+          },
+          {
+            "label": "set-codex-vendor-failure",
+            "ok": false,
+            "stdout": "",
+            "stderr": "Provider auth preflight failed for \"codex\" via: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail exec --skip-git-repo-check Reply with exactly: ok\nDetails: not logged in\n[NDX_CODEX_PREFLIGHT_AUTH_REQUIRED]\nAuthenticate Codex from Terminal: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail login\nIf login succeeds in another shell profile, run ndx from that same Terminal session or set llm.codex.cli_path explicitly.\nIf you prefer API-key auth, set one first: n-dx config llm.codex.api_key <key>\nRetry after authenticating: ndx config llm.vendor codex\n",
+            "status": 1,
+            "durationMs": 246
+          }
+        ],
+        "notes": [
+          "Verified preflight gate blocks Codex selection on auth failure.",
+          "Verified failure leaves .n-dx.json absent for rollback safety."
+        ]
+      }
+    },
+    {
+      "name": "codex-success",
+      "ok": true,
+      "durationMs": 361,
+      "details": {
+        "logs": [
+          {
+            "label": "set-codex-cli-path",
+            "ok": true,
+            "stdout": "llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/success-bin/codex-success\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 61
+          },
+          {
+            "label": "set-codex-api-key",
+            "ok": true,
+            "stdout": "llm.codex.api_key = sk-test-codex-key\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 56
+          },
+          {
+            "label": "set-codex-vendor-success",
+            "ok": true,
+            "stdout": "llm.vendor = codex\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 238
+          }
+        ],
+        "notes": [
+          "Verified Codex selection succeeds when preflight returns ok.",
+          "Verified OPENAI_API_KEY is injected into the preflight process."
+        ]
+      }
+    },
+    {
+      "name": "rollback-to-claude",
+      "ok": true,
+      "durationMs": 582,
+      "details": {
+        "logs": [
+          {
+            "label": "set-codex-cli-path",
+            "ok": true,
+            "stdout": "llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/rollback-bin/codex-rollback\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 59
+          },
+          {
+            "label": "select-codex",
+            "ok": true,
+            "stdout": "llm.vendor = codex\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 230
+          },
+          {
+            "label": "set-claude-cli-path",
+            "ok": true,
+            "stdout": "llm.claude.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/rollback-bin/claude-rollback\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 61
+          },
+          {
+            "label": "rollback-to-claude",
+            "ok": true,
+            "stdout": "llm.vendor = claude\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 228
+          }
+        ],
+        "notes": [
+          "Verified rollback from Codex to Claude runs the Claude preflight path.",
+          "Verified final shared config points at claude after rollback."
+        ]
+      }
+    },
+    {
+      "name": "spaces-in-path",
+      "ok": true,
+      "durationMs": 289,
+      "details": {
+        "logs": [
+          {
+            "label": "set-codex-cli-path-spaces",
+            "ok": true,
+            "stdout": "llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/spaces bin/codex binary\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 60
+          },
+          {
+            "label": "set-codex-vendor-spaces",
+            "ok": true,
+            "stdout": "llm.vendor = codex\n",
+            "stderr": "",
+            "status": 0,
+            "durationMs": 226
+          }
+        ],
+        "notes": [
+          "Verified Codex selection succeeds when binary path and enclosing directory contain spaces.",
+          "Binary path used: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/spaces bin/codex binary"
+        ]
+      }
+    }
+  ]
+}

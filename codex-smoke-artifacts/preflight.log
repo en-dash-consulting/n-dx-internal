@@ -1,0 +1,87 @@
+case: preflight-gate
+status: PASS
+duration_ms: 310
+
+[set-codex-cli-path] exit=0 duration_ms=59
+stdout:
+llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail
+
+[set-codex-vendor-failure] exit=1 duration_ms=246
+stderr:
+Provider auth preflight failed for "codex" via: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail exec --skip-git-repo-check Reply with exactly: ok
+Details: not logged in
+[NDX_CODEX_PREFLIGHT_AUTH_REQUIRED]
+Authenticate Codex from Terminal: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/failure-bin/codex-fail login
+If login succeeds in another shell profile, run ndx from that same Terminal session or set llm.codex.cli_path explicitly.
+If you prefer API-key auth, set one first: n-dx config llm.codex.api_key <key>
+Retry after authenticating: ndx config llm.vendor codex
+
+notes:
+- Verified preflight gate blocks Codex selection on auth failure.
+- Verified failure leaves .n-dx.json absent for rollback safety.
+
+========================================================================
+
+case: codex-success
+status: PASS
+duration_ms: 361
+
+[set-codex-cli-path] exit=0 duration_ms=61
+stdout:
+llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/success-bin/codex-success
+
+[set-codex-api-key] exit=0 duration_ms=56
+stdout:
+llm.codex.api_key = sk-test-codex-key
+
+[set-codex-vendor-success] exit=0 duration_ms=238
+stdout:
+llm.vendor = codex
+
+notes:
+- Verified Codex selection succeeds when preflight returns ok.
+- Verified OPENAI_API_KEY is injected into the preflight process.
+
+========================================================================
+
+case: rollback-to-claude
+status: PASS
+duration_ms: 582
+
+[set-codex-cli-path] exit=0 duration_ms=59
+stdout:
+llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/rollback-bin/codex-rollback
+
+[select-codex] exit=0 duration_ms=230
+stdout:
+llm.vendor = codex
+
+[set-claude-cli-path] exit=0 duration_ms=61
+stdout:
+llm.claude.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/rollback-bin/claude-rollback
+
+[rollback-to-claude] exit=0 duration_ms=228
+stdout:
+llm.vendor = claude
+
+notes:
+- Verified rollback from Codex to Claude runs the Claude preflight path.
+- Verified final shared config points at claude after rollback.
+
+========================================================================
+
+case: spaces-in-path
+status: PASS
+duration_ms: 289
+
+[set-codex-cli-path-spaces] exit=0 duration_ms=60
+stdout:
+llm.codex.cli_path = /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/spaces bin/codex binary
+
+[set-codex-vendor-spaces] exit=0 duration_ms=226
+stdout:
+llm.vendor = codex
+
+notes:
+- Verified Codex selection succeeds when binary path and enclosing directory contain spaces.
+- Binary path used: /var/folders/74/7xxnfbsx0_scvnj1gfn875000000gn/T/ndx-codex-config-smoke-C8vTtk/spaces bin/codex binary

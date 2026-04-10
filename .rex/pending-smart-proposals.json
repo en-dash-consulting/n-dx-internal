@@ -1,0 +1,90 @@
+{
+  "proposals": [
+    {
+      "epic": {
+        "title": "CLI & Developer Tools",
+        "source": "llm",
+        "duplicateReason": {
+          "type": "exact_title_match",
+          "matchedItem": {
+            "id": "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6",
+            "title": "CLI & Developer Tools",
+            "level": "epic",
+            "status": "pending"
+          },
+          "explanation": "Exact title match with existing epic \"CLI & Developer Tools\"."
+        }
+      },
+      "features": [
+        {
+          "title": "Auto-Update Detection from npm Registry",
+          "source": "llm",
+          "tasks": [
+            {
+              "title": "Implement npm registry update checker module",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Build packages/core/update-check.js as a standalone, never-throws utility that fetches the latest published version of the n-dx package from the npm registry, caches the result for 24 hours at ~/.n-dx/update-check.json to avoid repeated network calls, and compares it against the locally installed version using semver. The module must never propagate exceptions — any fetch, parse, or file-system error should silently return null so callers are insulated from network or permission failures.",
+              "acceptanceCriteria": [
+                "Fetches latest version from npm registry for the @n-dx/core package",
+                "Caches registry response at ~/.n-dx/update-check.json with a 24-hour TTL",
+                "Returns null (does not throw) on any fetch, parse, or file-system error",
+                "Compares installed version against registry version using semver and returns update metadata when a newer version is available",
+                "Re-uses cached result without a network call when cache is still within TTL"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "update",
+                "core"
+              ]
+            },
+            {
+              "title": "Wire non-blocking update notice into CLI entrypoint",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Integrate the update checker into cli.js so that the version check starts early in main() as a background promise and the result is surfaced to the user in flushAndExit() via a 100ms Promise.race — ensuring the check never delays the primary command. Suppress the update notice when the CLI is running in --quiet mode, --json mode, or a non-TTY environment (e.g. piped output or CI), where decorative output is unwanted.",
+              "acceptanceCriteria": [
+                "Update check promise is initiated at the start of main() before command dispatch",
+                "Update notice is printed in flushAndExit() only if the check resolves within 100ms",
+                "No update notice is printed when --quiet flag is active",
+                "No update notice is printed when --json flag is active",
+                "No update notice is printed when stdout is not a TTY (e.g. piped output)",
+                "Primary command execution time is not increased by more than 100ms due to the update check"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "update",
+                "ux"
+              ]
+            },
+            {
+              "title": "Add unit test coverage for update checker",
+              "source": "llm",
+              "sourceFile": "",
+              "description": "Write a unit test suite in tests/unit/update-check.test.js covering the full behavioral contract of the update checker module: cache hit/miss logic, TTL expiry, registry fetch success and failure paths, semver comparison correctness, and the never-throws guarantee under simulated file-system and network error conditions.",
+              "acceptanceCriteria": [
+                "Test suite contains at least 16 tests covering distinct behavioral scenarios",
+                "Cache hit path (within TTL) is tested and confirmed to skip network fetch",
+                "Cache miss and TTL expiry paths are tested and confirmed to trigger a fresh fetch",
+                "Network fetch failure (e.g. timeout, DNS error) is tested and confirmed to return null without throwing",
+                "Malformed cache file is tested and confirmed to fall back to a fresh fetch without throwing",
+                "Semver comparison is tested for same version, patch update, minor update, and major update cases",
+                "All 16 tests pass with no skipped assertions"
+              ],
+              "priority": "medium",
+              "tags": [
+                "cli",
+                "update",
+                "testing"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "parentId": "dcf6018e-e658-4708-ae6e-1bd23431748f",
+  "prdHash": "482f5b48e776"
+}

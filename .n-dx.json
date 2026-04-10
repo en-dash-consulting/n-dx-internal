@@ -1,6 +1,6 @@
 {
   "llm": {
-    "vendor": "codex"
+    "vendor": "claude"
   },
   "sourcevision": {
     "zones": {
@@ -105,5 +105,8 @@
         "web-build-tooling": "infrastructure"
       }
     }
+  },
+  "cli": {
+    "timeoutMs": 3000000
   }
 }

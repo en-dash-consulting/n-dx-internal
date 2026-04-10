@@ -24240,7 +24240,7 @@
     {
       "id": "75158c41-a967-4a28-a547-7f3abdba20b2",
       "title": "ndx Performance Optimization",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
@@ -24251,6 +24251,8 @@
           "level": "feature",
           "description": "Reduce the time from running any ndx command to first meaningful output by deferring expensive module loads and optimizing the entry-point module graph. No logic changes — only import timing and module resolution.",
           "source": "smart-add",
+          "startedAt": "2026-04-10T00:14:31.300Z",
+          "completedAt": "2026-04-10T00:14:31.300Z",
           "children": [
             {
               "id": "8f910767-6a30-443d-93f4-1a61187d967f",
@@ -24319,17 +24321,17 @@
               "startedAt": "2026-04-10T00:05:43.544Z",
               "completedAt": "2026-04-10T00:14:31.018Z"
             }
-          ],
-          "startedAt": "2026-04-10T00:14:31.300Z",
-          "completedAt": "2026-04-10T00:14:31.300Z"
+          ]
         },
         {
           "id": "c5f1b004-10c0-4cfa-bd0e-9d3f367679d1",
           "title": "Analysis Pipeline I/O Throughput",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Increase throughput of the sourcevision and rex analysis pipelines by parallelizing file-system reads and introducing result memoization where the same data is read multiple times per run. No algorithmic changes.",
           "source": "smart-add",
+          "startedAt": "2026-04-10T00:22:28.551Z",
+          "completedAt": "2026-04-10T00:22:28.551Z",
           "children": [
             {
               "id": "dabe2bf9-d563-4265-820a-81be690293a6",
@@ -24358,7 +24360,7 @@
             {
               "id": "5f5ab5c9-ac0b-4bf6-904a-db5d20dcfea4",
               "title": "Add memoization for repeated PRD store reads within a single command invocation",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "The PRD store (prd.json) is read from disk multiple times within some rex command flows (validate, status, next, recommend). Add a module-level in-process cache keyed by file mtime so the JSON parse happens at most once per invocation. Cache is invalidated on each new process start. No logic changes to store operations.",
               "acceptanceCriteria": [
@@ -24375,17 +24377,21 @@
                 "caching",
                 "prd"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-10T00:15:17.595Z",
+              "completedAt": "2026-04-10T00:22:28.274Z"
             }
           ]
         },
         {
           "id": "9784ab58-f39f-4242-a68c-c41faa4f8e38",
           "title": "Web Server HTTP Response Optimization",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Reduce response latency and payload size for the ndx web server (Express) through HTTP-level optimizations: compression, cache-control headers, and JSON serialization tuning. No changes to API contract, route logic, or data model.",
           "source": "smart-add",
+          "startedAt": "2026-04-10T01:20:29.860Z",
+          "completedAt": "2026-04-10T01:20:29.860Z",
           "children": [
             {
               "id": "45408de5-a3f1-4e28-be0e-85c22e7bec58",
@@ -24414,7 +24420,7 @@
             {
               "id": "21b97649-a7fc-46c9-8972-5d41e35b4fc5",
               "title": "Set appropriate cache-control headers for static assets and stable API endpoints",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add Cache-Control headers to the Express static asset serving (viewer bundle, fonts, icons) with long max-age values (1 year for content-hashed assets). Add short max-age (5s) for polling endpoints that return live data (status, task-usage) to allow browser caching between rapid sequential polls. No logic changes to response generation.",
               "acceptanceCriteria": [
@@ -24432,17 +24438,21 @@
                 "http",
                 "caching"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-10T01:09:42.336Z",
+              "completedAt": "2026-04-10T01:20:29.535Z"
             }
           ]
         },
         {
           "id": "e2ec0ac6-bcae-49f9-a34b-c29c9e54bc38",
           "title": "Build Pipeline Speed",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Reduce the time for pnpm build, pnpm typecheck, and pnpm test by enabling parallelism and incremental compilation where not already configured. No changes to source code or build output.",
           "source": "smart-add",
+          "startedAt": "2026-04-10T01:09:20.873Z",
+          "completedAt": "2026-04-10T01:09:20.873Z",
           "children": [
             {
               "id": "6d82f39a-d114-4ef5-81a6-080607f5f4e6",
@@ -24471,7 +24481,7 @@
             {
               "id": "152da79d-794c-4eb2-8227-e74f4d4b224b",
               "title": "Configure pnpm workspace parallel build order with explicit package topology",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Add a pnpm build ordering configuration (via --filter topological sort or turbo/nx pipeline equivalent) so that foundation packages (llm-client) build first in parallel, followed by domain packages (rex, sourcevision) in parallel, then execution (hench), then orchestration (core, web). Currently builds may be serialized unnecessarily. No source changes.",
               "acceptanceCriteria": [
@@ -24489,11 +24499,15 @@
                 "pnpm",
                 "parallelism"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-10T00:22:49.753Z",
+              "completedAt": "2026-04-10T01:09:20.597Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-04-10T01:20:30.266Z",
+      "completedAt": "2026-04-10T01:20:30.266Z"
     }
   ]
 }
