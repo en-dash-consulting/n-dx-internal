@@ -9,7 +9,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "pnpm -r run build",
+    "build": "pnpm --filter @n-dx/llm-client run build && pnpm --parallel --filter @n-dx/rex --filter @n-dx/sourcevision run build && pnpm --parallel --filter @n-dx/hench --filter @n-dx/web run build && pnpm --filter @n-dx/core run build",
     "dev": "pnpm -r run dev",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run && pnpm -r run test",
