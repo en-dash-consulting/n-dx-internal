@@ -977,6 +977,80 @@ describe("n-dx config", () => {
     });
   });
 
+  // ── Help — LLM vendor settings ──────────────────────────────────────────
+
+  describe("help — llm vendor settings", () => {
+    it("documents llm.vendor option", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("llm.vendor");
+    });
+
+    it("notes that setting llm.vendor triggers OS-appropriate auth preflight", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("OS-appropriate auth preflight");
+    });
+
+    it("documents that .n-dx.json is written only on preflight success", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("written only when preflight succeeds");
+    });
+
+    it("documents idempotent behavior for llm.vendor", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("(unchanged)");
+    });
+
+    it("documents llm.codex.api_key as OPENAI_API_KEY injection", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("OPENAI_API_KEY");
+    });
+
+    it("documents Codex preflight error codes section", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("Codex preflight error codes");
+    });
+
+    it("documents NDX_CODEX_PREFLIGHT_NOT_INSTALLED", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("NDX_CODEX_PREFLIGHT_NOT_INSTALLED");
+    });
+
+    it("documents NDX_CODEX_PREFLIGHT_AUTH_REQUIRED", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("NDX_CODEX_PREFLIGHT_AUTH_REQUIRED");
+    });
+
+    it("documents NDX_CODEX_PREFLIGHT_INVOKE_FAILED", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("NDX_CODEX_PREFLIGHT_INVOKE_FAILED");
+    });
+
+    it("includes Windows-specific note for NDX_CODEX_PREFLIGHT_NOT_INSTALLED", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("PowerShell/CMD");
+    });
+
+    it("includes Windows-specific note for NDX_CODEX_PREFLIGHT_AUTH_REQUIRED", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("browser-based login");
+    });
+
+    it("includes codex login remediation step for auth failures", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("codex login");
+    });
+
+    it("includes retry command in Codex preflight docs", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("ndx config llm.vendor codex");
+    });
+
+    it("includes llm.codex.cli_path remediation in Codex docs", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("llm.codex.cli_path");
+    });
+  });
+
   // ── LLM vendor auth preflight ────────────────────────────────────────────
 
   describe("llm.vendor auth preflight", () => {

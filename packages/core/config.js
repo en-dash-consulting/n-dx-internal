@@ -768,7 +768,13 @@ Claude settings (.n-dx.json / .n-dx.local.json — shared across all packages):
 
 LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendor setup):
   llm.vendor               string    Active LLM vendor: "claude" or "codex"
-                                    Required for multi-vendor workflows.
+                                    Setting this runs an OS-appropriate auth preflight
+                                    against the selected vendor CLI. .n-dx.json is
+                                    written only when preflight succeeds; on failure
+                                    nothing is saved and error code + remediation
+                                    steps are printed to stderr.
+                                    Idempotent: re-running with the same vendor value
+                                    skips the file write and prints "(unchanged)".
   llm.claude.cli_path      string    Claude CLI path (optional; validated executable)
                                     Stored in .n-dx.local.json.
   llm.claude.api_key       string    Claude API key (optional)
@@ -776,7 +782,8 @@ LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendo
   llm.claude.model         string    Claude default model (optional)
   llm.codex.cli_path       string    Codex CLI path (optional; validated executable)
                                     Stored in .n-dx.local.json.
-  llm.codex.api_key        string    Codex API key (optional)
+  llm.codex.api_key        string    Codex API key (optional); passed as OPENAI_API_KEY
+                                    to the Codex CLI during preflight and execution.
   llm.codex.api_endpoint   string    Codex API endpoint (optional; validated URL)
   llm.codex.model          string    Codex default model (optional)
 
@@ -785,6 +792,22 @@ Claude preflight error codes:
   NDX_CLAUDE_PREFLIGHT_NOT_ON_PATH    Configured Claude command is not resolvable on PATH
   NDX_CLAUDE_PREFLIGHT_AUTH_REQUIRED  Claude CLI is present but needs authentication
   NDX_CLAUDE_PREFLIGHT_INVOKE_FAILED  Claude appears authenticated/installed, but ndx cannot launch a usable executable
+
+Codex preflight error codes:
+  NDX_CODEX_PREFLIGHT_NOT_INSTALLED  Codex CLI not found on PATH or at the configured path;
+                                     install Codex or set llm.codex.cli_path, then retry.
+                                     Windows: open a new PowerShell/CMD after installing so
+                                     PATH changes take effect.
+                                     macOS/Linux: ensure the Terminal running ndx can also
+                                     resolve and run codex.
+  NDX_CODEX_PREFLIGHT_AUTH_REQUIRED  Codex CLI present but unauthenticated; run codex login
+                                     or set an API key: n-dx config llm.codex.api_key <key>
+                                     then retry: ndx config llm.vendor codex
+                                     Windows: reopen the shell after browser-based login so
+                                     refreshed credentials are visible to ndx.
+  NDX_CODEX_PREFLIGHT_INVOKE_FAILED  Codex CLI found but could not complete a preflight
+                                     request; verify the binary is functional, check
+                                     llm.codex.cli_path if set, then retry.
 
 Feature toggles (.n-dx.json — managed via web UI or ndx config):
   features.rex.showTokenBudget      boolean   Show token budget on task items (default: false)
