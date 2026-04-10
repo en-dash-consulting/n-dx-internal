@@ -611,6 +611,41 @@ const MAX_COUPLING = 0.25;
 const EXEMPT_ROLES = new Set(["asset", "config", "other"]);
 
 /**
+ * Module-level cache for zones.json data, keyed by absolute file path.
+ * Eliminates redundant reads within a single CI invocation: checkZoneHealth
+ * and checkZoneIdConsistency both need the same file; the second caller gets
+ * the already-parsed object from this Map instead of hitting disk again.
+ *
+ * @type {Map<string, object | null>}
+ */
+const _zonesDataCache = new Map();
+
+/**
+ * Load and cache zones.json from the .sourcevision directory.
+ * Returns the parsed object, or null if the file is missing or malformed.
+ *
+ * @param {string} dir  Project root directory
+ * @returns {object | null}
+ */
+function loadZonesData(dir) {
+  const svDir = join(dir, ".sourcevision");
+  const zonesPath = join(svDir, "zones.json");
+
+  if (_zonesDataCache.has(zonesPath)) return _zonesDataCache.get(zonesPath);
+
+  let data = null;
+  if (existsSync(zonesPath)) {
+    try {
+      data = JSON.parse(readFileSync(zonesPath, "utf-8"));
+    } catch {
+      // malformed JSON — treat as missing
+    }
+  }
+  _zonesDataCache.set(zonesPath, data);
+  return data;
+}
+
+/**
  * Detect phantom zones — community-detection artifacts that group files
  * from multiple packages into a single zone. These have no architectural
  * meaning and their coupling scores (often very high) pollute aggregate
@@ -640,15 +675,8 @@ function isPhantomZone(zone) {
  * are excluded from health checks to prevent false-positive violations.
  */
 function checkZoneHealth(dir) {
-  const zonesPath = join(dir, ".sourcevision", "zones.json");
-  if (!existsSync(zonesPath)) {
-    return { ok: true, checked: 0, violations: [], phantomSkipped: 0 };
-  }
-
-  let zonesData;
-  try {
-    zonesData = JSON.parse(readFileSync(zonesPath, "utf-8"));
-  } catch {
+  const zonesData = loadZonesData(dir);
+  if (zonesData === null) {
     return { ok: true, checked: 0, violations: [], phantomSkipped: 0 };
   }
 
@@ -733,17 +761,14 @@ function zoneIdToDirName(id) {
  * Only checks top-level zones (sub-zones live inside their parent's directory).
  */
 function checkZoneIdConsistency(dir) {
-  const zonesJsonPath = join(dir, ".sourcevision", "zones.json");
-  const zonesDir = join(dir, ".sourcevision", "zones");
+  // svDir computed once — both paths below share this base.
+  const svDir = join(dir, ".sourcevision");
+  const zonesDir = join(svDir, "zones");
 
-  if (!existsSync(zonesJsonPath) || !existsSync(zonesDir)) {
-    return { ok: true, checked: 0, mismatches: [] };
-  }
-
-  let zonesData;
-  try {
-    zonesData = JSON.parse(readFileSync(zonesJsonPath, "utf-8"));
-  } catch {
+  // loadZonesData uses the same cache populated by checkZoneHealth, so no
+  // second disk read occurs when both functions run in the same CI invocation.
+  const zonesData = loadZonesData(dir);
+  if (zonesData === null || !existsSync(zonesDir)) {
     return { ok: true, checked: 0, mismatches: [] };
   }
 

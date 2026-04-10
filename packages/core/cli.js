@@ -1094,19 +1094,23 @@ function runCapture(script, args) {
 function readCodeHealthMetrics(dir) {
   try {
     const svDir = resolve(dir, ".sourcevision");
+    // Pre-compute paths once — svDir is already absolute so join() suffices.
+    const importsPath = join(svDir, "imports.json");
+    const zonesPath = join(svDir, "zones.json");
+    const callgraphPath = join(svDir, "callgraph.json");
     let circularDeps = 0;
     let codeFindingCount = 0;
     let unusedExports = 0;
 
     // Circular dependency count from imports.json
     try {
-      const importsData = JSON.parse(readFileSync(resolve(svDir, "imports.json"), "utf-8"));
+      const importsData = JSON.parse(readFileSync(importsPath, "utf-8"));
       circularDeps = importsData.summary?.circularCount ?? 0;
     } catch { /* imports.json may not exist */ }
 
     // Code-category finding count from zones.json
     try {
-      const zonesData = JSON.parse(readFileSync(resolve(svDir, "zones.json"), "utf-8"));
+      const zonesData = JSON.parse(readFileSync(zonesPath, "utf-8"));
       const findings = zonesData.findings ?? [];
       codeFindingCount = findings.filter(
         (f) => f.category === "code" && (f.severity === "warning" || f.severity === "critical")
@@ -1115,7 +1119,7 @@ function readCodeHealthMetrics(dir) {
 
     // Unused export count from callgraph.json
     try {
-      const callgraphData = JSON.parse(readFileSync(resolve(svDir, "callgraph.json"), "utf-8"));
+      const callgraphData = JSON.parse(readFileSync(callgraphPath, "utf-8"));
       unusedExports = callgraphData.summary?.unusedExportCount ?? 0;
     } catch { /* callgraph.json may not exist */ }
 
@@ -1432,11 +1436,13 @@ function showMainHelp() {
 
 // ── Module-level setup ───────────────────────────────────────────────────────
 
+// Resolve sourcevision path once — both `sourcevision` and `sv` share the same entry point.
+const _sourcevisionPath = resolveToolPath("packages/sourcevision");
 const tools = {
   rex: resolveToolPath("packages/rex"),
   hench: resolveToolPath("packages/hench"),
-  sourcevision: resolveToolPath("packages/sourcevision"),
-  sv: resolveToolPath("packages/sourcevision"),
+  sourcevision: _sourcevisionPath,
+  sv: _sourcevisionPath,
   web: resolveToolPath("packages/web"),
 };
 const SUPPORTED_PROVIDERS = ["codex", "claude"];

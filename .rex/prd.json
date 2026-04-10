@@ -19261,6 +19261,7 @@
       "level": "epic",
       "description": "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline.",
       "startedAt": "2026-04-02T17:55:36.327Z",
+      "completedAt": "2026-04-09T23:58:52.062Z",
       "mergedProposals": [
         {
           "proposalNodeKey": "p0:epic",
@@ -20965,8 +20966,7 @@
           "startedAt": "2026-04-09T23:46:37.410Z",
           "completedAt": "2026-04-09T23:58:51.787Z"
         }
-      ],
-      "completedAt": "2026-04-09T23:58:52.062Z"
+      ]
     },
     {
       "id": "7b2bbeff-44de-4b1b-b164-54fb5ddcb5f3",
@@ -24115,17 +24115,21 @@
     {
       "id": "8b5d866d-ef7c-415b-9703-c913026a3427",
       "title": "CLI & Developer Tools",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-04-10T00:05:17.873Z",
+      "completedAt": "2026-04-10T00:05:17.873Z",
       "children": [
         {
           "id": "a5846ad8-5f88-43bd-9aaa-7b1babdf1193",
           "title": "Codex Vendor Cross-OS Config & Preflight",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Harden `ndx config llm.vendor codex` with Windows-specific preflight that does not regress macOS behavior, and vice versa; ensure consistent UX, validation, and CI coverage across platforms.",
           "source": "smart-add",
+          "startedAt": "2026-04-10T00:05:17.593Z",
+          "completedAt": "2026-04-10T00:05:17.593Z",
           "children": [
             {
               "id": "27fbfd08-df5c-4de0-a591-944b65fb8a21",
@@ -24208,7 +24212,7 @@
             {
               "id": "6470ac0a-587a-4f58-bf01-45e2a2ec42ec",
               "title": "Update `ndx config` help, errors, and docs for Codex preflight",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Revise CLI help and error messages to document Codex vendor preflight behavior, OS-specific prerequisites, and remediation steps; ensure messages are consistent and non-ambiguous across platforms.",
               "acceptanceCriteria": [
@@ -24225,7 +24229,9 @@
                 "llm",
                 "codex"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-09T23:59:50.396Z",
+              "completedAt": "2026-04-10T00:05:17.295Z"
             }
           ]
         }
@@ -24241,7 +24247,7 @@
         {
           "id": "a79260fa-b393-4d3d-8364-0e6d519c0331",
           "title": "CLI Cold-Start Latency Reduction",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Reduce the time from running any ndx command to first meaningful output by deferring expensive module loads and optimizing the entry-point module graph. No logic changes — only import timing and module resolution.",
           "source": "smart-add",
@@ -24294,7 +24300,7 @@
             {
               "id": "31694fc1-5cdd-46ad-9078-14586649b880",
               "title": "Enable Node.js module caching and reduce redundant resolution in orchestration scripts",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Audit core orchestration scripts (cli.js, web.js, ci.js, config.js) for repeated fs.existsSync, path.resolve, and require calls that re-run on every invocation. Hoist these to module scope or cache results in a module-level variable so they pay cost once per process. No logic changes.",
               "acceptanceCriteria": [
@@ -24309,9 +24315,13 @@
                 "cli",
                 "orchestration"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-10T00:05:43.544Z",
+              "completedAt": "2026-04-10T00:14:31.018Z"
             }
-          ]
+          ],
+          "startedAt": "2026-04-10T00:14:31.300Z",
+          "completedAt": "2026-04-10T00:14:31.300Z"
         },
         {
           "id": "c5f1b004-10c0-4cfa-bd0e-9d3f367679d1",
