@@ -9,6 +9,36 @@ import { atomicWriteJSON } from "./atomic-write.js";
 import { withLock } from "./file-lock.js";
 import type { PRDStore, StoreCapabilities } from "./contracts.js";
 
+// ---------------------------------------------------------------------------
+// Module-level memoization cache for prd.json reads.
+//
+// Keyed by absolute file path. Each entry stores the parsed document and the
+// file mtime at the time it was read. Before returning a cached result,
+// loadDocument() stats the file and compares mtimes — a changed mtime causes
+// a cache miss and a fresh read from disk.
+//
+// The cache is process-local (module-level variable): it is never shared
+// across process boundaries and is discarded when the process exits.
+// ---------------------------------------------------------------------------
+
+interface PrdCacheEntry {
+  mtime: number;
+  doc: PRDDocument;
+}
+
+const prdReadCache = new Map<string, PrdCacheEntry>();
+
+/**
+ * Clear the in-process PRD read cache.
+ *
+ * Not needed in production — the mtime check keeps the cache coherent.
+ * Exposed for test suites that want to assert cold-cache behaviour or
+ * ensure complete isolation between test cases.
+ */
+export function clearPrdReadCache(): void {
+  prdReadCache.clear();
+}
+
 export class FileStore implements PRDStore {
   private rexDir: string;
   /** True while inside withTransaction — prevents double-locking in saveDocument. */
@@ -27,13 +57,31 @@ export class FileStore implements PRDStore {
   }
 
   async loadDocument(): Promise<PRDDocument> {
-    const raw = await readFile(this.path("prd.json"), "utf-8");
+    const filePath = this.path("prd.json");
+
+    // Check whether the cached document is still valid by comparing mtimes.
+    // stat() is cheap (nanoseconds); skipping readFile + JSON.parse + validate
+    // on a warm cache saves several milliseconds per call — significant when
+    // commands like smart-add call loadDocument() six or more times in a row.
+    const fileStats = await stat(filePath);
+    const mtime = fileStats.mtimeMs;
+
+    const cached = prdReadCache.get(filePath);
+    if (cached && cached.mtime === mtime) {
+      // Deep-clone so callers (including withTransaction) cannot mutate the
+      // cached reference and corrupt subsequent reads in the same process.
+      return structuredClone(cached.doc);
+    }
+
+    const raw = await readFile(filePath, "utf-8");
     const parsed = JSON.parse(raw);
     const result = validateDocument(parsed);
     if (!result.ok) {
       throw new Error(`Invalid prd.json: ${result.errors.message}`);
     }
-    return result.data as PRDDocument;
+    const doc = result.data as PRDDocument;
+    prdReadCache.set(filePath, { mtime, doc });
+    return structuredClone(doc);
   }
 
   async saveDocument(doc: PRDDocument): Promise<void> {

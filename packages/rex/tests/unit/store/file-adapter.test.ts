@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { FileStore, ensureRexDir } from "../../../src/store/file-adapter.js";
+import { FileStore, ensureRexDir, clearPrdReadCache } from "../../../src/store/file-adapter.js";
 import { SCHEMA_VERSION } from "../../../src/schema/index.js";
 import { toCanonicalJSON } from "../../../src/core/canonical.js";
 import type { PRDDocument, PRDItem } from "../../../src/schema/index.js";
@@ -260,6 +260,86 @@ describe("FileStore", () => {
       expect(caps.adapter).toBe("file");
       expect(caps.supportsTransactions).toBe(true);
       expect(caps.supportsWatch).toBe(false);
+    });
+  });
+
+  // ── PRD read cache ───────────────────────────────────────────────────────
+
+  describe("prd read cache", () => {
+    beforeEach(() => {
+      // Start each cache test from a cold cache so tests are independent
+      // of whatever the surrounding suite already cached under other paths.
+      clearPrdReadCache();
+    });
+
+    it("returns structurally equal documents on repeated reads", async () => {
+      const first = await store.loadDocument();
+      const second = await store.loadDocument();
+      expect(second).toEqual(first);
+    });
+
+    it("returns independent objects — mutating one result does not affect the next read", async () => {
+      const first = await store.loadDocument();
+      // Mutate the returned document
+      (first as PRDDocument & { _test?: string })._test = "mutated";
+      first.title = "mutated";
+
+      const second = await store.loadDocument();
+      // The cache should have returned a fresh deep-clone, not the mutated reference
+      expect(second.title).toBe("Test");
+      expect((second as PRDDocument & { _test?: string })._test).toBeUndefined();
+    });
+
+    it("reflects saveDocument changes on the next read (mtime invalidation)", async () => {
+      // Prime the cache
+      await store.loadDocument();
+
+      // Write a change through the store (mtime advances)
+      const doc = await store.loadDocument();
+      doc.title = "Post-Write Title";
+      await store.saveDocument(doc);
+
+      // The next read must see the updated title, not the stale cached value
+      const reloaded = await store.loadDocument();
+      expect(reloaded.title).toBe("Post-Write Title");
+    });
+
+    it("reflects an externally written file (mtime invalidation from outside)", async () => {
+      // Prime the cache with the original document
+      const original = await store.loadDocument();
+      expect(original.title).toBe("Test");
+
+      // Write a new document directly to disk (simulates an external process)
+      const updated: PRDDocument = {
+        schema: SCHEMA_VERSION,
+        title: "External Write",
+        items: [],
+      };
+      // Small delay to ensure mtime advances on filesystems with 1-second precision
+      await new Promise((r) => setTimeout(r, 10));
+      await writeFile(join(rexDir, "prd.json"), toCanonicalJSON(updated), "utf-8");
+
+      // The cache should detect the mtime change and return fresh content
+      const reloaded = await store.loadDocument();
+      expect(reloaded.title).toBe("External Write");
+    });
+
+    it("clearPrdReadCache forces a cold read on the next loadDocument call", async () => {
+      // Warm the cache
+      const first = await store.loadDocument();
+      expect(first.title).toBe("Test");
+
+      // Write a new title directly to disk without going through the store
+      const updated: PRDDocument = { ...first, title: "After Clear" };
+      // Preserve the same mtime bucket by writing then manually clearing the cache
+      await writeFile(join(rexDir, "prd.json"), toCanonicalJSON(updated), "utf-8");
+
+      // Evict the cache entry
+      clearPrdReadCache();
+
+      // Next read must hit disk and return the updated title
+      const second = await store.loadDocument();
+      expect(second.title).toBe("After Clear");
     });
   });
 });
