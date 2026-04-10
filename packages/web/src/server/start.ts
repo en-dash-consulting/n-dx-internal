@@ -420,7 +420,7 @@ function handleReloadSignalEndpoint(
   if (req.url !== "/api/reload") return false;
 
   if ((req.method || "GET") !== "POST") {
-    res.writeHead(405, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+    res.writeHead(405, { "Content-Type": "application/json", "Cache-Control": "no-store" });
     res.end(JSON.stringify({ error: "Method not allowed" }));
     return true;
   }
@@ -442,7 +442,7 @@ function handleReloadSignalEndpoint(
     timestamp,
   });
 
-  res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" });
+  res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
   res.end(JSON.stringify({
     ok: true,
     websocketClients: ws.clientCount(),

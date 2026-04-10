@@ -4,9 +4,51 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFileSync, existsSync, realpathSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { resolve, dirname, join, extname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ServerContext } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Cache-Control helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Regex that matches a content-hash segment in a filename stem.
+ * Matches names like "main-a1b2c3d4.js" or "chunk-Ab12Cd34EF.woff2"
+ * where the hash is 7–20 hex characters preceded by a hyphen.
+ */
+const CONTENT_HASH_RE = /^.+-[0-9a-fA-F]{7,20}\.[^.]+$/;
+
+/**
+ * Returns the Cache-Control header value for a static asset filename.
+ *
+ * Assets whose filenames contain a content-hash segment (e.g. esbuild/Vite
+ * output like "main-a1b2c3d4.js") are safe to cache for one year — the hash
+ * guarantees the URL changes whenever the content changes.  Everything else
+ * gets "no-cache" so the browser always revalidates before using a stored copy.
+ *
+ * @param filename - Basename of the asset (not a full path).
+ */
+export function staticCacheControl(filename: string): string {
+  return CONTENT_HASH_RE.test(filename)
+    ? "public, max-age=31536000, immutable"
+    : "no-cache";
+}
+
+// MIME type map for static assets served by this handler.
+const STATIC_MIME_TYPES: Record<string, string> = {
+  ".js": "application/javascript",
+  ".mjs": "application/javascript",
+  ".css": "text/css",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+  ".ttf": "font/ttf",
+  ".eot": "application/vnd.ms-fontobject",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".png": "image/png",
+  ".webp": "image/webp",
+};
 
 const LIVE_RELOAD_SNIPPET = `<script>
 (function(){
@@ -174,13 +216,19 @@ export function handleStaticRoute(
     return true;
   }
 
-  // PNG assets (must come before SPA catch-all)
-  if (url.endsWith(".png") && /^\/[\w-]+\.png$/.test(url)) {
-    const filename = url.slice(1);
-    const pngPath = assets.findAssetPath(filename);
-    if (pngPath) {
-      const content = readFileSync(pngPath);
-      res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
+  // Static assets: images, fonts, JS bundles, CSS (must come before SPA catch-all).
+  // Content-hashed filenames (e.g. "main-a1b2c3d4.js") receive a 1-year immutable
+  // cache; everything else receives no-cache to force revalidation.
+  const ext = extname(url).toLowerCase();
+  if (ext && ext in STATIC_MIME_TYPES) {
+    const filename = basename(url.split("?")[0]);
+    const assetPath = assets.findAssetPath(filename);
+    if (assetPath) {
+      const content = readFileSync(assetPath);
+      res.writeHead(200, {
+        "Content-Type": STATIC_MIME_TYPES[ext]!,
+        "Cache-Control": staticCacheControl(filename),
+      });
       res.end(content);
     } else {
       res.writeHead(404);

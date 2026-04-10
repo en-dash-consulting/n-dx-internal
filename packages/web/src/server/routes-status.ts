@@ -273,12 +273,12 @@ export function handleStatusRoute(
     cache.projectDir === ctx.projectDir &&
     now - cache.timestamp < CACHE_TTL_MS
   ) {
-    jsonResponse(res, 200, cache.status);
+    jsonResponse(res, 200, cache.status, "max-age=5");
     return true;
   }
 
   const status = buildProjectStatus(ctx);
   cache = { status, projectDir: ctx.projectDir, timestamp: now };
-  jsonResponse(res, 200, status);
+  jsonResponse(res, 200, status, "max-age=5");
   return true;
 }

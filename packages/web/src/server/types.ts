@@ -33,10 +33,11 @@ export function jsonResponse(
   res: ServerResponse,
   status: number,
   data: unknown,
+  cacheControl = "no-cache",
 ): void {
   res.writeHead(status, {
     "Content-Type": "application/json",
-    "Cache-Control": "no-cache",
+    "Cache-Control": cacheControl,
   });
   res.end(JSON.stringify(data));
 }

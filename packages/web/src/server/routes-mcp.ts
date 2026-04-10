@@ -141,6 +141,9 @@ async function handleMcpRequest(
 ): Promise<boolean> {
   const method = req.method || "GET";
 
+  // MCP endpoints are stateful / streaming — responses must never be cached.
+  res.setHeader("Cache-Control", "no-store");
+
   // POST requests: either initialization (no session) or existing session
   if (method === "POST") {
     const existing = findSession(req, sessions);
@@ -163,7 +166,7 @@ async function handleMcpRequest(
   if (method === "GET" || method === "DELETE") {
     const existing = findSession(req, sessions);
     if (!existing) {
-      res.writeHead(400, { "Content-Type": "application/json" });
+      res.writeHead(400, { "Content-Type": "application/json", "Cache-Control": "no-store" });
       res.end(JSON.stringify({ error: "No valid session. Send an initialization request first." }));
       return true;
     }
@@ -173,7 +176,7 @@ async function handleMcpRequest(
   }
 
   // Unsupported method
-  res.writeHead(405, { "Content-Type": "application/json", Allow: "GET, POST, DELETE" });
+  res.writeHead(405, { "Content-Type": "application/json", Allow: "GET, POST, DELETE", "Cache-Control": "no-store" });
   res.end(JSON.stringify({ error: "Method not allowed" }));
   return true;
 }
