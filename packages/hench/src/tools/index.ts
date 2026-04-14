@@ -51,3 +51,17 @@ export type {
   UnusedImport,
   DuplicateUtility,
 } from "./cleanup-transformations.js";
+export {
+  analyzeDeadCode,
+  toAnalyzerOutput,
+  formatDeadCodeResults,
+} from "./dead-code-analyzer.js";
+export type {
+  DeadCodeAnalyzerOptions,
+  DeadCodeAnalysisResult,
+  CleanupCandidate,
+  DeadExportCandidate,
+  UnusedImportCandidate,
+  DuplicateUtilityCandidate,
+  ConfidenceLevel,
+} from "./dead-code-analyzer.js";
