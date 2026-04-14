@@ -18,7 +18,7 @@ import { randomUUID } from "node:crypto";
 import type { PRDStore, SelectionExplanation } from "../../prd/rex-gateway.js";
 import { explainSelection, collectCompletedIds, findItem } from "../../prd/rex-gateway.js";
 import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief } from "../../schema/index.js";
-import { getCurrentHead } from "../../process/index.js";
+import { getCurrentHead, execShellCmd } from "../../process/index.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";
 import type { AssembleBriefOptions } from "../planning/brief.js";
@@ -542,6 +542,32 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
 
     if (auditResult) {
       run.dependencyAudit = auditResult;
+    }
+  }
+
+  // When the agent loop produced no tool call records (e.g. Codex CLI, which
+  // emits verbose text rather than structured tool events), fall back to
+  // `git diff --name-only HEAD` to discover which files were actually changed.
+  // This ensures the self-heal test gate runs even for vendors that do not
+  // emit structured tool events.  The check is intentionally vendor-agnostic:
+  // it activates whenever toolCalls is empty, regardless of which vendor ran.
+  if (selfHeal && run.structuredSummary && run.toolCalls.length === 0) {
+    try {
+      const { stdout } = await execShellCmd("git diff --name-only HEAD", {
+        cwd: projectDir,
+        timeout: 10_000,
+      });
+      const gitChangedFiles = stdout.trim().split("\n").filter(Boolean);
+      if (gitChangedFiles.length > 0) {
+        run.structuredSummary.filesChanged = gitChangedFiles;
+        run.structuredSummary.counts = {
+          ...run.structuredSummary.counts,
+          filesChanged: gitChangedFiles.length,
+        };
+      }
+    } catch {
+      // Best-effort: if git is unavailable, the test gate falls back to
+      // the existing filesChanged (empty), which causes it to skip.
     }
   }
 

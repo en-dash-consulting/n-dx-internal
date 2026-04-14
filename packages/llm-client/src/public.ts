@@ -149,6 +149,7 @@ export {
   resolveModel,
   resolveVendorModel,
   NEWEST_MODELS,
+  VENDOR_CONTEXT_CHAR_LIMITS,
 } from "./config.js";
 
 // Token usage parsing

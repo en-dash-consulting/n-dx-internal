@@ -19,7 +19,7 @@ import {
   resolveVendorCliPath,
   resolveVendorCliEnv,
 } from "../../store/project-config.js";
-import { resolveVendorModel } from "../../prd/llm-gateway.js";
+import { resolveVendorModel, VENDOR_CONTEXT_CHAR_LIMITS } from "../../prd/llm-gateway.js";
 import {
   prepareBrief,
   executeDryRun,
@@ -1068,6 +1068,15 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
   );
 
+  // Bound the brief text to the vendor's effective context character limit.
+  // This prevents the combined prompt (system + brief) from exceeding the
+  // vendor's context window.  Use the vendor/model resolver from llm-gateway
+  // to select the appropriate limit rather than a Claude-specific constant.
+  const contextCharLimit = VENDOR_CONTEXT_CHAR_LIMITS[vendor];
+  const boundedBriefText = briefText.length > contextCharLimit
+    ? briefText.slice(0, contextCharLimit)
+    : briefText;
+
   // Shared: dry run path
   if (dryRun) {
     const run = executeDryRun({
@@ -1118,8 +1127,8 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   try {
     for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
       const promptText = attempt === 0
-        ? briefText
-        : briefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulated.turns);
+        ? boundedBriefText
+        : boundedBriefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulated.turns);
 
       section(`Agent Run${opts.model ? ` (${opts.model})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
       stream("CLI", `Spawning ${vendor}${opts.model ? ` (model: ${opts.model})` : ""}...`);
