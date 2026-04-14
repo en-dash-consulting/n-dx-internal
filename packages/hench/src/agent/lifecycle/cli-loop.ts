@@ -8,6 +8,7 @@ import { validateCompletion, formatValidationResult } from "../../validation/com
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { checkTokenBudget } from "./token-budget.js";
 import { mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
+import { parseCodexCliTokenUsage } from "./codex-cli-token-parser.js";
 import { startHeartbeat } from "./heartbeat.js";
 import { section, stream, info } from "../../types/output.js";
 import { isSpinningRun } from "../analysis/spin.js";
@@ -698,11 +699,25 @@ async function spawnCodex(
         };
         const normalized = normalizeCodexResponse(stdout);
         const codexTokenMapping = mapCodexUsageToTokenUsage(parseMaybeJson(stdout));
-        result.tokenUsage = codexTokenMapping.usage;
+
+        // If JSON parsing didn't yield token usage, try extracting from text output.
+        // Codex CLI may print "Tokens used: N in, N out" to stdout/stderr.
+        let finalUsage = codexTokenMapping.usage;
+        let usedTextParser = false;
+        if (codexTokenMapping.diagnostic === "codex_usage_missing") {
+          const combinedOutput = stdout + "\n" + stderr;
+          const textParsed = parseCodexCliTokenUsage(combinedOutput);
+          if (textParsed) {
+            finalUsage = textParsed;
+            usedTextParser = true;
+          }
+        }
+
+        result.tokenUsage = finalUsage;
         result.turnTokenUsage.push({
           turn: 1,
-          input: codexTokenMapping.usage.input,
-          output: codexTokenMapping.usage.output,
+          input: finalUsage.input,
+          output: finalUsage.output,
           vendor: tokenMetadata.vendor,
           model: tokenMetadata.model,
         });
@@ -710,7 +725,8 @@ async function spawnCodex(
         for (const warning of normalized.warnings) {
           stream("Warn", warning);
         }
-        if (codexTokenMapping.diagnostic) {
+        // Only warn about missing tokens if both JSON and text parsing failed
+        if (codexTokenMapping.diagnostic && !usedTextParser) {
           stream("Warn", "Codex response omitted usage; token accounting defaulted to zero.");
         }
 
