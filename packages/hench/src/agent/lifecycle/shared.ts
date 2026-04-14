@@ -26,7 +26,7 @@ import { buildSystemPrompt } from "../planning/prompt.js";
 import { saveRun, persistRunLog } from "../../store/index.js";
 import { buildRunSummary } from "../analysis/summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "../analysis/review.js";
-import { runPostTaskTests } from "../../tools/index.js";
+import { runPostTaskTests, runTestGate } from "../../tools/index.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { section, subsection, stream, detail, info, getCapturedLines, resetCapturedLines } from "../../types/output.js";
 import { displayTaskInfo } from "./task-display.js";
@@ -466,6 +466,18 @@ async function retrieveCodexTokensIfNeeded(run: RunRecord, projectDir: string): 
 // Run finalization (identical in both loops)
 // ---------------------------------------------------------------------------
 
+/**
+ * Format a duration in milliseconds as a human-readable string.
+ * e.g., 5000 → "5s", 65000 → "1m 5s"
+ */
+function formatDurationMs(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return `${minutes}m ${remaining}s`;
+}
+
 export interface FinalizeRunOptions {
   run: RunRecord;
   henchDir: string;
@@ -473,6 +485,8 @@ export interface FinalizeRunOptions {
   testCommand?: string;
   heartbeat?: Heartbeat;
   memoryCtx?: MemoryContext;
+  /** Whether in self-heal mode (triggers mandatory test gate). */
+  selfHeal?: boolean;
 }
 
 /**
@@ -481,7 +495,7 @@ export interface FinalizeRunOptions {
  * and persist. Called at the end of both loops.
  */
 export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
-  const { run, henchDir, projectDir, testCommand, heartbeat, memoryCtx } = opts;
+  const { run, henchDir, projectDir, testCommand, heartbeat, memoryCtx, selfHeal } = opts;
 
   run.structuredSummary = buildRunSummary(run.toolCalls);
 
@@ -504,6 +518,43 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
       systemAvailableAtEndBytes,
       systemTotalBytes: memoryCtx.systemTotalBytes,
     };
+  }
+
+  // Run test suite gate in self-heal mode (mandatory full test validation)
+  if (selfHeal && run.structuredSummary) {
+    subsection("Test Suite Gate");
+    const testGate = await runTestGate({
+      projectDir,
+      filesChanged: run.structuredSummary.filesChanged,
+    });
+
+    run.testGate = testGate;
+
+    if (testGate.ran) {
+      const packageCount = testGate.packages.length;
+      const passCount = testGate.packages.filter((p) => p.passed).length;
+
+      if (testGate.passed) {
+        stream("Test Gate", `✓ All ${packageCount} package(s) passed`);
+        if (testGate.totalDurationMs != null) {
+          detail(`Elapsed: ${formatDurationMs(testGate.totalDurationMs)}`);
+        }
+      } else {
+        // Mark run as failed to trigger remediation loop
+        run.status = "failed";
+        const failedPackages = testGate.packages.filter((p) => !p.passed).map((p) => p.name);
+        run.error = `Test gate failed: ${failedPackages.join(", ")}`;
+        stream("Test Gate", `✗ ${packageCount - passCount}/${packageCount} package(s) failed`);
+
+        // Show failure details from first failed package
+        const firstFailure = testGate.packages.find((p) => p.failureOutput);
+        if (firstFailure?.failureOutput) {
+          detail(firstFailure.failureOutput);
+        }
+      }
+    } else if (testGate.skipReason) {
+      detail(`Skipped: ${testGate.skipReason}`);
+    }
   }
 
   await runPostTaskTestsIfNeeded(run, projectDir, testCommand);

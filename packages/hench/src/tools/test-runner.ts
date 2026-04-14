@@ -390,3 +390,197 @@ function truncateOutput(stdout: string, stderr: string, maxLen: number): string 
   // Keep the last N characters (usually the summary is at the end)
   return "…" + combined.slice(-(maxLen - 1));
 }
+
+// ---------------------------------------------------------------------------
+// Test suite gate (mandatory full test suite validation for self-heal mode)
+// ---------------------------------------------------------------------------
+
+import type { TestGateResult, TestPackageResult } from "../schema/index.js";
+
+export interface TestGateOptions {
+  /** Project root directory. */
+  projectDir: string;
+  /** Files changed during the task. */
+  filesChanged: string[];
+  /** Timeout for the test command in ms. Default: 300_000. */
+  timeout?: number;
+}
+
+const TEST_GATE_TIMEOUT = 300_000; // 5 minutes
+
+/**
+ * Vitest JSON reporter output structure.
+ */
+interface VitestJsonReport {
+  numTotalTests: number;
+  numPassedTests: number;
+  numFailedTests: number;
+  testResults: Array<{
+    filepath: string;
+    numFailingTests: number;
+    failureMessage?: string;
+  }>;
+}
+
+/**
+ * Extract package name from a filepath.
+ * e.g., "packages/hench/tests/..." → "hench"
+ *       "packages/sourcevision/src/..." → "sourcevision"
+ */
+function extractPackageName(filepath: string): string {
+  const match = filepath.match(/packages\/([^/]+)\//);
+  if (match) return match[1];
+
+  // Fallback: take the first directory component
+  const parts = filepath.split(/[/\\]/);
+  if (parts.length > 0) return parts[0];
+
+  return filepath;
+}
+
+/**
+ * Parse vitest JSON output and aggregate results by package.
+ *
+ * Handles both successful JSON parsing and fallback to stderr parsing
+ * when JSON is malformed.
+ */
+function parseVitestOutput(stdout: string, stderr: string): TestPackageResult[] {
+  // Try to parse JSON output from stdout
+  if (stdout.trim()) {
+    try {
+      const report = JSON.parse(stdout) as VitestJsonReport;
+
+      // Group test results by package
+      const packages = new Map<string, TestPackageResult>();
+
+      // Initialize packages from test results
+      for (const testResult of report.testResults) {
+        const pkgName = extractPackageName(testResult.filepath);
+
+        if (!packages.has(pkgName)) {
+          packages.set(pkgName, {
+            name: pkgName,
+            passed: true,
+            testCount: 0,
+            failureCount: 0,
+          });
+        }
+
+        const pkg = packages.get(pkgName)!;
+        pkg.testCount = (pkg.testCount ?? 0) + 1;
+
+        if (testResult.numFailingTests > 0) {
+          pkg.passed = false;
+          pkg.failureCount = (pkg.failureCount ?? 0) + testResult.numFailingTests;
+
+          // Capture first failure message for this package
+          if (!pkg.failureOutput && testResult.failureMessage) {
+            pkg.failureOutput = truncateOutput(testResult.failureMessage, "", 500);
+          }
+        }
+      }
+
+      // If no test results, use overall counts to infer pass/fail
+      if (packages.size === 0) {
+        const pkgName = "workspace";
+        packages.set(pkgName, {
+          name: pkgName,
+          passed: report.numFailedTests === 0,
+          testCount: report.numTotalTests,
+          failureCount: report.numFailedTests,
+        });
+      }
+
+      return Array.from(packages.values());
+    } catch {
+      // JSON parse failed — fall through to stderr parsing
+    }
+  }
+
+  // Fallback: parse stderr for error messages
+  if (stderr.trim()) {
+    // Extract package names from error patterns like "packages/xyz/..."
+    const pkgMatches = stderr.match(/packages\/([^/\s]+)/g) ?? [];
+    const pkgNames = new Set(
+      pkgMatches.map((m) => m.split("/")[1]).filter(Boolean),
+    );
+
+    if (pkgNames.size > 0) {
+      return Array.from(pkgNames).map((name) => ({
+        name,
+        passed: false,
+        failureOutput: truncateOutput(stderr, "", 500),
+      }));
+    }
+
+    // Generic failure with no package info
+    return [{
+      name: "workspace",
+      passed: false,
+      failureOutput: truncateOutput(stderr, "", 500),
+    }];
+  }
+
+  return [];
+}
+
+/**
+ * Run the full test suite as a mandatory gate in self-heal mode.
+ *
+ * Behavior:
+ * - Skips if filesChanged is empty (no modifications to test)
+ * - Runs `pnpm test --reporter=json` to capture structured output
+ * - Aggregates results by package (packages/xyz/...)
+ * - Returns per-package pass/fail status and failure counts
+ * - Never throws — always returns a structured result
+ */
+export async function runTestGate(
+  options: TestGateOptions,
+): Promise<TestGateResult> {
+  const { projectDir, filesChanged, timeout = TEST_GATE_TIMEOUT } = options;
+
+  // Skip if no files were modified
+  if (filesChanged.length === 0) {
+    return {
+      ran: false,
+      passed: true,
+      packages: [],
+      skipReason: "No files modified in prior phases",
+    };
+  }
+
+  const command = "pnpm test --reporter=json";
+  const startMs = Date.now();
+
+  const { stdout, stderr, exitCode } = await execShellCmd(command, {
+    cwd: projectDir,
+    timeout,
+    maxBuffer: 5 * 1024 * 1024, // 5MB for larger test output
+  });
+
+  const totalDurationMs = Date.now() - startMs;
+
+  // Handle timeout
+  if (exitCode === null) {
+    return {
+      ran: true,
+      passed: false,
+      packages: [],
+      command,
+      totalDurationMs,
+      error: "Test command timed out",
+    };
+  }
+
+  // Parse output to extract per-package results
+  const packages = parseVitestOutput(stdout, stderr);
+  const overallPassed = exitCode === 0;
+
+  return {
+    ran: true,
+    passed: overallPassed,
+    packages,
+    command,
+    totalDurationMs,
+  };
+}

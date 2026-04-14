@@ -50,6 +50,8 @@ export type {
   TestRecord,
   SummaryCounts,
   PostRunTestRecord,
+  TestGateResult,
+  TestPackageResult,
   RunSummaryData,
 } from "./schema/v1.js";
 

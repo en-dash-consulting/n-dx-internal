@@ -248,6 +248,38 @@ export interface RunMemoryStats {
   systemTotalBytes: number;
 }
 
+export interface TestPackageResult {
+  /** Package name/path (e.g., "packages/hench", "packages/rex") */
+  name: string;
+  /** Whether tests passed for this package */
+  passed: boolean;
+  /** Total number of tests run */
+  testCount?: number;
+  /** Number of failed tests */
+  failureCount?: number;
+  /** Abbreviated error output (last 500 chars) */
+  failureOutput?: string;
+  /** Elapsed time for this package (ms) */
+  durationMs?: number;
+}
+
+export interface TestGateResult {
+  /** Whether the test gate ran at all */
+  ran: boolean;
+  /** Overall pass/fail (all packages must pass) */
+  passed: boolean;
+  /** Per-package results */
+  packages: TestPackageResult[];
+  /** Reason gate was skipped if applicable */
+  skipReason?: string;
+  /** The full pnpm test command executed */
+  command?: string;
+  /** Total elapsed time (ms) */
+  totalDurationMs?: number;
+  /** Error if test gate itself failed (e.g., timeout) */
+  error?: string;
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -270,6 +302,8 @@ export interface RunRecord {
   structuredSummary?: RunSummaryData;
   /** Memory usage statistics captured during the run. */
   memoryStats?: RunMemoryStats;
+  /** Full test suite gate results (self-heal mode only). */
+  testGate?: TestGateResult;
 }
 
 export interface TaskBriefTask {

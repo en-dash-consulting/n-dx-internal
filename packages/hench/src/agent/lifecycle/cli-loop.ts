@@ -1165,6 +1165,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     testCommand: brief.project.testCommand,
     heartbeat,
     memoryCtx,
+    selfHeal: config.selfHeal,
   });
 
   return { run };

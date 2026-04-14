@@ -24,10 +24,11 @@ export { toolRunCommand } from "./shell.js";
 export { toolGit } from "./git.js";
 export {
   runPostTaskTests,
+  runTestGate,
   findRelevantTests,
   isTestFile,
   candidateTestPaths,
   detectRunner,
   buildScopedCommand,
 } from "./test-runner.js";
-export type { PostRunTestResult, TestRunnerOptions } from "./test-runner.js";
+export type { PostRunTestResult, TestRunnerOptions, TestGateOptions } from "./test-runner.js";
