@@ -212,6 +212,156 @@ describe("Codex self-heal batch pipeline — integration", () => {
     });
   });
 
+  // ── AC-1b: Codex generic non-zero exit (empty stderr) → transient, retried ──
+
+  it("retries Codex generic non-zero exit (no matching stderr) as transient", async () => {
+    // Arrange: first spawn exits with code 1 and empty stderr.
+    // spawnCodex sets result.error = "codex exited with code 1" when stderr is empty.
+    // This pattern is now in TRANSIENT_PATTERNS → should retry rather than permanent-fail.
+    const mockSpawn = vi.fn();
+    vi.doMock("node:child_process", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("node:child_process")>();
+      return { ...actual, spawn: mockSpawn };
+    });
+
+    mockSpawn
+      .mockImplementationOnce(() =>
+        // No stderr, non-zero exit → "codex exited with code 1"
+        mockCliProcess({ code: 1 }),
+      )
+      .mockImplementationOnce(() =>
+        mockCliProcess({ stdout: CODEX_VERBOSE_SUCCESS, code: 0 }),
+      );
+
+    const { createStore } = await import("@n-dx/rex/dist/store/index.js");
+    const { loadConfig } = await import("../../src/store/config.js");
+    const { cliLoop } = await import("../../src/agent/lifecycle/cli-loop.js");
+
+    const config = await loadConfig(henchDir);
+    const store = createStore("file", rexDir);
+
+    const result = await cliLoop({
+      config: {
+        ...config,
+        selfHeal: true,
+        retry: { maxRetries: 1, baseDelayMs: 0, maxDelayMs: 0 },
+      },
+      store,
+      projectDir,
+      henchDir,
+      taskId: "task-1",
+    });
+
+    // Both spawn calls were made: first failed, second succeeded.
+    expect(mockSpawn).toHaveBeenCalledTimes(2);
+
+    // Retry recorded.
+    expect(result.run.retryAttempts).toBe(1);
+
+    // Pipeline continued to testGate — not halted by the generic exit code.
+    expect(result.run.testGate).toBeDefined();
+  });
+
+  // ── AC-3: Retry log contains vendor name, batch id, and attempt number ──────
+
+  it("logs transient retry with vendor name and attempt info", async () => {
+    // Arrange: one transient failure then success.
+    const mockSpawn = vi.fn();
+    vi.doMock("node:child_process", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("node:child_process")>();
+      return { ...actual, spawn: mockSpawn };
+    });
+
+    mockSpawn
+      .mockImplementationOnce(() =>
+        mockCliProcess({ stderr: "429 Rate limit exceeded", code: 1 }),
+      )
+      .mockImplementationOnce(() =>
+        mockCliProcess({ stdout: CODEX_VERBOSE_SUCCESS, code: 0 }),
+      );
+
+    const { createStore } = await import("@n-dx/rex/dist/store/index.js");
+    const { loadConfig } = await import("../../src/store/config.js");
+    const { cliLoop } = await import("../../src/agent/lifecycle/cli-loop.js");
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+
+    const config = await loadConfig(henchDir);
+    const store = createStore("file", rexDir);
+
+    await cliLoop({
+      config: {
+        ...config,
+        selfHeal: true,
+        retry: { maxRetries: 1, baseDelayMs: 0, maxDelayMs: 0 },
+      },
+      store,
+      projectDir,
+      henchDir,
+      taskId: "task-1",
+    });
+
+    // Read the execution log and find the transient_error entry.
+    const logPath = join(rexDir, "execution-log.jsonl");
+    const logText = await readFile(logPath, "utf-8");
+    const entries = logText
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as { event: string; detail?: string });
+
+    const retryEntry = entries.find((e) => e.event === "transient_error");
+    expect(retryEntry).toBeDefined();
+
+    // Detail must include vendor name, batch id, and attempt number.
+    expect(retryEntry!.detail).toContain("[codex]");
+    expect(retryEntry!.detail).toContain("task-1");       // batch id
+    expect(retryEntry!.detail).toContain("attempt 1/2");  // attempt 1 of 2
+    expect(retryEntry!.detail).toContain("429");          // error summary
+  });
+
+  // ── AC-4: After max retries, loop status is error_transient (not failed) ────
+
+  it("returns error_transient status after max retries so outer loop can skip", async () => {
+    // Arrange: all spawn calls fail with a generic non-zero exit.
+    // After maxRetries exhausted, run.status must be "error_transient" so
+    // runIterations/runLoop can continue to the next task rather than stopping.
+    const mockSpawn = vi.fn();
+    vi.doMock("node:child_process", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("node:child_process")>();
+      return { ...actual, spawn: mockSpawn };
+    });
+
+    // All attempts fail (1 initial + 1 retry = 2 calls total).
+    mockSpawn.mockImplementation(() => mockCliProcess({ code: 1 }));
+
+    const { createStore } = await import("@n-dx/rex/dist/store/index.js");
+    const { loadConfig } = await import("../../src/store/config.js");
+    const { cliLoop } = await import("../../src/agent/lifecycle/cli-loop.js");
+
+    const config = await loadConfig(henchDir);
+    const store = createStore("file", rexDir);
+
+    const result = await cliLoop({
+      config: {
+        ...config,
+        selfHeal: true,
+        retry: { maxRetries: 1, baseDelayMs: 0, maxDelayMs: 0 },
+      },
+      store,
+      projectDir,
+      henchDir,
+      taskId: "task-1",
+    });
+
+    // All retries used: two spawn calls.
+    expect(mockSpawn).toHaveBeenCalledTimes(2);
+
+    // Status is error_transient, not "failed" — enables outer loop to skip
+    // rather than halt.
+    expect(result.run.status).toBe("error_transient");
+  });
+
   // ── AC-2: Rate-limit error triggers retry; pipeline continues ──────────────
 
   it("retries on 429 rate-limit error and continues the self-heal pipeline", async () => {

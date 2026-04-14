@@ -52,6 +52,12 @@ const TRANSIENT_PATTERNS = [
   /ECONNREFUSED/,
   /socket hang up/i,
   /network error/i,
+  // Generic CLI non-zero exits: stderr is often empty when the subprocess is
+  // killed or times out, so the error text is synthesised as
+  // "<vendor> exited with code N". Treat these as transient — permanent
+  // failures (bad auth, missing binary) surface via different error messages.
+  /codex exited with code \d+/i,
+  /claude exited with code \d+/i,
 ];
 
 export function isTransientError(errorText: string): boolean {
@@ -1005,6 +1011,7 @@ interface ErrorContext {
   store: PRDStore;
   taskId: string;
   retryConfig: RetryConfig;
+  vendor: string;
 }
 
 /**
@@ -1012,7 +1019,7 @@ interface ErrorContext {
  * Classifies as transient (retry with backoff) or permanent (fail immediately).
  */
 async function processErrorResult(ctx: ErrorContext): Promise<ErrorAction> {
-  const { run, result, accumulated, attempt, store, taskId, retryConfig } = ctx;
+  const { run, result, accumulated, attempt, store, taskId, retryConfig, vendor } = ctx;
 
   if (!isTransientError(result.error!)) {
     // Non-transient error: fail immediately
@@ -1024,10 +1031,11 @@ async function processErrorResult(ctx: ErrorContext): Promise<ErrorAction> {
     return "break";
   }
 
-  // Transient error — log and decide whether to retry or give up
+  // Transient error — log with vendor, batch identifier, and attempt number
+  // so operators can correlate retries across multi-task self-heal runs.
   await toolRexAppendLog(store, taskId, {
     event: "transient_error",
-    detail: `Attempt ${attempt + 1}: ${result.error}`,
+    detail: `[${vendor}] batch "${taskId}" attempt ${attempt + 1}/${retryConfig.maxRetries + 1}: ${result.error}`,
   });
 
   if (attempt < retryConfig.maxRetries) {
@@ -1160,7 +1168,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       } else {
         const action = await processErrorResult({
           run, result, accumulated, attempt,
-          store, taskId, retryConfig,
+          store, taskId, retryConfig, vendor,
         });
         if (action === "break") break;
         // action === "retry" → continue loop
