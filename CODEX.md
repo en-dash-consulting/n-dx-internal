@@ -33,7 +33,6 @@ packages/
   sourcevision/    # analysis engine
   rex/             # PRD + task tracker
   hench/           # autonomous agent
-  claude-client/   # compatibility bridge to llm-client
   llm-client/      # vendor-neutral LLM foundation (claude adapter + future vendors)
   web/             # dashboard + MCP HTTP server
 ```
@@ -44,6 +43,7 @@ Four-tier dependency hierarchy (each layer imports only from the layer below):
 
 ```
   Orchestration   packages/core/               (spawns CLIs, no library imports)
+                  config.js                     (spawn-exempt — see note below)
        ↓
   Execution       hench                         (agent loops, tool dispatch)
        ↓
@@ -56,19 +56,19 @@ Zero circular dependencies. The web package sits alongside orchestration — it 
 
 #### Web package internal zone layering
 
-Within the web package, four internal zones form a directed dependency stack:
+Within the web package, four internal zones form a hub topology with `web-viewer` at the center:
 
 ```
   web-server          (composition root — Express routes, gateways, MCP handlers)
-       ↓
-  web-viewer          (Preact UI components, hooks, views)
-       ↓
+       ↓                    ↓ (serves static assets only, no runtime import)
+  web-viewer          (Preact UI hub — components, hooks, views)
+       ↑ ↓                  ↓
   viewer-message-pipeline  (messaging middleware — coalescer, throttle, rate-limiter, request-dedup)
-       ↓
-  web-shared          (framework-agnostic utilities — data-files, node-culler)
+       ↓                    ↓
+  web-shared          (framework-agnostic utilities — data-files, node-culler, view-id)
 ```
 
-Import direction flows downward only. `web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). The `viewer-message-pipeline` zone owns all messaging primitives; `web-viewer` consumes them through `external.ts`. `web-shared` is the foundation layer with zero framework dependencies.
+`web-server` is a parallel composition root — it wires gateways and routes but does not import from `web-viewer` at runtime (the viewer is built separately and served as static assets). `web-shared` is the foundation layer with zero upward dependencies (enforced by `boundary-check.test.ts`).
 
 ### Gateway modules
 
@@ -76,15 +76,19 @@ Packages that import from other packages at runtime concentrate **all** cross-pa
 
 | Package | Gateway file | Imports from | Re-exports |
 |---------|-------------|--------------|------------|
-| hench | `src/prd/rex-gateway.ts` | rex | 8 functions (store, tree, task selection) |
-| web | `src/server/domain-gateway.ts` | rex, sourcevision | 2 MCP server factories + rex domain types/constants |
+| hench | `src/prd/rex-gateway.ts` | rex | 19 functions + 6 types (schema, store, tree, task selection, timestamps, auto-completion, requirements, level helpers, finding acknowledgment) |
+| hench | `src/prd/llm-gateway.ts` | @n-dx/llm-client | 30 functions + 10 types (config, constants, JSON, output, help, errors, process execution, token parsing, model resolution) |
+| web | `src/server/rex-gateway.ts` | rex | Rex MCP server factory, domain types & constants, tree utilities |
+| web | `src/server/domain-gateway.ts` | sourcevision | Sourcevision MCP server factory |
 | web | `src/viewer/external.ts` | `src/viewer/messaging/`, `src/shared/`, `src/schema/` | Schema types (V1), data-file constants, RequestDedup — viewer↔server boundary gateway |
+| web | `src/viewer/api.ts` | `src/viewer/types.ts`, `src/viewer/route-state.ts` | Viewer types (LoadedData, NavigateTo, DetailItem), route-state functions — inbound API contract for sibling zones (crash, route, performance) |
 
 Rules:
-- **One gateway per package** — all runtime cross-package imports pass through it.
-- **Re-export only** — gateways re-export; they contain no logic.
-- **Type imports excluded** — `import type` is erased at compile time and stays at the call-site.
-- **Messaging exemption** — `src/viewer/messaging/` files may import directly from `src/shared/` without going through `external.ts`. The shared/ directory is neutral (neither server nor viewer), so messaging utilities access it directly to avoid zone-level dependency inversion. Enforced by `boundary-check.test.ts`.
+- **One gateway per source package** — all runtime imports from a given upstream package pass through a single gateway. A consumer may have multiple gateways (e.g. web has separate gateways for rex and sourcevision).
+- **Intra-package gateways** — within the web package, `src/viewer/external.ts` concentrates all viewer-side imports from `src/viewer/messaging/`, `src/shared/`, and `src/schema/`. `RequestDedup` is canonically located in `src/viewer/messaging/request-dedup.ts` and re-exported through `external.ts` for viewer consumers.
+- **Re-export only** — gateways re-export; they contain no logic. Enforced by `domain-isolation.test.js`.
+- **Type imports through gateway** — `import type` must also flow through gateways to prevent type-import promotion erosion (a type import can be silently promoted to a runtime import during refactoring). Exception: web viewer files are exempt because the server/viewer boundary prevents them from reaching the server-side gateway.
+- **Messaging exemption** — `src/viewer/messaging/` files may import directly from `src/shared/` without going through `external.ts`. The shared/ directory is neutral (neither server nor viewer), and messaging utilities access it directly to avoid zone-level dependency inversion. Enforced by `boundary-check.test.ts`.
 - **New cross-package imports** require a deliberate edit to the gateway, not a casual import in a leaf file.
 
 See also: `PACKAGE_GUIDELINES.md` for the full pattern reference.
@@ -96,7 +100,7 @@ See also: `PACKAGE_GUIDELINES.md` for the full pattern reference.
 | Public API | `src/public.ts` → `exports["."]` in `package.json` | All 5 packages follow this |
 | Test structure | `tests/{unit,integration,e2e}/**/*.test.ts` | Standardized across all packages |
 | Naming | Mixed: `rex`, `sourcevision`, `hench` (unscoped) / `@n-dx/web`, `@n-dx/llm-client` (scoped) | Intentional: CLI tools use short unscoped names for `npx`/`pnpm exec`; internal-only packages use the `@n-dx/` scope |
-| Subpath exports | `"./dist/*": "./dist/*"` | Allows direct imports from `dist/` for advanced consumers |
+| Subpath exports | `"./dist/*": "./dist/*"` | Intentional escape hatch — not public API, no stability guarantee. See `PACKAGE_GUIDELINES.md` for acceptable/prohibited uses |
 
 Build and test:
 
@@ -134,17 +138,20 @@ Both `n-dx` and `ndx` work identically (`ndx` is shorter to type).
 
 ```sh
 ndx init [dir]            # sourcevision init → rex init → hench init
-ndx analyze [dir]         # run SourceVision codebase analysis
-ndx recommend [dir]       # show/accept SourceVision recommendations (--accept, --actionable-only)
-ndx add "<desc>" [dir]    # add PRD items from descriptions or files
+ndx analyze [dir]         # sourcevision analyze (--deep, --full, --lite)
+ndx recommend [dir]       # rex recommend (--accept, --actionable-only, --acknowledge)
+ndx add "description"     # smart-add PRD items from freeform descriptions
+ndx add --file=spec.md    # import ideas from a text file
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
 ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, etc.)
 ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute)
-ndx status [dir]          # rex status (pass --format=json)
 ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
+ndx status [dir]          # rex status (pass --format=json)
 ndx usage [dir]           # token usage analytics (--format=json, --group=day|week|month)
 ndx sync [dir]            # sync local PRD with remote adapter (--push, --pull)
+ndx refresh [dir]         # refresh dashboard artifacts (--ui-only, --data-only, --no-build)
+ndx dev [dir]             # start web dev server with live reload
 ndx ci [dir]              # run analysis pipeline and validate PRD health (--format=json)
 ndx config [key] [value]  # view/edit settings (--json, --help)
 ndx export [dir]          # export static deployable dashboard (--out-dir, --deploy=github)
@@ -168,15 +175,15 @@ sv <command> [args]               # alias for sourcevision
 
 ### Rex commands
 
-`init`, `status`, `next`, `add`, `update`, `validate`, `analyze`, `recommend`, `mcp`
+`init`, `status`, `next`, `add`, `update`, `move`, `remove`, `reshape`, `prune`, `validate`, `fix`, `sync`, `usage`, `report`, `verify`, `recommend`, `analyze`, `reorganize`, `health`, `adapter`, `mcp`
 
 ### Sourcevision commands
 
-`init`, `analyze`, `serve`, `validate`, `reset`, `mcp`
+`init`, `analyze`, `serve`, `validate`, `export-pdf`, `pr-markdown`, `git-credential-helper`, `reset`, `workspace`, `mcp`
 
 ### Hench commands
 
-`init`, `run`, `status`, `show`
+`init`, `run`, `config`, `template`, `status`, `show`
 
 ## Codex Troubleshooting
 
@@ -333,3 +340,6 @@ Use `ndx start .` for the dashboard + MCP server, `ndx self-heal 3 .` for iterat
 | `tests/e2e/domain-isolation.test.js` | Gateway enforcement, domain layer isolation, foundation tier boundary |
 | `tests/e2e/mcp-transport.test.js` | MCP HTTP transport end-to-end validation (session management, tool calls) |
 | `tests/e2e/integration-coverage-policy.test.js` | Minimum integration test file count, cross-package contract verification |
+| `tests/e2e/cli-dev.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
+| `tests/integration/scheduler-startup.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
+| `ZONES.md` | Zone promotion checklist, zone ID naming convention, and zone-pin manifest |

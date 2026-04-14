@@ -50,6 +50,7 @@ const ALLOWED = new Set([
   // Development scripts
   "packages/web/dev.js",
   "scripts/cli-smoke-parity.mjs",
+  "scripts/run-vitest-bind-aware.mjs",
   // Process monitoring — needs raw execFile for system commands (vm_stat, sysctl)
   "packages/hench/src/process/memory-monitor.ts",
   // Git operations — need execFileSync for git CLI calls
@@ -400,7 +401,7 @@ const CYCLE_EXCEPTIONS = new Map([
   ["use", "Tiny hooks cluster; imports still flow through shared viewer barrels and are tracked as a temporary zone cycle."],
   ["web-2", "Small viewer utility cluster; current SourceVision split still routes shared types through the web hub."],
   ["web-4", "Small viewer data-loading cluster; cycles with the multi-package 'web' zone for the same packageFamily mismatch reason as 'polling'."],
-  ["web-helpers", "Search/test-support helper cluster; current SourceVision split still routes shared viewer imports through the web hub."],
+  ["web-viewer-search-overlay", "Search overlay component zone; confirmed genuine cycle with web-viewer — search-overlay.ts imports getLevelEmoji (runtime) and NavigateTo (type) from web-viewer while components/index.ts imports back. Tracked in CLAUDE.md 'Confirmed zone-level cycles' table."],
   ["web-viewer", "Viewer facade cluster; cohesion now meets threshold but still cycles with the multi-package 'web' zone due to the packageFamily mismatch (web zone first file is rex)."],
 ]);
 
@@ -809,18 +810,10 @@ const COHESION_THRESHOLD = 0.5;
  * what structural condition would allow removing the exemption.
  */
 const COHESION_EXCEPTIONS = new Map([
-  ["polling", "Small viewer polling state cluster; Louvain splits polling state into a narrow satellite zone with few internal edges, yielding artificially low cohesion."],
-  ["refresh", "Small zone; refresh utilities grouped by Louvain; metrics unreliable at this scale."],
-  ["rex", "Large mixed rex analysis/CLI/store zone; current SourceVision clustering is still coarse and yields artificially low cohesion."],
-  ["sourcevision-cli", "Small sourcevision CLI satellite zone; metrics unreliable at this scale due to few internal edges."],
-  ["sync", "Small sync command cluster; narrow satellite zone with few internal edges yields artificially low cohesion."],
-  ["tick", "Small viewer tick dispatcher cluster; Louvain isolates tick timing files from the broader polling zone, yielding slightly below-threshold cohesion."],
-  ["token", "Small token parsing cluster; metrics unreliable at this scale due to few internal edges."],
-  ["use", "Tiny hooks cluster; metrics remain noisy while SourceVision isolates a small subset of shared viewer hooks."],
-  ["web-2", "Small viewer utility cluster; metrics remain noisy while SourceVision isolates a narrow tree-search/facet-state slice."],
-  ["web-4", "Small viewer data-loading cluster; Louvain isolates loader/validate files from the broader viewer zone, yielding below-threshold cohesion."],
-  ["web-7", "Small viewer cluster; metrics unreliable at this scale due to few internal edges."],
-  ["web-shared", "Foundation layer; 3 files (below the 5-file threshold for reliable metrics); documented dual-fragility zone — low cohesion reflects the inherent structural gap between data-file constants and view identifiers, not decay."],
+  ["prd-tree-search", "Small viewer search zone that intentionally bridges tree-search utilities with facet-state orchestration. Its low score reflects the metric's sensitivity on 3 production files more than a structural boundary problem."],
+  ["refresh-throttle-pipeline", "Two-file pipeline split between framework-agnostic throttling logic and the viewer hook that adapts it. The zone is intentionally minimal, so cohesion remains noisy until more shared runtime surface exists."],
+  ["web-shared", "Foundation barrel intentionally groups a few unrelated cross-layer constants and feature flags that must stay framework-agnostic. With only 3 files, the cohesion metric underestimates the value of keeping these shared primitives centralized."],
+  ["web-theme-toggle", "Single-file leaf component isolated on purpose to keep theme switching self-contained. A one-file zone cannot achieve the threshold without artificial merging into an unrelated viewer zone."],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {
