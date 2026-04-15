@@ -31,8 +31,8 @@ import {
   buildDuplicateOverrideMarkerIndex,
 } from "./smart-add-duplicates.js";
 import type { ProposalDuplicateMatch } from "./smart-add-duplicates.js";
-import type { LLMVendor } from "@n-dx/llm-client";
-import { printVendorModelHeader } from "@n-dx/llm-client";
+import type { LLMVendor, LLMConfig } from "@n-dx/llm-client";
+import { printVendorModelHeader, resolveVendorModel } from "@n-dx/llm-client";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 import { resolveVendorCompatibleRexModel } from "../model-resolution.js";
 
@@ -1134,6 +1134,20 @@ function parseSmartAddInput(
   return { descList, accept, parentId, filePaths, isJson };
 }
 
+/**
+ * Determine model source for light-tier commands.
+ * Returns "configured" if lightModel is set in config, "default" otherwise.
+ */
+function determineLightTierModelSource(vendor: LLMVendor, llmConfig: LLMConfig): "configured" | "default" {
+  if (vendor === "claude" && llmConfig.claude?.lightModel) {
+    return "configured";
+  }
+  if (vendor === "codex" && llmConfig.codex?.lightModel) {
+    return "configured";
+  }
+  return "default";
+}
+
 async function initializeSmartAddLLM(dir: string, format?: string): Promise<void> {
   const rexConfigDir = join(dir, REX_DIR);
   const llmConfig = await loadLLMConfig(rexConfigDir);
@@ -1144,7 +1158,15 @@ async function initializeSmartAddLLM(dir: string, format?: string): Promise<void
   const vendor = getLLMVendor();
   llmDebug(`resolved vendor=${vendor ?? "unknown"} configDir=${rexConfigDir}`);
   if (vendor) {
-    printVendorModelHeader(vendor, llmConfig, { format });
+    // Smart-add uses light tier for cost optimization
+    const resolvedModel = resolveVendorModel(vendor, llmConfig, "light");
+    const modelSource = determineLightTierModelSource(vendor, llmConfig);
+    printVendorModelHeader(vendor, llmConfig, {
+      format,
+      resolvedModel,
+      modelSource,
+      tier: "light",
+    });
   }
   if (format !== "json") {
     const authMode = getAuthMode();

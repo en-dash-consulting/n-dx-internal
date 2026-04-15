@@ -231,4 +231,79 @@ describe("printVendorModelHeader", () => {
       expect(line).toContain("(default)");
     });
   });
+
+  // ── Tier label rendering (tier option) ───────────────────────────────────────
+
+  describe("tier label rendering with tier option", () => {
+    it("renders '(light tier)' when tier is light and source is default", () => {
+      printVendorModelHeader("claude", undefined, {
+        resolvedModel: TIER_MODELS.claude.light,
+        modelSource: "default",
+        tier: "light",
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain(`Model: ${TIER_MODELS.claude.light}`);
+      expect(line).toContain("(light tier)");
+      expect(line).not.toContain("configured");
+    });
+
+    it("renders '(light tier, configured)' when tier is light and lightModel is configured", () => {
+      const config: LLMConfig = {
+        vendor: "claude",
+        claude: { lightModel: "claude-haiku-4-20250414" },
+      };
+      printVendorModelHeader("claude", config, {
+        resolvedModel: TIER_MODELS.claude.light,
+        modelSource: "configured",
+        tier: "light",
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain("(light tier, configured)");
+    });
+
+    it("renders '(standard tier)' when tier is standard and source is default", () => {
+      printVendorModelHeader("claude", undefined, {
+        resolvedModel: TIER_MODELS.claude.standard,
+        modelSource: "default",
+        tier: "standard",
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain(`Model: ${TIER_MODELS.claude.standard}`);
+      expect(line).toContain("(standard tier)");
+    });
+
+    it("omits tier label when modelSource is cli-override even if tier is provided", () => {
+      printVendorModelHeader("claude", undefined, {
+        resolvedModel: "claude-opus-4-20250514",
+        modelSource: "cli-override",
+        tier: "light",
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain("(cli-override)");
+      expect(line).not.toContain("tier");
+    });
+
+    it("uses legacy format when tier is not provided (backward compat)", () => {
+      printVendorModelHeader("claude", undefined, {
+        resolvedModel: TIER_MODELS.claude.light,
+        modelSource: "default",
+        // tier not provided — legacy behavior
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain("(default)");
+      expect(line).not.toContain("tier");
+    });
+
+    it("renders codex light-tier with tier label", () => {
+      printVendorModelHeader("codex", undefined, {
+        resolvedModel: TIER_MODELS.codex.light,
+        modelSource: "default",
+        tier: "light",
+      });
+      const line = logSpy.mock.calls[0][0] as string;
+      expect(line).toContain("Vendor: codex");
+      expect(line).toContain(`Model: ${TIER_MODELS.codex.light}`);
+      expect(line).toContain("(light tier)");
+    });
+  });
 });
