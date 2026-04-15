@@ -17,7 +17,7 @@
 import { randomUUID } from "node:crypto";
 import type { PRDStore, SelectionExplanation } from "../../prd/rex-gateway.js";
 import { explainSelection, collectCompletedIds, findItem } from "../../prd/rex-gateway.js";
-import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief } from "../../schema/index.js";
+import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief, TurnTokenUsage } from "../../schema/index.js";
 import { getCurrentHead, execShellCmd } from "../../process/index.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";

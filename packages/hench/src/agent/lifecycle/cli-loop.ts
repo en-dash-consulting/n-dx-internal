@@ -28,7 +28,7 @@ import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsag
 import { validateCompletion, formatValidationResult } from "../../validation/completion.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { checkTokenBudget } from "./token-budget.js";
-import { mapCodexUsageToTokenUsage, parseTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
+import { mapCodexUsageToTokenUsage, parseTokenUsageWithDiagnostic, parseStreamTokenUsage } from "./token-usage.js";
 import { parseCodexCliTokenUsage } from "./codex-cli-token-parser.js";
 import { startHeartbeat } from "./heartbeat.js";
 import { section, stream, info } from "../../types/output.js";
@@ -65,6 +65,31 @@ import { resolveVendorAdapter } from "./adapters/index.js";
 import { EventAccumulator } from "./event-accumulator.js";
 import { extractPromptSectionDiagnostics, logPromptSections } from "./prompt-diagnostics.js";
 import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schema/v1.js";
+
+// ── normalizeCodexResponse ────────────────────────────────────────────────
+
+/**
+ * Normalize Codex CLI stdout into a structured response object.
+ *
+ * Codex verbose stdout is a human-readable session log, not a structured
+ * event stream. parseMaybeJson() returns it as a plain string, so
+ * toolEvents is always empty regardless of what Codex executed internally.
+ * This is the IC-4 documented limitation — the IC-2 git-diff fallback in
+ * shared.ts compensates at the test-gate level.
+ *
+ * @internal Exported for testing.
+ */
+export function normalizeCodexResponse(output: string): {
+  toolEvents: unknown[];
+  assistantText: string;
+  status: string;
+} {
+  return {
+    toolEvents: [],
+    assistantText: output,
+    status: "completed",
+  };
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -664,7 +689,18 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
                 });
               }
             } catch {
-              // Non-JSON stdout — no token usage to extract
+              // Non-JSON stdout — try text-format token extraction
+              const textTokens = parseCodexCliTokenUsage(fullStdout);
+              if (textTokens) {
+                result.tokenUsage = { input: textTokens.input, output: textTokens.output };
+              }
+              result.turnTokenUsage.push({
+                turn: 1,
+                input: result.tokenUsage.input,
+                output: result.tokenUsage.output,
+                vendor: tokenMetadata.vendor,
+                model: tokenMetadata.model,
+              });
             }
           }
 
@@ -682,9 +718,16 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
           result.summary = fullStdout.trim().slice(0, MAX_SUMMARY_LENGTH);
         }
 
-        // Token usage fallback: structured events were parsed but no usage found
-        if (eventCount > 0 && result.tokenUsage.input === 0 && result.tokenUsage.output === 0) {
-          if (adapter.vendor === "codex") {
+        // Codex text-format token extraction and guaranteed turn entry.
+        // When heuristic fallback events were produced per-line (eventCount > 0),
+        // per-line extractTokenUsage never fires (no JSON lines). Scan fullStdout
+        // here as a post-run pass.  Also runs when eventCount === 0 but the
+        // eventCount === 0 block didn't push an entry (e.g. JSON extraction
+        // returned "unavailable").  Always emits one turnTokenUsage entry per
+        // attempt — zeros when no usage data is available — so callers can
+        // account for every attempt regardless of stdout output.
+        if (adapter.vendor === "codex" && result.turnTokenUsage.length === 0) {
+          if (fullStdout.trim()) {
             try {
               const raw = JSON.parse(fullStdout);
               const codexMapping = mapCodexUsageToTokenUsage(raw);
@@ -692,9 +735,23 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
                 result.tokenUsage = codexMapping.usage;
               }
             } catch {
-              // Non-JSON stdout
+              // Non-JSON stdout — try text-format token extraction
+              const textTokens = parseCodexCliTokenUsage(fullStdout);
+              if (textTokens) {
+                result.tokenUsage = { input: textTokens.input, output: textTokens.output };
+              }
             }
           }
+          result.turnTokenUsage.push({
+            turn: 1,
+            input: result.tokenUsage.input,
+            output: result.tokenUsage.output,
+            vendor: tokenMetadata.vendor,
+            model: tokenMetadata.model,
+            diagnosticStatus: result.tokenUsage.input === 0 && result.tokenUsage.output === 0
+              ? "unavailable"
+              : undefined,
+          });
         }
       }
 
@@ -788,161 +845,14 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
 
 // ── LLM config helpers ────────────────────────────────────────────────────
 
-  try {
-    return await new Promise<CliRunResult>((resolve, reject) => {
-      const args = [
-        "exec",
-        "--full-auto",
-        "--skip-git-repo-check",
-        "-o",
-        outputPath,
-      ];
-      if (model) {
-        args.push("-m", model);
-      }
-      args.push(prompt);
-
-      const proc = spawn(cliBinary, args, {
-        cwd,
-        stdio: ["ignore", "pipe", "pipe"],
-        env: env ?? process.env,
-      });
-
-      let stderr = "";
-      let stdout = "";
-      let stdoutBuffer = "";
-      let stderrBuffer = "";
-
-      const flushLines = (buffer: string): { lines: string[]; rest: string } => {
-        const parts = buffer.split("\n");
-        const rest = parts.pop() ?? "";
-        return { lines: parts, rest };
-      };
-
-      const emitLines = (label: string, lines: string[]): void => {
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line) continue;
-          stream(label, line);
-        }
-      };
-
-      proc.stdout.on("data", (chunk: Buffer) => {
-        const text = chunk.toString();
-        stdout += text;
-        stdoutBuffer += text;
-        const { lines, rest } = flushLines(stdoutBuffer);
-        stdoutBuffer = rest;
-        emitLines("Codex", lines);
-      });
-      proc.stderr.on("data", (chunk: Buffer) => {
-        const text = chunk.toString();
-        stderr += text;
-        stderrBuffer += text;
-        const { lines, rest } = flushLines(stderrBuffer);
-        stderrBuffer = rest;
-        emitLines("Codex", lines);
-      });
-
-      proc.on("error", (err) => {
-        if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-          reject(new Error("Codex CLI not found. Configure with: n-dx config llm.codex.cli_path /path/to/codex"));
-          return;
-        }
-        reject(err);
-      });
-
-      proc.on("close", async (code) => {
-        if (stdoutBuffer.trim()) {
-          stream("Codex", stdoutBuffer.trim());
-        }
-        if (stderrBuffer.trim()) {
-          stream("Codex", stderrBuffer.trim());
-        }
-
-        const result: CliRunResult = {
-          turns: 1,
-          toolCalls: [],
-          tokenUsage: { input: 0, output: 0 },
-          turnTokenUsage: [],
-        };
-        const normalized = normalizeCodexResponse(stdout);
-        const codexTokenMapping = mapCodexUsageToTokenUsage(parseMaybeJson(stdout));
-
-        // If JSON parsing didn't yield token usage, try extracting from text output.
-        // Codex CLI may print "Tokens used: N in, N out" to stdout/stderr.
-        let finalUsage = codexTokenMapping.usage;
-        let usedTextParser = false;
-        if (codexTokenMapping.diagnostic === "codex_usage_missing") {
-          const combinedOutput = stdout + "\n" + stderr;
-          const textParsed = parseCodexCliTokenUsage(combinedOutput);
-          if (textParsed) {
-            finalUsage = textParsed;
-            usedTextParser = true;
-          }
-        }
-
-        result.tokenUsage = finalUsage;
-        result.turnTokenUsage.push({
-          turn: 1,
-          input: finalUsage.input,
-          output: finalUsage.output,
-          vendor: tokenMetadata.vendor,
-          model: tokenMetadata.model,
-        });
-
-        for (const warning of normalized.warnings) {
-          stream("Warn", warning);
-        }
-        // Only warn about missing tokens if both JSON and text parsing failed
-        if (codexTokenMapping.diagnostic && !usedTextParser) {
-          stream("Warn", "Codex response omitted usage; token accounting defaulted to zero.");
-        }
-
-        if (normalized.toolEvents.length > 0) {
-          result.toolCalls = normalized.toolEvents.map((event) => ({
-            turn: 1,
-            tool: event.tool,
-            input: {
-              ...event.input,
-              _codexEventType: event.eventType,
-              ...(event.status ? { _codexStatus: event.status } : {}),
-            },
-            output: event.output?.slice(0, 2000) ?? "",
-            durationMs: 0,
-          }));
-        }
-
-        if (normalized.assistantText) {
-          result.summary = normalized.assistantText.slice(0, MAX_SUMMARY_LENGTH);
-        }
-
-        try {
-          const summary = await readFile(outputPath, "utf-8");
-          if (summary.trim() && !result.summary) {
-            result.summary = summary.trim().slice(0, MAX_SUMMARY_LENGTH);
-          }
-        } catch {
-          // Ignore missing summary file
-        }
-
-        if (!result.summary && stdout.trim()) {
-          result.summary = stdout.trim().slice(0, MAX_SUMMARY_LENGTH);
-        }
-
-        if (normalized.status === "error" && !result.error) {
-          result.error = normalized.error ?? "Codex response indicated an error";
-        }
-
-        if (code !== 0) {
-          result.error = stderr.trim() || `codex exited with code ${code}`;
-        }
-        resolve(result);
-      });
-    });
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true });
-  }
+function resolveCliEventModel(
+  vendor: LLMVendor,
+  llmConfig: Awaited<ReturnType<typeof loadLLMConfig>>,
+  _configuredModel: string,
+  modelOverride?: string,
+): string {
+  if (modelOverride) return modelOverride;
+  return resolveVendorModel(vendor, llmConfig);
 }
 
 // ── Accumulated retry state ───────────────────────────────────────────────

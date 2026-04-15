@@ -173,7 +173,7 @@ describe("Codex config validation gauntlet", () => {
       expect(result).toBeDefined();
       expect(typeof result).toBe("string");
       // Should return the default from NEWEST_MODELS
-      expect(result).toBe("gpt-5");
+      expect(result).toBe("gpt-5-codex");
     });
 
     it("resolveVendorModel uses configured model for codex", () => {

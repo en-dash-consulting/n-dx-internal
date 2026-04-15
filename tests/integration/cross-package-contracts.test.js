@@ -589,10 +589,17 @@ describe("gateway export auto-detection", () => {
         "CLIError", "ClaudeClientError", "CLI_ERROR_CODES",
         "exec", "execStdout", "execShellCmd", "getCurrentHead", "getCurrentBranch",
         "isExecutableOnPath", "spawnTool", "spawnManaged", "ProcessPool", "ProcessLimitError",
-        "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "resolveVendorModel",
+        "parseApiTokenUsage", "parseApiTokenUsageWithDiagnostic", "parseStreamTokenUsage",
+        "parseStreamTokenUsageWithDiagnostic", "mapCodexUsageToTokenUsage",
+        "resolveModel", "resolveVendorModel",
         "isModelCompatibleWithVendor", "resetStaleModel", "formatVendorChangeWarning",
-        "formatUsage"],
-      ...["PROJECT_DIRS", "NEWEST_MODELS", "VENDOR_CONTEXT_CHAR_LIMITS"],
+        "formatUsage", "createPromptEnvelope", "assemblePrompt",
+        "mapErrorReasonToFailureCategory", "mapRunFailureToCategory", "classifyVendorError",
+        "failureCategoryLabel", "compileCodexPolicyFlags", "mapSandboxToCodexFlag",
+        "mapApprovalToCodexFlag", "toAnthropicToolDef", "toAnthropicToolDefs",
+        "toOpenAiToolDef", "toOpenAiToolDefs", "ProviderRegistry", "defaultRegistry"],
+      ...["PROJECT_DIRS", "NEWEST_MODELS", "VENDOR_CONTEXT_CHAR_LIMITS",
+        "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS", "ALL_FAILURE_CATEGORIES"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));
