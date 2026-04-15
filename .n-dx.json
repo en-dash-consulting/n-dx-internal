@@ -27,6 +27,7 @@
         "packages/web/vitest.config.ts": "web-package-assets",
         "packages/web/SourceVision-F.png": "web-package-assets",
         "packages/web/SourceVision.png": "web-package-assets",
+        "packages/web/src/server/task-usage.ts": "web-server",
         "packages/web/src/server/routes-mcp.ts": "web-server",
         "packages/web/src/viewer/components/progressive-loader.ts": "web-viewer",
         "packages/web/src/server/routes-token-usage.ts": "web-server",
@@ -133,8 +134,10 @@
         "web-build-tooling": "infrastructure",
         "web-integration": "test",
         "web-sv-view-tests": "test",
-    "packages-web-unit-server": "test",
-    "sourcevision-view-tests": "test"
+        "packages-web-unit-server": "test",
+        "sourcevision-view-tests": "test",
+        "domain-gateway-routes-mcp": "test",
+        "web-unit": "test"
       }
     }
   },

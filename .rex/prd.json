@@ -20999,7 +20999,18 @@
       "level": "epic",
       "description": "AI client infrastructure: vendor-neutral LLM foundation, token usage tracking and analytics, budget management, vendor support (Claude, Codex), onboarding and authentication.",
       "startedAt": "2026-04-13T18:35:49.604Z",
-      "completedAt": "2026-03-24T04:16:45.798Z",
+      "completedAt": "2026-04-14T20:10:12.757Z",
+      "mergedProposals": [
+        {
+          "proposalNodeKey": "p0:epic",
+          "proposalTitle": "LLM Integration",
+          "proposalKind": "epic",
+          "reason": "exact_title",
+          "score": 1,
+          "mergedAt": "2026-04-14T19:59:23.692Z",
+          "source": "smart-add"
+        }
+      ],
       "children": [
         {
           "id": "05338f33-e638-49b8-815f-ed12949f0c63",
@@ -22286,6 +22297,43 @@
                   "completedAt": "2026-02-24T07:27:47.131Z"
                 }
               ]
+            }
+          ]
+        },
+        {
+          "id": "508bf0a8-88fb-4c17-a183-d5460b066617",
+          "title": "Codex CLI Token Usage Extraction from Run Output",
+          "status": "completed",
+          "level": "feature",
+          "description": "Codex CLI prints token usage statistics to stdout after each invocation. This feature captures those printed counts and feeds them into hench's token tracking system so Codex runs appear in usage analytics alongside Claude runs.",
+          "source": "smart-add",
+          "startedAt": "2026-04-14T20:10:12.593Z",
+          "completedAt": "2026-04-14T20:10:12.593Z",
+          "children": [
+            {
+              "id": "f73fe756-18f6-40fd-bdee-0001e40795ed",
+              "title": "Implement and integrate Codex CLI token usage extraction into hench run tracking",
+              "status": "completed",
+              "level": "task",
+              "description": "Codex CLI outputs a token usage summary line after each run (e.g. 'Tokens used: 1234 in, 567 out'). Implement a pure parser that scans the captured stdout/stderr buffer for this pattern, extracts input and output token counts, and returns a structured object compatible with the existing unified token metrics schema. After the Codex process exits, pass the extracted counts into the existing hench token event recording pipeline, stamped with vendor='codex' and the resolved model name so they roll up correctly into per-task usage chips, the weekly budget calculator, and the dashboard's vendor-grouped utilization view. When no token line is present in the output, no event should be emitted.",
+              "acceptanceCriteria": [
+                "Parser correctly extracts input and output token counts from the Codex CLI output format and returns null when no token usage line is present",
+                "Handles edge cases: multiple token lines (uses last occurrence), partial output, and non-numeric tokens",
+                "Token counts are recorded as a token event in the hench run log with the correct vendor and model fields",
+                "Recorded events appear in ndx usage output under the codex vendor bucket, matching the same aggregation path as Claude events",
+                "When Codex output contains no token line, no token event is written to the run log",
+                "Unit tests cover the standard format, absent token line, malformed numbers, and multi-line output variants",
+                "Integration test drives a mock Codex run with a known token line in stdout and asserts the resulting run log entry contains the expected token counts"
+              ],
+              "priority": "high",
+              "tags": [
+                "codex",
+                "token-tracking",
+                "hench"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T20:05:41.978Z",
+              "completedAt": "2026-04-14T20:10:12.418Z"
             }
           ]
         }
@@ -28428,22 +28476,26 @@
     {
       "id": "7699ef03-e874-41f0-aeb0-bbef9868bb39",
       "title": "Self-Heal Pipeline Enhancements",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-04-14T20:16:38.921Z",
+      "completedAt": "2026-04-14T20:16:38.921Z",
       "children": [
         {
           "id": "c8582d6b-6088-49bb-8d94-cdf81bc4dc54",
           "title": "Dependency Health Pass",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Extend the self-heal loop with an automated dependency audit and cleanup step that inspects all monorepo package.json files, identifies unused, outdated, or duplicate dependencies, and applies safe remediation before proceeding with the analysis–recommend–execute cycle.",
           "source": "smart-add",
+          "startedAt": "2026-04-14T19:48:08.783Z",
+          "completedAt": "2026-04-14T19:48:08.783Z",
           "children": [
             {
               "id": "8af32cae-af63-4d0f-a1c7-2a6f9e34a3a5",
               "title": "Implement dependency audit step in self-heal pipeline",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Add a pre-loop dependency audit that scans all monorepo workspace package.json files using depcheck (or equivalent) and pnpm audit. The step produces a structured report of unused, outdated, and vulnerable packages grouped by workspace package. This report feeds into the cleanup step and is stored in the run artifact for dashboard visibility. No files are modified during this step.",
               "acceptanceCriteria": [
@@ -28462,7 +28514,8 @@
                 "audit"
               ],
               "source": "smart-add",
-              "startedAt": "2026-04-14T19:39:02.939Z"
+              "startedAt": "2026-04-14T19:39:02.939Z",
+              "completedAt": "2026-04-14T19:48:08.585Z"
             },
             {
               "id": "5052d7d9-c825-4644-93ab-d1c011976c60",
@@ -28493,15 +28546,17 @@
         {
           "id": "b7327b20-6de9-419f-b390-1032c92573fe",
           "title": "Non-Test Codebase Cleanup and Condensation Pass",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Add a codebase cleanup phase to self-heal that identifies and removes dead code, consolidates duplicated utilities, and condenses verbose patterns — strictly scoped to production source files. A hard exclusion guard must prevent any modification to test files (*.test.ts, *.spec.ts, tests/**).",
           "source": "smart-add",
+          "startedAt": "2026-04-14T20:16:38.754Z",
+          "completedAt": "2026-04-14T20:16:38.754Z",
           "children": [
             {
               "id": "be4d8de4-31a8-4caa-bd27-f28902b93d32",
               "title": "Implement scoped dead-code and duplication analyzer for production files",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Build a static analysis step that uses sourcevision's existing dead-export detection and import graph, augmented with a structural similarity pass for near-duplicate utility functions across non-test source files. Produces a prioritized list of cleanup candidates with file paths, confidence scores, and suggested actions. This step is analysis-only — no files are modified.",
               "acceptanceCriteria": [
@@ -28520,12 +28575,14 @@
                 "dead-code",
                 "sourcevision"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-14T20:10:15.439Z",
+              "completedAt": "2026-04-14T20:16:38.577Z"
             },
             {
               "id": "dd478339-ddfe-4ec9-bbe4-857f91e8ea64",
               "title": "Apply production-scoped cleanup transformations with test-exclusion hard guard",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Execute safe automated cleanup transformations on production source files identified by the analyzer: remove dead exports with zero cross-package consumers, prune unused imports, and consolidate trivially duplicated utilities where both callers can be updated atomically. After each transformation batch, run tsc --noEmit to confirm no type errors; roll back the batch on failure. A hard guard must throw and halt if any write would touch a test file.",
               "acceptanceCriteria": [
@@ -28544,7 +28601,9 @@
                 "transformation",
                 "safety"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-14T19:48:11.509Z",
+              "completedAt": "2026-04-14T20:05:39.228Z"
             }
           ]
         },
@@ -28612,6 +28671,185 @@
           ]
         }
       ]
+    },
+    {
+      "id": "be264779-0eb4-41b7-b5e0-8f3076b61ccb",
+      "title": "LLM Integration",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "startedAt": "2026-04-14T20:50:00.905Z",
+      "completedAt": "2026-04-14T20:50:00.905Z",
+      "children": [
+        {
+          "id": "ed1f0944-536d-44a4-ad18-d2f3e4827e16",
+          "title": "Codex Multi-line Token Count Parsing Fix",
+          "status": "completed",
+          "level": "feature",
+          "description": "Codex CLI emits token usage across two lines: the label 'tokens used' on one line and the numeric count on the immediately following line. The current parser does not capture this two-line pattern, so Codex credit consumption goes unrecorded in run summaries and budget tracking.",
+          "source": "smart-add",
+          "startedAt": "2026-04-14T20:50:00.776Z",
+          "completedAt": "2026-04-14T20:50:00.776Z",
+          "children": [
+            {
+              "id": "9c999a92-f89f-469c-a527-5e4aaae920bf",
+              "title": "Fix Codex output parser to capture next-line token count after 'tokens used' label",
+              "status": "deferred",
+              "level": "task",
+              "description": "The existing Codex token extraction logic looks for a token count on the same line as the 'tokens used' marker. Codex actually prints 'tokens used' as a standalone label and puts the integer count on the line immediately following it. Update the parser to handle this two-line pattern: detect the 'tokens used' sentinel, then read the next non-empty line as the count. The fix should be backward-compatible in case future Codex versions collapse this back to one line.",
+              "acceptanceCriteria": [
+                "Parser correctly extracts the integer token count when it appears on the line immediately after 'tokens used'",
+                "Parser also handles any pre-existing same-line pattern without regression",
+                "Extracted token count is stored and surfaced in hench run summary output",
+                "Extracted token count is recorded in the run log and propagated to token usage aggregation"
+              ],
+              "priority": "high",
+              "tags": [
+                "codex",
+                "token-usage",
+                "parser"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T20:49:56.016Z"
+            },
+            {
+              "id": "c57e4a98-4567-4caa-ad64-1dd6667e7316",
+              "title": "Add regression tests for Codex multi-line 'tokens used' output format",
+              "status": "completed",
+              "level": "task",
+              "description": "Add unit and integration tests that assert the parser correctly extracts token counts from the two-line Codex format. Tests should cover: the nominal two-line case, the legacy same-line case, empty or malformed lines between the label and the count, and whitespace-padded counts. Use the existing Codex fixture infrastructure in hench's test suite.",
+              "acceptanceCriteria": [
+                "Unit test covers nominal two-line 'tokens used \\n <number>' extraction and returns the correct integer",
+                "Unit test covers legacy same-line format without regression",
+                "Unit test covers blank lines between label and count (should still resolve correctly or return null safely)",
+                "Integration test verifies the extracted count reaches the run-level token accumulator"
+              ],
+              "priority": "high",
+              "tags": [
+                "codex",
+                "token-usage",
+                "tests"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T20:40:35.085Z",
+              "completedAt": "2026-04-14T20:46:56.170Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5d5d463c-30c6-4216-a5bc-523a5fb8666d",
+      "title": "Self-Heal Pipeline Enhancements",
+      "status": "completed",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "e0d22237-06af-4147-a3d7-c3a95c202d59",
+          "title": "Vendor-Agnostic Batch Execution in Self-Heal Loop",
+          "status": "completed",
+          "level": "feature",
+          "description": "The self-heal loop batch processing fails when the active vendor is Codex. Batches must execute reliably regardless of whether Claude or Codex is configured, covering prompt format differences, response parsing, token budgeting, and error recovery paths.",
+          "source": "smart-add",
+          "startedAt": "2026-04-14T21:36:07.553Z",
+          "completedAt": "2026-04-14T21:36:07.553Z",
+          "children": [
+            {
+              "id": "1f2e1438-4f55-4ac3-9061-23b01e5d92aa",
+              "title": "Audit self-heal batch pipeline for Codex incompatibilities",
+              "status": "completed",
+              "level": "task",
+              "description": "Trace the full self-heal batch execution path — from batch construction through LLM invocation to result parsing — and document every assumption that holds only for Claude (API response shape, tool-use availability, streaming format, token field names). Reproduce the Codex failure mode with a minimal fixture and attach the error context to inform the fix.",
+              "acceptanceCriteria": [
+                "A written finding lists every code path in the self-heal batch loop that branches or fails on Codex input/output",
+                "The root-cause failure mode is reproducible in a unit or integration test against a Codex fixture",
+                "Each incompatibility is tagged with the file and line number where the Claude-specific assumption lives"
+              ],
+              "priority": "critical",
+              "tags": [
+                "self-heal",
+                "codex",
+                "hench"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T20:56:54.685Z",
+              "completedAt": "2026-04-14T21:05:55.177Z"
+            },
+            {
+              "id": "97ec62e7-6687-4152-b6f2-cf6a6afaf858",
+              "title": "Implement vendor-aware batch construction and response handling in self-heal",
+              "status": "completed",
+              "level": "task",
+              "description": "Fix the self-heal batch pipeline so it adapts batch size, prompt format, and response parsing to the active vendor. For Codex, this means using text-based invocation (no tool-use schema), parsing the CLI stdout response format, and respecting Codex context window limits when sizing batches. For Claude, retain current behavior. Use the vendor/model resolver already present in llm-gateway to gate the two paths.",
+              "acceptanceCriteria": [
+                "Self-heal batches complete without error when the configured vendor is Codex",
+                "Self-heal batches continue to complete without regression when the configured vendor is Claude",
+                "Batch size is bounded by the active vendor's effective context limit, not a Claude-specific constant",
+                "No new Claude-specific assumptions are introduced in the shared batch pipeline code"
+              ],
+              "priority": "critical",
+              "tags": [
+                "self-heal",
+                "codex",
+                "hench",
+                "llm-client"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T21:05:57.971Z",
+              "completedAt": "2026-04-14T21:20:02.251Z"
+            },
+            {
+              "id": "1074c4ff-b1d7-437a-9d3a-570394428e33",
+              "title": "Add vendor-resilient error handling and retry logic for self-heal batch failures",
+              "status": "completed",
+              "level": "task",
+              "description": "Ensure that any vendor-specific transient error (rate limit, quota exhaustion, parse failure on partial output) in a self-heal batch is caught and retried with exponential backoff rather than crashing the loop. The retry strategy should be aware of the vendor in use — Codex CLI errors surface differently from Claude API errors — and should log the vendor, batch index, and failure reason before each retry.",
+              "acceptanceCriteria": [
+                "A Codex-style batch failure (non-zero exit code, malformed stdout) triggers a retry rather than an unhandled exception",
+                "A Claude-style batch failure (HTTP 429, truncated JSON) also triggers the same retry path",
+                "Retry attempts are logged with vendor name, batch index, attempt number, and error summary",
+                "After max retries, the self-heal loop skips the failing batch and continues rather than halting entirely"
+              ],
+              "priority": "high",
+              "tags": [
+                "self-heal",
+                "codex",
+                "hench",
+                "resilience"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T21:28:44.422Z",
+              "completedAt": "2026-04-14T21:36:07.371Z"
+            },
+            {
+              "id": "e72caddd-238f-426f-b191-4adec1de560d",
+              "title": "Add regression tests for Codex batch execution in the self-heal pipeline",
+              "status": "completed",
+              "level": "task",
+              "description": "Add integration tests that run the self-heal batch loop against a Codex fixture (recorded or mock CLI output) and assert that batches complete, results are parsed correctly, and the pipeline proceeds to the next step. Include a test for the partial-output and rate-limit error paths to confirm retry behavior. Mirror the existing Claude self-heal tests so both vendor paths are covered symmetrically.",
+              "acceptanceCriteria": [
+                "At least one integration test executes a self-heal batch with a Codex mock and asserts a successful result",
+                "At least one test asserts that a Codex parse error triggers retry and eventually continues the loop",
+                "Existing Claude self-heal batch tests continue to pass without modification",
+                "Tests are placed in the hench integration test directory and run as part of `pnpm test`"
+              ],
+              "priority": "high",
+              "tags": [
+                "self-heal",
+                "codex",
+                "hench",
+                "testing"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-14T21:20:05.017Z",
+              "completedAt": "2026-04-14T21:28:41.651Z"
+            }
+          ]
+        }
+      ],
+      "startedAt": "2026-04-14T21:36:07.688Z",
+      "completedAt": "2026-04-14T21:36:07.688Z"
     }
   ]
 }

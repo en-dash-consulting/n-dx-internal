@@ -263,7 +263,7 @@ describe("hench → llm-client gateway contract", () => {
 
   const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
 
-  const GATEWAY_CONSTANTS = ["PROJECT_DIRS"];
+  const GATEWAY_CONSTANTS = ["PROJECT_DIRS", "VENDOR_CONTEXT_CHAR_LIMITS"];
 
   for (const name of GATEWAY_FUNCTIONS) {
     it(`re-exports "${name}" as a function`, async () => {
@@ -592,7 +592,7 @@ describe("gateway export auto-detection", () => {
         "parseApiTokenUsage", "parseStreamTokenUsage", "resolveModel", "resolveVendorModel",
         "isModelCompatibleWithVendor", "resetStaleModel", "formatVendorChangeWarning",
         "formatUsage"],
-      ...["PROJECT_DIRS", "NEWEST_MODELS"],
+      ...["PROJECT_DIRS", "NEWEST_MODELS", "VENDOR_CONTEXT_CHAR_LIMITS"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));

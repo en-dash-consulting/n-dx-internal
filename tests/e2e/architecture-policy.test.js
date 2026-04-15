@@ -810,12 +810,11 @@ const COHESION_THRESHOLD = 0.5;
  * what structural condition would allow removing the exemption.
  */
 const COHESION_EXCEPTIONS = new Map([
-  ["prd-tree-search", "Small PRD tree search cluster; SourceVision isolates a narrow subtree-search slice with few internal edges, so cohesion remains slightly below threshold despite a coherent responsibility."],
   ["refresh-throttle-pipeline", "Tiny refresh throttle pipeline zone; the scheduler and throttle helpers form a narrow satellite with sparse internal edges, making the cohesion score noisy at this size."],
-  ["sourcevision-view-tests", "Small test-only satellite around the SourceVision viewer tabs; cohesion remains low because it exercises multiple viewer entry points rather than a single internal module cluster."],
   ["prd-status-reset", "Small 3-file zone (below the 5-file threshold for reliable metrics); cascade-reset and parent-reset are sibling utilities for bidirectional status propagation — they work at the same level without calling each other, so internal edges are sparse despite a coherent responsibility."],
-  ["rex-chunked-review", "CLI satellite zone with files spanning analyze/ (batch-types.ts) and cli/commands/ sub-directories; the cross-directory provenance creates sparse internal edges. Documented dual-fragility zone per CLAUDE.md satellite zone policy."],
-  ["viewer-data-hooks", "Small 3-file zone (below the 5-file threshold for reliable metrics); use-polling and use-project-status serve distinct lifecycle concerns (polling vs. status aggregation) with few cross-imports, making the cohesion score unreliable at this size."],
+  ["cleanup", "Small 3-file zone created by task-usage refactoring; the backward-compat shim at server root and the real implementation in task-usage/ subdirectory have only one directed edge between them, making the cohesion score unreliable. Zone will consolidate once the shim is removed."],
+  ["register", "Small 3-file zone created by task-usage refactoring; same shim/implementation split as 'cleanup' — backward-compat shim at server root and real file in task-usage/. Zone will consolidate once the shim is removed."],
+  ["web-server", "Large 45-file zone covering diverse server responsibilities (routes, aggregation, gateways, process management); broad scope inherently limits internal edge density. Governed as a dual-fragility zone per CLAUDE.md."],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {
@@ -1198,6 +1197,9 @@ const DOCUMENTED_DYNAMIC_IMPORTS = new Map([
   ["packages/web/src/server/routes-rex/health.ts", "Lazy-loads health check analysis on demand"],
   // Core orchestrator — dynamic import of rex public API for export pre-rendering
   ["packages/core/export.js", "Lazy-loads rex functions for static export pre-rendering"],
+  // Hench agent — deferred node: builtins for lock file and cleanup operations
+  ["packages/hench/src/agent/lifecycle/shared.ts", "Lazy-loads node:fs and node:path for lock file cleanup — deferred to avoid import overhead on code paths that never touch the filesystem"],
+  ["packages/hench/src/tools/cleanup-transformations.ts", "Lazy-loads node:fs/promises for file deletion — async filesystem access isolated to the tool cleanup path"],
 ]);
 
 describe("architecture policy: dynamic import audit", () => {
