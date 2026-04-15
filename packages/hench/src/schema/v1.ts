@@ -90,6 +90,24 @@ export interface HenchConfig {
   selfHeal?: boolean;
   /** Detected project language. Drives guard defaults during init. */
   language?: ProjectLanguage;
+  /**
+   * When true, the CLI loop uses EventAccumulator for result accumulation
+   * instead of inline SpawnResult mutation. Spin detection and token budget
+   * checks operate on the RuntimeEvent stream via the accumulator.
+   *
+   * This is a migration flag — both paths produce equivalent run records.
+   * Will be removed once the event pipeline is validated in production.
+   */
+  useEventPipeline?: boolean;
+  /**
+   * When true, the API loop resolves the LLM provider via ProviderRegistry
+   * instead of a hardcoded Claude vendor check. Enables registry-based
+   * provider resolution for future multi-vendor API support.
+   *
+   * This is a migration flag — both paths produce identical results for
+   * Claude. Will be removed once the registry path is validated.
+   */
+  useRegistryProvider?: boolean;
   /** Discovered claude CLI path, persisted by ndx init to avoid re-discovery on every run. */
   claudePath?: string;
 }
@@ -188,6 +206,13 @@ export interface TurnTokenUsage {
   vendor?: string;
   /** Model used for this token event. */
   model?: string;
+  /**
+   * Diagnostic status of token usage data for this turn.
+   * - `complete` — both input and output fields were present and numeric
+   * - `partial` — only one of input/output was present; the other was backfilled to 0
+   * - `unavailable` — neither field was present; values are synthetic zeros
+   */
+  diagnosticStatus?: "complete" | "partial" | "unavailable";
 }
 
 export interface CommandRecord {
@@ -248,6 +273,122 @@ export interface RunMemoryStats {
   systemTotalBytes: number;
 }
 
+/**
+ * Diagnostic metadata for a single prompt section.
+ *
+ * Captured at prompt construction time and stored on the run record
+ * so post-hoc analysis can verify prompt composition without replaying
+ * the full prompt text.
+ */
+export interface PromptSectionDiagnostic {
+  /** Section name (e.g. "system", "brief", "workflow"). */
+  name: string;
+  /** Byte length of the section content (UTF-8). */
+  byteLength: number;
+}
+
+/**
+ * Run-level diagnostics captured during execution.
+ *
+ * Provides observability into how token usage was parsed and whether
+ * the data is trustworthy. Stored on the run record so that post-hoc
+ * analysis can distinguish "vendor returned zeros" from "vendor omitted
+ * usage data and we backfilled zeros".
+ */
+export interface RunDiagnostics {
+  /**
+   * Overall token diagnostic status for the run.
+   * Derived from per-turn diagnostic statuses:
+   * - `complete` — all turns reported complete token data
+   * - `partial` — at least one turn had partial data
+   * - `unavailable` — at least one turn had no token data
+   */
+  tokenDiagnosticStatus: "complete" | "partial" | "unavailable";
+  /** Output parse mode used by the vendor wrapper (e.g. "stream-json", "json", "api-sdk"). */
+  parseMode: string;
+  /** Vendor-specific diagnostic notes (e.g. "codex_usage_missing"). */
+  notes: string[];
+  /**
+   * Prompt section diagnostics from the initial prompt envelope.
+   *
+   * Captures the name and byte size of each section assembled into
+   * the prompt, enabling observability into prompt composition without
+   * storing the full prompt text.
+   */
+  promptSections?: PromptSectionDiagnostic[];
+
+  // ── Runtime identity fields (captured at run start) ───────────────
+
+  /**
+   * LLM vendor active for this run (e.g. "claude", "codex").
+   *
+   * v1 additive field — old records without this field load normally.
+   */
+  vendor?: string;
+  /**
+   * Sandbox mode in effect (e.g. "workspace-write", "read-only").
+   *
+   * v1 additive field — old records without this field load normally.
+   */
+  sandbox?: string;
+  /**
+   * Approval policy in effect (e.g. "never", "on-request").
+   *
+   * v1 additive field — old records without this field load normally.
+   */
+  approvals?: string;
+}
+
+/**
+ * Serializable representation of a RuntimeEvent for persistence.
+ *
+ * Mirrors the `RuntimeEvent` contract from `@n-dx/llm-client` but uses
+ * plain (non-readonly) fields so that the type is JSON-serializable and
+ * Zod-validatable. Stored on `RunRecord.events` when verbose/debug mode
+ * is enabled.
+ */
+export interface PersistedRuntimeEvent {
+  /** Event type. */
+  type: string;
+  /** Which vendor produced this event. */
+  vendor: string;
+  /** Monotonically increasing turn number (1-based). */
+  turn: number;
+  /** ISO 8601 timestamp when the event was received. */
+  timestamp: string;
+
+  // ── Type-specific payloads (only one is set per event) ──
+
+  /** Assistant message text (type: "assistant"). */
+  text?: string;
+
+  /** Tool invocation details (type: "tool_use"). */
+  toolCall?: {
+    tool: string;
+    input: Record<string, unknown>;
+  };
+
+  /** Tool execution result (type: "tool_result"). */
+  toolResult?: {
+    tool: string;
+    output: string;
+    durationMs: number;
+  };
+
+  /** Token usage for this turn or cumulative (type: "token_usage"). */
+  tokenUsage?: TokenUsage;
+
+  /** Failure details (type: "failure"). */
+  failure?: {
+    category: string;
+    message: string;
+    vendorDetail?: string;
+  };
+
+  /** Completion summary text (type: "completion"). */
+  completionSummary?: string;
+}
+
 export interface RunRecord {
   id: string;
   taskId: string;
@@ -270,6 +411,19 @@ export interface RunRecord {
   structuredSummary?: RunSummaryData;
   /** Memory usage statistics captured during the run. */
   memoryStats?: RunMemoryStats;
+  /** Run-level diagnostics for token parsing and vendor observability. */
+  diagnostics?: RunDiagnostics;
+  /**
+   * Full RuntimeEvent stream captured during the run.
+   *
+   * Only populated when verbose/debug mode is enabled (to avoid bloating
+   * run records during normal operation). Useful for post-hoc debugging
+   * and event pipeline analysis.
+   *
+   * v1 additive field — no migration needed. Existing records without
+   * this field load normally.
+   */
+  events?: PersistedRuntimeEvent[];
 }
 
 export interface TaskBriefTask {

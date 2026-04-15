@@ -7,10 +7,23 @@
 
 import { join } from "node:path";
 import { readFile, access } from "node:fs/promises";
+import { deepMerge } from "./project-config.js";
 import type { ClaudeConfig } from "./types.js";
 import type { LLMVendor, LLMConfig } from "./llm-types.js";
 
 const PROJECT_CONFIG_FILE = ".n-dx.json";
+const LOCAL_CONFIG_FILE = ".n-dx.local.json";
+
+/**
+ * Default Claude model ID used when no model is explicitly configured.
+ *
+ * This constant is the single source of truth for the Claude default within
+ * the foundation layer. The orchestration-tier model catalog
+ * (`packages/core/llm-model-catalog.js`) has a corresponding `recommended`
+ * entry that must stay aligned — enforced by the catalog-runtime contract
+ * test in `tests/e2e/catalog-runtime-contract.test.js`.
+ */
+export const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6";
 
 /**
  * Canonical 'newest model' per vendor.
@@ -21,7 +34,7 @@ const PROJECT_CONFIG_FILE = ".n-dx.json";
  */
 export const NEWEST_MODELS: Record<LLMVendor, string> = {
   claude: "claude-sonnet-4-6",
-  codex: "gpt-5",
+  codex: "gpt-5-codex",
 };
 
 /**
@@ -77,37 +90,66 @@ export function resolveVendorModel(vendor: LLMVendor, config?: LLMConfig): strin
 }
 
 /**
- * Load the "claude" section from .n-dx.json in the given directory.
- * Returns an empty object if the file doesn't exist, is invalid, or has
+ * Load and parse a JSON file, returning null on failure.
+ */
+async function loadJSONFile(filePath: string): Promise<Record<string, unknown> | null> {
+  try {
+    await access(filePath);
+    const raw = await readFile(filePath, "utf-8");
+    const data = JSON.parse(raw);
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      return data as Record<string, unknown>;
+    }
+  } catch {
+    // File doesn't exist or is invalid
+  }
+  return null;
+}
+
+/**
+ * Extract a ClaudeConfig from a raw config object's "claude" section.
+ */
+function extractClaudeConfig(data: Record<string, unknown>): ClaudeConfig | null {
+  if (!data.claude || typeof data.claude !== "object") return null;
+  const claude = data.claude as Record<string, unknown>;
+  const result: ClaudeConfig = {};
+  if (typeof claude.cli_path === "string" && claude.cli_path) {
+    result.cli_path = claude.cli_path;
+  }
+  if (typeof claude.api_key === "string" && claude.api_key) {
+    result.api_key = claude.api_key;
+  }
+  if (typeof claude.api_endpoint === "string" && claude.api_endpoint) {
+    result.api_endpoint = claude.api_endpoint;
+  }
+  if (typeof claude.model === "string" && claude.model) {
+    result.model = claude.model;
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+/**
+ * Load the "claude" section from .n-dx.json in the given directory,
+ * with .n-dx.local.json overrides merged on top (local wins).
+ * Returns an empty object if neither file exists, is invalid, or has
  * no claude section.
  *
  * @param dir  The directory containing .n-dx.json (project root)
  */
 export async function loadClaudeConfig(dir: string): Promise<ClaudeConfig> {
-  const configPath = join(dir, PROJECT_CONFIG_FILE);
-  try {
-    await access(configPath);
-    const raw = await readFile(configPath, "utf-8");
-    const data = JSON.parse(raw);
-    if (data && typeof data === "object" && data.claude && typeof data.claude === "object") {
-      const claude = data.claude as Record<string, unknown>;
-      const result: ClaudeConfig = {};
-      if (typeof claude.cli_path === "string" && claude.cli_path) {
-        result.cli_path = claude.cli_path;
-      }
-      if (typeof claude.api_key === "string" && claude.api_key) {
-        result.api_key = claude.api_key;
-      }
-      if (typeof claude.api_endpoint === "string" && claude.api_endpoint) {
-        result.api_endpoint = claude.api_endpoint;
-      }
-      if (typeof claude.model === "string" && claude.model) {
-        result.model = claude.model;
-      }
-      return result;
-    }
-  } catch {
-    // File doesn't exist or is invalid — no claude config
+  const projectData = await loadJSONFile(join(dir, PROJECT_CONFIG_FILE));
+  const localData = await loadJSONFile(join(dir, LOCAL_CONFIG_FILE));
+
+  // Merge project and local configs (local wins)
+  let merged: Record<string, unknown> | null = projectData;
+  if (projectData && localData) {
+    merged = deepMerge(projectData, localData);
+  } else if (localData) {
+    merged = localData;
+  }
+
+  if (merged) {
+    return extractClaudeConfig(merged) ?? {};
   }
   return {};
 }
