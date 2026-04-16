@@ -979,20 +979,24 @@
         {
           "id": "1e94a947-26f6-4e13-b517-06005ed53afb",
           "title": "Fix observation in global (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- Bidirectional coupling: \"web-server\" ↔ \"web-viewer\" (31+72 crossings) — consider extracting shared interface",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T17:33:49.851Z",
+          "completedAt": "2026-04-16T17:33:49.851Z",
           "children": [
             {
               "id": "03832394-1df4-4f12-82c5-b55a9d76914a",
               "title": "Fix observation in global: Bidirectional coupling: \"web-server\" ↔ \"web-viewer\" (31+72 crossings) — consider",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "- Bidirectional coupling: \"web-server\" ↔ \"web-viewer\" (31+72 crossings) — consider extracting shared interface",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T17:28:13.656Z",
+              "completedAt": "2026-04-16T17:33:49.802Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "296425a77821"
@@ -1002,8 +1006,7 @@
                   "warning": 1
                 },
                 "findingCount": 1
-              },
-              "startedAt": "2026-04-16T17:28:13.656Z"
+              }
             }
           ],
           "recommendationMeta": {
@@ -1020,20 +1023,24 @@
         {
           "id": "1ec02845-ea88-4d91-99dc-094ba60c6904",
           "title": "Fix observation in prd-status-reset (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- High coupling (0.78) — 4 imports target \"rex\"",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T17:38:09.221Z",
+          "completedAt": "2026-04-16T17:38:09.221Z",
           "children": [
             {
               "id": "a945fdd1-62d1-4bfe-a659-ada74d4d663d",
               "title": "Fix observation in prd-status-reset: High coupling (0.78) — 4 imports target \"rex\"",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- High coupling (0.78) — 4 imports target \"rex\"",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T17:34:31.177Z",
+              "completedAt": "2026-04-16T17:38:09.187Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "39c1749f282e"
@@ -1060,7 +1067,7 @@
         {
           "id": "d1f253c4-796b-4661-aea1-8e05f10ed80a",
           "title": "Fix observation in refresh-throttle-pipeline (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- High coupling (0.67) — 3 imports target \"web-viewer\"",
           "priority": "high",
@@ -1069,11 +1076,13 @@
             {
               "id": "0510ab4e-dfbb-4806-be73-5001b857cec6",
               "title": "Fix observation in refresh-throttle-pipeline: High coupling (0.67) — 3 imports target \"web-viewer\"",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- High coupling (0.67) — 3 imports target \"web-viewer\"",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T17:58:42.858Z",
+              "completedAt": "2026-04-16T18:04:55.258Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "2bdf2a1a034c"
@@ -1095,7 +1104,9 @@
               "warning": 1
             },
             "findingCount": 1
-          }
+          },
+          "startedAt": "2026-04-16T18:04:55.295Z",
+          "completedAt": "2026-04-16T18:04:55.295Z"
         },
         {
           "id": "3472096d-f94f-4afc-b9bf-2e2f08faf282",
