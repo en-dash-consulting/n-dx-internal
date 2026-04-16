@@ -295,6 +295,7 @@
               "priority": "high",
               "source": "sourcevision",
               "startedAt": "2026-04-03T14:34:57.156Z",
+              "completedAt": "2026-04-16T19:06:20.783Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "8024b2fa4d12"
@@ -304,8 +305,7 @@
                   "warning": 1
                 },
                 "findingCount": 1
-              },
-              "completedAt": "2026-04-16T19:06:20.783Z"
+              }
             }
           ],
           "recommendationMeta": {
@@ -909,12 +909,13 @@
             {
               "id": "28f2690f-c4c8-436f-90f8-73acaa380b5c",
               "title": "Fix observation in cleanup: High coupling (0.67) — 2 imports target \"web-server\"",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- High coupling (0.67) — 2 imports target \"web-server\"",
               "priority": "high",
               "source": "sourcevision",
               "startedAt": "2026-04-16T17:21:04.652Z",
+              "completedAt": "2026-04-16T19:24:31.715Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "1c7dd205b80d"
@@ -952,12 +953,13 @@
             {
               "id": "530da894-f1f4-428b-a7dd-460f9ba52138",
               "title": "Fix observation in domain-gateway-routes-mcp: High coupling (0.6) — 4 imports target \"web-server\"",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- High coupling (0.6) — 4 imports target \"web-server\"",
               "priority": "high",
               "source": "sourcevision",
               "startedAt": "2026-04-16T17:26:00.847Z",
+              "completedAt": "2026-04-16T19:55:36.174Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "11f49a5aca47"
@@ -1160,20 +1162,24 @@
         {
           "id": "5ed3d9e2-a27a-46ec-81da-2f80d3b0729f",
           "title": "Fix observation in rex-2 (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- Generic zone name \"Rex 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T19:59:41.694Z",
+          "completedAt": "2026-04-16T19:59:41.694Z",
           "children": [
             {
               "id": "7174bd2c-7cce-42a2-ae85-83065ccd8e3a",
               "title": "Fix observation in rex-2: Generic zone name \"Rex 2\" — enrichment did not assign a meaningful name reflecti",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- Generic zone name \"Rex 2\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T19:55:38.508Z",
+              "completedAt": "2026-04-16T19:59:41.668Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "fbeb2da4ffbe"
@@ -1200,20 +1206,24 @@
         {
           "id": "17537d98-1b67-41d7-923c-d5b688af0260",
           "title": "Fix observation in sourcevision-3 (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- Generic zone name \"Sourcevision 3\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T20:02:14.565Z",
+          "completedAt": "2026-04-16T20:02:14.565Z",
           "children": [
             {
               "id": "4aa3a181-0cad-474b-826d-dfb50d11ae96",
               "title": "Fix observation in sourcevision-3: Generic zone name \"Sourcevision 3\" — enrichment did not assign a meaningful name",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- Generic zone name \"Sourcevision 3\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T19:59:43.967Z",
+              "completedAt": "2026-04-16T20:02:14.537Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "c174926b23be"
@@ -1240,20 +1250,24 @@
         {
           "id": "a4cb2ced-93b6-4dac-b6d5-6c75baa0b141",
           "title": "Fix observation in sourcevision-4 (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- Generic zone name \"Sourcevision 4\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T20:02:43.943Z",
+          "completedAt": "2026-04-16T20:02:43.943Z",
           "children": [
             {
               "id": "24735cc5-fcc2-4bc5-b429-8a020bd929b4",
               "title": "Fix observation in sourcevision-4: Generic zone name \"Sourcevision 4\" — enrichment did not assign a meaningful name",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- Generic zone name \"Sourcevision 4\" — enrichment did not assign a meaningful name reflecting this zone's domain purpose",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T20:02:16.823Z",
+              "completedAt": "2026-04-16T20:02:43.917Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "333aeb070bda"
@@ -1280,20 +1294,24 @@
         {
           "id": "e8465f1c-41fa-43e8-ba6f-a3708f353318",
           "title": "Fix observation in web-server (1 finding)",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "- Low cohesion (0.33) — files are loosely related, consider splitting this zone",
           "priority": "high",
           "source": "sourcevision",
+          "startedAt": "2026-04-16T20:10:52.701Z",
+          "completedAt": "2026-04-16T20:10:52.701Z",
           "children": [
             {
               "id": "19f2f8e1-b352-4650-9482-25a8091efd7d",
               "title": "Fix observation in web-server: Low cohesion (0.33) — files are loosely related, consider splitting this zone",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "- Low cohesion (0.33) — files are loosely related, consider splitting this zone",
               "priority": "high",
               "source": "sourcevision",
+              "startedAt": "2026-04-16T20:02:46.148Z",
+              "completedAt": "2026-04-16T20:10:52.670Z",
               "recommendationMeta": {
                 "findingHashes": [
                   "dd3ec1f88070"
@@ -1329,7 +1347,7 @@
             {
               "id": "67634a37-89b5-487f-a30d-f46f3a6c2464",
               "title": "Fix observation in web-unit: High coupling (0.6) — 5 imports target \"web-server\"",
-              "status": "pending",
+              "status": "in_progress",
               "level": "task",
               "description": "- High coupling (0.6) — 5 imports target \"web-server\"",
               "priority": "high",
@@ -1343,7 +1361,8 @@
                   "warning": 1
                 },
                 "findingCount": 1
-              }
+              },
+              "startedAt": "2026-04-16T20:10:54.955Z"
             }
           ],
           "recommendationMeta": {
