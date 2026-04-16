@@ -29270,6 +29270,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-04-16T15:06:34.573Z",
+      "completedAt": "2026-04-16T15:06:34.573Z",
       "children": [
         {
           "id": "fb76efeb-edec-49fd-8bb7-e90d64065796",
@@ -29328,29 +29330,29 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-04-16T15:06:34.573Z",
-      "completedAt": "2026-04-16T15:06:34.573Z"
+      ]
     },
     {
       "id": "11312d55-399a-4130-b04c-e356d0fb007b",
       "title": "Hench",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "3415b5f0-3496-4813-8cc9-9f571044d49c",
           "title": "Run Failure Recovery and Rollback",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "When an ndx work run fails, automatically revert uncommitted file changes and reset the PRD task status back to pending so the user can retry without manual cleanup.",
           "source": "smart-add",
+          "startedAt": "2026-04-16T15:21:00.385Z",
+          "completedAt": "2026-04-16T15:21:00.385Z",
           "children": [
             {
               "id": "a6199e02-a954-44dd-b49f-c6519fa673e4",
               "title": "Implement git change rollback on failed hench runs",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "When a hench work run ends in failure, detect the failure condition and revert uncommitted file changes introduced during the run. Capture a pre-run git state marker (stash ref or HEAD SHA) before hench begins modifying files, then perform a targeted rollback on failure. A --no-rollback flag allows the user to inspect partial changes instead of reverting.",
               "acceptanceCriteria": [
@@ -29366,12 +29368,13 @@
                 "git",
                 "recovery"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-16T15:12:12.343Z"
             },
             {
               "id": "213df016-8118-4337-8f6f-c5bc266ca14e",
               "title": "Reset PRD task status to pending after failed run",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "After a failed hench run, automatically reset the associated PRD task status from 'in-progress' back to 'pending' so it reappears as actionable without manual PRD editing. The reset applies only to the task that was active at failure time and is persisted atomically. Console output confirms the reset with task ID and title.",
               "acceptanceCriteria": [
@@ -29387,12 +29390,13 @@
                 "rex",
                 "recovery"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-16T15:16:59.565Z"
             },
             {
               "id": "03d9f52f-7ec7-452d-9d62-5c391269c2c5",
               "title": "Add rollback configuration, confirmation UX, and regression tests",
-              "status": "pending",
+              "status": "deferred",
               "level": "task",
               "description": "Expose rollback behavior as a configurable option in .n-dx.json (hench.rollbackOnFailure, default: true). In interactive mode, prompt the user to confirm before reverting. In non-interactive/CI mode (TTY absent or --yes flag), proceed automatically. Add integration tests covering rollback, --no-rollback suppression, PRD reset, and CI auto-confirm.",
               "acceptanceCriteria": [
@@ -29412,11 +29416,14 @@
                 "ux",
                 "testing"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-16T15:20:54.970Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-04-16T15:21:00.810Z",
+      "completedAt": "2026-04-16T15:21:00.810Z"
     }
   ]
 }
