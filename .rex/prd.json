@@ -29267,22 +29267,24 @@
     {
       "id": "cd4558d6-ab4c-4d24-9856-5a001948fb56",
       "title": "LLM Integration",
-      "status": "pending",
+      "status": "completed",
       "level": "epic",
       "source": "smart-add",
       "children": [
         {
           "id": "fb76efeb-edec-49fd-8bb7-e90d64065796",
           "title": "Deferred Codex Token Validation at End of Work Run",
-          "status": "pending",
+          "status": "completed",
           "level": "feature",
           "description": "Currently Codex token counts are validated (e.g. against budget thresholds or parsed and surfaced) incrementally during a hench work run, which can produce premature interruptions or misleading mid-run diagnostics. The desired behavior is to accumulate raw Codex token data throughout the run and defer all validation and reporting to the run-completion phase.",
           "source": "smart-add",
+          "startedAt": "2026-04-16T15:06:34.342Z",
+          "completedAt": "2026-04-16T15:06:34.342Z",
           "children": [
             {
               "id": "4ac54c3d-9d24-40a8-a6c1-e9615fdf3e66",
               "title": "Audit Codex token validation and budget-check call sites within the hench work run loop",
-              "status": "in_progress",
+              "status": "completed",
               "level": "task",
               "description": "Trace every location in the hench agent loop and token-tracking infrastructure where Codex token counts are parsed, validated, or checked against budget limits during an active run. Produce a list of call sites that fire before run completion and classify each as safe-to-defer or requiring mid-run presence.",
               "acceptanceCriteria": [
@@ -29297,12 +29299,13 @@
                 "hench"
               ],
               "source": "smart-add",
-              "startedAt": "2026-04-16T14:47:56.641Z"
+              "startedAt": "2026-04-16T14:47:56.641Z",
+              "completedAt": "2026-04-16T14:53:05.737Z"
             },
             {
               "id": "70b824a2-9dfd-440f-8e89-576a8e0fc586",
               "title": "Refactor Codex token accumulation to defer validation and reporting until run completion",
-              "status": "pending",
+              "status": "completed",
               "level": "task",
               "description": "Move Codex token validation (budget checks, count assertions, and quota logging) out of the per-turn loop and into the post-run summary phase. The per-turn path should only accumulate raw token counts; validation and user-facing diagnostics fire once at the end of the full work run. Ensure the existing mid-run quota log formatter still receives final totals at run end.",
               "acceptanceCriteria": [
@@ -29319,11 +29322,15 @@
                 "hench",
                 "refactor"
               ],
-              "source": "smart-add"
+              "source": "smart-add",
+              "startedAt": "2026-04-16T14:53:45.837Z",
+              "completedAt": "2026-04-16T15:06:34.014Z"
             }
           ]
         }
-      ]
+      ],
+      "startedAt": "2026-04-16T15:06:34.573Z",
+      "completedAt": "2026-04-16T15:06:34.573Z"
     },
     {
       "id": "11312d55-399a-4130-b04c-e356d0fb007b",
