@@ -28784,17 +28784,32 @@
                 "Unit test covers nominal two-line 'tokens used \\n <number>' extraction and returns the correct integer",
                 "Unit test covers legacy same-line format without regression",
                 "Unit test covers blank lines between label and count (should still resolve correctly or return null safely)",
-                "Integration test verifies the extracted count reaches the run-level token accumulator"
+                "Integration test verifies the extracted count reaches the run-level token accumulator",
+                "Unit test confirms no validation callback fires before run completion for a multi-turn Codex run",
+                "Integration test verifies cumulative token totals at run end match the sum of per-turn counts",
+                "Test covers the scenario where a mid-turn count would have previously triggered a budget warning but end-of-run total does not"
               ],
               "priority": "high",
               "tags": [
                 "codex",
                 "token-usage",
-                "tests"
+                "tests",
+                "tokens"
               ],
               "source": "smart-add",
               "startedAt": "2026-04-14T20:40:35.085Z",
-              "completedAt": "2026-04-14T20:46:56.170Z"
+              "completedAt": "2026-04-16T14:36:20.074Z",
+              "mergedProposals": [
+                {
+                  "proposalNodeKey": "p0:task:0:2",
+                  "proposalTitle": "Add regression tests for deferred Codex token validation behavior",
+                  "proposalKind": "task",
+                  "reason": "content_overlap",
+                  "score": 0.6537709497206704,
+                  "mergedAt": "2026-04-16T14:29:29.383Z",
+                  "source": "smart-add"
+                }
+              ]
             }
           ]
         }
@@ -29093,6 +29108,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-04-15T17:52:01.299Z",
+      "completedAt": "2026-04-15T17:52:01.299Z",
       "children": [
         {
           "id": "405c9fcf-2258-472f-8eb7-30d5b7ae0b8a",
@@ -29245,9 +29262,154 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-04-15T17:52:01.299Z",
-      "completedAt": "2026-04-15T17:52:01.299Z"
+      ]
+    },
+    {
+      "id": "cd4558d6-ab4c-4d24-9856-5a001948fb56",
+      "title": "LLM Integration",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "fb76efeb-edec-49fd-8bb7-e90d64065796",
+          "title": "Deferred Codex Token Validation at End of Work Run",
+          "status": "pending",
+          "level": "feature",
+          "description": "Currently Codex token counts are validated (e.g. against budget thresholds or parsed and surfaced) incrementally during a hench work run, which can produce premature interruptions or misleading mid-run diagnostics. The desired behavior is to accumulate raw Codex token data throughout the run and defer all validation and reporting to the run-completion phase.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "4ac54c3d-9d24-40a8-a6c1-e9615fdf3e66",
+              "title": "Audit Codex token validation and budget-check call sites within the hench work run loop",
+              "status": "in_progress",
+              "level": "task",
+              "description": "Trace every location in the hench agent loop and token-tracking infrastructure where Codex token counts are parsed, validated, or checked against budget limits during an active run. Produce a list of call sites that fire before run completion and classify each as safe-to-defer or requiring mid-run presence.",
+              "acceptanceCriteria": [
+                "All mid-run Codex token validation and budget-check call sites are identified and documented",
+                "Each site is classified as 'safe to defer' or 'must remain mid-run' with a justification",
+                "Output includes file paths and approximate line numbers for each site"
+              ],
+              "priority": "high",
+              "tags": [
+                "codex",
+                "tokens",
+                "hench"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-16T14:47:56.641Z"
+            },
+            {
+              "id": "70b824a2-9dfd-440f-8e89-576a8e0fc586",
+              "title": "Refactor Codex token accumulation to defer validation and reporting until run completion",
+              "status": "pending",
+              "level": "task",
+              "description": "Move Codex token validation (budget checks, count assertions, and quota logging) out of the per-turn loop and into the post-run summary phase. The per-turn path should only accumulate raw token counts; validation and user-facing diagnostics fire once at the end of the full work run. Ensure the existing mid-run quota log formatter still receives final totals at run end.",
+              "acceptanceCriteria": [
+                "No Codex token validation or budget-threshold checks fire before the run-completion handler",
+                "Raw Codex token counts are correctly accumulated across all turns within a single work run",
+                "End-of-run validation receives the correct cumulative totals, not per-turn values",
+                "Existing quota status log output still appears once at run end, not per turn",
+                "No regressions in token attribution or run summary fields"
+              ],
+              "priority": "high",
+              "tags": [
+                "codex",
+                "tokens",
+                "hench",
+                "refactor"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11312d55-399a-4130-b04c-e356d0fb007b",
+      "title": "Hench",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "3415b5f0-3496-4813-8cc9-9f571044d49c",
+          "title": "Run Failure Recovery and Rollback",
+          "status": "pending",
+          "level": "feature",
+          "description": "When an ndx work run fails, automatically revert uncommitted file changes and reset the PRD task status back to pending so the user can retry without manual cleanup.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "a6199e02-a954-44dd-b49f-c6519fa673e4",
+              "title": "Implement git change rollback on failed hench runs",
+              "status": "pending",
+              "level": "task",
+              "description": "When a hench work run ends in failure, detect the failure condition and revert uncommitted file changes introduced during the run. Capture a pre-run git state marker (stash ref or HEAD SHA) before hench begins modifying files, then perform a targeted rollback on failure. A --no-rollback flag allows the user to inspect partial changes instead of reverting.",
+              "acceptanceCriteria": [
+                "A pre-run git state marker is captured before hench modifies any files",
+                "On run failure, all uncommitted changes introduced during the run are reverted to the pre-run state",
+                "A --no-rollback flag suppresses automatic rollback and leaves changes in place",
+                "Rollback result (number of files reverted) is printed to the console after a failed run",
+                "If no changes were made during the run, the rollback step is skipped silently"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "git",
+                "recovery"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "213df016-8118-4337-8f6f-c5bc266ca14e",
+              "title": "Reset PRD task status to pending after failed run",
+              "status": "pending",
+              "level": "task",
+              "description": "After a failed hench run, automatically reset the associated PRD task status from 'in-progress' back to 'pending' so it reappears as actionable without manual PRD editing. The reset applies only to the task that was active at failure time and is persisted atomically. Console output confirms the reset with task ID and title.",
+              "acceptanceCriteria": [
+                "Task status is reset from 'in-progress' to 'pending' when a run exits with failure",
+                "Reset applies only to the specific task that was active at failure time",
+                "Console output confirms the reset: task ID, title, and restored status",
+                "PRD reset occurs regardless of whether --no-rollback suppresses git rollback",
+                "PRD file is persisted atomically after the status reset using the existing file-lock path"
+              ],
+              "priority": "high",
+              "tags": [
+                "hench",
+                "rex",
+                "recovery"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "03d9f52f-7ec7-452d-9d62-5c391269c2c5",
+              "title": "Add rollback configuration, confirmation UX, and regression tests",
+              "status": "pending",
+              "level": "task",
+              "description": "Expose rollback behavior as a configurable option in .n-dx.json (hench.rollbackOnFailure, default: true). In interactive mode, prompt the user to confirm before reverting. In non-interactive/CI mode (TTY absent or --yes flag), proceed automatically. Add integration tests covering rollback, --no-rollback suppression, PRD reset, and CI auto-confirm.",
+              "acceptanceCriteria": [
+                "hench.rollbackOnFailure config key defaults to true and is documented in ndx config --help",
+                "In interactive mode, a confirmation prompt is shown before changes are reverted",
+                "In non-interactive mode (no TTY or --yes flag), rollback proceeds without a prompt",
+                "ndx work --no-rollback overrides config and skips file rollback for a single run",
+                "Integration test verifies uncommitted changes are reverted after a simulated run failure",
+                "Integration test verifies PRD task status is reset to pending after failure",
+                "Integration test verifies --no-rollback leaves files in place while still resetting PRD status",
+                "All new tests pass in CI without requiring a live LLM or git remote"
+              ],
+              "priority": "medium",
+              "tags": [
+                "hench",
+                "config",
+                "ux",
+                "testing"
+              ],
+              "source": "smart-add"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
