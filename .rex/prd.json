@@ -29338,6 +29338,8 @@
       "status": "completed",
       "level": "epic",
       "source": "smart-add",
+      "startedAt": "2026-04-16T15:21:00.810Z",
+      "completedAt": "2026-04-16T15:21:00.810Z",
       "children": [
         {
           "id": "3415b5f0-3496-4813-8cc9-9f571044d49c",
@@ -29421,9 +29423,73 @@
             }
           ]
         }
-      ],
-      "startedAt": "2026-04-16T15:21:00.810Z",
-      "completedAt": "2026-04-16T15:21:00.810Z"
+      ]
+    },
+    {
+      "id": "0bc4bef9-43ad-45dc-b43d-4de670e6bc8d",
+      "title": "CLI & Developer Tools",
+      "status": "pending",
+      "level": "epic",
+      "source": "smart-add",
+      "children": [
+        {
+          "id": "9611c581-175a-4c59-8d3a-e265e8383745",
+          "title": "Pair-Programming Command Mode (rename from single-command)",
+          "status": "pending",
+          "level": "feature",
+          "description": "Rename the ndx single-command/sc CLI entrypoints to ndx pair-programming/bicker, and augment the mode with cross-vendor validation so whichever vendor is not doing the primary work automatically runs tests and reviews the completed command output.",
+          "source": "smart-add",
+          "children": [
+            {
+              "id": "0150c623-cefa-46e5-a3a0-51aad861311b",
+              "title": "Rename single-command and sc CLI entrypoints to pair-programming and bicker",
+              "status": "pending",
+              "level": "task",
+              "description": "The recently added ndx single-command (alias sc) entrypoints in the core orchestrator need to be renamed to ndx pair-programming (full name) and ndx bicker (short alias) before the feature ships. This covers the CLI registration in cli.js, all help text, any internal constant strings, and any test references. The old names should emit a clear 'renamed to pair-programming / bicker' error to guide users who cached the old names.",
+              "acceptanceCriteria": [
+                "ndx pair-programming and ndx bicker both route to the same handler that single-command/sc previously wired",
+                "ndx single-command and ndx sc print a deprecation/rename error message pointing to the new names and exit non-zero",
+                "ndx --help and ndx pair-programming --help display the new command name and bicker alias",
+                "All test files referencing single-command or sc are updated to use pair-programming and bicker",
+                "No references to 'single-command' or ' sc ' as a command name remain in production code or docs"
+              ],
+              "priority": "high",
+              "tags": [
+                "cli",
+                "rename",
+                "orchestration"
+              ],
+              "source": "smart-add"
+            },
+            {
+              "id": "661f8e0c-ab58-46b9-98e7-e3340bf7bda8",
+              "title": "Implement cross-vendor validation pass in pair-programming mode",
+              "status": "completed",
+              "level": "task",
+              "description": "The pair-programming mode should add a second-opinion step after the primary vendor completes its work: if the active vendor is Codex, Claude is invoked to run tests and review the output; if the active vendor is Claude, Codex performs the review. The reviewer vendor should run the project test suite (or a scoped subset) and produce a structured pass/fail verdict with any failures surfaced to the terminal. This makes the two vendors act as a bickering pair — one does the work, the other checks it.",
+              "acceptanceCriteria": [
+                "When vendor is codex, pair-programming mode invokes claude to run the configured test command after the primary work step completes",
+                "When vendor is claude, pair-programming mode invokes codex to run the configured test command after the primary work step completes",
+                "The reviewer vendor output (pass/fail + summary) is printed to the terminal under a clearly labeled 'Reviewer (claude|codex)' section",
+                "If the reviewer detects test failures, the overall command exits non-zero and the failures are printed verbatim",
+                "If the reviewer vendor is unavailable or not authenticated, pair-programming mode falls back gracefully with a warning rather than crashing",
+                "ndx pair-programming --help documents the cross-vendor review behavior and fallback conditions",
+                "Integration test covers both vendor-direction cases (codex-primary/claude-review and claude-primary/codex-review) with a mock test command"
+              ],
+              "priority": "high",
+              "tags": [
+                "llm",
+                "multi-vendor",
+                "validation",
+                "orchestration"
+              ],
+              "source": "smart-add",
+              "startedAt": "2026-04-16T15:51:40.057Z",
+              "completedAt": "2026-04-16T16:09:14.716Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
