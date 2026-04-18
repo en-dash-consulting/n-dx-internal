@@ -29280,10 +29280,12 @@
         {
           "id": "78032008-f730-44ed-9452-566ebc252c84",
           "title": "Document eval harness usage",
-          "status": "pending",
+          "status": "completed",
           "level": "task",
           "description": "tests/gauntlet/sourcevision-evals/README.md covering: how to run (pnpm gauntlet:evals), how to update goldens (pnpm gauntlet:evals:record), why excluded from default gauntlet (LLM cost), what is deferred (CI integration, semantic zone-name scoring, cached LLM replay). Acceptance: a contributor unfamiliar with the harness can run and update it from the README alone.",
-          "priority": "medium"
+          "priority": "medium",
+          "startedAt": "2026-04-18T05:58:55.065Z",
+          "completedAt": "2026-04-18T05:59:37.821Z"
         },
         {
           "id": "4069767f-ac75-4db1-8857-08813fa93b29",
