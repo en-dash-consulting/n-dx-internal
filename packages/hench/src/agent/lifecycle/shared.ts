@@ -186,6 +186,8 @@ export interface DryRunOptions {
   model: string;
   /** Extra lines to show after the system prompt + brief. */
   extraInfo?: Array<{ heading: string; content: string }>;
+  /** Invocation context: "cli" for CLI invocation, "api" for HTTP/MCP. */
+  invocationContext?: "cli" | "api";
 }
 
 /**
@@ -207,6 +209,14 @@ export function executeDryRun(opts: DryRunOptions): RunRecord {
     }
   }
 
+  // Emit invocation context for dry runs as well
+  if (opts.invocationContext) {
+    const contextDisplay = opts.invocationContext === "cli"
+      ? "CLI (ndx work command)"
+      : "API (HTTP/MCP)";
+    stream("Context", `Invoked via ${contextDisplay}`);
+  }
+
   return {
     id: randomUUID(),
     taskId: opts.taskId,
@@ -219,6 +229,7 @@ export function executeDryRun(opts: DryRunOptions): RunRecord {
     tokenUsage: { input: 0, output: 0 },
     toolCalls: [],
     model: opts.model,
+    invocationContext: opts.invocationContext,
   };
 }
 
@@ -257,6 +268,8 @@ export interface InitRunOptions {
   approvals?: string;
   /** Output parse mode (e.g. "stream-json", "api-sdk"). Captured in diagnostics. */
   parseMode?: string;
+  /** Invocation context: "cli" for CLI invocation, "api" for HTTP/MCP. */
+  invocationContext?: "cli" | "api";
 }
 
 /**
@@ -285,7 +298,16 @@ export async function initRunRecord(opts: InitRunOptions): Promise<{ run: RunRec
     turnTokenUsage: [],
     toolCalls: [],
     model: opts.model,
+    invocationContext: opts.invocationContext,
   };
+
+  // Emit invocation context to the output stream for CLI and dashboard visibility
+  if (opts.invocationContext) {
+    const contextDisplay = opts.invocationContext === "cli"
+      ? "CLI (ndx work command)"
+      : "API (HTTP/MCP)";
+    stream("Context", `Invoked via ${contextDisplay}`);
+  }
 
   // Capture initial runtime diagnostics snapshot when identity fields are provided.
   // tokenDiagnosticStatus starts as "unavailable" and is updated at run end.

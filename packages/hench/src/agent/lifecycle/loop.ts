@@ -297,6 +297,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       taskTitle: brief.task.title,
       model,
       extraInfo: [{ heading: "Tools", content: TOOL_DEFINITIONS.map((t) => t.name).join(", ") }],
+      invocationContext: "api",
     });
     return { run };
   }
@@ -341,6 +342,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     sandbox: DEFAULT_EXECUTION_POLICY.sandbox,
     approvals: DEFAULT_EXECUTION_POLICY.approvals,
     parseMode: "api-sdk",
+    invocationContext: "api",
   });
 
   const messages: Anthropic.MessageParam[] = [
