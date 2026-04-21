@@ -1,7 +1,10 @@
 {
   "llm": {
     "vendor": "claude",
-    "model": "claude-haiku-4-5"
+    "model": "claude-haiku-4-5",
+    "claude": {
+      "model": "claude-sonnet-4-6"
+    }
   },
   "sourcevision": {
     "zones": {
@@ -144,6 +147,9 @@
       }
     }
   },
-  "_initVersion": "0.2.3",
-  "cli": {}
+  "_initVersion": "0.3.1",
+  "cli": {},
+  "claude": {
+    "model": "claude-sonnet-4-6"
+  }
 }
