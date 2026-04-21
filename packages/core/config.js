@@ -528,6 +528,52 @@ function testCliPath(cliPath) {
 }
 
 /**
+ * Default global CLI timeout in milliseconds (30 minutes).
+ * Matches the value in cli-timeout.js — kept in sync manually.
+ */
+const CLI_TIMEOUT_DEFAULT_MS = 1800000;
+
+/**
+ * Known CLI timeout keys and their default values.
+ * Used by handleGet to show defaults for unset keys.
+ */
+const CLI_TIMEOUT_DEFAULTS = {
+  timeoutMs: CLI_TIMEOUT_DEFAULT_MS,
+};
+
+/**
+ * Validate a CLI timeout value: must be a non-negative finite number.
+ * Zero is valid and means "no timeout".
+ * Exported for unit testing.
+ */
+export function validateTimeoutMs(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `Timeout must be a number in milliseconds (0 = no timeout). Got: ${JSON.stringify(value)}`,
+    );
+  }
+  if (value < 0) {
+    throw new Error(
+      `Timeout must be a non-negative number (0 = no timeout). Got: ${value}`,
+    );
+  }
+}
+
+/**
+ * Look up the appropriate validator for a pkg + settingPath combination.
+ * Returns null when no validator is registered for the path.
+ */
+function getValidator(pkg, settingPath) {
+  if (pkg === "claude") return CLAUDE_VALIDATORS[settingPath] ?? null;
+  if (pkg === "llm") return LLM_VALIDATORS[settingPath] ?? null;
+  if (pkg === "cli") {
+    if (settingPath === "timeoutMs") return validateTimeoutMs;
+    if (settingPath.startsWith("timeouts.")) return validateTimeoutMs;
+  }
+  return null;
+}
+
+/**
  * Validators for specific claude config keys.
  * Each returns nothing on success or throws with a message.
  */
@@ -844,6 +890,9 @@ Hench settings (.hench/config.json):
   hench.maxTokens          number    Max tokens per API request (default: 8192)
   hench.rexDir             string    Path to .rex directory (default: ".rex")
   hench.apiKeyEnv          string    Env variable for API key (default: "ANTHROPIC_API_KEY")
+  hench.rollbackOnFailure  boolean   Revert uncommitted changes when a run fails (default: true)
+                                     Set to false to keep changes in place on failure.
+                                     The --no-rollback flag always overrides this for one run.
 
 Hench guard settings (security boundaries):
   hench.guard.blockedPaths       string[]  Glob patterns for blocked file paths
@@ -892,8 +941,8 @@ LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendo
   llm.claude.api_endpoint  string    Claude API endpoint (optional; validated URL)
   llm.claude.model         string    Claude default model (optional)
   llm.claude.lightModel    string    Claude model for light-weight tasks (optional)
-                                    When set, light-tier tasks (single-turn proposals,
-                                    simple classification) use this model. Falls back
+                                    When set, commands that explicitly opt into the
+                                    light tier use this model. Falls back
                                     to claude-haiku-4-20250414 if not set.
   llm.codex.cli_path       string    Codex CLI path (optional; validated executable)
                                     Stored in .n-dx.local.json.
@@ -901,7 +950,8 @@ LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendo
   llm.codex.api_endpoint   string    Codex API endpoint (optional; validated URL)
   llm.codex.model          string    Codex default model (optional)
   llm.codex.lightModel     string    Codex model for light-weight tasks (optional)
-                                    When set, light-tier tasks use this model.
+                                    When set, commands that explicitly opt into the
+                                    light tier use this model.
                                     Falls back to gpt-5.4mini if not set.
 
 Claude preflight error codes:
@@ -937,8 +987,24 @@ CLI settings (.n-dx.json):
                                      on set — use --force to skip validation on other
                                      keys, or set directly in .n-dx.json.
                                      Example: n-dx config cli.claudePath /usr/local/bin/claude
-  cli.timeoutMs            number    Global command timeout in milliseconds (default: 1800000)
-  cli.timeouts.<command>   number    Per-command timeout override (0 = no timeout)
+  cli.timeoutMs            number    Global command timeout in milliseconds.
+                                     Default: 1800000 (30 minutes). Commands that exceed
+                                     this limit are terminated with an error suggesting how
+                                     to raise the limit. Set to 0 to disable the global
+                                     timeout entirely.
+                                     Exceptions: "work" and "self-heal" default to 14400000
+                                     (4 hours); "start", "web", and "dev" have no default
+                                     timeout (they run until stopped).
+                                     Validation: must be a non-negative integer.
+                                     Example: n-dx config cli.timeoutMs 3600000
+  cli.timeouts.<command>   number    Per-command timeout override in milliseconds.
+                                     Overrides cli.timeoutMs for the named command.
+                                     0 = no timeout for that command.
+                                     Validation: must be a non-negative integer.
+                                     Examples:
+                                       n-dx config cli.timeouts.work 7200000
+                                       n-dx config cli.timeouts.analyze 300000
+                                       n-dx config cli.timeouts.start 0
 
 Web dashboard settings (.n-dx.json):
   web.port                 number    Dashboard server port (default: 3117)
@@ -1196,19 +1262,16 @@ async function coerceAndValidateProjectValue(
   }
 
   // Validate section-specific settings (skip with --force)
-  const validators =
-    pkg === "claude"
-      ? CLAUDE_VALIDATORS
-      : pkg === "llm"
-        ? LLM_VALIDATORS
-        : null;
-  if (validators && validators[settingPath] && flags.force !== "true") {
-    try {
-      await validators[settingPath](coerced);
-    } catch (err) {
-      console.error(`Invalid value for "${keyArg}": ${err.message}`);
-      console.error("  Use --force to set this value anyway.");
-      process.exit(1);
+  if (flags.force !== "true") {
+    const validator = getValidator(pkg, settingPath);
+    if (validator) {
+      try {
+        await validator(coerced);
+      } catch (err) {
+        console.error(`Invalid value for "${keyArg}": ${err.message}`);
+        console.error("  Use --force to set this value anyway.");
+        process.exit(1);
+      }
     }
   }
 
@@ -1455,6 +1518,11 @@ function handleGet(keyArg, configs, flags) {
   const settingPath = keyArg.slice(dotIdx + 1);
 
   if (!configs[pkg]) {
+    const defaultValue = getProjectKeyDefault(pkg, settingPath);
+    if (defaultValue !== null) {
+      printKeyDefault(defaultValue, flags);
+      return;
+    }
     if (PROJECT_SECTIONS.has(pkg)) {
       console.error(`Key "${keyArg}" not found.`);
     } else {
@@ -1465,6 +1533,11 @@ function handleGet(keyArg, configs, flags) {
 
   const value = getByPath(configs[pkg], settingPath);
   if (value === undefined) {
+    const defaultValue = getProjectKeyDefault(pkg, settingPath);
+    if (defaultValue !== null) {
+      printKeyDefault(defaultValue, flags);
+      return;
+    }
     console.error(`Key "${keyArg}" not found.`);
     process.exit(1);
   }
@@ -1473,6 +1546,28 @@ function handleGet(keyArg, configs, flags) {
     console.log(JSON.stringify(value, null, 2));
   } else {
     console.log(formatValue(value));
+  }
+}
+
+/**
+ * Return the known default value for a project-section key, or null if unknown.
+ * Used to show helpful defaults when a key hasn't been set yet.
+ */
+function getProjectKeyDefault(pkg, settingPath) {
+  if (pkg === "cli" && settingPath in CLI_TIMEOUT_DEFAULTS) {
+    return CLI_TIMEOUT_DEFAULTS[settingPath];
+  }
+  return null;
+}
+
+/**
+ * Print a default value for an unset key, noting that it's the default.
+ */
+function printKeyDefault(defaultValue, flags) {
+  if (flags.json) {
+    console.log(JSON.stringify(defaultValue));
+  } else {
+    console.log(`${formatValue(defaultValue)}  (default, not set in config)`);
   }
 }
 

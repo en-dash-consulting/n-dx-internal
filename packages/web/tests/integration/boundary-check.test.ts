@@ -155,6 +155,8 @@ describe("server/client boundary", () => {
    *
    * Sub-zones with barrel enforcement:
    * - crash/ — crash recovery (barrel: crash/index.ts)
+   * - loader/ — viewer data loading (barrel: loader/index.ts)
+   * - polling/ — viewer polling lifecycle (barrel: polling/index.ts)
    *
    * Panel is a logical zone (Louvain classification), not a physical directory,
    * so it does not require barrel enforcement.
@@ -164,7 +166,7 @@ describe("server/client boundary", () => {
     const violations: string[] = [];
 
     // Sub-zones with declared barrel files (relative to viewer/)
-    const BARREL_ZONES = ["crash"];
+    const BARREL_ZONES = ["crash", "loader", "polling"];
 
     try {
       for (const file of collectTsFiles(viewerDir)) {
@@ -704,6 +706,117 @@ describe("server/client boundary", () => {
     } catch {
       // viewerDir doesn't exist in test environment — pass
       return;
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  /**
+   * viewer-ui-hub gateway compliance guard.
+   *
+   * viewer-ui-hub (sidebar, search-overlay, config-footer, faq, logos, theme-toggle)
+   * is the intentional Preact UI composition hub. Its dual-fragility metrics
+   * (cohesion 0.38, coupling 0.63) and bidirectional 74-edge coupling with the
+   * web dashboard platform zone are structurally expected — but the coupling must
+   * not grow from undisciplined leaf reaches.
+   *
+   * Two rules enforced here:
+   *
+   * 1. viewer-ui-hub component files must import cross-zone symbols through
+   *    api.js (the inbound viewer gateway), not by reaching directly into
+   *    hooks/ leaf files, types.ts, or route-state.ts.
+   *
+   * 2. Files outside the viewer-ui-hub zone must not bypass components/index.ts
+   *    to import leaf component files (config-footer, faq, logos, search-overlay,
+   *    sidebar, theme-toggle) directly.
+   *
+   * @see CLAUDE.md — viewer-ui-hub governance
+   */
+  it("viewer-ui-hub components comply with gateway and barrel rules", () => {
+    const viewerDir = join(WEB_SRC, "viewer");
+    const componentsDir = join(viewerDir, "components");
+    const hooksDir = join(viewerDir, "hooks");
+    const violations: string[] = [];
+
+    // The ui-hub leaf files (not the barrel itself)
+    const UI_HUB_LEAVES = new Set([
+      "config-footer",
+      "faq",
+      "logos",
+      "search-overlay",
+      "sidebar",
+      "theme-toggle",
+    ]);
+
+    // Hooks leaf files (must NOT be imported directly from ui-hub — use api.js)
+    let hookLeafFiles: string[];
+    try {
+      hookLeafFiles = readdirSync(hooksDir)
+        .filter((f) => /^use-.*\.ts$/.test(f) && f !== "index.ts")
+        .map((f) => f.replace(/\.ts$/, ""));
+    } catch {
+      hookLeafFiles = [];
+    }
+
+    // Rule 1 — ui-hub component files must not reach directly into hooks/ leaf files,
+    // types.ts, or route-state.ts. Cross-zone imports must flow through api.js.
+    for (const leaf of UI_HUB_LEAVES) {
+      const filePath = join(componentsDir, `${leaf}.ts`);
+      let imports: string[];
+      try {
+        imports = extractImportPaths(filePath);
+      } catch {
+        continue; // file absent in test env — skip
+      }
+
+      for (const imp of imports) {
+        // Direct hook leaf reach-in (bypassing api.js)
+        for (const hook of hookLeafFiles) {
+          if (imp.includes(`hooks/${hook}`) && !imp.includes("hooks/index")) {
+            violations.push(
+              `components/${leaf}.ts imports hook leaf "${imp}" — must use ../api.js`
+            );
+          }
+        }
+        // Direct reach into types.ts or route-state.ts (bypassing api.js)
+        if (
+          imp.match(/\.\.\/types(\.js)?$/) ||
+          imp.match(/\.\.\/route-state(\.js)?$/)
+        ) {
+          violations.push(
+            `components/${leaf}.ts imports "${imp}" — must use ../api.js`
+          );
+        }
+      }
+    }
+
+    // Rule 2 — files outside the ui-hub zone must not bypass components/index.ts
+    // to leaf-import ui-hub component files.
+    try {
+      for (const file of collectTsFiles(viewerDir)) {
+        const rel = relative(WEB_SRC, file);
+
+        // Files inside the components/ directory can import siblings freely
+        if (rel.startsWith(join("viewer", "components") + "/")) continue;
+
+        for (const imp of extractImportPaths(file)) {
+          for (const leaf of UI_HUB_LEAVES) {
+            if (
+              (imp.includes(`components/${leaf}`) ||
+                imp.includes(`components/${leaf}.js`)) &&
+              !imp.endsWith("components/index") &&
+              !imp.endsWith("components/index.js") &&
+              !imp.endsWith("components")
+            ) {
+              violations.push(
+                `${rel} imports ui-hub leaf "${imp}" — must use components/index.js barrel`
+              );
+            }
+          }
+        }
+      }
+    } catch {
+      // viewerDir doesn't exist in test environment — pass
     }
 
     expect(violations).toEqual([]);

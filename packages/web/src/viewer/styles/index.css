@@ -31,6 +31,9 @@
 @import "./integration-config.css";
 @import "./feature-toggles.css";
 @import "./cli-timeout.css";
+@import "./commands.css";
+@import "./llm-provider.css";
+@import "./project-settings.css";
 @import "./pr-markdown.css";
 @import "./memory-warning.css";
 @import "./crash-recovery.css";
@@ -38,6 +41,7 @@
 @import "./refresh-queue.css";
 @import "./polling-suspension.css";
 @import "./search-overlay.css";
+@import "./neolithic-overlay.css";
 @import "./zone-slideout.css";
 @import "./deployed.css";
 @import "./responsive.css";

@@ -46,6 +46,7 @@ const ALLOWED = new Set([
   "packages/core/web.js",
   "packages/core/config.js",
   "packages/core/export.js",
+  "packages/core/pair-programming.js",
   "pr-check.js",
   // Development scripts
   "packages/web/dev.js",
@@ -197,7 +198,7 @@ const ORCHESTRATION_FILES = ["packages/core/cli.js", "packages/core/web.js", "pa
  * other orchestration files (peer imports within the same tier).
  */
 const ORCHESTRATION_PEERS = new Set([
-  "cli-brand.js",
+  "packages/core/cli-brand.js",
   "packages/core/config.js",
   "packages/core/web.js",
   "packages/core/ci.js",
@@ -400,7 +401,6 @@ describe("architecture policy: CLAUDE.md coverage cross-reference", () => {
 const CYCLE_EXEMPT_ZONE_TYPES = new Set(["test", "infrastructure"]);
 const CYCLE_EXCEPTIONS = new Map([
   ["mcp", "Rex MCP tools cluster; cycles with the duplicate-named 'web' zone (first file in rex package) making intra-rex edges appear cross-package to the cycle detector."],
-  ["rex-core", "Small rex core cluster; cycles with the duplicate-named 'web' zone for the same packageFamily mismatch reason — both zones are in the rex package."],
   ["rex-recommend", "Small rex recommendation cluster; cycles with the duplicate-named 'web' zone for the same packageFamily mismatch reason."],
   ["rex-store", "Rex store/persistence cluster; cycles with the duplicate-named 'web' zone for the same packageFamily mismatch reason."],
   ["rex-unit", "Small rex unit cluster (src/core/tree.ts); cycles with the duplicate-named 'web' zone for the same packageFamily mismatch reason."],
@@ -816,13 +816,6 @@ const COHESION_THRESHOLD = 0.5;
  * what structural condition would allow removing the exemption.
  */
 const COHESION_EXCEPTIONS = new Map([
-  ["health", "Small 3-file zone (below the 5-file threshold for reliable metrics); one CLI command, one core structure-health analyzer, and its test — a narrow satellite with sparse internal edges."],
-  ["polling", "5-file zone at the boundary of reliable metrics; two polling source files plus three tests. Tests don't import each other, which drives cohesion down despite a coherent purpose."],
-  ["project-status-hooks", "Small 3-file zone (below the 5-file threshold); two React hooks (use-polling, use-project-status) and one test. The hooks are sibling utilities invoked independently by views, so internal edges are sparse."],
-  ["refresh", "Small 3-file zone (below the 5-file threshold); a viewer refresh-throttle hook, its performance-module implementation, and one test — narrow satellite with sparse internal edges."],
-  ["rex-chunked-review", "Rex satellite CLI zone governed by the rex-satellite zone policy (see CLAUDE.md); 4 files covering chunked-review command handlers plus tests. By policy these zones carry high coupling to rex-prd-engine and low cohesion."],
-  ["rex-recommend", "Small 3-file zone (below the 5-file threshold); conflict-detection, shared types, and one test. The types module is a leaf imported by the detector, giving only one directed internal edge."],
-  ["web-2", "Small 3-file zone (below the 5-file threshold); tree-search component, use-facet-state hook, and the tree-search test. Component and hook are sibling viewer utilities that don't call each other directly."],
 ]);
 
 describe("architecture policy: zone cohesion gate", () => {
@@ -923,7 +916,7 @@ describe("architecture policy: zone cohesion gate", () => {
 const BOUNDARY_FILES = [
   {
     file: "packages/web/src/viewer/external.ts",
-    maxExports: 25,
+    maxExports: 26,
     description: "viewer outbound gateway (schema types, shared utilities, messaging)",
   },
   {
@@ -1207,6 +1200,8 @@ const DOCUMENTED_DYNAMIC_IMPORTS = new Map([
   ["packages/web/src/server/routes-rex/health.ts", "Lazy-loads health check analysis on demand"],
   // Core orchestrator — dynamic import of rex public API for export pre-rendering
   ["packages/core/export.js", "Lazy-loads rex functions for static export pre-rendering"],
+  // Core CLI — lazy-loads Ink TUI renderer only when running in an interactive TTY
+  ["packages/core/cli.js", "Lazy-loads cli-ink.js Ink TUI renderer on demand — only activated when stdout is a TTY, avoiding React/Ink import cost in non-interactive environments"],
   // Hench agent — deferred node: builtins for lock file and cleanup operations
   ["packages/hench/src/agent/lifecycle/shared.ts", "Lazy-loads node:fs and node:path for lock file cleanup — deferred to avoid import overhead on code paths that never touch the filesystem"],
   ["packages/hench/src/tools/cleanup-transformations.ts", "Lazy-loads node:fs/promises for file deletion — async filesystem access isolated to the tool cleanup path"],

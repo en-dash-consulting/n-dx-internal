@@ -18,16 +18,17 @@ import { randomUUID } from "node:crypto";
 import type { PRDStore, SelectionExplanation } from "../../prd/rex-gateway.js";
 import { explainSelection, collectCompletedIds, findItem } from "../../prd/rex-gateway.js";
 import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief, TurnTokenUsage } from "../../schema/index.js";
-import { getCurrentHead, execShellCmd } from "../../process/index.js";
+import { getCurrentHead, execShellCmd, execStdout } from "../../process/exec.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";
 import type { AssembleBriefOptions } from "../planning/brief.js";
 import { buildSystemPrompt, buildPromptEnvelope } from "../planning/prompt.js";
 import type { PromptEnvelope } from "../../prd/llm-gateway.js";
-import { saveRun, persistRunLog } from "../../store/index.js";
+import { saveRun } from "../../store/runs.js";
+import { persistRunLog } from "../../store/run-log.js";
 import { buildRunSummary } from "../analysis/summary.js";
 import { collectReviewDiff, promptReview, revertChanges } from "../analysis/review.js";
-import { runPostTaskTests, runTestGate } from "../../tools/index.js";
+import { runPostTaskTests, runTestGate } from "../../tools/test-runner.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { section, subsection, stream, detail, info, getCapturedLines, resetCapturedLines } from "../../types/output.js";
 import { displayTaskInfo } from "./task-display.js";
@@ -59,6 +60,21 @@ export interface SharedLoopOptions {
   priorAttempts?: PriorAttemptInfo;
   /** Run records for computing prior attempts when task is auto-selected. */
   runHistory?: RunRecord[];
+  /**
+   * Automatically revert uncommitted file changes on run failure.
+   * Default: true. Pass false (via --no-rollback) to leave changes in place.
+   */
+  rollbackOnFailure?: boolean;
+  /**
+   * Skip the interactive rollback confirmation prompt and proceed automatically.
+   * Set when --yes is passed or when the caller knows it is running non-interactively.
+   */
+  yes?: boolean;
+  /**
+   * Additional project context to append to the prompt (e.g. CONTEXT.md +
+   * PRD status excerpt injected by the pair-programming command).
+   */
+  extraContext?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,11 +111,12 @@ export async function prepareBrief(
   taskId?: string,
   options?: AssembleBriefOptions,
   displayOptions?: PrepareBriefDisplayOptions,
+  extraContext?: string,
 ): Promise<PreparedBrief> {
   const { brief, taskId: resolvedTaskId } = await assembleTaskBrief(store, taskId, options);
   const briefText = formatTaskBrief(brief);
   const systemPrompt = buildSystemPrompt(brief.project, config);
-  const envelope = buildPromptEnvelope(brief, config);
+  const envelope = buildPromptEnvelope(brief, config, extraContext);
 
   const reason: SelectionReason = taskId ? "explicit" : "auto";
 
@@ -512,7 +529,131 @@ export interface FinalizeRunOptions {
   memoryCtx?: MemoryContext;
   /** Whether in self-heal mode (triggers mandatory test gate). */
   selfHeal?: boolean;
+  /**
+   * Automatically revert uncommitted file changes on run failure.
+   * Default: true. Pass false (via --no-rollback) to leave changes in place.
+   */
+  rollbackOnFailure?: boolean;
+  /**
+   * Skip the interactive rollback confirmation prompt and proceed automatically.
+   * Set when --yes is passed or when the caller knows it is running non-interactively.
+   */
+  yes?: boolean;
+  /**
+   * PRD store used to reset task status to pending on failure.
+   * When provided, if the run fails and the task is still in_progress,
+   * it is reset to pending so it reappears as actionable. This occurs
+   * independently of rollbackOnFailure.
+   */
+  store?: PRDStore;
 }
+
+// ---------------------------------------------------------------------------
+// Git rollback helpers
+// ---------------------------------------------------------------------------
+
+/** Run statuses that indicate the run ended in failure. */
+const FAILURE_STATUSES = new Set(["failed", "timeout", "budget_exceeded", "error_transient"]);
+
+/**
+ * Return the list of entries reported by `git status --porcelain`.
+ * Each non-blank line represents a modified, staged, or untracked path.
+ * Returns an empty array when the working tree is clean or git is unavailable.
+ */
+async function listDirtyPaths(projectDir: string): Promise<string[]> {
+  try {
+    const output = await execStdout("git", ["status", "--porcelain"], {
+      cwd: projectDir,
+      timeout: 15_000,
+    });
+    return output.trim().split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Ask the user to confirm rollback via stdin (TTY only).
+ * Returns true when the user accepts (empty input or 'y'/'yes').
+ */
+async function promptRollbackConfirm(count: number): Promise<boolean> {
+  const { createInterface } = await import("node:readline");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise<boolean>((resolve) => {
+    rl.question(`\nRoll back ${count} uncommitted file(s)? [Y/n] `, (answer) => {
+      rl.close();
+      const trimmed = answer.trim().toLowerCase();
+      resolve(trimmed === "" || trimmed === "y" || trimmed === "yes");
+    });
+  });
+}
+
+/**
+ * Revert all uncommitted changes introduced during the run.
+ * Skips silently when the working tree is already clean.
+ *
+ * In interactive TTY mode (stdin is a terminal and --yes was not passed),
+ * prompts the user to confirm before reverting.
+ * In non-interactive mode (CI, pipe, or --yes) proceeds without a prompt.
+ *
+ * Prints the number of reverted paths on completion.
+ */
+async function performRollbackIfNeeded(projectDir: string, yes?: boolean): Promise<void> {
+  const dirtyPaths = await listDirtyPaths(projectDir);
+  if (dirtyPaths.length === 0) {
+    return;
+  }
+
+  // Prompt only in interactive TTY sessions where --yes was not supplied.
+  const isInteractive = Boolean(process.stdin.isTTY) && !yes;
+  if (isInteractive) {
+    const confirmed = await promptRollbackConfirm(dirtyPaths.length);
+    if (!confirmed) {
+      info(`Rollback skipped — ${dirtyPaths.length} file(s) left unchanged.`);
+      return;
+    }
+  }
+
+  info(`\nRolling back ${dirtyPaths.length} uncommitted file(s) after failed run…`);
+  await revertChanges(projectDir);
+  info(`Rollback complete — ${dirtyPaths.length} file(s) reverted.`);
+}
+
+// ---------------------------------------------------------------------------
+// PRD task reset helper
+// ---------------------------------------------------------------------------
+
+/**
+ * After a failed run, reset the active task from in_progress back to pending
+ * so it reappears as actionable without manual PRD editing.
+ *
+ * Only resets when the task is still in_progress — specific failure handlers
+ * (e.g. handleRunFailure) may have already moved it to pending or deferred,
+ * in which case this is a no-op.
+ *
+ * Runs independently of rollbackOnFailure so the PRD is always cleaned up
+ * even when git rollback is suppressed with --no-rollback.
+ */
+async function resetInProgressTaskIfFailed(
+  store: PRDStore,
+  run: RunRecord,
+): Promise<void> {
+  if (!FAILURE_STATUSES.has(run.status) || !run.taskId) {
+    return;
+  }
+
+  const item = await store.getItem(run.taskId);
+  if (!item || item.status !== "in_progress") {
+    return;
+  }
+
+  await toolRexUpdateStatus(store, run.taskId, { status: "pending" });
+  info(`\nTask reset to pending: [${run.taskId}] ${run.taskTitle ?? "unknown"}`);
+}
+
+// ---------------------------------------------------------------------------
+// Token diagnostic helpers
+// ---------------------------------------------------------------------------
 
 /**
  * Derive the diagnostic status from per-turn token usage data.
@@ -668,6 +809,21 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
   // Validate token reporting for Codex runs.
   // This is a non-blocking post-run check that logs warnings but never fails the run.
   validateRunTokensPostRun(run, true);
+
+  // Rollback uncommitted changes when the run failed (unless suppressed).
+  // Runs after test gates so the working tree reflects the agent's final state.
+  // Skips silently when nothing is dirty (no-op for already-clean trees).
+  if (opts.rollbackOnFailure !== false && FAILURE_STATUSES.has(run.status)) {
+    await performRollbackIfNeeded(projectDir, opts.yes);
+  }
+
+  // Reset task to pending when run failed and task is still in_progress.
+  // Runs independently of rollbackOnFailure — PRD cleanup always occurs.
+  // A no-op when a specific failure handler already moved the task to
+  // pending or deferred.
+  if (opts.store) {
+    await resetInProgressTaskIfFailed(opts.store, run);
+  }
 
   run.finishedAt = new Date().toISOString();
   run.lastActivityAt = run.finishedAt;

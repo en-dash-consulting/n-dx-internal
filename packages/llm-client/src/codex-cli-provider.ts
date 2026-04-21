@@ -7,9 +7,9 @@
  * ## Execution policy compilation
  *
  * The provider compiles an {@link ExecutionPolicy} into Codex-specific CLI
- * flags (`--sandbox`, `--approval-policy`) instead of relying on the
- * `--full-auto` preset alias. This keeps the n-dx policy object as the
- * single source of truth for permission intent.
+ * flags using the currently supported surface (`--sandbox`, `--full-auto`,
+ * `--dangerously-bypass-approvals-and-sandbox`). This keeps the n-dx policy
+ * object as the single source of truth for permission intent.
  *
  * @see packages/llm-client/src/runtime-contract.ts — policy types
  * @see docs/analysis/claude-codex-runtime-identity-discovery.md §7.1
@@ -66,6 +66,13 @@ export interface CodexCliProviderOptions {
   maxRetries?: number;
   baseDelayMs?: number;
   maxDelayMs?: number;
+  /**
+   * Called before each rate-limit retry sleep.
+   * Receives the upcoming attempt number (1-based, so 2 = first retry),
+   * the total attempt count, and the delay in milliseconds.
+   * When omitted, a default message is written to stderr.
+   */
+  onRetry?: (attempt: number, maxAttempts: number, delayMs: number) => void;
 }
 
 // ── Policy flag compilation ──────────────────────────────────────────────
@@ -82,21 +89,21 @@ export function mapSandboxToCodexFlag(mode: SandboxMode): string {
     case "workspace-write":
       return "workspace-write";
     case "danger-full-access":
-      return "full-access";
+      return "danger-full-access";
   }
 }
 
 /**
- * Map an n-dx {@link ApprovalPolicy} to the Codex CLI `--approval-policy` value.
+ * Map an n-dx {@link ApprovalPolicy} to the closest Codex execution preset.
  *
  * Mapping:
- * - `"on-request"` → `"auto-edit"` (auto-apply edits, ask for shell commands)
- * - `"never"` → `"full-auto"` (auto-approve everything — unattended execution)
+ * - `"on-request"` → `"default"` (use plain `--sandbox`; Codex decides when to prompt)
+ * - `"never"` → `"full-auto"` (low-friction unattended execution where supported)
  */
 export function mapApprovalToCodexFlag(policy: ApprovalPolicy): string {
   switch (policy) {
     case "on-request":
-      return "auto-edit";
+      return "default";
     case "never":
       return "full-auto";
   }
@@ -105,24 +112,30 @@ export function mapApprovalToCodexFlag(policy: ApprovalPolicy): string {
 /**
  * Compile an n-dx {@link ExecutionPolicy} into Codex CLI flags.
  *
- * Replaces the `--full-auto` preset alias with explicit `--sandbox` and
- * `--approval-policy` flags derived from the normalized policy object.
- * This ensures the n-dx policy is the single source of truth — Codex CLI
- * presets cannot silently override the intended execution envelope.
+ * Codex no longer exposes a dedicated `--approval-policy` exec flag, so this
+ * compiler maps the normalized policy object onto the supported CLI surface:
+ *
+ * - `workspace-write + never` → `--full-auto`
+ * - `danger-full-access + never` → `--dangerously-bypass-approvals-and-sandbox`
+ * - all other combinations → explicit `--sandbox <mode>`
  *
  * @example
  * ```ts
  * compileCodexPolicyFlags(DEFAULT_EXECUTION_POLICY)
- * // → ["--sandbox", "workspace-write", "--approval-policy", "full-auto"]
+ * // → ["--full-auto"]
  * ```
  */
 export function compileCodexPolicyFlags(policy: ExecutionPolicy): string[] {
-  return [
-    "--sandbox",
-    mapSandboxToCodexFlag(policy.sandbox),
-    "--approval-policy",
-    mapApprovalToCodexFlag(policy.approvals),
-  ];
+  if (policy.approvals === "never") {
+    if (policy.sandbox === "workspace-write") {
+      return ["--full-auto"];
+    }
+    if (policy.sandbox === "danger-full-access") {
+      return ["--dangerously-bypass-approvals-and-sandbox"];
+    }
+  }
+
+  return ["--sandbox", mapSandboxToCodexFlag(policy.sandbox)];
 }
 
 function isDebugEnabled(): boolean {
@@ -246,12 +259,41 @@ async function spawnOnce(
       });
     });
 
-    const text = await readFile(outputPath, "utf-8");
-    debugLog(`spawn success outputChars=${text.trim().length}`);
-    return { text: text.trim() };
+    let rawText: string;
+    try {
+      rawText = await readFile(outputPath, "utf-8");
+    } catch (err) {
+      const nodeErr = err as NodeJS.ErrnoException;
+      if (nodeErr.code === "ENOENT") {
+        throw new ClaudeClientError(
+          "codex exec exited successfully but did not write output file",
+          "unknown",
+          true,
+        );
+      }
+      throw err;
+    }
+
+    const text = rawText.trim();
+    debugLog(`spawn success outputChars=${text.length}`);
+
+    if (text.length === 0) {
+      throw new ClaudeClientError(
+        "codex exec produced empty output",
+        "unknown",
+        true,
+      );
+    }
+
+    return { text };
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+}
+
+function defaultRateLimitOnRetry(attempt: number, maxAttempts: number, delayMs: number): void {
+  const delaySec = Math.round(delayMs / 1000);
+  process.stderr.write(`Rate limited — retrying in ${delaySec}s… (attempt ${attempt} of ${maxAttempts})\n`);
 }
 
 export function createCodexCliClient(options: CodexCliProviderOptions): ClaudeClient {
@@ -260,6 +302,7 @@ export function createCodexCliClient(options: CodexCliProviderOptions): ClaudeCl
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
+  const onRetry = options.onRetry ?? defaultRateLimitOnRetry;
 
   return {
     mode: "cli",
@@ -316,12 +359,32 @@ export function createCodexCliClient(options: CodexCliProviderOptions): ClaudeCl
           if (attempt < maxRetries) {
             const delay = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs);
             debugLog(`sleeping before retry delayMs=${delay}`);
+
+            // Surface a user-visible message for rate-limit retries so the
+            // command doesn't appear hung. Other transient errors (network
+            // resets, server 5xx) retry silently.
+            if (err instanceof ClaudeClientError && err.reason === "rate-limit") {
+              onRetry(attempt + 2, maxRetries + 1, delay);
+            }
+
             await new Promise((r) => setTimeout(r, delay));
           }
         }
       }
 
       debugLog(`exhausted retries; throwing last error: ${lastError?.message ?? "unknown"}`);
+
+      // When all retries are exhausted due to rate limiting, throw an
+      // actionable error rather than re-surfacing the raw provider message.
+      if (lastError instanceof ClaudeClientError && lastError.reason === "rate-limit") {
+        throw new ClaudeClientError(
+          `Codex rate limit exceeded — all ${maxRetries + 1} attempts failed. ` +
+          "Wait a few minutes and try again, or reduce request frequency.",
+          "rate-limit",
+          false,
+        );
+      }
+
       throw lastError;
     },
   };

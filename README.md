@@ -8,7 +8,24 @@ AI-powered development toolkit. Analyze a codebase, build a PRD, execute tasks a
 | **[SourceVision](packages/sourcevision)** | **[Rex](packages/rex)** | **[Hench](packages/hench)** |
 | Static analysis & zone detection | PRD management & task tracking | Autonomous agent execution |
 
+## Requirements
+
+**Node.js ≥ 18** (Node 22 LTS recommended) · **pnpm ≥ 10**
+
+### Platform Support
+
+| Platform | Support | Notes |
+|----------|---------|-------|
+| macOS | ✅ Supported | CI smoke tests on `macos-latest` |
+| Linux | ✅ Supported | Full CI (build, typecheck, unit tests) on `ubuntu-latest` |
+| Windows — WSL2 | ✅ Supported | Runs as Linux; no separate CI coverage needed |
+| Windows — native | ⚠️ Experimental | CLI smoke tests pass in CI with macOS parity checks; process group management and shell spawning differ from POSIX; `ndx work` agent loop has reduced native test coverage |
+
+For a supported Linux environment on Windows, use **WSL2** (recommended) or the Docker infrastructure in [`.local_testing/`](.local_testing/).
+
 ## Quick Start
+
+**Prerequisites:** Node.js ≥ 18 (22 LTS recommended) and pnpm ≥ 10.
 
 ```sh
 pnpm add -g @n-dx/core      # install from npm
@@ -230,16 +247,17 @@ See the [hench README](packages/hench#security) for the full configuration refer
 
 ## Contributing
 
-### Build from source
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor setup guide,
+including Node.js / pnpm version requirements, workspace bootstrap, platform-
+specific notes (macOS, Linux, Windows/WSL2), and Docker testing infrastructure.
+
+Quick start:
 
 ```sh
 git clone https://github.com/en-dash-consulting/n-dx.git
 cd n-dx
 pnpm install && pnpm build
-cd packages/core && pnpm link --global  # register CLI globally
 ```
-
-When developing locally, link from `packages/core` (not the monorepo root) so the global package name matches the published `@n-dx/core`. Use `pnpm ls -g` to verify.
 
 ### Build & test
 

@@ -5,9 +5,10 @@ import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
 import { resolveStore } from "../../store/index.js";
 import { findItem } from "../../core/tree.js";
-import { cascadeParentReset } from "../../core/index.js";
+import { cascadeParentReset } from "../../core/parent-reset.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
+import { classifyLLMError } from "../llm-error-classifier.js";
 import { info, warn, result, startSpinner } from "../output.js";
 import {
   reasonFromDescriptions,
@@ -628,95 +629,19 @@ function parseNumericList(input: string, total: number): number[] {
 
 /**
  * Classify an LLM error and return a user-friendly message + suggestion.
- * Covers auth failures, network issues, rate limits, response parsing, and
- * model/API availability problems.
+ *
+ * Thin wrapper around the shared {@link classifyLLMError} that translates
+ * smart-add's mode parameter into a context label for the fallback message.
  */
 export function classifySmartAddError(
   err: Error,
   mode: "description" | "file",
   vendor: LLMVendor = "claude",
 ): { message: string; suggestion: string } {
-  const msg = err.message.toLowerCase();
-  const hasInvalidApiKey = /invalid.*api.*key/i.test(err.message);
+  const context = mode === "file" ? "process ideas file" : "analyze description";
   llmDebug(`classify error vendor=${vendor} mode=${mode} message="${err.message}"`);
-
-  // Authentication issues — match HTTP status codes and specific API error patterns,
-  // not generic words like "authentication" which may appear in user input descriptions.
-  const isAuthError = /\b401\b/.test(msg) || hasInvalidApiKey
-    || /authentication.*(fail|error|invalid|expired)/i.test(err.message)
-    || /unauthorized.*(request|access|error)/i.test(err.message);
-  if (isAuthError) {
-    if (vendor === "codex") {
-      return {
-        message: "Authentication failed — Codex CLI credentials were rejected.",
-        suggestion: "Run 'codex login', then retry. If needed, set the binary path with: n-dx config llm.codex.cli_path /path/to/codex",
-      };
-    }
-    return {
-      message: "Authentication failed — your API key was rejected.",
-      suggestion: "Check your API key with: n-dx config claude.apiKey, or switch to CLI mode.",
-    };
-  }
-
-  // Rate limiting
-  if (/\b429\b/.test(msg) || msg.includes("rate limit") || msg.includes("too many requests")) {
-    return {
-      message: "Rate limit exceeded — the API is temporarily throttling requests.",
-      suggestion: "Wait a few minutes and try again, or use a different model with --model.",
-    };
-  }
-
-  // Network / connectivity
-  if (msg.includes("enotfound") || msg.includes("econnrefused") || msg.includes("etimedout") || msg.includes("network") || msg.includes("fetch failed")) {
-    return {
-      message: "Network error — could not reach the API.",
-      suggestion: "Check your internet connection and try again.",
-    };
-  }
-
-  // Claude CLI not found
-  if (
-    msg.includes("codex cli not found") ||
-    msg.includes("claude cli not found") ||
-    (msg.includes("enoent") && (msg.includes("claude") || msg.includes("codex")))
-  ) {
-    if (vendor === "codex") {
-      return {
-        message: "Codex CLI not found on your system.",
-        suggestion: "Install Codex CLI and/or set its path: n-dx config llm.codex.cli_path /path/to/codex",
-      };
-    }
-    return {
-      message: "Claude CLI not found on your system.",
-      suggestion: "Install it (npm install -g @anthropic-ai/claude-cli) or set an API key: n-dx config claude.apiKey <key>",
-    };
-  }
-
-  // Response parsing / truncation
-  if (msg.includes("invalid json") || msg.includes("schema validation") || msg.includes("truncated")) {
-    return {
-      message: "LLM returned an unparseable response.",
-      suggestion: "Try again — LLM outputs can vary. If this persists, try a different model with --model.",
-    };
-  }
-
-  // Overloaded / server errors
-  if (/\b(529|503|500)\b/.test(msg) || msg.includes("overloaded") || msg.includes("server error")) {
-    return {
-      message: "The API is temporarily overloaded or experiencing errors.",
-      suggestion: "Wait a moment and retry. Consider using a different model with --model.",
-    };
-  }
-
-  // Generic fallback with mode-specific context
-  const modeLabel = mode === "file" ? "process ideas file" : "analyze description";
-  const authHint = vendor === "codex"
-    ? "Check Codex CLI login (codex login) and your network connection, then try again."
-    : "Check your API key and network connection, then try again.";
-  return {
-    message: `Failed to ${modeLabel}: ${err.message}`,
-    suggestion: authHint,
-  };
+  const { message, suggestion } = classifyLLMError(err, vendor, context);
+  return { message, suggestion };
 }
 
 async function savePending(
@@ -1135,14 +1060,13 @@ function parseSmartAddInput(
 }
 
 /**
- * Determine model source for light-tier commands.
- * Returns "configured" if lightModel is set in config, "default" otherwise.
+ * Determine whether smart-add is using an explicit vendor model override.
  */
-function determineLightTierModelSource(vendor: LLMVendor, llmConfig: LLMConfig): "configured" | "default" {
-  if (vendor === "claude" && llmConfig.claude?.lightModel) {
+function determineSmartAddModelSource(vendor: LLMVendor, llmConfig: LLMConfig): "configured" | "default" {
+  if (vendor === "claude" && llmConfig.claude?.model) {
     return "configured";
   }
-  if (vendor === "codex" && llmConfig.codex?.lightModel) {
+  if (vendor === "codex" && llmConfig.codex?.model) {
     return "configured";
   }
   return "default";
@@ -1158,14 +1082,15 @@ async function initializeSmartAddLLM(dir: string, format?: string): Promise<void
   const vendor = getLLMVendor();
   llmDebug(`resolved vendor=${vendor ?? "unknown"} configDir=${rexConfigDir}`);
   if (vendor) {
-    // Smart-add uses light tier for cost optimization
-    const resolvedModel = resolveVendorModel(vendor, llmConfig, "light");
-    const modelSource = determineLightTierModelSource(vendor, llmConfig);
+    const resolvedModel = await resolveSmartAddModel(dir);
+    const defaultModel = resolveVendorModel(vendor, llmConfig);
+    const modelSource = resolvedModel && resolvedModel !== defaultModel
+      ? "configured"
+      : determineSmartAddModelSource(vendor, llmConfig);
     printVendorModelHeader(vendor, llmConfig, {
       format,
       resolvedModel,
       modelSource,
-      tier: "light",
     });
   }
   if (format !== "json") {
@@ -1218,14 +1143,26 @@ async function resolveSmartAddModel(
 
   try {
     const rexDir = join(dir, REX_DIR);
+    const llmConfig = await loadLLMConfig(rexDir);
+    const vendor = llmConfig.vendor ?? getLLMVendor() ?? "claude";
+    const configuredModel = resolveVendorModel(vendor, llmConfig);
+    const hasVendorModelOverride =
+      (vendor === "claude" && typeof llmConfig.claude?.model === "string" && llmConfig.claude.model.trim().length > 0) ||
+      (vendor === "codex" && typeof llmConfig.codex?.model === "string" && llmConfig.codex.model.trim().length > 0);
+
+    if (hasVendorModelOverride) {
+      llmDebug(`effective model=${configuredModel}`);
+      return configuredModel;
+    }
+
     const store = await resolveStore(rexDir);
     const config = await store.loadConfig();
-    const vendor = getLLMVendor() ?? "claude";
     const model = resolveVendorCompatibleRexModel(vendor, config.model);
-    llmDebug(`effective model=${model ?? resolveConfiguredModel(undefined, "light")}`);
-    return model;
+    const effectiveModel = model ?? configuredModel;
+    llmDebug(`effective model=${effectiveModel}`);
+    return effectiveModel;
   } catch {
-    const resolvedModel = resolveConfiguredModel(undefined, "light");
+    const resolvedModel = resolveConfiguredModel();
     llmDebug(`effective model=${resolvedModel}`);
     return resolvedModel;
   }
@@ -1271,7 +1208,7 @@ async function generateSmartAddProposals(params: {
   isJson: boolean;
 }): Promise<Proposal[]> {
   const { dir, existing, parentId, model, descList, filePaths, isJson } = params;
-  const effectiveModel = resolveConfiguredModel(model, "light");
+  const effectiveModel = resolveConfiguredModel(model);
 
   if (filePaths.length > 0) {
     const resolved = filePaths.map((fp) => resolve(dir, fp));

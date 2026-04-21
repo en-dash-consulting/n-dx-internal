@@ -5,7 +5,7 @@ import { GuardRails } from "../../guard/index.js";
 import { TOOL_DEFINITIONS, dispatchTool } from "../../tools/dispatch.js";
 import type { ToolContext } from "../../tools/contracts.js";
 import { rexToolHandlers } from "../../tools/rex.js";
-import { saveRun } from "../../store/index.js";
+import { saveRun } from "../../store/runs.js";
 import { section, subsection, stream, detail } from "../../types/output.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import {
@@ -285,6 +285,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     store, config, opts.taskId,
     { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId },
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
+    opts.extraContext,
   );
 
   // Shared: dry run path
@@ -460,6 +461,9 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     heartbeat,
     memoryCtx,
     selfHeal: config.selfHeal,
+    rollbackOnFailure: opts.rollbackOnFailure,
+    yes: opts.yes,
+    store,
   });
 
   return { run };

@@ -20,7 +20,7 @@ import {
   getSkillNames,
   getVendorTarget,
   listSkillFiles,
-} from "../../assistant-assets/index.js";
+} from "../../packages/core/assistant-assets.js";
 import { setupCodexIntegration } from "../../packages/core/codex-integration.js";
 
 // ── Shared setup: generate all artifacts once ───────────────────────────────
@@ -127,9 +127,9 @@ describe("skill completeness", () => {
     }
   });
 
-  it("skill files use plain wrapper (no YAML frontmatter)", () => {
+  it("skill files use YAML frontmatter wrapper", () => {
     for (const [name, content] of skillFiles) {
-      expect(content, `Skill ${name} has unexpected YAML frontmatter`).not.toMatch(/^---\n/);
+      expect(content, `Skill ${name} is missing YAML frontmatter`).toMatch(/^---\n/);
     }
   });
 

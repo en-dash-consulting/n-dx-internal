@@ -16,6 +16,9 @@ import {
   PollingSuspensionIndicator,
   SearchOverlay,
   useSearchOverlay,
+  NeolithicOverlay,
+  useNeolithicOverlay,
+  createTripleClickDetector,
   initTheme,
 } from "./components/index.js";
 import {
@@ -25,12 +28,11 @@ import {
   useCrashRecovery,
   useGracefulDegradation,
   useRefreshThrottle,
-  usePollingSuspension,
 } from "./hooks/index.js";
+import { startPollingRestart, usePollingSuspension } from "./polling/index.js";
 import { isFeatureDisabled, onDegradationChange } from "./performance/index.js";
 import { bootstrap } from "./bootstrap.js";
 import { isDeployedMode, installFetchAdapter } from "./deployed-mode.js";
-import { startPollingRestart } from "./polling/index.js";
 import { renderActiveView, buildValidViews } from "./views/view-registry.js";
 
 if (isDeployedMode()) {
@@ -89,6 +91,11 @@ function App({ scope }: { scope: string | null }) {
   const { state: refreshQueueState } = useRefreshThrottle();
   const { isSuspended: pollingSuspended, suspendedCount: pollingSuspendedCount } = usePollingSuspension();
   const [searchOpen, , closeSearch] = useSearchOverlay();
+  const [neolithicOpen, openNeolithic, closeNeolithic] = useNeolithicOverlay();
+  const handleTripleClick = useMemo(
+    () => createTripleClickDetector({ onTrigger: openNeolithic }),
+    [openNeolithic],
+  );
   const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
   const {
     showRecovery,
@@ -171,6 +178,7 @@ function App({ scope }: { scope: string | null }) {
       class: "main",
       role: "main",
       "aria-label": "Main content",
+      onClick: handleTripleClick,
     },
       // Page-context bar: breadcrumb navigation + help buttons
       h("div", { class: "page-context-bar", role: "group", "aria-label": "Page navigation and help" },
@@ -200,6 +208,7 @@ function App({ scope }: { scope: string | null }) {
         )
       : null,
     h(SearchOverlay, { visible: searchOpen, onClose: closeSearch, navigateTo }),
+    h(NeolithicOverlay, { visible: neolithicOpen, onClose: closeNeolithic }),
   );
 }
 
