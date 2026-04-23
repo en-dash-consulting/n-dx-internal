@@ -2,7 +2,9 @@
   "llm": {
     "vendor": "claude",
     "model": "claude-sonnet-4-6",
-    "claude": {},
+    "claude": {
+      "model": "claude-opus-4-7"
+    },
     "codex": {}
   },
   "sourcevision": {
@@ -176,6 +178,6 @@
     "timeoutMs": 18000000
   },
   "claude": {
-    "model": "claude-sonnet-4-6"
+    "model": "claude-opus-4-7"
   }
 }
