@@ -93,7 +93,7 @@ function App({ scope }: { scope: string | null }) {
   const [searchOpen, , closeSearch] = useSearchOverlay();
   const [neolithicOpen, openNeolithic, closeNeolithic] = useNeolithicOverlay();
   const handleTripleClick = useMemo(
-    () => createTripleClickDetector({ onTrigger: openNeolithic }),
+    () => createTripleClickDetector({ onTrigger: openNeolithic, requiredClicks: 7 }),
     [openNeolithic],
   );
   const { data, loading, refreshToast, showDrop } = useAppData({ pausePolling: isFeatureDisabled("autoRefresh") });
