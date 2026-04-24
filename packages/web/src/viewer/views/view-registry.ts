@@ -38,6 +38,7 @@ import {
   ValidationView,
   TaskAuditView,
   WorkflowOptimizationView,
+  MergeGraphView,
 } from "./domain-rex.js";
 
 import {
@@ -117,6 +118,9 @@ const REGISTRY: Record<string, ViewRenderer> = {
 
   "prd": ({ setDetail, setPrdDetailContent, selectedTaskId, navigateTo }) =>
     h(PRDView, { onSelectItem: setDetail, onDetailContent: setPrdDetailContent, initialTaskId: selectedTaskId, navigateTo }),
+
+  "merge-graph": ({ navigateTo }) =>
+    h(MergeGraphView, { navigateTo }),
 
   "token-usage": () =>
     h(TokenUsageView, null),

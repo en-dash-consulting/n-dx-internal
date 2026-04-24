@@ -31,4 +31,5 @@ export type ViewId =
   | "cli-timeouts"
   | "commands"
   | "llm-provider"
-  | "project-settings";
+  | "project-settings"
+  | "merge-graph";
