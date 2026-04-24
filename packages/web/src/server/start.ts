@@ -16,10 +16,12 @@ import { handleValidationRoute } from "./routes-validation.js";
 import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator } from "./routes-hench.js";
 import { registerUsageScheduler, type CollectAllIdsFn, type RegisterSchedulerOptions } from "./task-usage.js";
 import { loadPRDSync } from "./prd-io.js";
-import { collectAllIds } from "./rex-gateway.js";
+import { collectAllIds, createRexMcpServer } from "./rex-gateway.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
-import { handleMcpRoute } from "./routes-mcp.js";
+import { handleMcpRoute, initMcpRoutes } from "./routes-mcp.js";
+import { startMcpSchemaWatcher } from "./mcp-schema-watcher.js";
+import { createSourcevisionMcpServer } from "./domain-gateway.js";
 import { handleProjectRoute } from "./routes-project.js";
 import { handleStatusRoute, clearStatusCache } from "./routes-status.js";
 import { handleConfigRoute } from "./routes-config.js";
@@ -28,6 +30,9 @@ import { handleNotionRoute } from "./routes-notion.js";
 import { handleIntegrationRoute } from "./routes-integrations.js";
 import { handleFeaturesRoute } from "./routes-features.js";
 import { handleCliTimeoutRoute } from "./routes-cli-timeout.js";
+import { handleCommandsRoute } from "./routes-commands.js";
+import { handleLlmRoute } from "./routes-llm.js";
+import { handleProjectSettingsRoute } from "./routes-project-settings.js";
 import { createWebSocketManager, WsHealthTracker } from "./websocket.js";
 import { ALL_DATA_FILES } from "../shared/index.js";
 import { findAvailablePort } from "./port.js";
@@ -477,6 +482,9 @@ async function handleApiRoutes(
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleIntegrationRoute(req, res, ctx))) return true;
   if (await handleFeaturesRoute(req, res, ctx)) return true;
   if (await handleCliTimeoutRoute(req, res, ctx)) return true;
+  if (await handleLlmRoute(req, res, ctx)) return true;
+  if (await handleProjectSettingsRoute(req, res, ctx)) return true;
+  if (await handleScopedRoute(true, handleCommandsRoute(req, res, ctx, ws.broadcast))) return true;
   if (isInScope(ctx.scope, "sourcevision") && handleSourcevisionRoute(req, res, ctx)) return true;
   if (isInScope(ctx.scope, "rex") && handleSearchRoute(req, res, ctx)) return true;
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleRexRoute(req, res, ctx, ws.broadcast))) return true;
@@ -637,6 +645,19 @@ export async function startServer(
   // metrics to all connected dashboard clients.
   const wsHealthInterval = startWsHealthBroadcast(ws.broadcast, wsHealthTracker, ws.clientCount);
   watcherHandles.monitorIntervals.push(wsHealthInterval);
+
+  // Wire MCP route factories — must run before the first request is handled.
+  initMcpRoutes({
+    rex: (rctx) => createRexMcpServer(rctx.projectDir),
+    sv: (rctx) => createSourcevisionMcpServer(rctx.projectDir),
+  });
+
+  // Start MCP schema watcher — replaces factories with subprocess proxies when
+  // either package's dist/ directory changes after a rebuild.  New MCP sessions
+  // created after a rebuild will serve the updated tool schemas; active sessions
+  // are unaffected and continue with their existing McpServer instances.
+  const mcpSchemaWatchers = startMcpSchemaWatcher();
+  for (const w of mcpSchemaWatchers) watcherHandles.watchers.push(w);
 
   const server = createHttpServer(ctx, watcher, ws, assets, wsHealthTracker);
 

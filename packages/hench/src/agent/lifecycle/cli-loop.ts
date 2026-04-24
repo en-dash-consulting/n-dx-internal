@@ -58,13 +58,14 @@ import {
   runReviewGate,
   finalizeRun,
   handleRunFailure,
+  formatModelLabel,
 } from "./shared.js";
 import type { SharedLoopOptions } from "./shared.js";
 import type { VendorAdapter, SpawnConfig } from "./vendor-adapter.js";
 import { resolveVendorAdapter } from "./adapters/index.js";
 import { EventAccumulator } from "./event-accumulator.js";
 import { extractPromptSectionDiagnostics, logPromptSections } from "./prompt-diagnostics.js";
-import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schema/v1.js";
+import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schema/index.js";
 
 // ── normalizeCodexResponse ────────────────────────────────────────────────
 
@@ -93,7 +94,9 @@ export function normalizeCodexResponse(output: string): {
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
-export interface CliLoopOptions extends SharedLoopOptions {}
+export interface CliLoopOptions extends SharedLoopOptions {
+  spawnModel?: string;
+}
 
 export interface CliLoopResult {
   run: RunRecord;
@@ -190,12 +193,13 @@ function applyRuntimeEvent(
   event: RuntimeEvent,
   result: SpawnResult,
   turnCounter: { value: number },
+  assistantLabel: string,
 ): void {
   switch (event.type) {
     case "assistant": {
       turnCounter.value++;
       if (event.text) {
-        stream("Agent", event.text);
+        stream(assistantLabel, event.text);
         result.summary = event.text.slice(0, MAX_SUMMARY_LENGTH);
       }
       break;
@@ -257,10 +261,10 @@ function applyRuntimeEvent(
  *
  * @internal Exported for testing.
  */
-export function emitStreamOutput(event: RuntimeEvent): void {
+export function emitStreamOutput(event: RuntimeEvent, assistantLabel = "Agent"): void {
   switch (event.type) {
     case "assistant": {
-      if (event.text) stream("Agent", event.text);
+      if (event.text) stream(assistantLabel, event.text);
       break;
     }
     case "tool_use": {
@@ -539,7 +543,10 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
     let completionTurns: number | undefined;
     let completionCostUsd: number | undefined;
 
-    const vendorLabel = adapter.vendor === "codex" ? "Codex" : "Agent";
+    const vendorLabel = formatModelLabel(
+      tokenMetadata.model,
+      adapter.vendor === "codex" ? "Codex" : "Agent",
+    );
 
     proc.stdout!.on("data", (chunk: Buffer) => {
       const text = chunk.toString();
@@ -589,7 +596,7 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
           const fallbackEvent = adapter.parseEvent(fullStdout, 1, {});
           if (fallbackEvent) {
             accumulator.push(fallbackEvent);
-            emitStreamOutput(fallbackEvent);
+            emitStreamOutput(fallbackEvent, vendorLabel);
           }
 
           // Codex-specific: extract token usage from raw stdout
@@ -670,7 +677,7 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
         if (eventCount === 0 && fullStdout.trim()) {
           const fallbackEvent = adapter.parseEvent(fullStdout, 1, {});
           if (fallbackEvent) {
-            applyRuntimeEvent(fallbackEvent, result, turnCounter);
+            applyRuntimeEvent(fallbackEvent, result, turnCounter, vendorLabel);
           }
 
           // Codex-specific: extract token usage from raw stdout via heuristic mapping
@@ -773,7 +780,7 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
         if (event) {
           eventCount++;
           accumulator.push(event);
-          emitStreamOutput(event);
+          emitStreamOutput(event, vendorLabel);
           if (event.type === "assistant") turnCounter.value++;
         }
 
@@ -816,7 +823,7 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
         // ── Legacy: inline mutation ──
         if (event) {
           eventCount++;
-          applyRuntimeEvent(event, result, turnCounter);
+          applyRuntimeEvent(event, result, turnCounter, vendorLabel);
         }
 
         // Step 2: Extract token usage from raw JSON (parallel to event parsing)
@@ -848,11 +855,11 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
 function resolveCliEventModel(
   vendor: LLMVendor,
   llmConfig: Awaited<ReturnType<typeof loadLLMConfig>>,
-  _configuredModel: string,
+  configuredModel: string,
   modelOverride?: string,
 ): string {
   if (modelOverride) return modelOverride;
-  return resolveVendorModel(vendor, llmConfig);
+  return configuredModel || resolveVendorModel(vendor, llmConfig);
 }
 
 // ── Accumulated retry state ───────────────────────────────────────────────
@@ -1068,7 +1075,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   const model = opts.model ?? config.model;
   const llmConfig = await loadLLMConfig(henchDir);
   const vendor = resolveLLMVendor(llmConfig);
-  const eventModel = resolveCliEventModel(vendor, llmConfig, model, opts.model);
+  const eventModel = resolveCliEventModel(vendor, llmConfig, model, opts.spawnModel);
 
   // Resolve the vendor adapter — replaces the old dispatchVendorSpawn switch
   const adapter = resolveVendorAdapter(vendor);
@@ -1078,6 +1085,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     store, config, opts.taskId,
     { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId },
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
+    opts.extraContext,
   );
 
   // Bound the brief text to the vendor's effective context character limit.
@@ -1099,6 +1107,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       taskTitle: brief.task.title,
       model,
       extraInfo: [{ heading: "Provider", content: `cli (${vendor} binary)` }],
+      invocationContext: "cli",
     });
     return { run };
   }
@@ -1122,6 +1131,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     sandbox: policy.sandbox,
     approvals: policy.approvals,
     parseMode: adapter.parseMode,
+    invocationContext: "cli",
   });
 
   // CLI-specific: load config for CLI path and env resolution
@@ -1170,7 +1180,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
           ]);
 
       // Use the adapter to build the vendor-specific spawn configuration
-      const spawnConfig = adapter.buildSpawnConfig(envelope, policy, opts.model);
+      const spawnConfig = adapter.buildSpawnConfig(envelope, policy, opts.spawnModel);
 
       // Capture prompt section diagnostics on the first attempt for run-level storage.
       // Log section names and byte sizes on every attempt for CLI observability.
@@ -1179,8 +1189,8 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         promptSectionDiagnostics = sectionDiags;
       }
 
-      section(`Agent Run${opts.model ? ` (${opts.model})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
-      stream("CLI", `Spawning ${vendor}${opts.model ? ` (model: ${opts.model})` : ""}...`);
+      section(`Agent Run${opts.spawnModel ? ` (${opts.spawnModel})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
+      stream("CLI", `Spawning ${vendor}${opts.spawnModel ? ` (model: ${opts.spawnModel})` : ""}...`);
       logPromptSections(sectionDiags);
 
       // Event pipeline: create a per-attempt accumulator. Events from this
@@ -1271,6 +1281,10 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     heartbeat,
     memoryCtx,
     selfHeal: config.selfHeal,
+    rollbackOnFailure: opts.rollbackOnFailure,
+    yes: opts.yes,
+    store,
+    autoCommit: config.autoCommit === true,
   });
 
   return { run };

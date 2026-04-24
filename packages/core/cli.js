@@ -34,8 +34,8 @@
  * @module n-dx/cli
  */
 
-import { spawn } from "child_process";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { spawn, execFileSync } from "child_process";
+import { existsSync, readFileSync, writeFileSync, rmSync } from "fs";
 import { createRequire } from "module";
 import { dirname, isAbsolute, join, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -94,6 +94,15 @@ import {
 } from "./child-lifecycle.js";
 import { startUpdateCheck, formatUpdateNotice } from "./update-check.js";
 import { checkProjectStaleness, formatStalenessNotice } from "./stale-check.js";
+import {
+  readRexTestCommand,
+  resolveReviewerVendor,
+  runCrossVendorReview,
+  formatReviewBanner,
+  assembleNdxContext,
+  writeNdxContextFile,
+  buildRemediationContext,
+} from "./pair-programming.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const MONOREPO_ROOT = resolve(__dir, "../..");
@@ -825,7 +834,16 @@ function runInitCapture(toolPath, args) {
   });
 }
 
-async function handleInit(rest) {
+/**
+ * Parse and validate all init-specific flags from raw CLI args.
+ * Exits with code 1 if any validation fails.
+ *
+ * @param {string[]} rest
+ * @returns {{ providerFromFlag: string|undefined, modelFromFlag: string|undefined,
+ *   claudeModelFromFlag: string|undefined, codexModelFromFlag: string|undefined,
+ *   effectiveProvider: string|undefined, effectiveModel: string|undefined }}
+ */
+function parseInitFlagSet(rest) {
   const providerFromFlag = extractInitProvider(rest);
   const modelFromFlag = extractInitModel(rest);
   const claudeModelFromFlag = extractInitClaudeModel(rest);
@@ -855,7 +873,17 @@ async function handleInit(rest) {
     console.warn(`Warning: ${warn}`);
   }
 
-  // Resolve effective provider and model from vendor-specific flags.
+  // Validate --assistants= values early (value errors reported here; resolution happens later)
+  const assistantsSet = extractAssistantsFlag(rest);
+  if (assistantsSet) {
+    const invalid = [...assistantsSet].filter((v) => !SUPPORTED_PROVIDERS.includes(v));
+    if (invalid.length > 0) {
+      console.error(`Error: Unknown assistant${invalid.length > 1 ? "s" : ""}: ${invalid.join(", ")}. Expected: claude, codex.`);
+      process.exit(1);
+    }
+  }
+
+  // Resolve effective provider:
   // A lone vendor-specific flag implies the provider (e.g. --claude-model=X → provider=claude).
   // When both vendor-specific flags are present, --provider is required to set the active vendor.
   const effectiveProvider = providerFromFlag
@@ -868,27 +896,26 @@ async function handleInit(rest) {
     || (effectiveProvider === "claude" ? claudeModelFromFlag : undefined)
     || (effectiveProvider === "codex" ? codexModelFromFlag : undefined);
 
-  // Validate --assistants= values
-  const assistantsSet = extractAssistantsFlag(rest);
-  if (assistantsSet) {
-    const invalid = [...assistantsSet].filter((v) => !SUPPORTED_PROVIDERS.includes(v));
-    if (invalid.length > 0) {
-      console.error(`Error: Unknown assistant${invalid.length > 1 ? "s" : ""}: ${invalid.join(", ")}. Expected: claude, codex.`);
-      process.exit(1);
-    }
-  }
+  return { providerFromFlag, modelFromFlag, claudeModelFromFlag, codexModelFromFlag, effectiveProvider, effectiveModel };
+}
 
-  // Resolve assistant-selection flags (--assistants= > --*-only > --no-* > default)
-  let assistantEnabled = resolveAssistantFlags(rest);
+/**
+ * Strip all init-specific flag prefixes from args before forwarding to sub-commands.
+ * @param {string[]} rest
+ * @returns {string[]}
+ */
+function buildInitArgs(rest) {
+  return stripAssistantFlags(stripInitVendorModelFlags(stripInitModelFlag(stripInitProviderFlag(rest))));
+}
 
-  const initArgs = stripAssistantFlags(stripInitVendorModelFlags(stripInitModelFlag(stripInitProviderFlag(rest))));
-  const dir = resolveDir(initArgs);
-  const flags = extractFlags(initArgs);
-  const quiet = flags.includes("--quiet") || flags.includes("-q");
-
-  // Repair known-numeric config values that may have been stored as strings
-  // by earlier versions (e.g. cli.timeouts.work = "14400000"). Runs before
-  // anything reads the config so sub-package inits see well-typed values.
+/**
+ * Repair known-numeric config values before sub-package inits read config.
+ * Non-fatal — repair failure never blocks init.
+ *
+ * @param {string} dir
+ * @param {boolean} quiet
+ */
+async function repairInitConfig(dir, quiet) {
   try {
     const { repairs } = await repairProjectConfig(dir);
     if (repairs.length > 0 && !quiet) {
@@ -900,21 +927,28 @@ async function handleInit(rest) {
   } catch {
     // Non-fatal — repair failure never blocks init.
   }
+}
 
-  // ── Backward-compatibility: re-init detection ─────────────────────────────
-  //
-  // When no explicit assistant flags are passed and the project already has
-  // surfaces from a prior init, only re-provision the surfaces that already
-  // exist.  This prevents existing Claude-only users from unexpectedly
-  // receiving Codex artifacts (AGENTS.md, .codex/, .agents/) on upgrade.
-  //
-  // First-time init (no existing surfaces) provisions both vendors by default.
+/**
+ * Resolve which assistants are enabled for this init run.
+ *
+ * Applies backward-compatibility re-init detection when no explicit assistant
+ * flags are present: if the project already has surfaces from a prior init,
+ * only re-provision those surfaces (prevents Claude-only users from
+ * unexpectedly receiving Codex artifacts on upgrade).
+ *
+ * @param {string[]} rest  Raw CLI args
+ * @param {string} dir  Project directory
+ * @returns {{ claude: boolean, codex: boolean }}
+ */
+function resolveInitAssistants(rest, dir) {
+  let assistantEnabled = resolveAssistantFlags(rest);
+
   if (!hasExplicitAssistantFlags(rest)) {
     const claudePresent = existsSync(join(dir, ".claude")) || existsSync(join(dir, "CLAUDE.md"));
     const codexPresent = existsSync(join(dir, ".codex")) || existsSync(join(dir, ".agents")) || existsSync(join(dir, "AGENTS.md"));
 
     // When a prior init provisioned only one vendor, keep only that one enabled.
-    // When both or neither exist, the defaults apply (both enabled unless overridden elsewhere).
     if (claudePresent && !codexPresent) {
       assistantEnabled = { claude: true, codex: false };
     } else if (!claudePresent && codexPresent) {
@@ -922,11 +956,28 @@ async function handleInit(rest) {
     }
   }
 
-  // Resolve LLM provider via init-llm.js (flag > config > prompt precedence).
-  // Pass real TTY state: enquirer's keyboard-driven Select prompt requires a
-  // real TTY. In non-TTY environments (piped input, CI), if no --provider flag
-  // or config is present, the prompt is skipped and init exits with a clear
-  // message asking the user to re-run with --provider=.
+  return assistantEnabled;
+}
+
+/**
+ * Run the LLM provider/model selection workflow for init.
+ *
+ * Reads existing config, shows the banner, prompts the user (when TTY),
+ * and resolves source-labels for the summary. Non-TTY with no flag/config
+ * returns { selectedProvider: undefined, llmSkipped: false } — the caller
+ * must exit with a clear message in that case.
+ *
+ * @param {string} dir
+ * @param {string|undefined} effectiveProvider
+ * @param {string|undefined} effectiveModel
+ * @param {boolean} quiet
+ * @param {{ providerFromFlag?: string, claudeModelFromFlag?: string, codexModelFromFlag?: string }} vendorFlags
+ * @returns {Promise<{ selectedProvider: string|undefined, selection: object,
+ *   llmSkipped: boolean, providerSource: string, modelSource: string }>}
+ */
+async function selectInitLLMProvider(dir, effectiveProvider, effectiveModel, quiet, vendorFlags = {}) {
+  const { providerFromFlag, claudeModelFromFlag, codexModelFromFlag } = vendorFlags;
+
   const existingVendor = readLLMVendor(dir);
   const existingModel = readLLMModel(dir, effectiveProvider || existingVendor);
   const resolution = resolveInitLLMSelection({
@@ -935,7 +986,7 @@ async function handleInit(rest) {
     isTTY: process.stdin.isTTY === true,
   });
 
-  showInitBanner();
+  if (!process.stdout.isTTY || quiet) showInitBanner();
 
   const selection = await promptLLMSelection(resolution);
   const selectedProvider = selection.provider;
@@ -945,16 +996,7 @@ async function handleInit(rest) {
     console.log("LLM configuration skipped.");
   }
 
-  // When no provider is available and it wasn't a user cancellation (e.g.
-  // non-TTY with no flags or config), exit with a clear message.
-  if (!selectedProvider && !llmSkipped) {
-    console.error("Init cancelled: no provider selected. Re-run 'ndx init' and choose 'codex' or 'claude'.");
-    exitWithCleanup(1);
-  }
-
   // Map providerSource / modelSource to user-facing labels for the summary.
-  // Use the actual flag name when a vendor-specific model flag was used.
-  // When the active model came from a vendor-specific flag, name that flag in the label.
   const modelFlagLabel = (selection.model === claudeModelFromFlag && claudeModelFromFlag) ? "--claude-model"
     : (selection.model === codexModelFromFlag && codexModelFromFlag) ? "--codex-model"
       : "--model";
@@ -966,12 +1008,135 @@ async function handleInit(rest) {
   const providerSource = PROVIDER_SOURCE_LABELS[selection.providerSource] ?? "selected";
   const modelSource = MODEL_SOURCE_LABELS[selection.modelSource] ?? "";
 
-  // Check pre-existing state for status reporting
+  return { selectedProvider, selection, llmSkipped, providerSource, modelSource };
+}
+
+/**
+ * Run a single sub-package init phase, with spinner feedback in interactive mode.
+ * Exits with code 1 on failure.
+ *
+ * @param {string} name  Phase key (matched against INIT_PHASES for spinner config)
+ * @param {() => Promise<{code: number, stdout: string, stderr: string}>} work
+ * @param {string|undefined} detail  Optional text appended to the success spinner
+ * @param {boolean} quiet
+ */
+async function runSubInitPhase(name, work, detail, quiet) {
+  const phase = INIT_PHASES[name];
+  if (!quiet && phase) {
+    const spinner = createSpinner(phase.spinner);
+    spinner.start();
+    const result = await work();
+    if (result.code !== 0) {
+      spinner.fail(`${name} failed`);
+      console.error(result.stderr || result.stdout);
+      exitWithCleanup(1);
+    }
+    spinner.success(phase.success, detail);
+  } else {
+    const result = await work();
+    if (result.code !== 0) {
+      console.error(result.stderr || result.stdout);
+      exitWithCleanup(1);
+    }
+  }
+}
+
+/**
+ * Persist LLM vendor/model selection to .n-dx.json after sub-package inits.
+ *
+ * Skipped entirely when the user cancelled an interactive prompt — no partial
+ * config should be written on cancellation. runConfig("llm.vendor", ...) runs
+ * auth preflight; if preflight fails it calls process.exit(1) so the model
+ * key is never written.
+ *
+ * @param {string} dir
+ * @param {{ llmSkipped: boolean, selectedProvider: string|undefined,
+ *   selectedModel: string|undefined, claudeModelFromFlag: string|undefined,
+ *   codexModelFromFlag: string|undefined }} opts
+ */
+async function persistInitLLMConfig(dir, { llmSkipped, selectedProvider, selectedModel, claudeModelFromFlag, codexModelFromFlag }) {
+  if (!llmSkipped && selectedProvider) {
+    const origLog = console.log;
+    console.log = () => {};
+    try {
+      await runConfig(["llm.vendor", selectedProvider, dir]);
+      if (selectedModel) {
+        await runConfig([`llm.${selectedProvider}.model`, selectedModel, dir]);
+      }
+      // Persist vendor-specific models independently.
+      // --claude-model always writes to llm.claude.model, --codex-model to
+      // llm.codex.model, even when the active vendor is different. This
+      // enables CI scripts that configure both vendors in a single init call.
+      if (claudeModelFromFlag && selectedProvider !== "claude") {
+        await runConfig(["llm.claude.model", claudeModelFromFlag, dir]);
+      }
+      if (codexModelFromFlag && selectedProvider !== "codex") {
+        await runConfig(["llm.codex.model", codexModelFromFlag, dir]);
+      }
+    } finally {
+      console.log = origLog;
+    }
+  }
+}
+
+/**
+ * Print the post-init summary to stdout (static / non-TUI path).
+ *
+ * @param {{ svExists: boolean, rexExists: boolean, henchExists: boolean,
+ *   llmSkipped: boolean, selectedProvider: string|undefined, selection: object,
+ *   providerSource: string, modelSource: string, assistantResults: object }} opts
+ */
+function printStaticInitSummary({ svExists, rexExists, henchExists, llmSkipped, selectedProvider, selection, providerSource, modelSource, assistantResults }) {
+  console.log("");
+  console.log("n-dx initialized");
+  console.log(`  .sourcevision/  ${svExists ? "already exists (reused)" : "created"}`);
+  console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
+  console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
+  console.log("  LLM configuration");
+  if (llmSkipped) {
+    console.log("    Provider      skipped");
+  } else {
+    console.log(`    Provider      ${selectedProvider} (${providerSource})`);
+    const selectedModel = selection.model;
+    if (selectedModel) {
+      const modelLabel = modelSource ? `${selectedModel} (${modelSource})` : selectedModel;
+      console.log(`    Model         ${modelLabel}`);
+    } else {
+      console.log("    Model         not set");
+    }
+  }
+  for (const line of formatInitReport(assistantResults, { activeVendor: selectedProvider })) {
+    console.log(line);
+  }
+  console.log("");
+}
+
+async function handleInit(rest) {
+  const { effectiveProvider, effectiveModel, claudeModelFromFlag, codexModelFromFlag, providerFromFlag } = parseInitFlagSet(rest);
+
+  const initArgs = buildInitArgs(rest);
+  const dir = resolveDir(initArgs);
+  const flags = extractFlags(initArgs);
+  const quiet = flags.includes("--quiet") || flags.includes("-q");
+
+  await repairInitConfig(dir, quiet);
+
+  const assistantEnabled = resolveInitAssistants(rest, dir);
+  const llmResult = await selectInitLLMProvider(dir, effectiveProvider, effectiveModel, quiet, {
+    providerFromFlag, claudeModelFromFlag, codexModelFromFlag,
+  });
+  const { selectedProvider, selection, llmSkipped, providerSource, modelSource } = llmResult;
+
+  // When no provider is available and it wasn't a user cancellation (e.g.
+  // non-TTY with no flags or config), exit with a clear message.
+  if (!selectedProvider && !llmSkipped) {
+    console.error("Init cancelled: no provider selected. Re-run 'ndx init' and choose 'codex' or 'claude'.");
+    exitWithCleanup(1);
+  }
+
   const svExists = existsSync(join(dir, ".sourcevision"));
   const rexExists = existsSync(join(dir, ".rex"));
   const henchExists = existsSync(join(dir, ".hench"));
-
-  // Ensure .n-dx.local.json is in .gitignore (machine-specific config)
   ensureGitignoreEntry(dir, ".n-dx.local.json");
 
   // ── Ink animated UI (TTY, non-quiet) vs static fallback ───────────
@@ -1015,104 +1180,38 @@ async function handleInit(rest) {
   }
 
   // ── Static fallback (non-TTY, --quiet, or Ink unavailable) ────────
-  async function runSubInitPhase(name, work, detail) {
-    const phase = INIT_PHASES[name];
-    if (!quiet && phase) {
-      const spinner = createSpinner(phase.spinner);
-      spinner.start();
-      const result = await work();
-      if (result.code !== 0) {
-        spinner.fail(`${name} failed`);
-        console.error(result.stderr || result.stdout);
-        exitWithCleanup(1);
-      }
-      spinner.success(phase.success, detail);
-    } else {
-      const result = await work();
-      if (result.code !== 0) {
-        console.error(result.stderr || result.stdout);
-        exitWithCleanup(1);
-      }
-    }
-  }
-
   await runSubInitPhase("sourcevision",
     async () => {
       const initResult = await runInitCapture(tools.sourcevision, ["init", ...flags, dir]);
       if (initResult.code !== 0) return initResult;
       return runInitCapture(tools.sourcevision, ["analyze", "--fast", ...flags, dir]);
     },
-    svExists ? "reused — .sourcevision/ already present" : undefined);
+    svExists ? "reused — .sourcevision/ already present" : undefined,
+    quiet);
   await runSubInitPhase("rex",
     () => runInitCapture(tools.rex, ["init", ...flags, dir]),
-    rexExists ? "reused — .rex/ already present" : undefined);
+    rexExists ? "reused — .rex/ already present" : undefined,
+    quiet);
   await runSubInitPhase("hench",
     () => runInitCapture(tools.hench, ["init", ...flags, dir]),
-    henchExists ? "reused — .hench/ already present" : undefined);
+    henchExists ? "reused — .hench/ already present" : undefined,
+    quiet);
 
-  // Persist LLM selection (suppress output). Vendor first, then model.
-  // Skip entirely when the user cancelled an interactive prompt — no partial
-  // config should be written on cancellation.
-  // runConfig("llm.vendor", ...) runs auth preflight. If preflight fails,
-  // it calls process.exit(1) so the model key is never written.
-  if (!llmSkipped && selectedProvider) {
-    const selectedModel = selection.model;
-    const origLog = console.log;
-    console.log = () => {};
-    try {
-      await runConfig(["llm.vendor", selectedProvider, dir]);
-      if (selectedModel) {
-        await runConfig([`llm.${selectedProvider}.model`, selectedModel, dir]);
-      }
+  await persistInitLLMConfig(dir, {
+    llmSkipped, selectedProvider, selectedModel: selection.model,
+    claudeModelFromFlag, codexModelFromFlag,
+  });
 
-      // Persist vendor-specific models independently.
-      // --claude-model always writes to llm.claude.model, --codex-model to
-      // llm.codex.model, even when the active vendor is different. This
-      // enables CI scripts that configure both vendors in a single init call.
-      if (claudeModelFromFlag && selectedProvider !== "claude") {
-        await runConfig(["llm.claude.model", claudeModelFromFlag, dir]);
-      }
-      if (codexModelFromFlag && selectedProvider !== "codex") {
-        await runConfig(["llm.codex.model", codexModelFromFlag, dir]);
-      }
-    } finally {
-      console.log = origLog;
-    }
-  }
-
-  // Record the current n-dx version so future stale-check runs can report it.
   try {
     const { version } = JSON.parse(readFileSync(join(__dir, "package.json"), "utf-8"));
     recordInitVersion(dir, version);
   } catch { /* non-fatal */ }
 
-  // Assistant integrations (vendor-neutral dispatch)
   const assistantResults = setupAssistantIntegrations(dir, assistantEnabled);
-
-  // Print unified summary
-  console.log("");
-  console.log("n-dx initialized");
-  console.log(`  .sourcevision/  ${svExists ? "already exists (reused)" : "created"}`);
-  console.log(`  .rex/           ${rexExists ? "already exists (reused)" : "created"}`);
-  console.log(`  .hench/         ${henchExists ? "already exists (reused)" : "created"}`);
-  console.log("  LLM configuration");
-  if (llmSkipped) {
-    console.log("    Provider      skipped");
-  } else {
-    console.log(`    Provider      ${selectedProvider} (${providerSource})`);
-    const selectedModel = selection.model;
-    if (selectedModel) {
-      const modelLabel = modelSource ? `${selectedModel} (${modelSource})` : selectedModel;
-      console.log(`    Model         ${modelLabel}`);
-    } else {
-      console.log("    Model         not set");
-    }
-  }
-  for (const line of formatInitReport(assistantResults, { activeVendor: selectedProvider })) {
-    console.log(line);
-  }
-  console.log("");
-
+  printStaticInitSummary({
+    svExists, rexExists, henchExists, llmSkipped, selectedProvider,
+    selection, providerSource, modelSource, assistantResults,
+  });
   exitWithCleanup(0);
 }
 
@@ -1322,6 +1421,103 @@ async function handleRefresh(rest) {
   exitWithCleanup(0);
 }
 
+/**
+ * Count uncommitted files in a git working tree.
+ * Returns 0 when the directory isn't a git repo or git is unavailable.
+ */
+function countUncommittedFiles(dir) {
+  try {
+    const out = execFileSync("git", ["status", "--porcelain"], {
+      cwd: dir,
+      encoding: "utf-8",
+      stdio: "pipe",
+      timeout: 15_000,
+    });
+    return out.split("\n").filter(Boolean).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Revert all uncommitted changes: `git reset HEAD . && git checkout -- . && git clean -fd`. */
+function revertUncommittedChanges(dir) {
+  execFileSync("git", ["reset", "HEAD", "--", "."], { cwd: dir, stdio: "pipe", timeout: 15_000 });
+  execFileSync("git", ["checkout", "--", "."], { cwd: dir, stdio: "pipe", timeout: 15_000 });
+  execFileSync("git", ["clean", "-fd"], { cwd: dir, stdio: "pipe", timeout: 15_000 });
+}
+
+/**
+ * Install a two-stage Ctrl+C handler for long-running work commands.
+ * - First SIGINT: stops hench, prompts the user to revert uncommitted changes, then exits.
+ * - Second SIGINT (during prompt): force-exits immediately, leaving changes on disk.
+ *
+ * @param {string} dir Project directory used for the git revert.
+ * @returns {() => void} Dispose function to remove both stages.
+ */
+function installWorkInterruptHandler(dir) {
+  let handledFirst = false;
+
+  const forceExit = () => {
+    process.stderr.write("\n\nForce canceling — exiting without revert.\n");
+    try { childTracker.cleanup(); } catch { /* ignore */ }
+    process.exit(130);
+  };
+
+  const firstStage = () => {
+    if (handledFirst) return;
+    handledFirst = true;
+
+    // Take over from the global handler so it doesn't race us to exit.
+    signalHandlers.dispose();
+    process.removeListener("SIGINT", firstStage);
+    process.on("SIGINT", forceExit);
+
+    void (async () => {
+      process.stderr.write("\n\n⚠ Interrupt received. Stopping hench...\n");
+      try { await childTracker.cleanup(); } catch { /* ignore */ }
+
+      const count = countUncommittedFiles(dir);
+      let shouldRevert = false;
+
+      if (count === 0) {
+        process.stderr.write("No uncommitted changes to revert.\n");
+      } else if (!process.stdin.isTTY) {
+        process.stderr.write(`${count} uncommitted file(s) left behind (non-interactive — skipping revert prompt).\n`);
+      } else {
+        const rl = createInterface({ input: process.stdin, output: process.stderr });
+        try {
+          const answer = await rl.question(`\nRevert ${count} uncommitted file(s)? [y/N] `);
+          shouldRevert = /^y(es)?$/i.test(answer.trim());
+        } catch {
+          shouldRevert = false;
+        } finally {
+          rl.close();
+        }
+      }
+
+      if (shouldRevert) {
+        try {
+          revertUncommittedChanges(dir);
+          process.stderr.write(`✓ Reverted ${count} uncommitted file(s).\n`);
+        } catch (err) {
+          process.stderr.write(`⚠ Revert failed: ${err.message}\n`);
+        }
+      } else if (count > 0) {
+        process.stderr.write("Changes preserved.\n");
+      }
+
+      process.exit(130);
+    })();
+  };
+
+  process.prependListener("SIGINT", firstStage);
+
+  return () => {
+    process.removeListener("SIGINT", firstStage);
+    process.removeListener("SIGINT", forceExit);
+  };
+}
+
 async function handleWork(rest) {
   const dir = resolveDir(rest);
   requireInit(dir, [".rex", ".hench"]);
@@ -1339,7 +1535,12 @@ async function handleWork(rest) {
     }
   }
 
-  await runOrDie(tools.hench, ["run", ...flags, dir]);
+  const disposeInterrupt = isDryRun ? () => {} : installWorkInterruptHandler(dir);
+  try {
+    await runOrDie(tools.hench, ["run", ...flags, dir]);
+  } finally {
+    disposeInterrupt();
+  }
   exitWithCleanup(0);
 }
 
@@ -1517,6 +1718,10 @@ async function handleSelfHeal(rest) {
   const includeStructural = rest.includes("--include-structural");
   const structuralFlag = includeStructural ? [] : ["--exclude-structural"];
 
+  // --yes suppresses interactive prompts (commit confirmation, rollback) inside the hench loop
+  const yes = rest.includes("--yes");
+  const yesFlag = yes ? ["--yes"] : [];
+
   const shTag = cyan("[self-heal]");
   console.log(`${shTag} starting ${bold(String(iterCount))} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : dim(" (excluding structural findings)")}`);
 
@@ -1569,8 +1774,8 @@ async function handleSelfHeal(rest) {
     console.log(`\n${shTag} step 3/5: rex recommend --actionable-only --accept`);
     await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, dir]);
 
-    console.log(`\n${shTag} step 4/5: hench run --auto --loop --self-heal`);
-    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", dir]);
+    console.log(`\n${shTag} step 4/5: hench run --auto --loop --self-heal${yes ? " --yes" : ""}`);
+    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", ...yesFlag, dir]);
 
     console.log(`\n${shTag} step 5/5: acknowledge completed findings`);
     await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);
@@ -1735,6 +1940,204 @@ async function handleShow(rest) {
   exitWithCleanup(0);
 }
 
+function handleRenamedCommand(oldName, newName, aliasName) {
+  console.error(`Error: 'ndx ${oldName}' has been renamed.`);
+  console.error(`Use 'ndx ${newName}' (or the short alias 'ndx ${aliasName}') instead.`);
+  exitWithCleanup(1);
+}
+
+async function handlePairProgramming(rest) {
+  const flags = extractFlags(rest);
+  const positionals = rest.filter((a) => !a.startsWith("-"));
+  const description = positionals[0] ?? null;
+
+  if (!description) {
+    console.error("Error: missing required argument <description>");
+    console.error('Usage: ndx pair-programming "<description>" [dir]');
+    console.error('       ndx bicker "<description>" [dir]');
+    console.error('Example: ndx pair-programming "fix failing tests"');
+    exitWithCleanup(1);
+    return;
+  }
+
+  const dir = positionals.length >= 2 ? positionals[positionals.length - 1] : process.cwd();
+  requireInit(dir, [".hench"]);
+
+  const isDryRun = flags.includes("--dry-run");
+  const skipReview = flags.includes("--skip-review");
+  const noContext = flags.includes("--no-context");
+  const skipFeedback = flags.includes("--skip-feedback");
+
+  const primaryVendor = readLLMVendor(dir);
+  if (!isDryRun && !primaryVendor) {
+    console.error("Error: No LLM vendor configured for this project.");
+    console.error("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor.");
+    exitWithCleanup(1);
+  }
+
+  // ── Context assembly ─────────────────────────────────────────────────────
+  let contextFilePath = null;
+  if (!noContext) {
+    const { text, warnings } = assembleNdxContext(dir);
+    for (const w of warnings) {
+      process.stderr.write(`⚠ pair-programming: ${w}\n`);
+    }
+    if (text) {
+      contextFilePath = writeNdxContextFile(text);
+    }
+  }
+
+  // Remove description and pair-programming-specific flags from args forwarded to hench
+  let descriptionRemoved = false;
+  const henchArgs = rest.filter((a) => {
+    if (!descriptionRemoved && !a.startsWith("-") && a === description) {
+      descriptionRemoved = true;
+      return false;
+    }
+    return a !== "--skip-review" && a !== "--no-context" && a !== "--skip-feedback";
+  });
+
+  // Inject context file path into hench args
+  if (contextFilePath) {
+    henchArgs.push(`--context-file=${contextFilePath}`);
+  }
+
+  let remediationContextPath = null;
+  let createdTaskId = null;
+  try {
+    // ── Step 0: create temporary task in PRD ────────────────────────────────
+    process.stderr.write("⚠ pair-programming: creating temporary task...\n");
+
+    // Get PRD status to find an epic to use as parent
+    const statusOutput = execFileSync("node", [
+      resolve(__dir, "../rex/dist/cli/index.js"),
+      "status",
+      "--format=json",
+      dir,
+    ], { encoding: "utf-8", stdio: "pipe" });
+    const statusData = JSON.parse(statusOutput);
+    const firstEpic = statusData.items?.find((item) => item.level === "epic");
+    const epicId = firstEpic?.id;
+    if (!epicId) {
+      console.error("Error: no epics found in PRD");
+      exitWithCleanup(1);
+      return;
+    }
+
+    // Create task under the first epic
+    const addCode = await run(tools.rex, [
+      "add",
+      "task",
+      `--title=${description}`,
+      `--parent=${epicId}`,
+      dir,
+    ]);
+    if (addCode !== 0) {
+      console.error("Error: failed to create task in PRD");
+      exitWithCleanup(addCode);
+      return;
+    }
+
+    // Get the task ID by querying the PRD again and finding the newest pending task
+    const updatedStatusOutput = execFileSync("node", [
+      resolve(__dir, "../rex/dist/cli/index.js"),
+      "status",
+      "--format=json",
+      dir,
+    ], { encoding: "utf-8", stdio: "pipe" });
+    const updatedStatusData = JSON.parse(updatedStatusOutput);
+
+    // Find the task we just created by searching through all tasks
+    const findTask = (items) => {
+      if (!Array.isArray(items)) return null;
+      for (const item of items) {
+        if (item.status === "pending" && item.title === description) {
+          return item.id;
+        }
+        const found = findTask(item.children);
+        if (found) return found;
+      }
+      return null;
+    };
+
+    createdTaskId = findTask(updatedStatusData.items);
+    if (!createdTaskId) {
+      console.error("Error: could not determine created task ID");
+      exitWithCleanup(1);
+      return;
+    }
+    process.stderr.write(`✓ created task ${createdTaskId}\n`);
+
+    // ── Step 1: primary vendor work ────────────────────────────────────────
+    const primaryCode = await run(tools.hench, ["run", `--task=${createdTaskId}`, ...henchArgs]);
+    if (primaryCode !== 0) {
+      exitWithCleanup(primaryCode);
+      return;
+    }
+
+    // ── Step 2: cross-vendor review ──────────────────────────────────────────
+    if (!isDryRun && !skipReview && primaryVendor) {
+      const reviewer = resolveReviewerVendor(primaryVendor);
+      const testCommand = readRexTestCommand(dir);
+      const reviewResult = await runCrossVendorReview({
+        dir,
+        reviewer,
+        testCommand,
+        contextFiles: contextFilePath ? [contextFilePath] : undefined,
+      });
+      process.stdout.write(formatReviewBanner(reviewer, reviewResult) + "\n");
+
+      // ── Step 3: feedback loop (at most one remediation pass) ─────────────
+      let finalResult = reviewResult;
+      if (!reviewResult.skipped && !reviewResult.passed && !skipFeedback && reviewResult.feedback) {
+        // Read original context text (if any) to include in remediation context
+        let priorContext;
+        if (contextFilePath) {
+          try { priorContext = readFileSync(contextFilePath, "utf-8"); } catch { /* ignore */ }
+        }
+        const remediationText = buildRemediationContext(reviewResult.feedback, description, priorContext);
+        remediationContextPath = writeNdxContextFile(remediationText);
+
+        const remediationBorder = "─".repeat(60);
+        process.stdout.write(
+          `\n${remediationBorder}\nRemediation Pass — reviewer found issues; invoking primary for corrections\n${remediationBorder}\n\n`,
+        );
+
+        // Build remediation hench args: same as primary but replace context file
+        const remediationArgs = henchArgs
+          .filter((a) => !a.startsWith("--context-file="))
+          .concat(`--context-file=${remediationContextPath}`);
+
+        await run(tools.hench, ["run", `--task=${createdTaskId}`, ...remediationArgs]);
+
+        // ── Step 4: final reviewer pass ──────────────────────────────────
+        process.stdout.write(
+          `\n${remediationBorder}\nFinal Review Pass (${reviewer})\n${remediationBorder}\n\n`,
+        );
+        finalResult = await runCrossVendorReview({
+          dir,
+          reviewer,
+          testCommand,
+          contextFiles: contextFilePath ? [contextFilePath] : undefined,
+        });
+        process.stdout.write(formatReviewBanner(reviewer, finalResult) + "\n");
+      }
+
+      if (!finalResult.skipped && !finalResult.passed) {
+        exitWithCleanup(finalResult.exitCode ?? 1);
+        return;
+      }
+    }
+  } finally {
+    // Clean up all temp context files regardless of outcome
+    for (const p of [contextFilePath, remediationContextPath]) {
+      if (p) { try { rmSync(p, { force: true }); } catch { /* ignore */ } }
+    }
+  }
+
+  exitWithCleanup(0);
+}
+
 function handleHelp(rest) {
   const query = rest.filter((a) => !a.startsWith("-")).join(" ");
   if (!query) {
@@ -1772,6 +2175,63 @@ function handleUnknownCommand(command) {
 function showMainHelp() {
   console.log(formatMainHelp());
 }
+
+// ── Command dispatch map ─────────────────────────────────────────────────────
+
+/**
+ * Maps each CLI command name to its handler.
+ * All handlers accept (rest: string[]) as their sole argument.
+ * Commands that require extra arguments use a wrapper closure.
+ *
+ * Keeping this as a data structure rather than a switch statement limits
+ * the command-dispatch path to a single Map.get + invoke, making it easy
+ * to audit the full command surface and reducing fan-out in main().
+ */
+const COMMAND_DISPATCH = new Map([
+  // ── Core commands ──
+  ["version",           handleVersion],
+  ["help",              handleHelp],
+  ["init",              handleInit],
+  ["analyze",           handleAnalyze],
+  ["recommend",         handleRecommend],
+  ["plan",              handlePlan],
+  ["add",               handleAdd],
+  ["refresh",           handleRefresh],
+  ["work",              handleWork],
+  ["status",            handleStatus],
+  ["usage",             handleUsage],
+  ["sync",              handleSync],
+  ["ci",                handleCI],
+  ["dev",               handleDev],
+  ["start",             (rest) => handleStart(rest, "start")],
+  ["web",               (rest) => handleStart(rest, "web")],
+  ["export",            handleExport],
+  ["config",            handleConfig],
+  ["self-heal",         handleSelfHeal],
+  // ── Delegated rex commands ──
+  ["validate",          handleValidate],
+  ["fix",               handleFix],
+  ["health",            handleHealth],
+  ["report",            handleReport],
+  ["verify",            handleVerify],
+  ["update",            handleUpdate],
+  ["remove",            handleRemove],
+  ["move",              handleMove],
+  ["reshape",           handleReshape],
+  ["reorganize",        handleReorganize],
+  ["prune",             handlePrune],
+  ["next",              handleNext],
+  // ── Delegated sourcevision commands ──
+  ["reset",             handleReset],
+  // ── Delegated hench commands ──
+  ["show",              handleShow],
+  // ── Renamed: single-command / sc → pair-programming / bicker ──
+  ["single-command",    () => handleRenamedCommand("single-command", "pair-programming", "bicker")],
+  ["sc",                () => handleRenamedCommand("sc", "pair-programming", "bicker")],
+  // ── Pair-programming (cross-vendor review) ──
+  ["pair-programming",  handlePairProgramming],
+  ["bicker",            handlePairProgramming],
+]);
 
 // ── Module-level setup ───────────────────────────────────────────────────────
 
@@ -1886,58 +2346,18 @@ async function main() {
 
   // ── Dispatch to command handler ─────────────────────────────────────────
   const runCommand = async () => {
-    switch (command) {
-      case "version":   return handleVersion(rest);
-      case "help":      return handleHelp(rest);
-      case "init":      return handleInit(rest);
-      case "analyze":   return handleAnalyze(rest);
-      case "recommend": return handleRecommend(rest);
-      case "plan":      return handlePlan(rest);
-      case "add":       return handleAdd(rest);
-      case "refresh":   return handleRefresh(rest);
-      case "work":      return handleWork(rest);
-      case "status":  return handleStatus(rest);
-      case "usage":   return handleUsage(rest);
-      case "sync":    return handleSync(rest);
-      case "ci":      return handleCI(rest);
-      case "dev":     return handleDev(rest);
-      case "start":   return handleStart(rest, "start");
-      case "web":     return handleStart(rest, "web");
-      case "export":    return handleExport(rest);
-      case "config":    return handleConfig(rest);
-      case "self-heal": return handleSelfHeal(rest);
-
-      // ── Delegated rex commands ──
-      case "validate":    return handleValidate(rest);
-      case "fix":         return handleFix(rest);
-      case "health":      return handleHealth(rest);
-      case "report":      return handleReport(rest);
-      case "verify":      return handleVerify(rest);
-      case "update":      return handleUpdate(rest);
-      case "remove":      return handleRemove(rest);
-      case "move":        return handleMove(rest);
-      case "reshape":     return handleReshape(rest);
-      case "reorganize":  return handleReorganize(rest);
-      case "prune":       return handlePrune(rest);
-      case "next":        return handleNext(rest);
-
-      // ── Delegated sourcevision commands ──
-      case "reset":       return handleReset(rest);
-
-      // ── Delegated hench commands ──
-      case "show":        return handleShow(rest);
-    }
+    const handler = COMMAND_DISPATCH.get(command);
+    if (handler) return handler(rest);
 
     // ── Tool delegation ─────────────────────────────────────────────────────
     if (tools[command]) {
       const code = await run(tools[command], rest);
       exitWithCleanup(code);
+      return;
     }
 
     // ── Unknown command or no command ───────────────────────────────────────
-    if (command) {
-      return handleUnknownCommand(command);
-    }
+    if (command) return handleUnknownCommand(command);
 
     showMainHelp();
     exitWithCleanup(0);

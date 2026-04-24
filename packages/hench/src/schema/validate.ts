@@ -70,6 +70,8 @@ export const HenchConfigSchema = z.object({
   useEventPipeline: z.boolean().optional(),
   useRegistryProvider: z.boolean().optional(),
   claudePath: z.string().optional(),
+  rollbackOnFailure: z.boolean().optional(),
+  autoCommit: z.boolean().optional(),
 });
 
 const RunStatusSchema = z.enum(["running", "completed", "failed", "timeout", "budget_exceeded", "error_transient"]);

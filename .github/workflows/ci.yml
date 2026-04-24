@@ -1,7 +1,7 @@
 # GitHub Actions — PR validation and main branch CI for n-dx
 #
 # Replicates the pipeline previously defined in bitbucket-pipelines.yml.
-# Steps: install → build → gauntlet (config validation) → typecheck → PR check (build + rex validate)
+# Steps: install → build → typecheck → PR check (build + rex validate)
 #
 # Node 22 LTS. Exact pnpm version managed by corepack via packageManager
 # field in package.json.
@@ -42,9 +42,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Gauntlet tests (config validation)
-        run: pnpm gauntlet
-
       - name: Check no source maps in publish
         run: |
           MAPS=""
@@ -73,7 +70,9 @@ jobs:
         run: pnpm -r run test
 
       - name: Require changeset
-        if: github.event_name == 'pull_request'
+        # Skip on the Changesets release PR: that PR's whole purpose is
+        # to consume the changesets, so the directory is empty by design.
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
         run: |
           # Check for .changeset/*.md files (not config.json, not README)
           CHANGESETS=$(ls .changeset/*.md 2>/dev/null | grep -v README || true)

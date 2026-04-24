@@ -4,6 +4,7 @@ package-lock.json
 *.tsbuildinfo
 .hench/runs/
 .hench/locks/
+.hench-commit-msg.txt
 .run-logs/
 .n-dx.json
 .n-dx.local.json
@@ -32,13 +33,11 @@ scripts/HENCH_CALLGRAPH_FINDINGS.md
 .github/issues/
 
 *.local.json
-
-# Local testing workspace — ignore artifacts, but track infrastructure
 .local_testing/
-!.local_testing/
-!.local_testing/*.sh
-!.local_testing/*.ps1
+!.local_testing/README.md
 !.local_testing/Dockerfile.*
 !.local_testing/docker-compose.yml
+!.local_testing/run-gauntlet.*
+!.local_testing/test-base-commands.sh
 !.local_testing/.dockerignore
-!.local_testing/README.md
+.codex/config.toml

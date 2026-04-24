@@ -8,7 +8,72 @@ AI-powered development toolkit. Analyze a codebase, build a PRD, execute tasks a
 | **[SourceVision](packages/sourcevision)** | **[Rex](packages/rex)** | **[Hench](packages/hench)** |
 | Static analysis & zone detection | PRD management & task tracking | Autonomous agent execution |
 
+## Requirements
+
+**Node.js ≥ 18** (Node 22 LTS recommended) · **pnpm ≥ 10**
+
+### Platform Support
+
+| Platform | Support | Notes |
+|----------|---------|-------|
+| macOS | ✅ Supported | CI smoke tests on `macos-latest` |
+| Linux | ✅ Supported | Full CI (build, typecheck, unit tests) on `ubuntu-latest` |
+| Windows — WSL2 | ✅ Supported | Runs as Linux; no separate CI coverage needed |
+| Windows — native | ⚠️ Experimental | CLI smoke tests pass in CI with macOS parity checks; process group management and shell spawning differ from POSIX; `ndx work` agent loop has reduced native test coverage |
+
+For a supported Linux environment on Windows, use **WSL2** (recommended) or the Docker infrastructure in [`.local_testing/`](.local_testing/).
+
+## Local Platform Testing
+
+If you're on **native Windows** or want to test against multiple platforms, use the Docker-based local test suite:
+
+### Prerequisites
+
+- **Docker Desktop** ≥ 20 (download from [docker.com](https://www.docker.com/products/docker-desktop))
+- **Disk space:** ~2GB for Windows Server Core image; Linux image is smaller
+- **Docker daemon must be running** before starting tests
+
+### Quick Test
+
+Run tests in an isolated environment matching native Windows or macOS:
+
+**macOS / Linux (bash):**
+```sh
+./.local_testing/run-gauntlet.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\.local_testing\run-gauntlet.ps1
+```
+
+Both scripts:
+- Detect your platform automatically
+- Build the Docker image (cached after first run)
+- Run `pnpm test` inside the container
+- Clean up automatically on completion
+- Return meaningful exit codes
+
+### Exit Codes
+
+- **0** — All tests passed ✓
+- **1** — Tests failed (one or more test case failed)
+- **2** — Docker error (build, run, or daemon issue)
+- **3** — Configuration error (Docker not found, invalid options)
+
+### Advanced Options
+
+See [`.local_testing/README.md`](.local_testing/) for advanced usage:
+- Custom image tags and container names
+- Keeping containers for inspection (`--keep-container`)
+- Background execution (`--detach`)
+- Verbose debugging (`--verbose`)
+- CI/CD pipeline integration examples
+- Troubleshooting Docker and container issues
+
 ## Quick Start
+
+**Prerequisites:** Node.js ≥ 18 (22 LTS recommended) and pnpm ≥ 10.
 
 ```sh
 pnpm add -g @n-dx/core      # install from npm
@@ -72,14 +137,16 @@ ndx work --auto .                          # next highest-priority task
 ndx work --auto --iterations=4 .           # run 4 tasks sequentially
 ndx work --epic="Auth System" --auto .     # scope to an epic
 ndx work --task=abc123 .                   # specific task
+ndx work --auto --yes .                    # unattended: auto-confirm commit + rollback prompts
 ```
 
-Hench picks a task, builds a brief with codebase context, runs an LLM tool-use loop to implement it, then records the run.
+Hench picks a task, builds a brief with codebase context, runs an LLM tool-use loop to implement it, then records the run. Pass `--yes` to skip the interactive commit-confirmation prompt (the agent's proposed message is committed automatically).
 
 ### 6. Self-Heal
 
 ```sh
 ndx self-heal 3 .           # 3 iterations of analyze → recommend → execute
+ndx self-heal 3 --yes .     # unattended: forward --yes to the inner hench loop
 ```
 
 Iterative improvement loop: re-analyze the codebase, accept new recommendations (filtered to actionable findings), execute tasks, acknowledge completed findings, and repeat. Fuzzy acknowledgment matching prevents fixed findings from regenerating as "new" after code changes alter zone names.
@@ -120,7 +187,7 @@ ndx config llm.codex.cli_path codex .
 | `ndx analyze [dir]` | Run SourceVision codebase analysis (`--deep`, `--full`, `--lite`) |
 | `ndx recommend [dir]` | Show/accept SourceVision recommendations (`--accept`, `--actionable-only`) |
 | `ndx add "<desc>" [dir]` | Add PRD items from descriptions, files, or stdin |
-| `ndx work [dir]` | Run next task (`--task=ID`, `--epic=ID`, `--auto`, `--loop`) |
+| `ndx work [dir]` | Run next task (`--task=ID`, `--epic=ID`, `--auto`, `--loop`, `--yes`) |
 | `ndx self-heal [N] [dir]` | Iterative improvement loop (analyze + recommend + execute) |
 | `ndx start [dir]` | Start server: dashboard + MCP (`--port=N`, `--background`, `stop`, `status`) |
 
@@ -230,16 +297,17 @@ See the [hench README](packages/hench#security) for the full configuration refer
 
 ## Contributing
 
-### Build from source
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor setup guide,
+including Node.js / pnpm version requirements, workspace bootstrap, platform-
+specific notes (macOS, Linux, Windows/WSL2), and Docker testing infrastructure.
+
+Quick start:
 
 ```sh
 git clone https://github.com/en-dash-consulting/n-dx.git
 cd n-dx
 pnpm install && pnpm build
-cd packages/core && pnpm link --global  # register CLI globally
 ```
-
-When developing locally, link from `packages/core` (not the monorepo root) so the global package name matches the published `@n-dx/core`. Use `pnpm ls -g` to verify.
 
 ### Build & test
 

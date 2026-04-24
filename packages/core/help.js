@@ -202,6 +202,20 @@ const COMMAND_REGISTRY = [
     keywords: ["heal", "iterate", "loop", "improve", "analyze", "recommend", "accept", "agent", "autonomous"],
     related: ["plan", "work", "refresh"],
   },
+  {
+    name: "pair-programming",
+    category: "Orchestration",
+    summary: "Run agent then cross-vendor review (alias: bicker)",
+    keywords: ["pair", "programming", "bicker", "review", "cross-vendor", "freeform", "agent", "test", "validate"],
+    related: ["work", "self-heal"],
+  },
+  {
+    name: "bicker",
+    category: "Orchestration",
+    summary: "Alias for pair-programming",
+    keywords: ["pair", "bicker", "review", "cross-vendor", "freeform"],
+    related: ["pair-programming", "work"],
+  },
   // ── Manage commands (delegated from rex) ──
   {
     name: "validate",
@@ -838,11 +852,13 @@ const ORCHESTRATOR_HELP_DEFS = {
       { flag: "--max-turns=<n>", description: "Override max agent turns per task" },
       { flag: "--token-budget=<n>", description: "Cap total tokens per run (0 = unlimited)" },
       { flag: "--model=<model>", description: "Override the Claude model" },
+      { flag: "--yes", description: "Auto-confirm the proposed commit and skip rollback prompts" },
     ],
     examples: [
       { command: "ndx work", description: "Run next task interactively" },
       { command: "ndx work --task=abc123 .", description: "Run a specific task" },
       { command: "ndx work --auto --loop .", description: "Continuously auto-run tasks" },
+      { command: "ndx work --auto --yes .", description: "Run unattended, auto-commit each task" },
       { command: "ndx work --dry-run .", description: "Preview the brief without execution" },
     ],
     related: ["plan", "status"],
@@ -1140,6 +1156,60 @@ const ORCHESTRATOR_HELP_DEFS = {
     ],
     related: ["work", "status"],
   },
+  "pair-programming": {
+    summary: "run agent then cross-vendor review",
+    description:
+      "Two-step execution: the primary vendor runs the agent on the freeform description;\n" +
+      "the opposing vendor then acts as reviewer by running the project's configured test\n" +
+      "command and reporting a pass/fail verdict.\n\n" +
+      "Cross-vendor review direction:\n" +
+      "  • active vendor = claude  →  codex reviews\n" +
+      "  • active vendor = codex   →  claude reviews\n\n" +
+      "The reviewer output is printed under a clearly labelled\n" +
+      "'Reviewer (claude|codex)' section. If tests fail the overall\n" +
+      "command exits non-zero and the full failure output is shown verbatim.\n\n" +
+      "Fallback behaviour:\n" +
+      "  • If the reviewer vendor's CLI binary is not installed or not on\n" +
+      "    PATH, the review step is skipped with a warning — the command\n" +
+      "    still exits 0 (primary work succeeded).\n" +
+      "  • If no test command is configured in .rex/config.json (the `test`\n" +
+      "    field), the review step is skipped with a warning.\n\n" +
+      "Configure the test command:\n" +
+      "  ndx config hench.test \"pnpm test\"\n\n" +
+      "Configure the reviewer CLI path (if not on PATH):\n" +
+      "  ndx config llm.claude.cli_path /path/to/claude\n" +
+      "  ndx config llm.codex.cli_path  /path/to/codex\n\n" +
+      "Alias: bicker",
+    usage: [
+      'ndx pair-programming "<description>" [options] [dir]',
+      'ndx bicker "<description>" [options] [dir]',
+    ],
+    options: [
+      { flag: "--dry-run", description: "Print the brief without calling the agent or running tests" },
+      { flag: "--skip-review", description: "Skip the cross-vendor review step" },
+      { flag: "--no-context", description: "Skip context injection (CONTEXT.md + PRD status) — useful for debugging or CI" },
+      { flag: "--max-turns=<n>", description: "Override max agent turns" },
+      { flag: "--model=<model>", description: "Override the configured LLM model" },
+      { flag: "--token-budget=<n>", description: "Cap total tokens (0 = unlimited)" },
+    ],
+    examples: [
+      { command: 'ndx pair-programming "fix failing tests"', description: "Run agent and cross-vendor review" },
+      { command: 'ndx bicker "fix failing tests"', description: "Same via alias" },
+      { command: 'ndx pair-programming "fix failing tests" --skip-review', description: "Skip review step" },
+      { command: 'ndx pair-programming "remove unused exports" .', description: "Specify project directory" },
+    ],
+    related: ["work", "self-heal"],
+  },
+  bicker: {
+    summary: "alias for pair-programming",
+    description: "Alias for 'ndx pair-programming'. See 'ndx pair-programming --help' for full details.",
+    usage: 'ndx bicker "<description>" [options] [dir]',
+    examples: [
+      { command: 'ndx bicker "fix failing tests"', description: "Run agent and cross-vendor review" },
+      { command: 'ndx bicker "fix failing tests" --skip-review', description: "Skip review step" },
+    ],
+    related: ["pair-programming", "work"],
+  },
   "self-heal": {
     summary: "iterative codebase improvement loop",
     description:
@@ -1154,11 +1224,16 @@ const ORCHESTRATOR_HELP_DEFS = {
       "changes (not documentation) and rejects doc-only completions.\n" +
       "Completed findings are acknowledged to prevent regeneration.\n" +
       "The loop terminates early if no progress is made between iterations.",
-    usage: "ndx self-heal [N] [dir]",
+    usage: "ndx self-heal [N] [options] [dir]",
+    options: [
+      { flag: "--include-structural", description: "Include structural findings (excluded by default)" },
+      { flag: "--yes", description: "Auto-confirm commits inside the hench loop (forwarded to 'hench run')" },
+    ],
     examples: [
       { command: "ndx self-heal 3 .", description: "Run 3 improvement iterations" },
       { command: "ndx self-heal .", description: "Run 1 iteration (default)" },
       { command: "ndx self-heal 5", description: "Run 5 iterations in current directory" },
+      { command: "ndx self-heal 3 --yes .", description: "Unattended: auto-commit each task in the loop" },
     ],
     related: ["plan", "work", "refresh"],
   },
@@ -1290,6 +1365,7 @@ export function formatMainHelp() {
 
   section("EXECUTE", [
     ["work [dir]", "Run next task autonomously (--task=ID, --auto, --loop)"],
+    ['pair-programming "<desc>"', "Agent + cross-vendor review (alias: bicker)"],
     ["self-heal [N] [dir]", "Iterative improvement loop (analyze, recommend, execute)"],
   ], pad);
 

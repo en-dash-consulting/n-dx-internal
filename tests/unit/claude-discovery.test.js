@@ -10,8 +10,8 @@ import { homedir } from "os";
 import { join } from "path";
 
 // Hoist mocks before importing the module under test.
-// Asset-loading paths (assistant-assets/) fall through to the real fs so that
-// the module-load chain (claude-integration → assistant-assets/index.js) works.
+// Asset-loading paths fall through to the real fs so the module-load chain
+// (claude-integration → packages/core/assistant-assets.js → assistant-assets/*) works.
 vi.mock("fs", async (importOriginal) => {
   const original = await importOriginal();
   const isAssetPath = (p) => typeof p === "string" && p.includes("assistant-assets");
@@ -141,7 +141,9 @@ describe("discoverClaudeCli — step 3: system PATH", () => {
     execSync.mockImplementation((cmd) => {
       if (cmd === "claude --version" && first) { first = false; throw new Error("not found"); }
     });
-    const claudeLocal = join(HOME, ".claude", "local", "claude");
+    const claudeLocal = process.platform === "win32"
+      ? join(process.env.APPDATA ?? join(HOME, "AppData", "Roaming"), "npm", "claude.cmd")
+      : join(HOME, ".claude", "local", "claude");
     existsSync.mockImplementation((p) => p === claudeLocal);
     const r = discoverClaudeCli();
     expect(r.found).toBe(true);

@@ -22,7 +22,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { join, resolve, isAbsolute, relative } from "node:path";
 import { tmpdir } from "node:os";
-import { getMcpServers } from "../../assistant-assets/index.js";
+import { getMcpServers } from "../../packages/core/assistant-assets.js";
 import { setupCodexIntegration } from "../../packages/core/codex-integration.js";
 import {
   setupRexDir,
@@ -251,7 +251,7 @@ describe("entrypoint existence", () => {
       const config = parsedServers.get(name);
       expect(config, `${name} missing from parsed config.toml`).toBeDefined();
 
-      const entrypoint = config.args[0];
+      const entrypoint = config.args[0].replace(/\\/g, "/");
       // Both should end with the same relative path
       expect(entrypoint).toContain(descriptor.entrypoint);
     }

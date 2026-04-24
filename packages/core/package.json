@@ -30,7 +30,8 @@
   },
   "homepage": "https://github.com/en-dash-consulting/n-dx#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
   },
   "bin": {
     "n-dx": "./cli.js",
@@ -53,6 +54,7 @@
     "refresh-plan.js",
     "refresh-artifacts.js",
     "export.js",
+    "assistant-assets.js",
     "assistant-integration.js",
     "claude-integration.js",
     "codex-integration.js",

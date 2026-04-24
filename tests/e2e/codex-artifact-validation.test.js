@@ -20,7 +20,7 @@ import {
   getSkillNames,
   getVendorTarget,
   listSkillFiles,
-} from "../../assistant-assets/index.js";
+} from "../../packages/core/assistant-assets.js";
 import { setupCodexIntegration } from "../../packages/core/codex-integration.js";
 
 // ── Shared setup: generate all artifacts once ───────────────────────────────
@@ -127,9 +127,9 @@ describe("skill completeness", () => {
     }
   });
 
-  it("skill files use plain wrapper (no YAML frontmatter)", () => {
+  it("skill files use YAML frontmatter wrapper", () => {
     for (const [name, content] of skillFiles) {
-      expect(content, `Skill ${name} has unexpected YAML frontmatter`).not.toMatch(/^---\n/);
+      expect(content, `Skill ${name} is missing YAML frontmatter`).toMatch(/^---\n/);
     }
   });
 
@@ -234,7 +234,7 @@ describe("config.toml structural validity", () => {
     for (const name of serverNames) {
       const section = sections.get(`mcp_servers.${name}`);
       const elements = section.args.match(/^\[(.+)\]$/)[1].match(/"([^"]*)"/g);
-      const entrypoint = elements[0].slice(1, -1); // strip quotes
+      const entrypoint = elements[0].slice(1, -1).replace(/\\\\/g, "\\"); // strip quotes + unescape TOML
       expect(entrypoint, `${name} entrypoint path`).toMatch(/dist[/\\]cli[/\\]index\.js$/);
     }
   });
@@ -254,7 +254,7 @@ describe("config.toml structural validity", () => {
     for (const name of serverNames) {
       const section = sections.get(`mcp_servers.${name}`);
       const elements = section.args.match(/^\[(.+)\]$/)[1].match(/"([^"]*)"/g);
-      const projectDir = elements[2].slice(1, -1);
+      const projectDir = elements[2].slice(1, -1).replace(/\\\\/g, "\\");
       expect(projectDir).toBe(tmpDir);
     }
   });

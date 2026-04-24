@@ -73,6 +73,13 @@ export interface CliProviderOptions extends ClaudeClientOptions {
   baseDelayMs?: number;
   /** Maximum delay in ms for backoff (default: 10000). */
   maxDelayMs?: number;
+  /**
+   * Called before each rate-limit retry sleep.
+   * Receives the upcoming attempt number (1-based, so 2 = first retry),
+   * the total attempt count, and the delay in milliseconds.
+   * When omitted, a default message is written to stderr.
+   */
+  onRetry?: (attempt: number, maxAttempts: number, delayMs: number) => void;
 }
 
 /**
@@ -155,7 +162,12 @@ function spawnOnce(
         return;
       }
 
-      const detail = stderr.trim() || `claude exited with code ${code}`;
+      // When claude exits non-zero it often writes the error payload to stdout
+      // as a JSON envelope ({ is_error: true, api_error_status, result }), not
+      // stderr. Fall back to that so classifyStderr can see the status code
+      // and message and downstream logs show a real reason instead of "unknown".
+      const stdoutError = extractStdoutError(stdout, format);
+      const detail = stderr.trim() || stdoutError || `claude exited with code ${code}`;
 
       // On Windows with shell: true, a missing binary doesn't trigger ENOENT —
       // cmd.exe spawns fine but exits non-zero with a "not recognized" message.
@@ -171,6 +183,46 @@ function spawnOnce(
       reject(new ClaudeClientError(detail, classified.reason, classified.retryable));
     });
   });
+}
+
+/**
+ * Extract a human-readable error detail from stdout when claude exits non-zero.
+ * The CLI emits errors like rate-limits as a JSON envelope on stdout with
+ * `is_error: true`, while stderr stays empty. Returns null if no such envelope
+ * is present.
+ */
+function extractStdoutError(stdout: string, format: "json" | "stream-json"): string | null {
+  const text = stdout.trim();
+  if (!text) return null;
+
+  const fromEnvelope = (obj: unknown): string | null => {
+    if (!obj || typeof obj !== "object") return null;
+    const env = obj as Record<string, unknown>;
+    if (env.is_error !== true) return null;
+    const status = typeof env.api_error_status === "number" ? `HTTP ${env.api_error_status}` : "";
+    const message = typeof env.result === "string" ? env.result.trim() : "";
+    if (message && status) return `${message} (${status})`;
+    return message || status || null;
+  };
+
+  if (format === "json") {
+    try {
+      return fromEnvelope(JSON.parse(text));
+    } catch {
+      return null;
+    }
+  }
+
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      const detail = fromEnvelope(JSON.parse(line));
+      if (detail) return detail;
+    } catch {
+      // skip unparseable lines
+    }
+  }
+  return null;
 }
 
 /**
@@ -222,11 +274,17 @@ function parseStreamOutput(stdout: string): CompletionResult {
  * Claude CLI authenticates through a browser session that cannot be probed
  * programmatically without making a real completion request.
  */
+function defaultRateLimitOnRetry(attempt: number, maxAttempts: number, delayMs: number): void {
+  const delaySec = Math.round(delayMs / 1000);
+  process.stderr.write(`Rate limited — retrying in ${delaySec}s… (attempt ${attempt} of ${maxAttempts})\n`);
+}
+
 export function createCliClient(options: CliProviderOptions): ClaudeClient & LLMProvider {
   const cliBinary = resolveCliPath(options.claudeConfig);
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
+  const onRetry = options.onRetry ?? defaultRateLimitOnRetry;
 
   const info: ProviderInfo = {
     vendor: "claude",
@@ -259,9 +317,27 @@ export function createCliClient(options: CliProviderOptions): ClaudeClient & LLM
           // Don't retry on last attempt
           if (attempt < maxRetries) {
             const delay = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs);
+
+            // Surface a user-visible message for rate-limit retries so the
+            // command doesn't appear hung. Other transient errors retry silently.
+            if (err instanceof ClaudeClientError && err.reason === "rate-limit") {
+              onRetry(attempt + 2, maxRetries + 1, delay);
+            }
+
             await new Promise((r) => setTimeout(r, delay));
           }
         }
+      }
+
+      // When all retries are exhausted due to rate limiting, throw an
+      // actionable error rather than re-surfacing the raw provider message.
+      if (lastError instanceof ClaudeClientError && lastError.reason === "rate-limit") {
+        throw new ClaudeClientError(
+          `Claude rate limit exceeded — all ${maxRetries + 1} attempts failed. ` +
+          "Wait a few minutes and try again, or reduce request frequency.",
+          "rate-limit",
+          false,
+        );
       }
 
       throw lastError;

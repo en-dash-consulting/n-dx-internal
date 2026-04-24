@@ -5,7 +5,7 @@ import { GuardRails } from "../../guard/index.js";
 import { TOOL_DEFINITIONS, dispatchTool } from "../../tools/dispatch.js";
 import type { ToolContext } from "../../tools/contracts.js";
 import { rexToolHandlers } from "../../tools/rex.js";
-import { saveRun } from "../../store/index.js";
+import { saveRun } from "../../store/runs.js";
 import { section, subsection, stream, detail } from "../../types/output.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import {
@@ -30,6 +30,7 @@ import {
   finalizeRun,
   handleRunFailure,
   handleBudgetExceeded,
+  formatModelLabel,
 } from "./shared.js";
 import type { SharedLoopOptions } from "./shared.js";
 
@@ -262,10 +263,10 @@ function extractEndTurnSummary(assistantContent: Anthropic.ContentBlock[]): stri
 }
 
 /** Print text blocks from the assistant response. */
-function streamAssistantText(assistantContent: Anthropic.ContentBlock[]): void {
+function streamAssistantText(assistantContent: Anthropic.ContentBlock[], label: string): void {
   for (const block of assistantContent) {
     if (block.type === "text" && block.text) {
-      stream("Agent", block.text);
+      stream(label, block.text);
     }
   }
 }
@@ -285,6 +286,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     store, config, opts.taskId,
     { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId },
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
+    opts.extraContext,
   );
 
   // Shared: dry run path
@@ -297,6 +299,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       taskTitle: brief.task.title,
       model,
       extraInfo: [{ heading: "Tools", content: TOOL_DEFINITIONS.map((t) => t.name).join(", ") }],
+      invocationContext: "api",
     });
     return { run };
   }
@@ -341,6 +344,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     sandbox: DEFAULT_EXECUTION_POLICY.sandbox,
     approvals: DEFAULT_EXECUTION_POLICY.approvals,
     parseMode: "api-sdk",
+    invocationContext: "api",
   });
 
   const messages: Anthropic.MessageParam[] = [
@@ -355,8 +359,27 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
 
   // API-specific: turn-based execution loop
   let consecutiveEmptyTurns = 0;
+
+  // Register SIGINT handler for graceful cancellation
+  let cancelled = false;
+  const handleSignal = () => {
+    if (cancelled) {
+      // Second Ctrl+C: force exit
+      process.exit(1);
+    }
+    cancelled = true;
+  };
+  process.on("SIGINT", handleSignal);
+
   try {
     for (let turn = 0; turn < maxTurns; turn++) {
+      // Check if cancellation was requested
+      if (cancelled) {
+        run.status = "cancelled";
+        stream("Cancelled", "Run interrupted by user");
+        break;
+      }
+
       run.turns = turn + 1;
 
       subsection(`Turn ${turn + 1}/${maxTurns}`);
@@ -385,7 +408,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
       const assistantContent = response.content;
       messages.push({ role: "assistant", content: assistantContent });
 
-      streamAssistantText(assistantContent);
+      streamAssistantText(assistantContent, formatModelLabel(model));
 
       // Handle stop reasons
       if (response.stop_reason === "end_turn") {
@@ -441,6 +464,9 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     console.error(`[Error] ${run.error}`);
 
     await handleRunFailure(store, taskId, "deferred", "task_failed", run.error);
+  } finally {
+    // Remove SIGINT handler to restore default behavior
+    process.removeListener("SIGINT", handleSignal);
   }
 
   // Stop heartbeat before finalization
@@ -460,6 +486,10 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     heartbeat,
     memoryCtx,
     selfHeal: config.selfHeal,
+    rollbackOnFailure: opts.rollbackOnFailure,
+    yes: opts.yes,
+    store,
+    autoCommit: config.autoCommit === true,
   });
 
   return { run };
