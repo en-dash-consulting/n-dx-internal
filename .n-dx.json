@@ -1,6 +1,6 @@
 {
   "llm": {
-    "vendor": "codex",
+    "vendor": "claude",
     "model": "claude-sonnet-4-6",
     "claude": {},
     "codex": {}
