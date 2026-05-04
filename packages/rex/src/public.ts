@@ -48,8 +48,70 @@
 
 // ---- Store ------------------------------------------------------------------
 
-export { resolveStore } from "./store/index.js";
+export { resolveStore, PRD_FILENAME, PRD_TREE_DIRNAME } from "./store/index.js";
 export type { PRDStore } from "./store/contracts.js";
+
+// ---- Markdown serializer / parser ------------------------------------------
+
+export { serializeDocument } from "./store/markdown-serializer.js";
+export { parseDocument, MarkdownParseError } from "./store/markdown-parser.js";
+export type { ParseResult } from "./store/markdown-parser.js";
+
+// ---- Folder-tree parser -----------------------------------------------------
+
+export { parseFolderTree } from "./store/folder-tree-parser.js";
+export type { ParseWarning, FolderParseResult } from "./store/folder-tree-parser.js";
+
+// ---- Folder-tree serializer -------------------------------------------------
+
+export {
+  serializeFolderTree,
+  slugify,
+  slugifyTitle,
+  resolveSiblingSlugs,
+} from "./store/folder-tree-serializer.js";
+export type { SerializeResult } from "./store/folder-tree-serializer.js";
+
+// ---- Title-to-filename normalization ----------------------------------------
+
+export { titleToFilename } from "./store/title-to-filename.js";
+
+// ---- Store: git branch helpers and PRD filename composers ------------------
+
+export {
+  sanitizeBranchName,
+  resolveGitBranch,
+  getFirstCommitDate,
+  generatePRDFilename,
+  resolvePRDFilename,
+} from "./store/branch-naming.js";
+
+// ---- Store: branch-scoped PRD discovery and resolution ---------------------
+
+export {
+  discoverPRDFiles,
+  parsePRDBranchSegment,
+  parsePRDFileDate,
+  findPRDFileForBranch,
+  resolvePRDFile,
+} from "./store/prd-discovery.js";
+export type { PRDFileResolution } from "./store/prd-discovery.js";
+
+// ---- Store: legacy PRD migration -------------------------------------------
+
+export { migrateLegacyPRD } from "./store/prd-migration.js";
+export type { MigrationResult } from "./store/prd-migration.js";
+export {
+  migrateJsonPrdToMarkdown,
+  PRD_MARKDOWN_FILENAME,
+  PRDMarkdownMigrationError,
+} from "./store/prd-md-migration.js";
+export type { MarkdownMigrationResult } from "./store/prd-md-migration.js";
+export {
+  ensureLegacyPrdMigrated,
+  LegacyPrdMigrationError,
+} from "./store/ensure-legacy-prd-migrated.js";
+export type { LegacyPrdMigrationResult } from "./store/ensure-legacy-prd-migrated.js";
 
 // ---- Integration schema system ----------------------------------------------
 
@@ -82,7 +144,7 @@ export { jiraIntegrationSchema } from "./store/integration-schemas/jira.js";
 export type {
   PRDItem, PRDDocument, ItemLevel, ItemStatus, Priority, ResolutionType, RexConfig,
   RequirementCategory, RequirementValidationType, Requirement,
-  FacetDefinition, LoEConfig,
+  FacetDefinition, LoEConfig, ActiveInterval,
 } from "./schema/v1.js";
 export {
   SCHEMA_VERSION,
@@ -201,6 +263,12 @@ export type {
 // ---- Core: timestamps -------------------------------------------------------
 
 export { computeTimestampUpdates } from "./core/timestamps.js";
+export type { TimestampUpdates } from "./core/timestamps.js";
+
+// ---- Core: durations --------------------------------------------------------
+
+export { getTaskDuration } from "./core/durations.js";
+export type { TaskDuration } from "./core/durations.js";
 
 // ---- Core: parent auto-completion -------------------------------------------
 
@@ -290,6 +358,27 @@ export {
 export type {
   EpicStats, PriorityDistribution, RequirementsSummary,
 } from "./core/analytics.js";
+
+// ---- Core: per-item token rollup --------------------------------------------
+
+export {
+  aggregateItemTokenUsage,
+  readRunTokensFromHench,
+} from "./core/item-token-rollup.js";
+export type {
+  ItemTokenTuple,
+  ItemRunTokens,
+  ItemTokenTotals,
+  ItemTokenAggregation,
+} from "./core/item-token-rollup.js";
+
+// ---- Core: per-item duration rollup -----------------------------------------
+
+export { aggregateItemDurations } from "./core/item-duration-rollup.js";
+export type {
+  ItemDurationTotals,
+  ItemDurationAggregation,
+} from "./core/item-duration-rollup.js";
 
 // ---- Analyze: finding acknowledgment ----------------------------------------
 

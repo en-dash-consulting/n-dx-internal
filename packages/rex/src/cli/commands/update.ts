@@ -1,8 +1,10 @@
 import { join } from "node:path";
-import { resolveStore } from "../../store/index.js";
+import { resolveStore, ensureLegacyPrdMigrated } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { syncFolderTree } from "./folder-tree-sync.js";
 import { CLIError, requireRexDir } from "../errors.js";
 import { info, result } from "../output.js";
+import { emitMigrationNotification } from "../migration-notification.js";
 import { validateTransition } from "../../core/transitions.js";
 import { computeTimestampUpdates } from "../../core/timestamps.js";
 import { findAutoCompletions } from "../../core/parent-completion.js";
@@ -24,9 +26,15 @@ export async function cmdUpdate(
     );
   }
 
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before writing PRD
+  const migrationResult = await ensureLegacyPrdMigrated(dir);
+
   requireRexDir(dir);
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+
+  // Emit migration notification to CLI and execution log
+  await emitMigrationNotification(migrationResult, flags, (entry) => store.appendLog(entry));
 
   const existing = await store.getItem(id);
   if (!existing) {
@@ -73,6 +81,8 @@ export async function cmdUpdate(
         itemId: id,
         detail: `Deleted ${existing.level}: ${existing.title} (${deletedIds.length} item(s) removed)`,
       });
+
+      await syncFolderTree(rexDir, store);
 
       if (flags.format === "json") {
         result(JSON.stringify({ deleted: deletedIds }, null, 2));
@@ -142,7 +152,7 @@ export async function cmdUpdate(
     }
   }
 
-  await store.updateItem(id, updates);
+  await store.updateItem(id, updates, { applyAttribution: true, projectDir: dir });
 
   // Log the update
   await store.appendLog({
@@ -173,7 +183,7 @@ export async function cmdUpdate(
       await store.updateItem(item.id, {
         status: "completed" as ItemStatus,
         ...parentTsUpdates,
-      });
+      }, { applyAttribution: true, projectDir: dir });
       await store.appendLog({
         timestamp: new Date().toISOString(),
         event: "auto_completed",
@@ -183,6 +193,8 @@ export async function cmdUpdate(
       autoCompleted.push(item);
     }
   }
+
+  await syncFolderTree(rexDir, store);
 
   if (flags.format === "json") {
     const updated = await store.getItem(id);

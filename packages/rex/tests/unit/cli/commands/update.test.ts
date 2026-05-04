@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { join } from "node:path";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, existsSync, readdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { CLIError } from "../../../../src/cli/errors.js";
 import { cmdUpdate } from "../../../../src/cli/commands/update.js";
+import { readPRD, writePRD } from "../../../helpers/rex-dir-test-support.js";
+import { slugify } from "../../../../src/store/folder-tree-serializer.js";
 import type { PRDDocument } from "../../../../src/schema/index.js";
+import { PRD_TREE_DIRNAME } from "../../../../src/store/index.js";
 
 describe("cmdUpdate", () => {
   let tmp: string;
@@ -13,21 +16,18 @@ describe("cmdUpdate", () => {
   beforeEach(() => {
     tmp = mkdtempSync(join(tmpdir(), "rex-update-test-"));
     mkdirSync(join(tmp, ".rex"));
-    writeFileSync(
-      join(tmp, ".rex", "prd.json"),
-      JSON.stringify({
-        schema: "rex/v1",
-        title: "test",
-        items: [
-          {
-            id: itemId,
-            title: "Test item",
-            level: "epic",
-            status: "pending",
-          },
-        ],
-      }),
-    );
+    writePRD(tmp, {
+      schema: "rex/v1",
+      title: "test",
+      items: [
+        {
+          id: itemId,
+          title: "Test item",
+          level: "epic",
+          status: "pending",
+        },
+      ],
+    } as PRDDocument);
   });
 
   afterEach(() => {
@@ -241,43 +241,55 @@ describe("cmdUpdate", () => {
 
   describe("blockedBy updates", () => {
     it("sets blockedBy from comma-separated string", async () => {
-      writeFileSync(
-        join(tmp, ".rex", "prd.json"),
-        JSON.stringify({
+      // The two dependency tasks are nested under a feature so the folder
+      // tree can persist them. Tasks placed directly at root would be
+      // dropped by the serializer and the cycle/dependency check would fail.
+      writePRD(tmp, {
           schema: "rex/v1",
           title: "test",
           items: [
             { id: itemId, title: "Test item", level: "epic", status: "pending" },
-            { id: "dep-1", title: "Dep 1", level: "task", status: "pending" },
-            { id: "dep-2", title: "Dep 2", level: "task", status: "pending" },
+            {
+              id: "deps-epic",
+              title: "Deps Epic",
+              level: "epic",
+              status: "pending",
+              children: [
+                {
+                  id: "deps-feat",
+                  title: "Deps Feature",
+                  level: "feature",
+                  status: "pending",
+                  children: [
+                    { id: "dep-1", title: "Dep 1", level: "task", status: "pending" },
+                    { id: "dep-2", title: "Dep 2", level: "task", status: "pending" },
+                  ],
+                },
+              ],
+            },
           ],
-        }),
-      );
+        } as PRDDocument);
 
       await cmdUpdate(tmp, itemId, { blockedBy: "dep-1,dep-2" });
 
-      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
-      const doc = JSON.parse(raw) as PRDDocument;
-      expect(doc.items[0].blockedBy).toEqual(["dep-1", "dep-2"]);
+      const doc = readPRD(tmp);
+      const updated = doc.items.find((i: { id: string }) => i.id === itemId);
+      expect(updated.blockedBy).toEqual(["dep-1", "dep-2"]);
     });
 
     it("clears blockedBy with empty string", async () => {
-      writeFileSync(
-        join(tmp, ".rex", "prd.json"),
-        JSON.stringify({
+      writePRD(tmp, {
           schema: "rex/v1",
           title: "test",
           items: [
             { id: itemId, title: "Test item", level: "epic", status: "pending", blockedBy: ["dep-1"] },
             { id: "dep-1", title: "Dep 1", level: "task", status: "pending" },
           ],
-        }),
-      );
+        } as PRDDocument);
 
       await cmdUpdate(tmp, itemId, { blockedBy: "" });
 
-      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
-      const doc = JSON.parse(raw) as PRDDocument;
+      const doc = readPRD(tmp);
       expect(doc.items[0].blockedBy).toBeUndefined();
     });
 
@@ -300,17 +312,33 @@ describe("cmdUpdate", () => {
     });
 
     it("rejects blockedBy that creates a cycle", async () => {
-      writeFileSync(
-        join(tmp, ".rex", "prd.json"),
-        JSON.stringify({
+      // Use a proper hierarchy (epic → feature → tasks) so the folder tree
+      // can represent the test PRD; tasks at root would be dropped by the
+      // tree serializer and `getItem` would no longer find them.
+      writePRD(tmp, {
           schema: "rex/v1",
           title: "test",
           items: [
-            { id: "a", title: "A", level: "task", status: "pending", blockedBy: ["b"] },
-            { id: "b", title: "B", level: "task", status: "pending" },
+            {
+              id: "epic-cycle",
+              title: "Cycle Epic",
+              level: "epic",
+              status: "pending",
+              children: [
+                {
+                  id: "feat-cycle",
+                  title: "Cycle Feature",
+                  level: "feature",
+                  status: "pending",
+                  children: [
+                    { id: "a", title: "A", level: "task", status: "pending", blockedBy: ["b"] },
+                    { id: "b", title: "B", level: "task", status: "pending" },
+                  ],
+                },
+              ],
+            },
           ],
-        }),
-      );
+        } as PRDDocument);
 
       // b blocked by a → a blocked by b → cycle
       await expect(
@@ -326,8 +354,7 @@ describe("cmdUpdate", () => {
 
   describe("automatic timestamps", () => {
     function readItem(): PRDDocument["items"][number] {
-      const raw = readFileSync(join(tmp, ".rex", "prd.json"), "utf-8");
-      const doc = JSON.parse(raw) as PRDDocument;
+      const doc = readPRD(tmp);
       return doc.items[0];
     }
 
@@ -382,6 +409,49 @@ describe("cmdUpdate", () => {
       const item = readItem();
       expect(item.startedAt).toBeUndefined();
       expect(item.completedAt).toBeUndefined();
+    });
+  });
+
+  // --- Folder tree persistence ---
+
+  describe("folder tree persistence", () => {
+    it("writes folder tree after a status update", async () => {
+      await cmdUpdate(tmp, itemId, { status: "in_progress" });
+
+      const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
+      expect(existsSync(treeRoot)).toBe(true);
+      const epicDir = join(treeRoot, slugify("Test item", itemId));
+      expect(existsSync(epicDir)).toBe(true);
+      const mdFile = readdirSync(epicDir).find((f) => f.endsWith(".md"))!;
+      const content = readFileSync(join(epicDir, mdFile), "utf-8");
+      expect(content).toContain("in_progress");
+    });
+
+    it("writes folder tree after a title update", async () => {
+      await cmdUpdate(tmp, itemId, { title: "New title" });
+
+      const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
+      expect(existsSync(treeRoot)).toBe(true);
+      const entries = readdirSync(treeRoot).filter((e) =>
+        statSync(join(treeRoot, e)).isDirectory(),
+      );
+      expect(entries.length).toBe(1);
+      const epicDir = join(treeRoot, entries[0]);
+      const mdFile = readdirSync(epicDir).find((f) => f.endsWith(".md"))!;
+      const content = readFileSync(join(epicDir, mdFile), "utf-8");
+      expect(content).toContain("New title");
+    });
+
+    it("writes folder tree after deletion (removes epic folder)", async () => {
+      // First, write the tree by updating status
+      await cmdUpdate(tmp, itemId, { status: "in_progress" });
+      const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
+      expect(existsSync(treeRoot)).toBe(true);
+
+      // Deleting removes the item; the folder tree should have no subdirectories
+      await cmdUpdate(tmp, itemId, { status: "deleted", force: "true" });
+      const entries = readdirSync(treeRoot).filter(e => statSync(join(treeRoot, e)).isDirectory());
+      expect(entries.length).toBe(0);
     });
   });
 });

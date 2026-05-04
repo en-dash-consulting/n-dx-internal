@@ -31,7 +31,7 @@ import { checkTokenBudget } from "./token-budget.js";
 import { mapCodexUsageToTokenUsage, parseTokenUsageWithDiagnostic, parseStreamTokenUsage } from "./token-usage.js";
 import { parseCodexCliTokenUsage } from "./codex-cli-token-parser.js";
 import { startHeartbeat } from "./heartbeat.js";
-import { section, stream, info } from "../../types/output.js";
+import { section, subsection, stream, info } from "../../types/output.js";
 import { isSpinningRun } from "../analysis/spin.js";
 import {
   loadLLMConfig,
@@ -990,11 +990,8 @@ async function processSuccessfulResult(ctx: SuccessContext): Promise<SuccessActi
     // Success
     run.status = "completed";
     run.summary = result.summary;
-    await toolRexUpdateStatus(store, taskId, { status: "completed" });
-    await toolRexAppendLog(store, taskId, {
-      event: "task_completed",
-      detail: run.summary,
-    });
+    // Note: PRD status update deferred to performCommitPromptIfNeeded
+    // so it's staged alongside code changes in the same commit.
   } else {
     // Completion rejected — no meaningful changes
     run.status = "failed";
@@ -1083,7 +1080,7 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   // Shared: assemble brief, format, build system prompt + envelope, display task info
   const { brief, taskId, briefText, systemPrompt, envelope: baseEnvelope } = await prepareBrief(
     store, config, opts.taskId,
-    { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId },
+    { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId, tags: opts.tags },
     { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
     opts.extraContext,
   );
@@ -1163,6 +1160,15 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
   // Prompt section diagnostics — captured on first attempt, stored on run record.
   let promptSectionDiagnostics: PromptSectionDiagnostic[] | undefined;
 
+  // Emit the Agent Run banner exactly once per run, before the retry loop.
+  // Retries are surfaced as lighter subsection lines inside the loop so a
+  // single run renders as one start banner, N attempt markers, one end.
+  section(
+    opts.runNumber !== undefined
+      ? `Agent Run #${opts.runNumber}${opts.spawnModel ? ` (${opts.spawnModel})` : ""} start`
+      : `Agent Run${opts.spawnModel ? ` (${opts.spawnModel})` : ""}`,
+  );
+
   try {
     for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
       const promptText = attempt === 0
@@ -1189,7 +1195,9 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
         promptSectionDiagnostics = sectionDiags;
       }
 
-      section(`Agent Run${opts.spawnModel ? ` (${opts.spawnModel})` : ""}${attempt > 0 ? ` (retry ${attempt}/${retryConfig.maxRetries})` : ""}`);
+      if (attempt > 0) {
+        subsection(`Retry ${attempt}/${retryConfig.maxRetries}`);
+      }
       stream("CLI", `Spawning ${vendor}${opts.spawnModel ? ` (model: ${opts.spawnModel})` : ""}...`);
       logPromptSections(sectionDiags);
 
@@ -1277,14 +1285,17 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
     run,
     henchDir,
     projectDir,
+    config,
     testCommand: brief.project.testCommand,
     heartbeat,
     memoryCtx,
     selfHeal: config.selfHeal,
     rollbackOnFailure: opts.rollbackOnFailure,
     yes: opts.yes,
+    autonomous: opts.autonomous,
     store,
     autoCommit: config.autoCommit === true,
+    skipFullTestGate: config.skipFullTestGate,
   });
 
   return { run };

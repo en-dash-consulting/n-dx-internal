@@ -6,7 +6,7 @@ AI-powered development toolkit. Three packages that chain together: analyze a co
 ## Packages
 
 - **sourcevision** — Static analysis: file inventory, import graph, zone detection (Louvain community detection), React component catalog. Produces `.sourcevision/CONTEXT.md` and `llms.txt` for AI consumption.
-- **rex** — PRD management: hierarchical epics/features/tasks/subtasks, `analyze` scans project + sourcevision output to generate proposals, `status` shows completion tree. Stores state in `.rex/prd.json`.
+- **rex** — PRD management: hierarchical epics/features/tasks/subtasks, `analyze` scans project + sourcevision output to generate proposals, `status` shows completion tree. Stores all PRD state in a slug-based folder tree at `.rex/prd_tree/`: one directory per item with an `index.md` file. No JSON files are written by PRD mutations.
 - **hench** — Autonomous agent: picks next rex task, builds a brief, drives an LLM in a tool-use loop, records runs in `.hench/runs/`.
 
 ## Monorepo Structure
@@ -184,16 +184,18 @@ The four orchestration entry points (`cli.js`, `web.js`, `ci.js`, `config.js`) s
 | Command pair | Safe? | Notes |
 |-------------|-------|-------|
 | `ndx start` + `ndx status` | ✅ | Status is read-only |
-| `ndx start` + `ndx work` | ✅ | Hench writes to `.hench/runs/`, server reads `.rex/prd.json` — no conflict |
-| `ndx start` + `ndx plan` | ⚠️ | Plan writes `.rex/prd.json` which the server reads — server may see partial writes. Restart server after plan. |
-| `ndx ci` + `ndx work` | ❌ | Both may write `.sourcevision/` and `.rex/prd.json` concurrently |
-| `ndx plan` + `ndx work` | ❌ | Both write `.rex/prd.json` — data corruption risk |
+| `ndx start` + `ndx work` | ✅ | Hench writes to `.hench/runs/`; the server reads the folder tree via `.rex/.cache/prd.json` (refreshed by file watcher) |
+| `ndx start` + `ndx plan` | ⚠️ | Plan rewrites the folder tree; the server's tree watcher refreshes `.rex/.cache/prd.json` automatically, but a restart flushes all in-process caches. |
+| `ndx ci` + `ndx work` | ❌ | Both may write `.sourcevision/` plus the folder tree and sync files concurrently |
+| `ndx plan` + `ndx work` | ❌ | Both write the folder tree (`.rex/prd_tree/`) |
 | `ndx refresh` + any write command | ❌ | Refresh writes `.sourcevision/` and rebuilds web assets |
 | `ndx config` + `ndx config` | ❌ | Concurrent config writes may lose updates (no file locking) |
 
-**General rule:** Commands that write to `.rex/prd.json`, `.sourcevision/`, or `.hench/config.json` must not run concurrently. Read-only commands (`status`, `usage`) are always safe.
+**General rule:** Commands that write to the PRD backend (`.rex/prd_tree/`), `.sourcevision/`, or `.hench/config.json` must not run concurrently. Read-only commands (`status`, `usage`) are always safe.
 
-**MCP write operations** (`add_item`, `edit_item`, `update_task_status`, `merge_items`, `move_item`) also write to `.rex/prd.json`. Never invoke MCP write tools while a CLI command that writes to the PRD is running in the background (e.g., `reorganize`, `prune`, `reshape`, `analyze`, `plan`). The last writer wins silently — no error, just data loss. Always wait for the background command to complete before making MCP writes.
+**MCP write operations** (`add_item`, `edit_item`, `update_task_status`, `merge_items`, `move_item`) write only to the folder tree (`.rex/prd_tree/`). No JSON files are produced. Never invoke MCP write tools while a CLI command that writes to the PRD is running in the background (e.g., `reorganize`, `prune`, `reshape`, `analyze`, `plan`). The last writer wins silently — no error, just data loss. Always wait for the background command to complete before making MCP writes.
+
+**PRD invariant.** The sole writable PRD surface is the folder tree: `.rex/prd_tree/` (slug-named directories, each with `index.md`). No PRD mutation (CLI, MCP, or `rex update`) writes to `prd.md`, branch-scoped `.rex/prd_{branch}_{date}.md` files, or `prd.json`. Avoid parallel writers.
 
 #### HTTP-request concurrency (web server)
 
@@ -201,11 +203,11 @@ When `ndx start` is running, the web server holds in-process caches (aggregation
 
 | Scenario | Risk | Mitigation |
 |----------|------|------------|
-| Dashboard reads PRD while `ndx plan` writes `.rex/prd.json` | Partial JSON read → parse error or stale tree | Restart server after plan (`ndx start stop && ndx start`) |
+| Dashboard reads PRD while `ndx plan` writes to `.rex/prd_tree/` | Partial aggregate read or stale derived JSON | Restart server after plan (`ndx start stop && ndx start`) |
 | MCP request during `ndx work` PRD update | Momentarily stale status — hench writes are small atomic updates | Acceptable — dashboard polls and self-corrects within seconds |
 | Concurrent dashboard API requests | Safe — Express serializes requests per-connection; no shared mutable state between request handlers | No action needed |
 
-**General rule for HTTP:** The web server treats disk files as read-only and never holds write locks. Any command that rewrites `.rex/prd.json` or `.sourcevision/` in bulk (plan, ci, refresh) should be followed by a server restart to flush stale caches.
+**General rule for HTTP:** The web server treats disk files as read-only and never holds write locks. The folder tree watcher refreshes `.rex/.cache/prd.json` automatically for most PRD mutations. Any command that bulk-rewrites `.sourcevision/` (ci, refresh) should be followed by a server restart to flush stale caches.
 
 
 ### Package conventions
@@ -257,7 +259,6 @@ ndx add --file=spec.md    # import ideas from a text file
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
 ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, --yes, etc.)
-ndx pair-programming "<desc>" # agent + cross-vendor review (bicker alias)
 ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute; --yes for unattended)
 ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
 ndx status [dir]          # rex status (pass --format=json)
@@ -342,6 +343,8 @@ Benefits of HTTP over stdio: single process, shared port with the web dashboard,
 
 ### Rex MCP tools
 
+Rex mutations write only to the folder tree (`.rex/prd_tree/`). No JSON files are produced by MCP write operations.
+
 - `get_prd_status` — PRD title, overall stats, and per-epic stats
 - `get_next_task` — next actionable task based on priority and dependencies
 - `update_task_status` — update item status
@@ -357,6 +360,7 @@ Benefits of HTTP over stdio: single process, shared port with the web dashboard,
 - `facets` — list configured facets with distribution
 - `append_log` — write structured log entry
 - `sync_with_remote` — sync with remote adapter (e.g. Notion)
+- `get_token_usage` — roll up hench run token totals per PRD item (self/descendants/total) with orphans surfaced separately
 - `get_capabilities` — server capabilities and configuration
 
 ### Sourcevision MCP tools
@@ -389,12 +393,15 @@ Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `
 |------|---------|
 | `.sourcevision/CONTEXT.md` | AI-readable codebase summary |
 | `.sourcevision/manifest.json` | Analysis metadata and version |
-| `.rex/prd.json` | PRD tree (epics → features → tasks → subtasks) |
+| `.rex/prd_tree/` | PRD storage root — slug-based folder tree; one directory per item (epic/feature/task) containing `index.md` |
+| `.rex/prd.md` | (Legacy) flat Markdown PRD; migration source for `rex migrate-to-folder-tree`. Absent after migration. |
+| `.rex/prd.json` | (Legacy) JSON PRD; migration source when neither `prd.md` nor the tree exists. |
+| `.rex/execution-log.jsonl` | Append-only structured activity log (rotates to `.rex/execution-log.1.jsonl` at 1 MB) |
 | `.rex/workflow.md` | Human-readable workflow state |
 | `.rex/config.json` | Rex project configuration |
+| `.rex/archive.json` | Pruned/reshaped item archive (written by `rex prune` and `rex reshape`; max 100 batches, auto-trimmed; safe to delete — only used for item recovery/audit) |
 | `.hench/config.json` | Hench agent configuration (model, max turns) |
 | `.hench/runs/` | Run history and transcripts |
-| `.rex/archive.json` | Pruned/reshaped item archive (written by `rex prune` and `rex reshape`; max 100 batches, auto-trimmed; safe to delete — only used for item recovery/audit) |
 | `.n-dx.json` | Project-level config overrides (web.port, llm.vendor, llm.claude.model, llm.codex.model) |
 | `.n-dx-web.pid` | Background web server PID file (auto-managed) |
 | `tests/e2e/architecture-policy.test.js` | Spawn-only enforcement, intra-package layering, zone-cycle detection |
@@ -403,3 +410,7 @@ Use `ndx start --background .` for daemon mode, `ndx start status .` to check, `
 | `tests/e2e/integration-coverage-policy.test.js` | Minimum integration test file count, cross-package contract verification |
 | `tests/e2e/cli-dev.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
 | `tests/integration/scheduler-startup.test.js` | **Required test** — see [TESTING.md](TESTING.md#required-tests) |
+
+> **PRD file layout.** `.rex/prd_tree/` is the sole writable PRD surface. Each item (epic/feature/task) maps to a slug-named directory containing `index.md`; subtasks are encoded as sections within the parent task's `index.md`. No JSON files are written by the rex CLI, MCP tools, or `rex update`. `.rex/prd.md` and branch-scoped `.rex/prd_{branch}_{date}.md` files are legacy migration sources — absent after running `rex migrate-to-folder-tree`. `.rex/.cache/prd.json` is an ephemeral derived file generated only while `ndx start` is running; do not read it from code outside the web server.
+
+> **PRD folder tree schema.** The primary PRD storage format maps each PRD level (epic → feature → task) to a directory containing an `index.md`. Subtasks are encoded as sections within the parent task's `index.md`. See [`docs/architecture/prd-folder-tree-schema.md`](docs/architecture/prd-folder-tree-schema.md) for the full naming-convention, field schema, and serializer/parser contracts.

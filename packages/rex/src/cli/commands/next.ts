@@ -1,9 +1,11 @@
 import { join } from "node:path";
-import { resolveStore } from "../../store/index.js";
+import { resolveStore, ensureLegacyPrdMigrated } from "../../store/index.js";
+import { loadItemsPreferFolderTree } from "./folder-tree-sync.js";
 import { findNextTask, collectCompletedIds, explainSelection } from "../../core/next-task.js";
 import { REX_DIR } from "./constants.js";
 import { info, result } from "../output.js";
 import { bold, yellow, red, dim, colorStatus } from "@n-dx/llm-client";
+import { emitMigrationNotification } from "../migration-notification.js";
 
 function colorPriority(priority: string): string {
   switch (priority) {
@@ -18,9 +20,16 @@ export async function cmdNext(
   dir: string,
   flags: Record<string, string>,
 ): Promise<void> {
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before reading PRD
+  const migrationResult = await ensureLegacyPrdMigrated(dir);
+
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+
+  // Emit migration notification to CLI and execution log
+  await emitMigrationNotification(migrationResult, flags, (entry) => store.appendLog(entry));
   const doc = await store.loadDocument();
+  doc.items = await loadItemsPreferFolderTree(rexDir, store);
 
   if (doc.items.length === 0) {
     result("No items in PRD. Run: rex add epic --title=\"...\" " + dir);

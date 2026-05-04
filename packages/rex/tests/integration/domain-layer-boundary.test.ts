@@ -176,7 +176,9 @@ describe("rex cli/commands import surface", () => {
     "../../store/adapter-registry.js",
     "../../store/atomic-write.js",
     "../../store/index.js",
+    "../../store/markdown-parser.js",
     "../../store/project-config.js",
+    "../../store/title-to-filename.js",
     "../../workflow/default.js",
   ]);
 

@@ -45,8 +45,16 @@ import type { ServerContext } from "./types.js";
 import { jsonResponse, errorResponse, readBody } from "./response-utils.js";
 import type { WebSocketBroadcaster } from "./websocket.js";
 import { IncrementalTaskUsageAggregator } from "./task-usage.js";
-import { collectAllIds } from "./rex-gateway.js";
-import type { PRDDocument } from "./rex-gateway.js";
+import {
+  collectAllIds,
+  aggregateItemTokenUsage,
+  aggregateItemDurations,
+} from "./rex-gateway.js";
+import type {
+  PRDDocument,
+  ItemTokenTotals,
+  ItemDurationTotals,
+} from "./rex-gateway.js";
 import { loadPRDSync } from "./prd-io.js";
 import { ProcessMemoryTracker } from "./process-memory-tracker.js";
 import { ConcurrentExecutionMetrics } from "./concurrent-execution-metrics.js";
@@ -337,17 +345,27 @@ function routeUsage(rc: RouteContext): boolean | Promise<boolean> | null {
   if (rc.path === "task-usage" && rc.method === "GET") {
     const aggregator = getAggregator(rc.runsDir);
     return aggregator.getTaskUsage().then((taskUsage) => {
-      const validIds = loadValidTaskIds(rc.ctx);
+      // Load the PRD once so we can both validate task IDs AND compute
+      // the per-item rollup (self / descendants / total) that the tree
+      // view consumes.
+      const prd = loadPRDSync(rc.ctx.rexDir);
+      const validIds = prd && Array.isArray(prd.items)
+        ? collectAllIds(prd.items)
+        : null;
       if (validIds) {
         aggregator.pruneStaleEntries(validIds);
-        const pruned: Record<string, (typeof taskUsage)[string]> = {};
-        for (const [id, acc] of Object.entries(taskUsage)) {
-          if (validIds.has(id)) pruned[id] = acc;
-        }
-        jsonResponse(rc.res, 200, { taskUsage: pruned });
-      } else {
-        jsonResponse(rc.res, 200, { taskUsage });
       }
+      const filteredUsage: Record<string, (typeof taskUsage)[string]> = validIds
+        ? Object.fromEntries(
+          Object.entries(taskUsage).filter(([id]) => validIds.has(id)),
+        )
+        : taskUsage;
+
+      const rollup = prd && Array.isArray(prd.items)
+        ? buildItemRollup(prd.items, aggregator.getFileContributions())
+        : {};
+
+      jsonResponse(rc.res, 200, { taskUsage: filteredUsage, rollup });
       return true as const;
     });
   }
@@ -993,14 +1011,72 @@ function loadPRDForExecute(ctx: ServerContext): Record<string, unknown> | null {
 }
 
 /**
- * Load the set of all task IDs currently in the PRD.
- * Returns null if the PRD cannot be read (e.g. not initialized yet),
- * allowing callers to degrade gracefully.
+ * Wire shape for per-item rollup consumed by the tree view.
+ *
+ * Combines token totals (self/descendants/total with runCount) with a
+ * duration triple (`totalMs`, `runningMs`, `isRunning`) so the dashboard
+ * can render both columns from a single fetch.
+ *
+ * Mirrors rex's `ItemTokenTotals` + `ItemDurationTotals` projected to the
+ * subset the dashboard actually renders; keeping the wire shape narrow
+ * lets viewer-side types stay small and makes the contract explicit.
  */
-function loadValidTaskIds(ctx: ServerContext): Set<string> | null {
-  const doc = loadPRDSync(ctx.rexDir);
-  if (!doc || !Array.isArray(doc.items)) return null;
-  return collectAllIds(doc.items);
+interface ItemUsageRollupWire {
+  self: { totalTokens: number; runCount: number };
+  descendants: { totalTokens: number; runCount: number };
+  total: { totalTokens: number; runCount: number };
+  duration: {
+    totalMs: number;
+    runningMs: number;
+    isRunning: boolean;
+  };
+}
+
+function projectRollup(
+  t: ItemTokenTotals,
+  selfRunCount: number,
+  duration: ItemDurationTotals,
+): ItemUsageRollupWire {
+  const totalRunCount = t.runCount;
+  const descendantRunCount = totalRunCount - selfRunCount;
+  return {
+    self: { totalTokens: t.self.total, runCount: selfRunCount },
+    descendants: { totalTokens: t.descendants.total, runCount: descendantRunCount },
+    total: { totalTokens: t.total.total, runCount: totalRunCount },
+    duration: {
+      totalMs: duration.totalMs,
+      runningMs: duration.runningMs,
+      isRunning: duration.isRunning,
+    },
+  };
+}
+
+function buildItemRollup(
+  items: PRDDocument["items"],
+  contributions: Array<{ itemId: string; tokens: { input: number; output: number; cached: number; total: number } }>,
+): Record<string, ItemUsageRollupWire> {
+  const aggregation = aggregateItemTokenUsage(items, contributions);
+  const { durations } = aggregateItemDurations(items);
+  // Count runs directly attributed to each item so we can split
+  // `total.runCount` into self vs. descendants without recomputing.
+  const selfRunCountById = new Map<string, number>();
+  for (const c of contributions) {
+    selfRunCountById.set(c.itemId, (selfRunCountById.get(c.itemId) ?? 0) + 1);
+  }
+  const emptyDuration: ItemDurationTotals = {
+    totalMs: 0,
+    runningMs: 0,
+    isRunning: false,
+  };
+  const out: Record<string, ItemUsageRollupWire> = {};
+  for (const [id, totals] of aggregation.totals) {
+    out[id] = projectRollup(
+      totals,
+      selfRunCountById.get(id) ?? 0,
+      durations.get(id) ?? emptyDuration,
+    );
+  }
+  return out;
 }
 
 /** Recursively find a PRD item by ID. */

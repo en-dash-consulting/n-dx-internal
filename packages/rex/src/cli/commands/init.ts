@@ -1,12 +1,12 @@
 import { join, basename } from "node:path";
-import { readFile, writeFile, access } from "node:fs/promises";
-import { SCHEMA_VERSION, DEFAULT_CONFIG } from "../../schema/index.js";
+import { readFile, writeFile, access, mkdir } from "node:fs/promises";
+import { DEFAULT_CONFIG } from "../../schema/index.js";
 import { toCanonicalJSON } from "../../core/canonical.js";
 import { ensureRexDir } from "../../store/index.js";
 import { NDX_WORKFLOW, USER_WORKFLOW_TEMPLATE } from "../../workflow/default.js";
 import { REX_DIR } from "./constants.js";
+import { FOLDER_TREE_SUBDIR } from "./folder-tree-sync.js";
 import { info } from "../output.js";
-import type { PRDDocument } from "../../schema/index.js";
 
 export async function cmdInit(
   dir: string,
@@ -27,21 +27,6 @@ export async function cmdInit(
     const config = DEFAULT_CONFIG(project);
     await writeFile(configPath, toCanonicalJSON(config), "utf-8");
     info("Created config.json");
-  }
-
-  // prd.json
-  const prdPath = join(rexDir, "prd.json");
-  try {
-    await access(prdPath);
-    info("prd.json already exists, skipping");
-  } catch {
-    const doc: PRDDocument = {
-      schema: SCHEMA_VERSION,
-      title: project,
-      items: [],
-    };
-    await writeFile(prdPath, toCanonicalJSON(doc), "utf-8");
-    info("Created prd.json");
   }
 
   // execution-log.jsonl
@@ -67,6 +52,22 @@ export async function cmdInit(
   } catch {
     await writeFile(workflowPath, USER_WORKFLOW_TEMPLATE, "utf-8");
     info("Created workflow.md (edit to add project-specific rules)");
+  }
+
+  // .rex/prd_tree/ — folder-tree scaffold (created once; not overwritten)
+  const treeDir = join(rexDir, FOLDER_TREE_SUBDIR);
+  await mkdir(treeDir, { recursive: true });
+  const treeRootStub = join(treeDir, "index.md");
+  try {
+    await access(treeRootStub);
+    info(`tree/index.md already exists, skipping`);
+  } catch {
+    await writeFile(
+      treeRootStub,
+      `# ${project}\n\nPRD folder tree for **${project}**.\nManaged by rex — add items with \`rex add epic\`.\n`,
+      "utf-8",
+    );
+    info("Created tree/index.md");
   }
 
   // Ensure .gitignore covers generated rex files

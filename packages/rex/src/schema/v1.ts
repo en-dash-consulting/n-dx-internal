@@ -197,6 +197,25 @@ export interface MergedProposalRecord {
   source: "smart-add";
 }
 
+/**
+ * Commit attribution: hash, author, and timestamp of a commit
+ * associated with this PRD item. Array accumulates as an item
+ * is touched across multiple commits (especially for items
+ * completed across multiple commits).
+ */
+export interface CommitAttribution {
+  /** Full git commit SHA-1 hash (40 hex characters). */
+  hash: string;
+  /** Commit author name (from git config or commit object). */
+  author: string;
+  /** Author email address. */
+  authorEmail: string;
+  /** ISO 8601 timestamp of the commit. */
+  timestamp: string;
+  /** Optional commit message (first line). */
+  message?: string;
+}
+
 /** All valid requirement categories as a Set. */
 export const VALID_REQUIREMENT_CATEGORIES = new Set<RequirementCategory>([
   "technical",
@@ -224,11 +243,27 @@ export function isValidationType(value: string | undefined): value is Requiremen
   return value !== undefined && VALID_VALIDATION_TYPES.has(value as RequirementValidationType);
 }
 
+/**
+ * A single active work interval. An interval with no `end` is open — the item
+ * is currently in `in_progress` status. Intervals accumulate: re-opening a
+ * completed task appends a new interval rather than overwriting the prior one.
+ */
+export interface ActiveInterval {
+  /** ISO timestamp when work started (entered `in_progress`). */
+  start: string;
+  /** ISO timestamp when work paused/completed. Absent if still running. */
+  end?: string;
+}
+
 export interface PRDItem {
   id: string;
   title: string;
   status: ItemStatus;
   level: ItemLevel;
+  /** Git branch the item originated from or was last attributed to. */
+  branch?: string;
+  /** PRD source file the item originated from or was last written to. */
+  sourceFile?: string;
   description?: string;
   acceptanceCriteria?: string[];
   priority?: Priority;
@@ -237,8 +272,19 @@ export interface PRDItem {
   blockedBy?: string[];
   /** Structured requirements associated with this item. */
   requirements?: Requirement[];
+  /** ISO timestamp of the first transition into `in_progress`. Preserved across re-opens. */
   startedAt?: string;
+  /** ISO timestamp of the latest transition into `completed`. Cleared if the item is re-opened. */
   completedAt?: string;
+  /** ISO timestamp of the most recent transition out of `in_progress` into a terminal state. Cleared when work resumes. */
+  endedAt?: string;
+  /**
+   * Append-only log of work intervals. Each `in_progress` entry pushes a new
+   * open interval; leaving `in_progress` closes the last one. Re-opening a
+   * completed task appends a new interval without mutating earlier ones, so
+   * cumulative duration can be derived by summing `end - start` across the list.
+   */
+  activeIntervals?: ActiveInterval[];
   failureReason?: string;
   /** How this item was resolved (code change, config override, etc.). */
   resolutionType?: ResolutionType;
@@ -248,6 +294,8 @@ export interface PRDItem {
   overrideMarker?: DuplicateOverrideMarker;
   /** Present when duplicate proposals were merged into this existing item. */
   mergedProposals?: MergedProposalRecord[];
+  /** Commits (SHA hash + author + timestamp) associated with this item. */
+  commits?: CommitAttribution[];
   children?: PRDItem[];
   [key: string]: unknown;
 }

@@ -314,7 +314,10 @@ async function dispatchCommand(
   // init creates it; analyze handles its own graceful fallback.
   // Commands whose first positional arg is an ID (not a dir) must handle
   // their own dir resolution and requireRexDir check inside the case block.
-  const SKIP_DIR_CHECK = new Set(["init", "analyze", "import", "update", "move", "add", "reshape", "remove"]);
+  const SKIP_DIR_CHECK = new Set([
+    "init", "analyze", "import", "update", "move", "add", "reshape", "remove",
+    "parse-md",
+  ]);
   if (!SKIP_DIR_CHECK.has(command)) {
     requireRexDir(resolveDir(positional));
   }
@@ -445,6 +448,32 @@ async function dispatchCommand(
       await startMcpServer(resolveDir(positional));
       break;
     }
+    case "migrate-to-md": {
+      const { cmdMigrateToMd } = await import("./commands/migrate-to-md.js");
+      await cmdMigrateToMd(resolveDir(positional));
+      break;
+    }
+    case "migrate-to-folder-tree": {
+      const { cmdMigrateToFolderTree } = await import("./commands/migrate-to-folder-tree.js");
+      await cmdMigrateToFolderTree(resolveDir(positional), flags);
+      break;
+    }
+    case "migrate-folder-tree-filenames": {
+      const { cmdMigrateFolderTreeFilenames } = await import("./commands/migrate-folder-tree-filenames.js");
+      await cmdMigrateFolderTreeFilenames(resolveDir(positional), flags);
+      break;
+    }
+    case "parse-md": {
+      const { cmdParseMd } = await import("./commands/parse-md.js");
+      const stdinInput = flags.stdin === "true" ? await readStdin() : "";
+      await cmdParseMd(resolveDir(positional), flags, stdinInput);
+      break;
+    }
+    case "backfill-commit-attribution": {
+      const { cmdBackfillCommitAttribution } = await import("./commands/backfill-commit-attribution.js");
+      await cmdBackfillCommitAttribution(resolveDir(positional), flags);
+      break;
+    }
     default: {
       // Check if the user tried an ndx-only orchestration command
       const NDX_ONLY_COMMANDS: Record<string, string> = {
@@ -468,6 +497,8 @@ async function dispatchCommand(
         "init", "status", "next", "add", "update", "move", "remove", "reshape",
         "prune", "validate", "fix", "sync", "usage", "report", "verify",
         "recommend", "analyze", "import", "adapter", "reorganize", "health", "mcp",
+        "migrate-to-md", "migrate-to-folder-tree", "migrate-folder-tree-filenames", "parse-md",
+        "backfill-commit-attribution",
       ];
       const typoHint = formatTypoSuggestion(command, REX_COMMANDS, "rex ");
       throw new CLIError(

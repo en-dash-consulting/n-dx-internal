@@ -43,11 +43,20 @@ describe("handleEditItem", () => {
       title: "Second item",
       level: "task",
     });
+    // Tasks must live under a feature so the folder-tree serializer can
+    // represent them; without an intermediate feature `syncFolderTree`
+    // silently drops the tasks and subsequent `getItem` calls return null.
+    const feature = makeItem({
+      id: "feature-1",
+      title: "Test Feature",
+      level: "feature",
+      children: [item1, item2],
+    });
     const epic = makeItem({
       id: "epic-1",
       title: "Test Epic",
       level: "epic",
-      children: [item1, item2],
+      children: [feature],
     });
 
     const doc: PRDDocument = {
@@ -74,7 +83,7 @@ describe("handleEditItem", () => {
   // ── Field merging ────────────────────────────────────────────────
 
   it("updates only the specified fields, leaving others unchanged", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
       title: "Updated title",
     });
@@ -91,7 +100,7 @@ describe("handleEditItem", () => {
   });
 
   it("updates multiple fields at once", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
       title: "New title",
       description: "New description",
@@ -111,7 +120,7 @@ describe("handleEditItem", () => {
   });
 
   it("updates acceptanceCriteria", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
       acceptanceCriteria: ["new criterion A", "new criterion B"],
     });
@@ -123,7 +132,7 @@ describe("handleEditItem", () => {
   });
 
   it("updates source field", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
       source: "manual",
     });
@@ -135,7 +144,7 @@ describe("handleEditItem", () => {
   });
 
   it("persists changes to prd.json visible in subsequent reads", async () => {
-    await handleEditItem(store, {
+    await handleEditItem(store, tmpDir, {
       id: "item-1",
       title: "Persisted title",
       priority: "critical",
@@ -152,7 +161,7 @@ describe("handleEditItem", () => {
   // ── Unknown ID ───────────────────────────────────────────────────
 
   it("returns structured error for unknown item ID", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "nonexistent-id",
       title: "Something",
     });
@@ -166,7 +175,7 @@ describe("handleEditItem", () => {
   // ── Invalid values ──────────────────────────────────────────────
 
   it("returns error when no fields are provided", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
     });
 
@@ -178,7 +187,7 @@ describe("handleEditItem", () => {
   // ── blockedBy validation ────────────────────────────────────────
 
   it("updates blockedBy with valid dependency", async () => {
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-2",
       blockedBy: ["item-1"],
     });
@@ -191,13 +200,13 @@ describe("handleEditItem", () => {
 
   it("rejects circular blockedBy dependency", async () => {
     // First, set item-2 blocked by item-1
-    await handleEditItem(store, {
+    await handleEditItem(store, tmpDir, {
       id: "item-2",
       blockedBy: ["item-1"],
     });
 
     // Now try to set item-1 blocked by item-2 (circular)
-    const result = await handleEditItem(store, {
+    const result = await handleEditItem(store, tmpDir, {
       id: "item-1",
       blockedBy: ["item-2"],
     });
@@ -210,7 +219,7 @@ describe("handleEditItem", () => {
   // ── Logging ─────────────────────────────────────────────────────
 
   it("appends an item_edited log entry", async () => {
-    await handleEditItem(store, {
+    await handleEditItem(store, tmpDir, {
       id: "item-1",
       title: "Logged change",
     });

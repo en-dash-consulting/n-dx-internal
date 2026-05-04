@@ -13,7 +13,6 @@ import { describe, it, expect, afterEach } from "vitest";
 // ANSI escape codes we assert on
 const YELLOW   = "\x1b[33m";
 const GREEN    = "\x1b[32m";
-const MAGENTA  = "\x1b[35m";
 const ANSI_PREFIX = "\x1b[";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -202,6 +201,65 @@ describe("formatRunSuccessMessage", () => {
   });
 });
 
+// ── iteration boundary banner ─────────────────────────────────────────────
+
+describe("formatIterationBanner", () => {
+  afterEach(async () => {
+    setColorMode("clear");
+    await resetColor();
+  });
+
+  it("includes n/total format for fixed-iteration mode", async () => {
+    setColorMode("none");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    const banner = formatIterationBanner(2, 5);
+    expect(banner).toContain("2/5");
+    expect(banner).toContain("Iteration");
+  });
+
+  it("includes n-only format for unbounded loop mode", async () => {
+    setColorMode("none");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    const banner = formatIterationBanner(3);
+    expect(banner).toContain("3");
+    expect(banner).not.toMatch(/\d+\/\d+/);
+    expect(banner).toContain("Iteration");
+  });
+
+  it("matches the === Iteration n/total === template exactly (plain text)", async () => {
+    setColorMode("none");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    expect(formatIterationBanner(1, 3)).toBe("=== Iteration 1/3 ===");
+  });
+
+  it("matches the === Iteration n === template exactly (plain text, unbounded)", async () => {
+    setColorMode("none");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    expect(formatIterationBanner(2)).toBe("=== Iteration 2 ===");
+  });
+
+  it("respects NO_COLOR — bold() degrades to plain text", async () => {
+    setColorMode("none");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    const banner = formatIterationBanner(1, 2);
+    expect(banner).not.toContain(ANSI_PREFIX);
+  });
+
+  it("contains ANSI bold code when color is forced", async () => {
+    setColorMode("force");
+    await resetColor();
+    const { formatIterationBanner } = await import("../../../../src/cli/commands/run.js");
+    const banner = formatIterationBanner(1, 2);
+    // bold() emits ESC[1m
+    expect(banner).toContain("\x1b[1m");
+  });
+});
+
 // ── loop-iteration boundary separator ────────────────────────────────────
 
 describe("formatLoopIterationSeparator", () => {
@@ -210,12 +268,12 @@ describe("formatLoopIterationSeparator", () => {
     await resetColor();
   });
 
-  it("contains magenta ANSI code when color is forced (TTY mode)", async () => {
+  it("contains yellow ANSI code when color is forced (TTY mode)", async () => {
     setColorMode("force");
     await resetColor();
     const { formatLoopIterationSeparator } = await import("../../../../src/cli/commands/run.js");
     const sep = formatLoopIterationSeparator();
-    expect(sep).toContain(MAGENTA);
+    expect(sep).toContain(YELLOW);
   });
 
   it("is 60 separator characters wide (excluding ANSI codes)", async () => {

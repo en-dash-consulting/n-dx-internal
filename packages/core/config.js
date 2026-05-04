@@ -900,6 +900,13 @@ Hench settings (.hench/config.json):
   hench.rollbackOnFailure  boolean   Revert uncommitted changes when a run fails (default: true)
                                      Set to false to keep changes in place on failure.
                                      The --no-rollback flag always overrides this for one run.
+  hench.autoCommit         boolean   Let the agent commit itself at the end of a run (default: false)
+                                     When false (default), hench stages changes and writes the
+                                     proposed commit message to .hench-commit-msg.txt, then prompts
+                                     you to approve before running 'git commit -F <file>'.
+                                     Set to true for unattended 'ndx work --loop' runs — the agent
+                                     runs 'git commit' directly so no approval prompt interrupts
+                                     the loop.
 
 Hench guard settings (security boundaries):
   hench.guard.blockedPaths       string[]  Glob patterns for blocked file paths
@@ -959,7 +966,7 @@ LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendo
   llm.codex.lightModel     string    Codex model for light-weight tasks (optional)
                                     When set, commands that explicitly opt into the
                                     light tier use this model.
-                                    Falls back to gpt-5.4mini if not set.
+                                    Falls back to gpt-5.4-mini if not set.
 
 Claude preflight error codes:
   NDX_CLAUDE_PREFLIGHT_NOT_INSTALLED  Claude CLI is not installed; install it before retrying

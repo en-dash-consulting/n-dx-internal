@@ -23,6 +23,13 @@
 // ---- Rex MCP server factory -------------------------------------------------
 export { createRexMcpServer } from "@n-dx/rex";
 
+// ---- Rex legacy PRD migration -----------------------------------------------
+export { ensureLegacyPrdMigrated } from "@n-dx/rex";
+export type { LegacyPrdMigrationResult } from "@n-dx/rex";
+
+// ---- Rex folder-tree storage path -------------------------------------------
+export { PRD_TREE_DIRNAME } from "@n-dx/rex";
+
 // ---- Rex schema version contract --------------------------------------------
 export { SCHEMA_VERSION, isCompatibleSchema } from "@n-dx/rex";
 
@@ -61,6 +68,18 @@ export { findNextTask, collectCompletedIds } from "@n-dx/rex";
 // ---- Rex timestamps ---------------------------------------------------------
 export { computeTimestampUpdates } from "@n-dx/rex";
 
+// ---- Rex per-item token rollup ----------------------------------------------
+// Only the symbols actively consumed by the web server route handler
+// are re-exported through the gateway. ItemTokenTuple, ItemRunTokens, and
+// ItemTokenAggregation live in rex's public API but are not (yet)
+// consumed by web — if a future route needs them, add the re-export here.
+export { aggregateItemTokenUsage } from "@n-dx/rex";
+export type { ItemTokenTotals } from "@n-dx/rex";
+
+// ---- Rex per-item duration rollup -------------------------------------------
+export { aggregateItemDurations } from "@n-dx/rex";
+export type { ItemDurationTotals } from "@n-dx/rex";
+
 // ---- Rex merge/consolidation ------------------------------------------------
 export { validateMerge, previewMerge, mergeItems } from "@n-dx/rex";
 
@@ -89,3 +108,9 @@ export { handleEditItem } from "@n-dx/rex";
 
 // ---- Rex proposal types (consumed by viewer analyze-panel) ------------------
 export type { Proposal, ProposalFeature, ProposalTask } from "@n-dx/rex";
+
+// ---- Rex Markdown serializer / parser (used by prd-io cache) ----------------
+export { serializeDocument, parseDocument } from "@n-dx/rex";
+
+// ---- Rex folder-tree parser (used by prd-io cache) --------------------------
+export { parseFolderTree } from "@n-dx/rex";

@@ -176,7 +176,7 @@ describe("hench → rex gateway contract", () => {
     "acknowledgeFinding",
   ];
 
-  const GATEWAY_CONSTANTS = ["SCHEMA_VERSION"];
+  const GATEWAY_CONSTANTS = ["SCHEMA_VERSION", "PRD_TREE_DIRNAME"];
 
   for (const name of GATEWAY_FUNCTIONS) {
     it(`re-exports "${name}" as a function`, async () => {
@@ -328,6 +328,7 @@ describe("web → rex gateway contract", () => {
 
   const GATEWAY_FUNCTIONS = [
     "createRexMcpServer",
+    "ensureLegacyPrdMigrated",
     "isCompatibleSchema",
     "findItem",
     "walkTree",
@@ -358,6 +359,9 @@ describe("web → rex gateway contract", () => {
     "isRootLevel",
     "isWorkItem",
     "handleEditItem",
+    "aggregateItemTokenUsage",
+    "aggregateItemDurations",
+    "parseFolderTree",
   ];
 
   const GATEWAY_CONSTANTS = [
@@ -367,6 +371,7 @@ describe("web → rex gateway contract", () => {
     "VALID_REQUIREMENT_CATEGORIES",
     "VALID_VALIDATION_TYPES",
     "CHILD_LEVEL",
+    "PRD_TREE_DIRNAME",
   ];
 
   for (const name of GATEWAY_FUNCTIONS) {
@@ -555,7 +560,7 @@ describe("gateway export auto-detection", () => {
         "findAutoCompletions", "collectRequirements", "validateAutomatedRequirements",
         "formatRequirementsValidation", "isRootLevel", "isWorkItem",
         "loadAcknowledged", "saveAcknowledged", "acknowledgeFinding"],
-      ...["SCHEMA_VERSION"],
+      ...["SCHEMA_VERSION", "PRD_TREE_DIRNAME"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));
@@ -623,7 +628,7 @@ describe("gateway export auto-detection", () => {
     const sourceExports = parseRuntimeExports(gwPath);
 
     const testedSymbols = new Set([
-      ...["createRexMcpServer", "isCompatibleSchema", "findItem", "walkTree",
+      ...["createRexMcpServer", "ensureLegacyPrdMigrated", "isCompatibleSchema", "findItem", "walkTree",
         "insertChild", "updateInTree", "removeFromTree", "computeStats",
         "collectAllIds", "findNextTask", "collectCompletedIds",
         "computeTimestampUpdates", "validateMerge", "previewMerge", "mergeItems",
@@ -632,10 +637,12 @@ describe("gateway export auto-detection", () => {
         "detectReorganizations", "applyProposals", "applyReshape",
         "reasonForReshape", "isPriority", "isItemLevel",
         "isRequirementCategory", "isValidationType", "isRootLevel", "isWorkItem",
-        "handleEditItem",
+        "handleEditItem", "aggregateItemTokenUsage", "aggregateItemDurations",
+        "serializeDocument", "parseDocument",
+        "parseFolderTree",
         "LEVEL_HIERARCHY", "VALID_STATUSES", "VALID_REQUIREMENT_CATEGORIES",
         "VALID_VALIDATION_TYPES", "CHILD_LEVEL"],
-      ...["SCHEMA_VERSION"],
+      ...["SCHEMA_VERSION", "PRD_TREE_DIRNAME"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));

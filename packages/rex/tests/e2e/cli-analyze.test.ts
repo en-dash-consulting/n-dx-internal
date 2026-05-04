@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, readFile, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm, readFile, writeFile, mkdir, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { readPRD } from "../helpers/rex-dir-test-support.js";
+import { PRD_TREE_DIRNAME } from "../../src/store/index.js";
 
 const cliPath = join(
   fileURLToPath(import.meta.url),
@@ -126,10 +128,78 @@ describe("Billing", () => {
     expect(output).toContain("items added to PRD");
 
     // Verify items in prd.json
-    const prd = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
+    const prd = readPRD(tmpDir);
     expect(prd.items.length).toBeGreaterThan(0);
+  });
+
+  it("folder tree item count matches PRD item count after --accept", async () => {
+    run(["init", tmpDir]);
+
+    await writeFile(
+      join(tmpDir, "spec.json"),
+      JSON.stringify([
+        {
+          epic: { title: "Auth" },
+          features: [
+            { title: "Login", tasks: [{ title: "Validate email" }, { title: "Rate limit" }] },
+            { title: "Signup", tasks: [{ title: "Create account" }] },
+          ],
+        },
+        {
+          epic: { title: "Dashboard" },
+          features: [
+            { title: "Charts", tasks: [{ title: "Render chart" }] },
+          ],
+        },
+      ]),
+    );
+
+    run(["analyze", "--file=spec.json", "--accept", tmpDir]);
+
+    // Count non-subtask items in prd.json
+    const prd = readPRD(tmpDir);
+    function countNonSubtasks(items: { level: string; children?: unknown[] }[]): number {
+      let count = 0;
+      for (const item of items) {
+        if (item.level !== "subtask") {
+          count++;
+          if (Array.isArray(item.children)) {
+            count += countNonSubtasks(item.children as { level: string; children?: unknown[] }[]);
+          }
+        }
+      }
+      return count;
+    }
+    const prdNonSubtaskCount = countNonSubtasks(prd.items);
+
+    // Count per-item markdown files in item directories. The serializer writes
+    // a title-named .md file per item (e.g. `epic_alpha.md`); legacy `index.md`
+    // is also accepted by the parser. Skip the tree root's own index.md stub
+    // (depth 0) which `rex init` creates as a human-readable scaffold. Count
+    // only title-named files, not index.md (which is a fallback for parser).
+    async function countItemFiles(dir: string, depth = 0): Promise<number> {
+      let count = 0;
+      try {
+        const entries = await readdir(dir);
+        for (const entry of entries) {
+          const entryPath = join(dir, entry);
+          const s = await stat(entryPath);
+          if (s.isDirectory()) {
+            count += await countItemFiles(entryPath, depth + 1);
+          } else if (entry.endsWith(".md") && entry !== "index.md" && depth > 0) {
+            count++;
+          }
+        }
+      } catch {
+        // directory doesn't exist
+      }
+      return count;
+    }
+    const treeRoot = join(tmpDir, ".rex", PRD_TREE_DIRNAME);
+    const treeIndexCount = await countItemFiles(treeRoot);
+
+    expect(treeIndexCount).toBe(prdNonSubtaskCount);
+    expect(treeIndexCount).toBeGreaterThan(0);
   });
 
   it("logs batch acceptance record to execution log", async () => {
@@ -470,9 +540,7 @@ describe("Cache", () => {
     expect(output).toContain("items added to PRD");
 
     // Verify items in prd.json (items are nested: epics → features → tasks)
-    const prd = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
+    const prd = readPRD(tmpDir);
     function collectTitles(items: { title: string; children?: unknown[] }[]): string[] {
       const result: string[] = [];
       for (const item of items) {

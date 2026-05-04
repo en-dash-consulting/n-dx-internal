@@ -16,8 +16,8 @@
 
 import { randomUUID } from "node:crypto";
 import type { PRDStore, SelectionExplanation } from "../../prd/rex-gateway.js";
-import { explainSelection, collectCompletedIds, findItem } from "../../prd/rex-gateway.js";
-import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief, TurnTokenUsage } from "../../schema/index.js";
+import { explainSelection, collectCompletedIds, findItem, PRD_TREE_DIRNAME } from "../../prd/rex-gateway.js";
+import type { HenchConfig, RunRecord, RunMemoryStats, TaskBrief, TurnTokenUsage, TestGateResult } from "../../schema/index.js";
 import { getCurrentHead, execShellCmd, execStdout } from "../../process/exec.js";
 import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";
@@ -27,8 +27,10 @@ import type { PromptEnvelope } from "../../prd/llm-gateway.js";
 import { saveRun } from "../../store/runs.js";
 import { persistRunLog } from "../../store/run-log.js";
 import { buildRunSummary } from "../analysis/summary.js";
+import { captureCommitChanges, extractPaths, formatChanges } from "../analysis/git-changed-files.js";
 import { collectReviewDiff, promptReview, revertChanges } from "../analysis/review.js";
 import { runPostTaskTests, runTestGate } from "../../tools/test-runner.js";
+import { resolveTestCommand } from "../../tools/test-command-resolver.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { section, subsection, stream, detail, info, getCapturedLines, resetCapturedLines } from "../../types/output.js";
 import { displayTaskInfo } from "./task-display.js";
@@ -36,6 +38,7 @@ import type { SelectionReason, PriorAttemptInfo } from "./task-display.js";
 import type { Heartbeat } from "./heartbeat.js";
 import { fetchCodexTokenUsage, validateRunTokensPostRun } from "../../quota/index.js";
 import { loadLLMConfig } from "../../store/project-config.js";
+import { validateTaskCompletion } from "./task-completion-gate.js";
 
 // ---------------------------------------------------------------------------
 // Display helpers
@@ -44,8 +47,8 @@ import { loadLLMConfig } from "../../store/project-config.js";
 /**
  * Shorten a model ID for stream-log labels by dropping numeric version
  * identifiers. Examples: "claude-sonnet-4-6" → "claude-sonnet",
- * "claude-haiku-4-20250414" → "claude-haiku", "gpt-5.1-codex-max" →
- * "gpt-codex-max". Falls back to the fallback label when model is empty.
+ * "claude-haiku-4-20250414" → "claude-haiku", "gpt-5.4-mini" →
+ * "gpt-mini". Falls back to the fallback label when model is empty.
  */
 export function formatModelLabel(model?: string, fallback = "Agent"): string {
   if (!model) return fallback;
@@ -72,6 +75,8 @@ export interface SharedLoopOptions {
   excludeTaskIds?: Set<string>;
   /** Restrict task selection to this epic (ID). */
   epicId?: string;
+  /** Only select tasks with at least one of these tags (e.g. ["self-heal"]). */
+  tags?: string[];
   /** Prior attempt history for the selected task (shown in task card). */
   priorAttempts?: PriorAttemptInfo;
   /** Run records for computing prior attempts when task is auto-selected. */
@@ -87,10 +92,23 @@ export interface SharedLoopOptions {
    */
   yes?: boolean;
   /**
+   * True when the run is in a non-interactive autonomous mode (--auto or
+   * --loop). Bypasses interactive prompts — including the commit-message
+   * approval gate — so unattended runs do not stall waiting for input.
+   */
+  autonomous?: boolean;
+  /**
    * Additional project context to append to the prompt (e.g. CONTEXT.md +
    * PRD status excerpt injected by the pair-programming command).
    */
   extraContext?: string;
+  /**
+   * 1-based ordinal of this run within the current `ndx work --loop`
+   * invocation. When set, the Agent Run banner uses the
+   * `#N … start` / `#N … end` format; when undefined (non-loop callers),
+   * the original banner is preserved.
+   */
+  runNumber?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -288,7 +306,7 @@ export interface InitRunOptions {
   taskTitle: string;
   model: string;
   henchDir: string;
-  /** LLM vendor for this run (e.g. "claude", "codex"). Captured in diagnostics. */
+  /** LLM vendor for this run (e.g. "claude", "codex"). Captured in diagnostics and run.vendor. */
   vendor?: string;
   /** Sandbox mode in effect (e.g. "workspace-write"). Captured in diagnostics. */
   sandbox?: string;
@@ -298,6 +316,8 @@ export interface InitRunOptions {
   parseMode?: string;
   /** Invocation context: "cli" for CLI invocation, "api" for HTTP/MCP. */
   invocationContext?: "cli" | "api";
+  /** Task weight / tier ("light" | "standard"). Used for task-weight-aware model selection. */
+  weight?: string;
 }
 
 /**
@@ -327,6 +347,8 @@ export async function initRunRecord(opts: InitRunOptions): Promise<{ run: RunRec
     toolCalls: [],
     model: opts.model,
     invocationContext: opts.invocationContext,
+    vendor: opts.vendor,
+    weight: opts.weight ?? "standard",
   };
 
   // Emit invocation context to the output stream for CLI and dashboard visibility
@@ -426,6 +448,97 @@ export async function runReviewGate(
   }
 
   return { rejected: false };
+}
+
+// ---------------------------------------------------------------------------
+// Test suite gate failure handler (mandatory full test validation)
+// ---------------------------------------------------------------------------
+
+export type TestGateFailureAction = "rerun" | "abort" | "skip";
+
+/**
+ * Handle test gate failure: display summary and prompt for user action.
+ * Offers three options: rerun tests, abort (skip commit), or skip gate via flag.
+ *
+ * Returns the selected action. When called, the gate has already failed
+ * (run.status was set to "failed" by the caller).
+ *
+ * Only prompts in interactive TTY mode; in CI/autonomous mode defaults to abort.
+ */
+async function promptTestGateFailure(
+  testGate: TestGateResult,
+  yes?: boolean,
+  autonomous?: boolean,
+): Promise<TestGateFailureAction> {
+  // In non-interactive mode (CI, --yes, --auto), default to abort
+  if (!process.stdin.isTTY || yes || autonomous) {
+    return "abort";
+  }
+
+  const failedPackages = testGate.packages
+    .filter((p) => !p.passed)
+    .map((p) => p.name)
+    .join(", ");
+  const packageCount = testGate.packages.length;
+  const failCount = packageCount - testGate.packages.filter((p) => p.passed).length;
+
+  info(`\n${failCount}/${packageCount} package(s) failed testing`);
+  detail(`Command: ${testGate.command}`);
+  detail(`Failed packages: ${failedPackages}`);
+
+  const question =
+    "[r]erun tests, [a]bort (revert & skip commit), or [s]kip gate (continue to commit)? [a] ";
+
+  try {
+    const answer = await new Promise<string>((resolve) => {
+      // Dynamically import readline at runtime
+      const { createInterface } = require("node:readline");
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+      // Suspend outer SIGINT handlers while the prompt is open
+      const savedListeners = process.listeners("SIGINT") as Array<(...args: unknown[]) => void>;
+      for (const listener of savedListeners) {
+        process.removeListener("SIGINT", listener);
+      }
+
+      let settled = false;
+      const onInterrupt = (): void => {
+        finish("a"); // Default to abort on Ctrl-C
+      };
+
+      const finish = (value: string): void => {
+        if (settled) return;
+        settled = true;
+        process.removeListener("SIGINT", onInterrupt);
+        rl.removeListener("SIGINT", onInterrupt);
+        rl.close();
+        // Restore outer SIGINT listeners
+        for (const listener of savedListeners) {
+          process.on("SIGINT", listener);
+        }
+        resolve(value);
+      };
+
+      process.on("SIGINT", onInterrupt);
+      rl.on("SIGINT", onInterrupt);
+
+      rl.question(`\n${question}`, (input: string) => {
+        finish(input.trim().toLowerCase() || "a");
+      });
+    });
+
+    switch (answer) {
+      case "r":
+        return "rerun";
+      case "s":
+        return "skip";
+      default:
+        return "abort";
+    }
+  } catch {
+    // On any error, default to abort
+    return "abort";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -562,6 +675,7 @@ export interface FinalizeRunOptions {
   run: RunRecord;
   henchDir: string;
   projectDir: string;
+  config: HenchConfig;
   testCommand?: string;
   heartbeat?: Heartbeat;
   memoryCtx?: MemoryContext;
@@ -578,6 +692,12 @@ export interface FinalizeRunOptions {
    */
   yes?: boolean;
   /**
+   * True when the run is in a non-interactive autonomous mode (--auto or
+   * --loop). Bypasses the interactive commit-message approval prompt so
+   * unattended runs do not stall waiting for input.
+   */
+  autonomous?: boolean;
+  /**
    * PRD store used to reset task status to pending on failure.
    * When provided, if the run fails and the task is still in_progress,
    * it is reset to pending so it reappears as actionable. This occurs
@@ -590,6 +710,11 @@ export interface FinalizeRunOptions {
    * commit message written by the agent and prompts the user to commit.
    */
   autoCommit?: boolean;
+  /**
+   * Skip the mandatory full test suite gate before commit.
+   * Default: false (gate is mandatory). Set via --skip-test-gate flag.
+   */
+  skipFullTestGate?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -617,19 +742,111 @@ async function listDirtyPaths(projectDir: string): Promise<string[]> {
 }
 
 /**
- * Ask the user to confirm rollback via stdin (TTY only).
- * Returns true when the user accepts (empty input or 'y'/'yes').
+ * Run an interactive y/n readline prompt with the outer SIGINT handlers
+ * temporarily suspended for the duration of the question.
+ *
+ * The run-loop in `run.ts` registers a SIGINT handler that calls
+ * `process.exit(1)` on a second Ctrl-C. Without suspension that handler
+ * would kill the process while the user is answering a rollback or
+ * commit prompt. This helper snapshots the existing SIGINT listeners,
+ * removes them while the readline is open, and restores them on exit.
+ *
+ * By default, a Ctrl-C received during the prompt is treated as "cancel
+ * cleanly — decline": the readline closes and the promise resolves with
+ * `false`. Rollback confirmation uses a stricter policy: the first
+ * Ctrl-C is absorbed with a visible hint, and a second Ctrl-C exits.
+ *
+ * @param question  The question to display (with trailing space).
+ * @returns         true on accept (empty input, 'y', 'yes');
+ *                  false on explicit decline or Ctrl-C cancellation.
  */
-async function promptRollbackConfirm(count: number): Promise<boolean> {
+interface AskYesNoOptions {
+  interruptMode?: "decline" | "hold-then-exit";
+}
+
+const ROLLBACK_INTERRUPT_HINT = "Press Ctrl+C again to abort the rollback prompt and exit.";
+
+async function askYesNoWithSuspendedSigint(
+  question: string,
+  options: AskYesNoOptions = {},
+): Promise<boolean> {
   const { createInterface } = await import("node:readline");
+  const interruptMode = options.interruptMode ?? "decline";
+
+  // Snapshot any existing SIGINT listeners — typically the run-loop's
+  // force-exit handler from run.ts — and remove them before opening the
+  // prompt so Ctrl-C does not bypass the question.
+  const savedListeners = process.listeners("SIGINT") as Array<(...args: unknown[]) => void>;
+  for (const listener of savedListeners) {
+    process.removeListener("SIGINT", listener);
+  }
+
   const rl = createInterface({ input: process.stdin, output: process.stdout });
+
   return new Promise<boolean>((resolve) => {
-    rl.question(`\nRoll back ${count} uncommitted file(s)? [Y/n] `, (answer) => {
+    let settled = false;
+    let interruptCount = 0;
+    let secondInterruptArmed = false;
+    const onInterrupt = (): void => {
+      if (interruptMode === "hold-then-exit") {
+        interruptCount++;
+        if (interruptCount === 1) {
+          info(`\n${ROLLBACK_INTERRUPT_HINT}`);
+          queueMicrotask(() => {
+            secondInterruptArmed = true;
+          });
+          return;
+        }
+        if (!secondInterruptArmed) {
+          return;
+        }
+
+        info("\nAborting rollback prompt.");
+        const exitProcess = process.exit as (code?: number) => void;
+        exitProcess(1);
+      }
+
+      finish(false);
+    };
+
+    const finish = (value: boolean): void => {
+      if (settled) return;
+      settled = true;
+      process.removeListener("SIGINT", onInterrupt);
+      rl.removeListener("SIGINT", onInterrupt);
       rl.close();
+      // Restore the outer SIGINT listeners exactly as they were so the
+      // run-loop reclaims ownership of Ctrl-C after the prompt closes.
+      for (const listener of savedListeners) {
+        process.on("SIGINT", listener);
+      }
+      resolve(value);
+    };
+
+    process.on("SIGINT", onInterrupt);
+    // Some terminals surface Ctrl-C via readline's own SIGINT event in
+    // TTY raw mode — listen on both surfaces so any delivery channel
+    // unblocks the prompt cleanly.
+    rl.on("SIGINT", onInterrupt);
+
+    rl.question(question, (answer) => {
       const trimmed = answer.trim().toLowerCase();
-      resolve(trimmed === "" || trimmed === "y" || trimmed === "yes");
+      finish(trimmed === "" || trimmed === "y" || trimmed === "yes");
     });
   });
+}
+
+/**
+ * Ask the user to confirm rollback via stdin (TTY only).
+ * Returns true when the user accepts (empty input or 'y'/'yes').
+ * The first Ctrl-C prints a hint and keeps the prompt open; a second
+ * Ctrl-C aborts the prompt and exits.
+ */
+async function promptRollbackConfirm(count: number): Promise<boolean> {
+  return askYesNoWithSuspendedSigint(
+    `\nRoll back ${count} uncommitted file(s)? [Y/n] `,
+    { interruptMode: "hold-then-exit" },
+  );
 }
 
 /**
@@ -671,15 +888,12 @@ async function performRollbackIfNeeded(projectDir: string, yes?: boolean): Promi
 const PENDING_COMMIT_FILE = ".hench-commit-msg.txt";
 
 async function promptCommitConfirm(fileCount: number): Promise<boolean> {
-  const { createInterface } = await import("node:readline");
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise<boolean>((resolve) => {
-    rl.question(`\nCommit ${fileCount} staged file(s) with the above message? [Y/n] `, (answer) => {
-      rl.close();
-      const trimmed = answer.trim().toLowerCase();
-      resolve(trimmed === "" || trimmed === "y" || trimmed === "yes");
-    });
-  });
+  // Uses the same SIGINT-suspension shim as the rollback prompt so a
+  // Ctrl-C while the user is answering does not trigger the outer
+  // run-loop's force-exit handler.
+  return askYesNoWithSuspendedSigint(
+    `\nCommit ${fileCount} staged file(s) with the above message? [Y/n] `,
+  );
 }
 
 async function countStagedFiles(projectDir: string): Promise<number> {
@@ -703,12 +917,22 @@ async function countStagedFiles(projectDir: string): Promise<number> {
  * - autoCommit is enabled (agent commits itself; no sentinel to process)
  * - the run did not complete successfully
  * - no sentinel file is present (agent skipped writing it)
+ *
+ * The approval prompt is bypassed (commit proceeds using the proposed
+ * message) when `yes` is true (--yes) or `autonomous` is true (--auto or
+ * --loop) so unattended runs do not stall waiting for input.
+ *
+ * Exported for direct unit-testing of the approval gate; callers in the
+ * lifecycle pipeline reach it via `finalizeRun`.
  */
-async function performCommitPromptIfNeeded(
+export async function performCommitPromptIfNeeded(
   run: RunRecord,
   projectDir: string,
   autoCommit: boolean,
   yes?: boolean,
+  autonomous?: boolean,
+  store?: PRDStore,
+  taskId?: string,
 ): Promise<void> {
   if (autoCommit || run.status !== "completed") return;
 
@@ -739,7 +963,11 @@ async function performCommitPromptIfNeeded(
   subsection("Proposed Commit");
   info(message);
 
-  const isInteractive = Boolean(process.stdin.isTTY) && !yes;
+  // Skip the approval prompt whenever the caller signalled non-interactive
+  // operation — --yes or any autonomous mode (--auto, --loop). The same flag
+  // state governs other autonomous behaviors (task autoselect, rollback), so
+  // the commit gate stays consistent with the rest of the unattended run.
+  const isInteractive = Boolean(process.stdin.isTTY) && !yes && !autonomous;
   let confirmed = true;
   if (isInteractive) {
     info("Tip: pass --yes to auto-confirm, or run 'ndx config hench.autoCommit true' to let the agent commit itself.");
@@ -752,12 +980,208 @@ async function performCommitPromptIfNeeded(
     return;
   }
 
+  // Task completion criteria gate: verify code-classified tasks have code file changes.
+  // This prevents false completions where the agent claims code work but only
+  // produced documentation or configuration changes.
+  if (run.status === "completed") {
+    const gateResult = validateTaskCompletion(run);
+    if (!gateResult.valid) {
+      // Reject completion: code-modifying tool calls made but no code file changes
+      run.status = "failed";
+      run.error = gateResult.reason;
+      info(`\n${gateResult.reason}`);
+      try { unlinkSync(msgPath); } catch { /* ignore */ }
+      return;
+    }
+  }
+
+  // Update PRD status and stage the change before committing.
+  // This ensures the status transition and code changes are in the same commit.
+  let oldStatus: string | undefined;
+  let newStatus: string | undefined;
+  if (store && taskId && run.status === "completed") {
+    try {
+      // Capture old status before updating
+      const existingItem = await store.getItem(taskId);
+      oldStatus = existingItem?.status;
+
+      // Update PRD status to "completed"
+      await toolRexUpdateStatus(store, taskId, { status: "completed" });
+      newStatus = "completed";
+
+      // Log the completion event
+      await toolRexAppendLog(store, taskId, {
+        event: "task_completed",
+        detail: run.summary,
+      });
+
+      // Stage the PRD store after the status update so code and task state
+      // land in the same commit. Prefer the current folder-tree store, with a
+      // legacy markdown fallback for older projects.
+      try {
+        const prdPaths = [
+          existsSync(join(projectDir, ".rex", PRD_TREE_DIRNAME)) ? join(".rex", PRD_TREE_DIRNAME) : undefined,
+          existsSync(join(projectDir, ".rex", "prd.md")) ? ".rex/prd.md" : undefined,
+        ].filter((p): p is string => Boolean(p));
+
+        for (const prdPath of prdPaths) {
+          await execStdout("git", ["add", prdPath], {
+            cwd: projectDir,
+            timeout: 10_000,
+          });
+        }
+        if (prdPaths.length > 0) {
+          detail(`Staged ${prdPaths.length} PRD path(s)`);
+        }
+      } catch (err) {
+        // Best-effort: if staging fails, proceed with commit anyway
+        // The status update has already been persisted to disk
+        detail(`Warning: could not stage PRD files: ${(err as Error).message}`);
+      }
+    } catch (err) {
+      // Best-effort: if PRD update fails, proceed with commit anyway
+      // This prevents a failed PRD update from blocking the entire commit flow
+      detail(`Warning: PRD status update failed: ${(err as Error).message}`);
+    }
+  }
+
+  // Append N-DX-Status trailer if status changed
+  if (oldStatus && newStatus && oldStatus !== newStatus && taskId) {
+    try {
+      const { writeFileSync } = await import("node:fs");
+      const currentMessage = readFileSync(msgPath, "utf-8");
+      // Git trailers are separated from the body by a blank line
+      const separator = currentMessage.endsWith("\n\n") || currentMessage.endsWith("\n") ? "\n" : "\n\n";
+      const trailer = `${separator}N-DX-Status: ${taskId} ${oldStatus} → ${newStatus}`;
+      writeFileSync(msgPath, currentMessage + trailer, "utf-8");
+    } catch (err) {
+      // Best-effort: if trailer append fails, proceed with commit anyway
+      detail(`Warning: could not add status trailer: ${(err as Error).message}`);
+    }
+  }
+
+  // Append N-DX authorship trailer with vendor, model, and run ID
+  try {
+    const { writeFileSync } = await import("node:fs");
+    const vendor = run.vendor ?? run.diagnostics?.vendor ?? "unknown";
+    const model = run.model ?? "unknown";
+    const runId = run.id;
+    const weight = run.weight && run.weight !== "standard" ? ` (${run.weight})` : "";
+
+    const currentMessage = readFileSync(msgPath, "utf-8");
+    // Git trailers are separated from the body by a blank line
+    const separator = currentMessage.endsWith("\n\n") || currentMessage.endsWith("\n") ? "\n" : "\n\n";
+    const authTrailer = `${separator}N-DX: ${vendor}/${model}${weight} · run ${runId}`;
+    writeFileSync(msgPath, currentMessage + authTrailer, "utf-8");
+  } catch (err) {
+    // Best-effort: if trailer append fails, proceed with commit anyway
+    detail(`Warning: could not add authorship trailer: ${(err as Error).message}`);
+  }
+
+  // Append N-DX-Item trailer with dashboard permalink
+  if (taskId) {
+    try {
+      const { writeFileSync } = await import("node:fs");
+      const { readFileSync: readConfigFile, existsSync: pathExists } = await import("node:fs");
+      const { join } = await import("node:path");
+
+      // Load project config to get public URL
+      let publicUrl = "http://localhost:3117"; // default fallback
+      try {
+        const configPath = join(projectDir, ".n-dx.json");
+        if (pathExists(configPath)) {
+          const configContent = readConfigFile(configPath, "utf-8");
+          const config = JSON.parse(configContent) as Record<string, unknown>;
+          const web = config["web"] as Record<string, unknown> | undefined;
+          if (web && typeof web.publicUrl === "string" && web.publicUrl) {
+            publicUrl = web.publicUrl;
+          }
+        }
+      } catch {
+        // Use default fallback if config read fails
+        detail("Warning: could not read project config for public URL, using default");
+      }
+
+      // Build the N-DX-Item trailer URL
+      const itemUrl = `${publicUrl.replace(/\/$/, "")}/#/rex/item/${taskId}`;
+      const currentMessage = readFileSync(msgPath, "utf-8");
+      // Git trailers are separated from the body by a blank line
+      const separator = currentMessage.endsWith("\n\n") || currentMessage.endsWith("\n") ? "\n" : "\n\n";
+      const itemTrailer = `${separator}N-DX-Item: ${itemUrl}`;
+      writeFileSync(msgPath, currentMessage + itemTrailer, "utf-8");
+    } catch (err) {
+      // Best-effort: if trailer append fails, proceed with commit anyway
+      detail(`Warning: could not add item permalink trailer: ${(err as Error).message}`);
+    }
+  }
+
   try {
     await execStdout("git", ["commit", "-F", PENDING_COMMIT_FILE], {
       cwd: projectDir,
       timeout: 30_000,
     });
     info(`Commit created — ${stagedCount} file(s).`);
+
+    // Capture commit attribution and changed files after successful commit
+    if (store && taskId && run.status === "completed") {
+      try {
+        // Get the commit SHA
+        const shaOutput = await execStdout("git", ["rev-parse", "HEAD"], {
+          cwd: projectDir,
+          timeout: 10_000,
+        });
+        const sha = shaOutput.trim();
+
+        // Capture changed files from this commit using git diff-tree
+        // This provides the authoritative, deterministic list of what was actually committed
+        try {
+          const changes = await captureCommitChanges(sha, projectDir);
+          if (run.structuredSummary && changes.length > 0) {
+            // Update filesChanged with the paths
+            run.structuredSummary.filesChanged = extractPaths(changes);
+            run.structuredSummary.counts.filesChanged = changes.length;
+            // Store the detailed status information
+            run.structuredSummary.fileChangesWithStatus = formatChanges(changes);
+            detail(`Captured ${changes.length} file change(s) from commit ${sha.slice(0, 7)}`);
+          }
+        } catch (err) {
+          // Best-effort: if git diff-tree fails, proceed with attribution
+          detail(`Warning: could not capture changed files: ${(err as Error).message}`);
+        }
+
+        // Get commit metadata: hash, timestamp, author, email
+        const format = "%H%n%cI%n%an%n%ae";
+        const metaOutput = await execStdout("git", ["log", "-1", `--format=${format}`, sha], {
+          cwd: projectDir,
+          timeout: 10_000,
+        });
+        const lines = metaOutput.trim().split("\n");
+        if (lines.length >= 4) {
+          const hash = lines[0];
+          const timestamp = lines[1];
+          const author = lines[2];
+          const authorEmail = lines[3];
+
+          // Update PRD item with commit attribution (append to commits array)
+          const item = await store.getItem(taskId);
+          if (item) {
+            const existing = item.commits ?? [];
+            // Check if this commit is already recorded (idempotent)
+            if (!existing.some((c) => c.hash === hash)) {
+              const updatedCommits = [
+                ...existing,
+                { hash, author, authorEmail, timestamp },
+              ];
+              await store.updateItem(taskId, { commits: updatedCommits });
+              detail(`Attribution: recorded commit ${hash.slice(0, 7)}`);
+            }
+          }
+        }
+      } catch (err) {
+        // Best-effort: commit attribution failure doesn't block commit flow
+        detail(`Warning: could not record commit attribution: ${(err as Error).message}`);
+      }
+    }
   } catch (err) {
     info(`Commit failed: ${(err as Error).message}`);
   } finally {
@@ -825,7 +1249,7 @@ export function deriveTokenDiagnosticStatus(turns: TurnTokenUsage[]): "complete"
  * and persist. Called at the end of both loops.
  */
 export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
-  const { run, henchDir, projectDir, testCommand, heartbeat, memoryCtx, selfHeal } = opts;
+  const { run, henchDir, projectDir, config, testCommand, heartbeat, memoryCtx, selfHeal, yes, autonomous, skipFullTestGate } = opts;
 
   run.structuredSummary = buildRunSummary(run.toolCalls);
 
@@ -881,13 +1305,13 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
     }
   }
 
+  // Discover changed files for the test gate.
   // When the agent loop produced no tool call records (e.g. Codex CLI, which
   // emits verbose text rather than structured tool events), fall back to
   // `git diff --name-only HEAD` to discover which files were actually changed.
-  // This ensures the self-heal test gate runs even for vendors that do not
-  // emit structured tool events.  The check is intentionally vendor-agnostic:
-  // it activates whenever toolCalls is empty, regardless of which vendor ran.
-  if (selfHeal && run.structuredSummary && run.toolCalls.length === 0) {
+  // This ensures the test gate runs even for vendors that do not emit
+  // structured tool events. The check is vendor-agnostic and runs for all modes.
+  if (run.structuredSummary && run.toolCalls.length === 0) {
     try {
       const { stdout } = await execShellCmd("git diff --name-only HEAD", {
         cwd: projectDir,
@@ -907,40 +1331,103 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
     }
   }
 
-  // Run test suite gate in self-heal mode (mandatory full test validation)
-  if (selfHeal && run.structuredSummary) {
-    subsection("Test Suite Gate");
-    const testGate = await runTestGate({
-      projectDir,
-      filesChanged: run.structuredSummary.filesChanged,
-    });
+  // Full test suite gate (mandatory before commit, unless skipped via flag).
+  // Runs whenever the run completed successfully and gate is not explicitly skipped.
+  // On failure, prompts for rerun/abort/skip actions with interactive feedback.
+  let testGateSkipped = false;
+  let resolvedTestCommand: string | undefined;
 
-    run.testGate = testGate;
+  if (run.status === "completed" && !skipFullTestGate && run.structuredSummary) {
+    // Resolve test command first (before attempting gate)
+    // This will prompt the user if no command is configured
+    try {
+      const resolution = await resolveTestCommand(
+        {
+          projectDir,
+          henchDir,
+          config,
+        },
+        autonomous,
+      );
+      resolvedTestCommand = resolution.command;
 
-    if (testGate.ran) {
-      const packageCount = testGate.packages.length;
-      const passCount = testGate.packages.filter((p) => p.passed).length;
-
-      if (testGate.passed) {
-        stream("Test Gate", `✓ All ${packageCount} package(s) passed`);
-        if (testGate.totalDurationMs != null) {
-          detail(`Elapsed: ${formatDurationMs(testGate.totalDurationMs)}`);
-        }
-      } else {
-        // Mark run as failed to trigger remediation loop
-        run.status = "failed";
-        const failedPackages = testGate.packages.filter((p) => !p.passed).map((p) => p.name);
-        run.error = `Test gate failed: ${failedPackages.join(", ")}`;
-        stream("Test Gate", `✗ ${packageCount - passCount}/${packageCount} package(s) failed`);
-
-        // Show failure details from first failed package
-        const firstFailure = testGate.packages.find((p) => p.failureOutput);
-        if (firstFailure?.failureOutput) {
-          detail(firstFailure.failureOutput);
-        }
+      if (resolution.persisted) {
+        detail(`Test command persisted to config: ${resolution.command}`);
+      } else if (resolution.source !== "config") {
+        detail(`Using test command from ${resolution.source}: ${resolution.command}`);
       }
-    } else if (testGate.skipReason) {
-      detail(`Skipped: ${testGate.skipReason}`);
+    } catch (err) {
+      // Test command resolution failed — mark run as failed and skip gate
+      run.status = "failed";
+      run.error = `Test command resolution failed: ${(err as Error).message}`;
+      info(`\n${run.error}`);
+    }
+
+    // Rerun loop: gate can fail and be retried multiple times
+    let testGateAttempt = 0;
+    let gateComplete = false;
+
+    while (!gateComplete && testGateAttempt < 5 && run.status === "completed") {
+      testGateAttempt++;
+      subsection(`Full Test Suite Gate${testGateAttempt > 1 ? ` (attempt ${testGateAttempt})` : ""}`);
+
+      const testGate = await runTestGate({
+        projectDir,
+        filesChanged: run.structuredSummary.filesChanged,
+        testCommand: resolvedTestCommand,
+      });
+
+      run.testGate = testGate;
+
+      if (testGate.ran) {
+        const packageCount = testGate.packages.length;
+        const passCount = testGate.packages.filter((p) => p.passed).length;
+
+        if (testGate.passed) {
+          stream("Test Gate", `✓ All ${packageCount} package(s) passed`);
+          if (testGate.totalDurationMs != null) {
+            detail(`Elapsed: ${formatDurationMs(testGate.totalDurationMs)}`);
+          }
+          gateComplete = true;
+        } else {
+          // Gate failed — prompt for action
+          const failedPackages = testGate.packages.filter((p) => !p.passed).map((p) => p.name);
+          stream("Test Gate", `✗ ${packageCount - passCount}/${packageCount} package(s) failed`);
+
+          // Show failure details from first failed package
+          const firstFailure = testGate.packages.find((p) => p.failureOutput);
+          if (firstFailure?.failureOutput) {
+            detail(firstFailure.failureOutput);
+          }
+
+          // Prompt for action
+          const action = await promptTestGateFailure(testGate, yes, autonomous);
+
+          if (action === "rerun") {
+            // Loop will retry
+            detail("Retrying test gate...");
+          } else if (action === "skip") {
+            // User chose to skip gate and continue to commit
+            testGateSkipped = true;
+            stream("Test Gate", "Skipped by user");
+            gateComplete = true;
+          } else {
+            // "abort" — mark run as failed and proceed to rollback
+            run.status = "failed";
+            run.error = `Test gate failed: ${failedPackages.join(", ")}`;
+            gateComplete = true;
+          }
+        }
+      } else if (testGate.skipReason) {
+        detail(`Skipped: ${testGate.skipReason}`);
+        gateComplete = true;
+      }
+    }
+
+    if (testGateAttempt >= 5) {
+      info("\nTest gate max attempts reached");
+      run.status = "failed";
+      run.error = "Test gate max retry attempts exceeded";
     }
   }
 
@@ -958,7 +1445,19 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
 
   // Prompt the user to commit staged changes using the agent's proposed message.
   // No-op when autoCommit is true (agent committed itself) or on failure paths.
-  await performCommitPromptIfNeeded(run, projectDir, opts.autoCommit === true, opts.yes);
+  // The approval prompt is bypassed in autonomous mode (--auto, --loop) so
+  // unattended runs do not stall waiting for user input.
+  // The store and taskId are passed so that the PRD status transition can be
+  // staged alongside code changes and included in the same commit.
+  await performCommitPromptIfNeeded(
+    run,
+    projectDir,
+    opts.autoCommit === true,
+    opts.yes,
+    opts.autonomous,
+    opts.store,
+    run.taskId,
+  );
 
   // Rollback uncommitted changes when the run failed (unless suppressed).
   // Runs after test gates so the working tree reflects the agent's final state.

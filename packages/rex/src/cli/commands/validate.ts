@@ -8,11 +8,14 @@ import {
   resolveEpiclessFeatures,
   applyEpiclessResolutions,
 } from "./validate-interactive.js";
-import { resolveStore } from "../../store/index.js";
+import { resolveStore, ensureLegacyPrdMigrated, LegacyPrdMigrationError } from "../../store/index.js";
+import { loadItemsPreferFolderTree } from "./folder-tree-sync.js";
 import { REX_DIR } from "./constants.js";
 import { info, result } from "../output.js";
 import { green, yellow, red } from "@n-dx/llm-client";
+import { emitMigrationNotification } from "../migration-notification.js";
 import type { PRDDocument } from "../../schema/index.js";
+import type { PRDStore } from "../../store/index.js";
 import type { PromptFn } from "./validate-interactive.js";
 
 interface CheckResult {
@@ -37,8 +40,23 @@ export async function cmdValidate(
   flags: Record<string, string>,
   options?: ValidateOptions,
 ): Promise<void> {
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before reading PRD.
+  // A migration error (typically a malformed legacy prd.json) is surfaced as a
+  // failed PRD schema check rather than an uncaught throw — the rest of the
+  // validate pipeline still runs against whatever else is on disk.
   const rexDir = join(dir, REX_DIR);
   const checks: CheckResult[] = [];
+  let migrationError: LegacyPrdMigrationError | null = null;
+  let migrationResult;
+  try {
+    migrationResult = await ensureLegacyPrdMigrated(dir);
+  } catch (err) {
+    if (err instanceof LegacyPrdMigrationError) {
+      migrationError = err;
+    } else {
+      throw err;
+    }
+  }
 
   // Check config.json schema
   try {
@@ -62,28 +80,54 @@ export async function cmdValidate(
     });
   }
 
-  // Check prd.json schema
+  // Check PRD schema (folder-tree is authoritative; legacy migration ran above).
+  // A migration failure short-circuits this check with the migration error.
   let doc: PRDDocument | null = null;
-  try {
-    const raw = await readFile(join(rexDir, "prd.json"), "utf-8");
-    const parsed = JSON.parse(raw);
-    const result = validateDocument(parsed);
-    if (result.ok) {
-      doc = result.data as PRDDocument;
-      checks.push({ name: "prd.json schema", pass: true, errors: [] });
-    } else {
+  let store: PRDStore | null = null;
+  if (migrationError !== null) {
+    checks.push({
+      name: "PRD schema",
+      pass: false,
+      errors: [migrationError.message],
+    });
+  } else {
+    try {
+      store = await resolveStore(rexDir);
+
+      // Emit migration notification to CLI and execution log
+      if (migrationResult) {
+        await emitMigrationNotification(migrationResult, flags, (entry) => store!.appendLog(entry));
+      }
+
+      const loaded = await store.loadDocument();
+      const result = validateDocument(loaded);
+      if (result.ok) {
+        doc = result.data as PRDDocument;
+        checks.push({ name: "PRD schema", pass: true, errors: [] });
+      } else {
+        checks.push({
+          name: "PRD schema",
+          pass: false,
+          errors: result.errors.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+        });
+      }
+    } catch (err) {
       checks.push({
-        name: "prd.json schema",
+        name: "PRD schema",
         pass: false,
-        errors: result.errors.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+        errors: [(err as Error).message],
       });
     }
-  } catch (err) {
-    checks.push({
-      name: "prd.json schema",
-      pass: false,
-      errors: [(err as Error).message],
-    });
+  }
+
+  // Override with folder-tree items for structural checks.
+  // Falls back to the Markdown-loaded items on any error so existing checks still run.
+  if (doc && store) {
+    try {
+      doc.items = await loadItemsPreferFolderTree(rexDir, store);
+    } catch {
+      // Tree load failed: structural checks will use items already in doc.
+    }
   }
 
   // Check schema version compatibility
@@ -247,9 +291,9 @@ export async function cmdValidate(
     if (actionable.length > 0) {
       const mutated = applyEpiclessResolutions(doc!, resolutions);
       if (mutated > 0) {
-        const store = await resolveStore(rexDir);
-        await store.saveDocument(doc!);
-        await store.appendLog({
+        const saveStore = store ?? await resolveStore(rexDir);
+        await saveStore.saveDocument(doc!);
+        await saveStore.appendLog({
           timestamp: new Date().toISOString(),
           event: "validate_interactive_fix",
           detail: `Resolved ${mutated} epicless feature${mutated === 1 ? "" : "s"} during interactive validation`,

@@ -24,7 +24,19 @@ import { detectReorganizations } from "../core/reorganize.js";
 import { applyProposals } from "../core/reorganize-executor.js";
 import { computeHealthScore } from "../core/health.js";
 import { computeFacetDistribution, suggestFacets, getItemFacets } from "../core/facets.js";
-import { TOOL_VERSION } from "./commands/constants.js";
+import {
+  aggregateItemTokenUsage,
+  readRunTokensFromHench,
+  type ItemTokenTotals,
+} from "../core/item-token-rollup.js";
+import {
+  aggregateItemDurations,
+  type ItemDurationTotals,
+} from "../core/item-duration-rollup.js";
+import { join } from "node:path";
+import { TOOL_VERSION, REX_DIR } from "./commands/constants.js";
+import { FileStore, resolvePRDFile } from "../store/index.js";
+import { syncFolderTree } from "./commands/folder-tree-sync.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../schema/index.js";
 import type { PRDStore } from "../store/index.js";
 
@@ -32,12 +44,14 @@ import type { PRDStore } from "../store/index.js";
 type McpResult = {
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
+  warning?: string; // One-time warning (e.g., for migration notifications)
 };
 
-function textResult(text: string, isError = false): McpResult {
+function textResult(text: string, isError = false, warning?: string): McpResult {
   return {
     content: [{ type: "text" as const, text }],
     ...(isError ? { isError: true } : {}),
+    ...(warning ? { warning } : {}),
   };
 }
 
@@ -51,6 +65,8 @@ export async function handleGetPrdStatus(store: PRDStore): Promise<McpResult> {
       id: item.id,
       title: item.title,
       status: item.status,
+      branch: item.branch ?? null,
+      sourceFile: item.sourceFile ?? null,
       stats: item.children ? computeStats(item.children) : null,
     }));
     return textResult(JSON.stringify({ title: doc.title, overall, epics }, null, 2));
@@ -59,11 +75,15 @@ export async function handleGetPrdStatus(store: PRDStore): Promise<McpResult> {
   }
 }
 
-export async function handleGetNextTask(store: PRDStore): Promise<McpResult> {
+export async function handleGetNextTask(
+  store: PRDStore,
+  args?: { tags?: string[] },
+): Promise<McpResult> {
   try {
     const doc = await store.loadDocument();
     const completedIds = collectCompletedIds(doc.items);
-    const result = findNextTask(doc.items, completedIds);
+    const options = args?.tags?.length ? { tags: args.tags } : undefined;
+    const result = findNextTask(doc.items, completedIds, options);
     if (!result) {
       return textResult(JSON.stringify({ next: null, message: "No actionable tasks remaining" }));
     }
@@ -90,6 +110,7 @@ export async function handleGetNextTask(store: PRDStore): Promise<McpResult> {
 
 export async function handleUpdateTaskStatus(
   store: PRDStore,
+  projectDir: string,
   args: { id: string; status: string; force?: boolean; reason?: string; resolutionType?: string; resolutionDetail?: string },
 ): Promise<McpResult> {
   try {
@@ -120,6 +141,8 @@ export async function handleUpdateTaskStatus(
         detail: `Deleted ${existing.level}: ${existing.title} (${deletedIds.length} item(s) removed)`,
       });
 
+      await syncFolderTree(join(projectDir, REX_DIR), store);
+
       return textResult(
         JSON.stringify({
           id,
@@ -142,7 +165,7 @@ export async function handleUpdateTaskStatus(
     if (status === "completed" && resolutionDetail) {
       statusUpdates.resolutionDetail = resolutionDetail;
     }
-    await store.updateItem(id, statusUpdates);
+    await store.updateItem(id, statusUpdates, { applyAttribution: true, projectDir });
     await store.appendLog({
       timestamp: new Date().toISOString(),
       event: "status_changed",
@@ -168,7 +191,7 @@ export async function handleUpdateTaskStatus(
         await store.updateItem(item.id, {
           status: "completed" as ItemStatus,
           ...parentTsUpdates,
-        });
+        }, { applyAttribution: true, projectDir });
         await store.appendLog({
           timestamp: new Date().toISOString(),
           event: "auto_completed",
@@ -178,6 +201,8 @@ export async function handleUpdateTaskStatus(
         autoCompleted.push(item);
       }
     }
+
+    await syncFolderTree(join(projectDir, REX_DIR), store);
 
     return textResult(
       JSON.stringify({
@@ -195,6 +220,8 @@ export async function handleUpdateTaskStatus(
 
 export async function handleAddItem(
   store: PRDStore,
+  projectDir: string,
+  rexDir: string,
   args: {
     title: string;
     level: string;
@@ -208,6 +235,11 @@ export async function handleAddItem(
   },
 ): Promise<McpResult> {
   try {
+    if (!args.parentId && store instanceof FileStore) {
+      const resolution = await resolvePRDFile(rexDir, projectDir);
+      store.setCurrentBranchFile(resolution.filename);
+    }
+
     const id = randomUUID();
     const item: PRDItem = {
       id,
@@ -235,10 +267,13 @@ export async function handleAddItem(
       }
     }
 
-    await store.addItem(item, args.parentId);
+    await store.addItem(item, args.parentId, { applyAttribution: true, projectDir });
 
     // Reset completed ancestors when adding under a completed parent
-    const { resetItems } = await cascadeParentReset(store, args.parentId);
+    const { resetItems } = await cascadeParentReset(store, args.parentId, {
+      applyAttribution: true,
+      projectDir,
+    });
 
     await store.appendLog({
       timestamp: new Date().toISOString(),
@@ -246,6 +281,8 @@ export async function handleAddItem(
       itemId: id,
       detail: `Added ${args.level}: ${args.title}`,
     });
+
+    await syncFolderTree(rexDir, store);
 
     return textResult(JSON.stringify({ id, level: args.level, title: args.title, resetItems }));
   } catch (err) {
@@ -255,6 +292,7 @@ export async function handleAddItem(
 
 export async function handleMoveItem(
   store: PRDStore,
+  rexDir: string,
   args: { id: string; parentId?: string },
 ): Promise<McpResult> {
   try {
@@ -281,6 +319,8 @@ export async function handleMoveItem(
       detail: `Moved ${result.item.level} "${result.item.title}" from ${fromLabel} to ${toLabel}`,
     });
 
+    await syncFolderTree(rexDir, store);
+
     return textResult(
       JSON.stringify({
         id,
@@ -297,6 +337,7 @@ export async function handleMoveItem(
 
 export async function handleMergeItems(
   store: PRDStore,
+  rexDir: string,
   args: {
     sourceIds: string[];
     targetId: string;
@@ -336,6 +377,8 @@ export async function handleMergeItems(
       itemId: targetId,
       detail: `Merged ${sourceIds.length} items into "${targetId}". Absorbed: ${absorbedTitles}. ${result.reparentedChildIds.length} children reparented, ${result.rewrittenDependencyCount} dependency references rewritten.`,
     });
+
+    await syncFolderTree(rexDir, store);
 
     return textResult(JSON.stringify(result, null, 2));
   } catch (err) {
@@ -606,6 +649,7 @@ export async function handleFacets(
 
 export async function handleEditItem(
   store: PRDStore,
+  projectDir: string,
   args: {
     id: string;
     title?: string;
@@ -669,7 +713,7 @@ export async function handleEditItem(
       );
     }
 
-    await store.updateItem(args.id, updates);
+    await store.updateItem(args.id, updates, { applyAttribution: true, projectDir });
 
     const changedFields = Object.keys(updates);
     await store.appendLog({
@@ -679,6 +723,8 @@ export async function handleEditItem(
       detail: `Edited ${existing.level} "${existing.title}": ${changedFields.join(", ")}`,
     });
 
+    await syncFolderTree(join(projectDir, REX_DIR), store);
+
     const updated = await store.getItem(args.id);
     return textResult(
       JSON.stringify({
@@ -686,6 +732,93 @@ export async function handleEditItem(
         updatedFields: changedFields,
         item: updated,
       }, null, 2),
+    );
+  } catch (err) {
+    return textResult(`Error: ${(err as Error).message}`, true);
+  }
+}
+
+/**
+ * Roll up hench run token totals and work durations across every PRD item.
+ *
+ * Returns a combined `{ tokens, duration }` record for every item in the
+ * tree, where `tokens` is the token-rollup triple (self/descendants/total
+ * plus runCount) and `duration` is `{ totalMs, runningMs, isRunning }`.
+ * Runs whose `itemId` is no longer in the PRD (archived, pruned, deleted)
+ * are reported as `orphans`.
+ *
+ * Duration fields update on each call based on the wall clock; completed
+ * subtrees return stable `totalMs` values.
+ *
+ * If `id` is provided, the response is narrowed to that single item.
+ */
+export async function handleGetTokenUsage(
+  store: PRDStore,
+  projectDir: string,
+  args: { id?: string } = {},
+): Promise<McpResult> {
+  try {
+    const doc = await store.loadDocument();
+    const runs = await readRunTokensFromHench(projectDir);
+    const { totals, orphans } = aggregateItemTokenUsage(doc.items, runs);
+    const { durations } = aggregateItemDurations(doc.items);
+
+    const emptyDuration: ItemDurationTotals = {
+      totalMs: 0,
+      runningMs: 0,
+      isRunning: false,
+    };
+
+    if (args.id) {
+      const t = totals.get(args.id);
+      if (!t) {
+        return textResult(
+          `Item "${args.id}" not found. Use get_prd_status to see available items.`,
+          true,
+        );
+      }
+      const d = durations.get(args.id) ?? emptyDuration;
+      return textResult(
+        JSON.stringify(
+          { id: args.id, tokens: t, duration: d },
+          null,
+          2,
+        ),
+      );
+    }
+
+    const items: Array<{
+      id: string;
+      tokens: ItemTokenTotals;
+      duration: ItemDurationTotals;
+    }> = [];
+    for (const [id, t] of totals) {
+      items.push({ id, tokens: t, duration: durations.get(id) ?? emptyDuration });
+    }
+
+    const orphanTotal = orphans.reduce(
+      (acc, o) => ({
+        input: acc.input + o.tokens.input,
+        output: acc.output + o.tokens.output,
+        cached: acc.cached + o.tokens.cached,
+        total: acc.total + o.tokens.total,
+      }),
+      { input: 0, output: 0, cached: 0, total: 0 },
+    );
+
+    return textResult(
+      JSON.stringify(
+        {
+          items,
+          orphans: {
+            count: orphans.length,
+            totals: orphanTotal,
+            runs: orphans,
+          },
+        },
+        null,
+        2,
+      ),
     );
   } catch (err) {
     return textResult(`Error: ${(err as Error).message}`, true);

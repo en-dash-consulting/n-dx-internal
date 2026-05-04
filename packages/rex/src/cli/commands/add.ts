@@ -1,13 +1,22 @@
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { resolveStore } from "../../store/index.js";
+import {
+  resolveStore,
+  FileStore,
+  resolvePRDFile,
+  resolveGitBranch,
+  ensureLegacyPrdMigrated,
+} from "../../store/index.js";
 import { LEVEL_HIERARCHY, CHILD_LEVEL, isItemLevel } from "../../schema/index.js";
 import { findItem } from "../../core/tree.js";
 import { validateDAG } from "../../core/dag.js";
 import { REX_DIR } from "./constants.js";
+import { syncFolderTree } from "./folder-tree-sync.js";
 import { cascadeParentReset } from "../../core/parent-reset.js";
 import { CLIError } from "../errors.js";
 import { info, result } from "../output.js";
+import { emitMigrationNotification } from "../migration-notification.js";
+import { getFolderTreePath } from "../folder-tree-path.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../../schema/index.js";
 
 export async function cmdAdd(
@@ -15,6 +24,9 @@ export async function cmdAdd(
   level: string | undefined,
   flags: Record<string, string>,
 ): Promise<void> {
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before writing PRD
+  const migrationResult = await ensureLegacyPrdMigrated(dir);
+
   const title = flags.title;
   if (!title) {
     throw new CLIError(
@@ -25,6 +37,20 @@ export async function cmdAdd(
 
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+
+  // Emit migration notification to CLI and execution log
+  await emitMigrationNotification(migrationResult, flags, (entry) => store.appendLog(entry));
+
+  // Ensure the current branch's PRD file exists and is the write target.
+  // resolveStore does a read-only lookup; resolvePRDFile creates the file if needed.
+  if (store instanceof FileStore) {
+    const branch = resolveGitBranch(dir);
+    if (branch !== "unknown") {
+      const resolution = await resolvePRDFile(rexDir, dir);
+      store.setCurrentBranchFile(resolution.filename);
+    }
+  }
+
   const doc = await store.loadDocument();
 
   const parentId = flags.parent;
@@ -125,10 +151,13 @@ export async function cmdAdd(
     }
   }
 
-  await store.addItem(item, parentId);
+  await store.addItem(item, parentId, { applyAttribution: true, projectDir: dir });
 
   // Reset completed ancestors when adding under a completed parent
-  const { resetItems } = await cascadeParentReset(store, parentId);
+  const { resetItems } = await cascadeParentReset(store, parentId, {
+    applyAttribution: true,
+    projectDir: dir,
+  });
 
   // Log the addition
   await store.appendLog({
@@ -138,9 +167,25 @@ export async function cmdAdd(
     detail: `Added ${resolvedLevel}: ${title}`,
   });
 
+  // Persist the updated tree to the folder structure.
+  await syncFolderTree(rexDir, store);
+
+  // Compute the folder-tree path where the item was written.
+  const updatedDoc = await store.loadDocument();
+  const folderTreePath = getFolderTreePath(updatedDoc.items, id);
+
   if (flags.format === "json") {
-    result(JSON.stringify({ id, level: resolvedLevel, title, resetItems }, null, 2));
+    result(
+      JSON.stringify(
+        { id, level: resolvedLevel, title, resetItems, ...(folderTreePath ? { folderTreePath } : {}) },
+        null,
+        2,
+      ),
+    );
   } else {
+    if (folderTreePath) {
+      result(`Added to: ${folderTreePath}`);
+    }
     result(`Created ${resolvedLevel}: ${title}`);
     result(`  ID: ${id}`);
     for (const ri of resetItems) {

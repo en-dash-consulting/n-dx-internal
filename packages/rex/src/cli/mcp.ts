@@ -2,9 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { join } from "node:path";
-import { resolveStore, resolveRemoteStore, SyncEngine } from "../store/index.js";
+import { resolveStore, resolveRemoteStore, SyncEngine, ensureLegacyPrdMigrated } from "../store/index.js";
 import { REX_DIR, TOOL_VERSION } from "./commands/constants.js";
 import { getAllLevels } from "../schema/index.js";
+import { formatMigrationBanner, getMigrationMcpWarning } from "./migration-notification.js";
 import {
   handleGetPrdStatus,
   handleGetNextTask,
@@ -22,6 +23,7 @@ import {
   handleHealth,
   handleFacets,
   handleEditItem,
+  handleGetTokenUsage,
 } from "./mcp-tools.js";
 
 /**
@@ -43,6 +45,17 @@ import {
  */
 export async function createRexMcpServer(dir: string): Promise<McpServer> {
   const rexDir = join(dir, REX_DIR);
+
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before any PRD operations
+  const migrationResult = await ensureLegacyPrdMigrated(dir);
+  if (migrationResult.migrated) {
+    const banner = formatMigrationBanner(
+      migrationResult.backupPath ?? "(unknown)",
+      migrationResult.itemCount ?? 0,
+    );
+    console.error(banner);
+  }
+
   const store = await resolveStore(rexDir);
 
   const server = new McpServer({
@@ -50,13 +63,39 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     version: TOOL_VERSION,
   });
 
+  // Store migration warning for first tool call injection
+  const migrationWarning = migrationResult.migrated
+    ? getMigrationMcpWarning(migrationResult)
+    : undefined;
+  let migrationWarningEmitted = false;
+
+  // Helper to inject migration warning into first tool call
+  const withMigrationWarning = <T extends any[], R extends { warning?: string }>(
+    handler: (...args: T) => Promise<R>,
+  ): ((...args: T) => Promise<R>) => {
+    return async (...args: T): Promise<R> => {
+      const result = await handler(...args);
+      if (migrationWarning && !migrationWarningEmitted) {
+        migrationWarningEmitted = true;
+        result.warning = migrationWarning;
+      }
+      return result;
+    };
+  };
+
   // --- Tools ---
 
   server.tool("get_prd_status", "Get PRD title, overall stats, and per-epic stats. Use to understand project scope and progress.", {},
-    async () => handleGetPrdStatus(store));
+    withMigrationWarning(() => handleGetPrdStatus(store)));
 
-  server.tool("get_next_task", "Get the next actionable task based on priority and dependencies, with explanation of why it was selected. Use when the user asks what to work on next.", {},
-    async () => handleGetNextTask(store));
+  server.tool(
+    "get_next_task",
+    "Get the next actionable task based on priority and dependencies, with explanation of why it was selected. Use when the user asks what to work on next.",
+    {
+      tags: z.array(z.string()).optional().describe("Only return tasks that have at least one of these tags. Omit to return any task regardless of tags."),
+    },
+    withMigrationWarning((args) => handleGetNextTask(store, args)),
+  );
 
   server.tool(
     "update_task_status",
@@ -69,7 +108,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       resolutionType: z.enum(["code-change", "config-override", "acknowledgment", "deferred", "unclassified"]).optional().describe("How the task was resolved (required when status is 'completed')"),
       resolutionDetail: z.string().optional().describe("Brief description of how the resolution was achieved"),
     },
-    async (args) => handleUpdateTaskStatus(store, args),
+    withMigrationWarning((args) => handleUpdateTaskStatus(store, dir, args)),
   );
 
   server.tool(
@@ -86,7 +125,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       source: z.string().optional().describe("Source of this item"),
       blockedBy: z.array(z.string()).optional().describe("IDs of blocking items"),
     },
-    async (args) => handleAddItem(store, args),
+    withMigrationWarning((args) => handleAddItem(store, dir, rexDir, args)),
   );
 
   server.tool(
@@ -103,7 +142,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       source: z.string().optional().describe("New source"),
       blockedBy: z.array(z.string()).optional().describe("New blocked-by IDs"),
     },
-    async (args) => handleEditItem(store, args),
+    withMigrationWarning((args) => handleEditItem(store, dir, args)),
   );
 
   server.tool(
@@ -113,7 +152,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       id: z.string().describe("Item ID to move"),
       parentId: z.string().optional().describe("New parent ID (omit to move to root)"),
     },
-    async (args) => handleMoveItem(store, args),
+    withMigrationWarning((args) => handleMoveItem(store, rexDir, args)),
   );
 
   server.tool(
@@ -126,7 +165,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       title: z.string().optional().describe("New title for the merged item (default: keep target's title)"),
       description: z.string().optional().describe("New description (default: combine all descriptions)"),
     },
-    async (args) => handleMergeItems(store, args),
+    withMigrationWarning((args) => handleMergeItems(store, rexDir, args)),
   );
 
   server.tool(
@@ -135,7 +174,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     {
       id: z.string().describe("Item ID"),
     },
-    async (args) => handleGetItem(store, args),
+    withMigrationWarning((args) => handleGetItem(store, args)),
   );
 
   server.tool(
@@ -146,7 +185,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       itemId: z.string().optional().describe("Related item ID"),
       detail: z.string().optional().describe("Event details"),
     },
-    async (args) => handleAppendLog(store, args),
+    withMigrationWarning((args) => handleAppendLog(store, args)),
   );
 
   server.tool(
@@ -156,11 +195,11 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       direction: z.enum(["push", "pull", "sync"]).optional().describe("Sync direction (default: sync)"),
       adapter: z.string().optional().describe("Adapter name (default: notion)"),
     },
-    async (args) => handleSyncWithRemote(store, rexDir, args, resolveRemoteStore, SyncEngine),
+    withMigrationWarning((args) => handleSyncWithRemote(store, rexDir, args, resolveRemoteStore, SyncEngine)),
   );
 
   server.tool("get_recommendations", "Get SourceVision-based recommendations for PRD items. Use alongside get_findings for data-driven planning.", {},
-    async () => handleGetRecommendations());
+    withMigrationWarning(() => handleGetRecommendations()));
 
   server.tool(
     "verify_criteria",
@@ -169,7 +208,7 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       taskId: z.string().optional().describe("Task ID to verify (omit for all tasks)"),
       runTests: z.boolean().optional().describe("Whether to execute tests (default: true)"),
     },
-    async (args) => handleVerifyCriteria(store, dir, args),
+    withMigrationWarning((args) => handleVerifyCriteria(store, dir, args)),
   );
 
   server.tool(
@@ -180,11 +219,11 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
       includeCompleted: z.boolean().optional().describe("Include completed items in similarity analysis (default: false)"),
       mode: z.enum(["fast", "full"]).optional().describe("Analysis mode: 'fast' (programmatic only) or 'full' (programmatic + LLM, default)"),
     },
-    async (args) => handleReorganize(store, dir, args),
+    withMigrationWarning((args) => handleReorganize(store, dir, args)),
   );
 
   server.tool("health", "Get structure health score with dimensional breakdown (depth, balance, granularity, completeness, staleness)", {},
-    async () => handleHealth(store));
+    withMigrationWarning(() => handleHealth(store)));
 
   server.tool(
     "facets",
@@ -192,11 +231,20 @@ export async function createRexMcpServer(dir: string): Promise<McpServer> {
     {
       itemId: z.string().optional().describe("Item ID to get facet suggestions for (omit for overview)"),
     },
-    async (args) => handleFacets(store, args),
+    withMigrationWarning((args) => handleFacets(store, args)),
+  );
+
+  server.tool(
+    "get_token_usage",
+    "Roll up hench run token usage and work duration across every PRD item. Returns `{ tokens, duration }` per item, where tokens is self+descendants+total counts and duration is { totalMs, runningMs, isRunning }. Completed subtrees report stable totalMs; running subtrees update on each call. Orphan runs (whose itemId is no longer in the PRD) are reported separately. Pass `id` to narrow to a single item.",
+    {
+      id: z.string().optional().describe("Optional: only return rollup for this item"),
+    },
+    withMigrationWarning((args) => handleGetTokenUsage(store, dir, args)),
   );
 
   server.tool("get_capabilities", "Get Rex server capabilities and configuration", {},
-    async () => handleGetCapabilities(store));
+    withMigrationWarning(() => handleGetCapabilities(store)));
 
   // --- Resources ---
 

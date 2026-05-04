@@ -1,4 +1,4 @@
-# n-dx
+# n-dx 
 
 AI-powered development toolkit. Analyze a codebase, build a PRD, execute tasks autonomously.
 
@@ -252,7 +252,7 @@ Codex reads `.codex/config.toml` automatically — no manual registration requir
 | Package | Description |
 |---------|-------------|
 | **[@n-dx/sourcevision](packages/sourcevision)** | Static analysis: file inventory, import graph, zone detection (Louvain), React component catalog. Produces `.sourcevision/CONTEXT.md` and `llms.txt`. |
-| **[@n-dx/rex](packages/rex)** | PRD management: hierarchical epics/features/tasks/subtasks, LLM-powered analysis and recommendations. Stores state in `.rex/prd.json`. |
+| **[@n-dx/rex](packages/rex)** | PRD management: hierarchical epics/features/tasks/subtasks, LLM-powered analysis and recommendations. Stores state in `.rex/prd_tree/` (slug-based folder tree). |
 | **[@n-dx/hench](packages/hench)** | Autonomous agent: picks rex tasks, builds briefs, runs LLM tool-use loops with security guardrails. Records runs in `.hench/runs/`. |
 | **[@n-dx/llm-client](packages/llm-client)** | Vendor-neutral LLM foundation: Claude and Codex adapters, provider registry, token usage tracking. |
 | **[@n-dx/web](packages/web)** | Dashboard and unified MCP HTTP server: browser-based project dashboard with zone maps and PRD status. |
@@ -262,8 +262,10 @@ Codex reads `.codex/config.toml` automatically — no manual registration requir
 | Directory | Owner | Contents |
 |-----------|-------|----------|
 | `.sourcevision/` | sourcevision | `manifest.json`, `inventory.json`, `imports.json`, `zones.json`, `components.json`, `llms.txt`, `CONTEXT.md` |
-| `.rex/` | rex | `prd.json`, `config.json`, `execution-log.jsonl`, `workflow.md`, `acknowledged-findings.json` |
+| `.rex/` | rex | `tree/` (folder tree), `config.json`, `execution-log.jsonl`, `workflow.md`, `acknowledged-findings.json` |
 | `.hench/` | hench | `config.json`, `runs/` |
+
+> **Legacy PRD migration.** If upgrading from a previous layout using `.rex/prd.md` (flat Markdown) or `.rex/prd.json`, run `rex migrate-to-folder-tree` to convert to the folder tree format. The command optionally deletes the legacy source file after migration. See the [rex README](packages/rex) for details.
 
 ## Security
 

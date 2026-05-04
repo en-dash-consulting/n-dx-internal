@@ -2,8 +2,9 @@ import { join, resolve } from "node:path";
 import { access, readFile, unlink } from "node:fs/promises";
 import { atomicWriteJSON } from "../../store/atomic-write.js";
 import { randomUUID } from "node:crypto";
-import { resolveStore } from "../../store/index.js";
+import { resolveStore, ensureLegacyPrdMigrated } from "../../store/index.js";
 import { REX_DIR } from "./constants.js";
+import { syncFolderTree } from "./folder-tree-sync.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
 import { parseIntSafe } from "../validate-input.js";
 import { info, warn, result, startSpinner } from "../output.js";
@@ -302,6 +303,7 @@ async function acceptProposals(
 
   await clearPending(dir);
   await clearSentinel(dir);
+  await syncFolderTree(rexDir, store);
 
   // Show formatted summary when batch record is available, else simple message
   if (batchRecord) {
@@ -360,6 +362,9 @@ export async function cmdAnalyze(
   flags: Record<string, string>,
   multiFlags: Record<string, string[]> = {},
 ): Promise<void> {
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before reading/writing PRD
+  await ensureLegacyPrdMigrated(dir);
+
   const accept = flags.accept === "true";
   const noLlm = flags["no-llm"] === "true";
 

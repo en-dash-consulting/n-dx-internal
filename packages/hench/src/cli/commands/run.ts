@@ -4,6 +4,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolveStore, findNextTask, findActionableTasks as findActionable, findItem, collectCompletedIds, isRootLevel, isWorkItem, SCHEMA_VERSION } from "../../prd/rex-gateway.js";
 import type { PRDItem, PRDStore } from "../../prd/rex-gateway.js";
 import type { RunRecord, ToolCallRecord } from "../../schema/index.js";
+import { classifyChangedFiles } from "../../store/file-classifier.js";
+import type { FileCategory } from "../../store/file-classifier.js";
 import { loadConfig } from "../../store/config.js";
 import { listRuns } from "../../store/runs.js";
 import { agentLoop } from "../../agent/lifecycle/loop.js";
@@ -13,8 +15,9 @@ import { getStuckTaskIds } from "../../agent/analysis/stuck.js";
 import { HENCH_DIR, safeParseInt, safeParseNonNegInt } from "./constants.js";
 import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output, setQuiet } from "../output.js";
+import { section } from "../../types/output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
-import { printVendorModelHeader, resolveModel, resolveVendorModel, bold, cyan, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor } from "../../prd/llm-gateway.js";
+import { printVendorModelHeader, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor } from "../../prd/llm-gateway.js";
 import { ExecutionQueue, formatQueueStatus, resolveSchedulingPriority } from "../../queue/index.js";
 import type { TaskPriority } from "../../queue/index.js";
 import { ProcessLimiter } from "../../process/limiter.js";
@@ -75,17 +78,32 @@ export function formatRunSuccessMessage(text: string): string {
 /**
  * Format a loop-iteration boundary separator line.
  *
- * Rendered in pink/magenta (colorPink) to visually distinguish loop-iteration
+ * Rendered in yellow (colorWarn) to visually distinguish loop-iteration
  * boundaries from the cyan ═══ agent-turn section separators.  Width matches
  * SECTION_WIDTH (60 chars) for visual consistency with the rest of the
  * transcript.
  *
  * Fully suppressed (returns plain text that callers skip via NO_COLOR / !isTTY
- * checks in colorPink) when color is disabled.
- * Exported for testing — verifies colorPink is applied and suppression works.
+ * checks in colorWarn) when color is disabled.
+ * Exported for testing — verifies colorWarn is applied and suppression works.
  */
 export function formatLoopIterationSeparator(): string {
-  return colorPink("─".repeat(60));
+  return colorWarn("─".repeat(60));
+}
+
+/**
+ * Format the iteration boundary banner emitted between loop iterations.
+ *
+ * - Fixed mode (--iterations=N): `=== Iteration n/total ===`
+ * - Unbounded mode (--loop):     `=== Iteration n ===`
+ *
+ * Uses bold() so it stands out against surrounding transcript lines and
+ * respects NO_COLOR (bold() degrades to plain text when color is disabled).
+ * Exported for testing.
+ */
+export function formatIterationBanner(n: number, total?: number): string {
+  const label = total !== undefined ? `${n}/${total}` : `${n}`;
+  return bold(`=== Iteration ${label} ===`);
 }
 
 /**
@@ -366,6 +384,7 @@ export async function peekNextTaskPriority(
   cliOverride?: string,
   excludeTaskIds?: Set<string>,
   epicId?: string,
+  tags?: string[],
 ): Promise<TaskPriority> {
   const doc = await store.loadDocument();
 
@@ -389,10 +408,12 @@ export async function peekNextTaskPriority(
     ? new Set([...completedIds, ...excludeTaskIds])
     : completedIds;
 
+  const tagOptions = tags?.length ? { tags } : undefined;
+
   if (epicId) {
     // Use the same logic as assembleTaskBrief for epic-scoped selection
     const epicTaskIds = collectEpicTaskIds(doc.items, epicId);
-    const allActionable = findActionable(doc.items, skipIds, Infinity);
+    const allActionable = findActionable(doc.items, skipIds, Infinity, tagOptions);
     const epicActionable = allActionable.filter(
       (e) => epicTaskIds.has(e.item.id) && !excludeTaskIds?.has(e.item.id),
     );
@@ -405,7 +426,7 @@ export async function peekNextTaskPriority(
       });
     }
   } else {
-    const next = findNextTask(doc.items, skipIds);
+    const next = findNextTask(doc.items, skipIds, tagOptions);
     if (next) {
       return resolveSchedulingPriority({
         taskPriority: next.item.priority,
@@ -491,60 +512,6 @@ async function selectTask(
 // Change classification
 // ---------------------------------------------------------------------------
 
-type FileCategory = "code" | "test" | "docs" | "config" | "metadata";
-
-/**
- * Classify a file path into a category based on its extension and name.
- */
-function classifyFile(filePath: string): FileCategory {
-  // PRD metadata files
-  if (filePath.endsWith("prd.json") || filePath.includes(".rex/")) return "metadata";
-
-  // Test files
-  if (/\.test\.[jt]sx?$/.test(filePath) || /\.spec\.[jt]sx?$/.test(filePath) ||
-      filePath.includes("__tests__/") || filePath.includes("/tests/")) return "test";
-
-  // Docs
-  if (/\.md$/i.test(filePath) || /\.mdx$/i.test(filePath) ||
-      /\.txt$/i.test(filePath) || /\.rst$/i.test(filePath)) return "docs";
-
-  // Config files
-  if (/\.json$/i.test(filePath) || /\.ya?ml$/i.test(filePath) ||
-      /\.toml$/i.test(filePath) || /\.ini$/i.test(filePath) ||
-      /\.env/i.test(filePath) || /\.config\.[jt]s$/i.test(filePath)) return "config";
-
-  // Code (everything else — .ts, .js, .tsx, .jsx, .py, .go, etc.)
-  return "code";
-}
-
-/**
- * Extract modified file paths from tool call records and classify them.
- */
-function classifyChangedFiles(toolCalls: ToolCallRecord[]): Map<FileCategory, string[]> {
-  const changedFiles = new Set<string>();
-
-  for (const call of toolCalls) {
-    if (call.tool === "write_file") {
-      const path = call.input.path as string | undefined;
-      if (path) changedFiles.add(path);
-    }
-    // Also detect rex status updates as metadata changes
-    if (call.tool === "rex_update" || call.tool === "rex_add") {
-      changedFiles.add("prd.json");
-    }
-  }
-
-  const classified = new Map<FileCategory, string[]>();
-  for (const file of changedFiles) {
-    const category = classifyFile(file);
-    const existing = classified.get(category) ?? [];
-    existing.push(file);
-    classified.set(category, existing);
-  }
-
-  return classified;
-}
-
 /**
  * Detect whether any tool calls include PRD status updates (rex_update).
  */
@@ -613,11 +580,14 @@ async function runOne(
   review: boolean,
   excludeTaskIds?: Set<string>,
   epicId?: string,
+  tags?: string[],
   runHistory?: RunRecord[],
   rollbackOnFailure?: boolean,
   yes?: boolean,
   extraContext?: string,
-): Promise<{ status: string }> {
+  autonomous?: boolean,
+  runNumber?: number,
+): Promise<{ status: string; taskTitle: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
   await assertSchemaCompatibility(store);
@@ -643,10 +613,13 @@ async function runOne(
         review,
         excludeTaskIds,
         epicId,
+        tags,
         runHistory: runs,
         rollbackOnFailure,
         yes,
+        autonomous,
         extraContext,
+        runNumber,
       })
     : await agentLoop({
         config: effectiveConfig as typeof config & { provider: "api" },
@@ -661,17 +634,20 @@ async function runOne(
         review,
         excludeTaskIds,
         epicId,
+        tags,
         runHistory: runs,
         rollbackOnFailure,
         yes,
+        autonomous,
         extraContext,
+        runNumber,
       });
 
   const { run } = result;
 
   info(`\n${bold("=== Run Complete ===")}`);
   output(`Run ID: ${run.id}`);
-  output(`Task: ${cyan(run.taskTitle)}`);
+  output(`Task: ${colorPink(run.taskTitle)}`);
   output(`Status: ${colorStatus(run.status)}`);
 
   // Invocation context
@@ -722,7 +698,7 @@ async function runOne(
     output(`\n${red("Error:")} ${run.error}`);
   }
 
-  return { status: run.status };
+  return { status: run.status, taskTitle: run.taskTitle };
 }
 
 // ---------------------------------------------------------------------------
@@ -733,6 +709,60 @@ const NO_TASKS_MSG = "No actionable tasks found in PRD";
 
 function isNoTasksError(err: unknown): boolean {
   return err instanceof Error && err.message.includes(NO_TASKS_MSG);
+}
+
+// ---------------------------------------------------------------------------
+// Tag-filter completion helpers (used by runLoop for self-heal mode)
+// ---------------------------------------------------------------------------
+
+/** Returns true if there are still actionable tasks matching the given tags. */
+async function hasPendingTaggedTasks(rexDir: string, tags: string[]): Promise<boolean> {
+  const store = await resolveStore(rexDir);
+  const doc = await store.loadDocument();
+  const completedIds = collectCompletedIds(doc.items);
+  const remaining = findActionable(doc.items, completedIds, 1, { tags });
+  return remaining.length > 0;
+}
+
+interface CompletedItem {
+  title: string;
+  status: string;
+}
+
+/**
+ * Build the completion summary lines for a tag-filtered loop run.
+ * Returns an array of lines (without leading newlines) so callers can
+ * either print them or assert on the content in tests.
+ */
+export function formatTagFilterCompletionSummary(
+  tags: string[],
+  items: CompletedItem[],
+  processedCount: number,
+): string[] {
+  const tagLabel = tags.join(", ");
+  const lines: string[] = [
+    `All [${tagLabel}] tasks complete — ${processedCount} task(s) processed.`,
+  ];
+  if (items.length > 0) {
+    lines.push("Resolved tasks:");
+    for (const item of items) {
+      const icon = item.status === "completed" ? green("✓") : red("✗");
+      lines.push(`  ${icon} ${item.title} (${item.status})`);
+    }
+  }
+  return lines;
+}
+
+/** Print the per-task summary emitted when all tagged items are resolved. */
+function printTagFilterCompletionSummary(
+  tags: string[],
+  items: CompletedItem[],
+  processedCount: number,
+): void {
+  const lines = formatTagFilterCompletionSummary(tags, items, processedCount);
+  for (const line of lines) {
+    info(`\n${line}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -814,6 +844,9 @@ export async function cmdRun(
   const loop = flags.loop === "true";
   const selfHeal = flags["self-heal"] === "true";
   const skipDeps = flags["skip-deps"] === "true";
+  const tagsFilter = flags["tags"]
+    ? (flags["tags"] as string).split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
 
   // Apply self-heal mode to config so it flows through to prompt building
   if (selfHeal) {
@@ -985,8 +1018,13 @@ export async function cmdRun(
       }
     }
 
+    // Autonomous runs (--auto, --loop, --epic-by-epic) bypass interactive
+    // prompts such as the commit-message approval gate. The same flag state
+    // governs task autoselect above — both are facets of "running unattended".
+    const autonomous = auto || loop || epicByEpic;
+
     if (epicByEpic) {
-      await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, queue, priorityOverride, rollbackOnFailure, yes, extraContext);
+      await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous);
       return;
     }
 
@@ -1000,9 +1038,9 @@ export async function cmdRun(
     // If --auto, --loop, or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
 
     if (loop) {
-      await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId, queue, priorityOverride, rollbackOnFailure, yes, extraContext);
+      await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId, tagsFilter, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous);
     } else {
-      await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review, epicId, rollbackOnFailure, yes, extraContext);
+      await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review, epicId, tagsFilter, rollbackOnFailure, yes, extraContext, autonomous);
     }
   } finally {
     await limiter.release();
@@ -1028,13 +1066,18 @@ async function runIterations(
   maxFailedAttempts: number,
   review: boolean,
   epicId?: string,
+  tags?: string[],
   rollbackOnFailure?: boolean,
   yes?: boolean,
   extraContext?: string,
+  autonomous?: boolean,
 ): Promise<void> {
   for (let i = 0; i < iterations; i++) {
-    if (iterations > 1) {
-      info(`\n${bold(`=== Iteration ${i + 1}/${iterations} ===`)}`);
+    // Banner between iterations: printed before iteration i+1 starts,
+    // i.e. after iteration i's commit and run summary have been rendered.
+    // Not emitted before the first iteration (i === 0).
+    if (i > 0) {
+      info(`\n${formatIterationBanner(i + 1, iterations)}`);
     }
 
     // For autoselected iterations, skip stuck tasks
@@ -1052,10 +1095,12 @@ async function runIterations(
       review,
       stuckIds,
       epicId,
+      tags,
       undefined,
       rollbackOnFailure,
       yes,
       extraContext,
+      autonomous,
     );
 
     // Emit quota log line(s) at the inter-run boundary.
@@ -1094,11 +1139,13 @@ async function runLoop(
   maxFailedAttempts: number,
   review: boolean,
   epicId?: string,
+  tags?: string[],
   queue?: ExecutionQueue,
   priorityOverride?: string,
   rollbackOnFailure?: boolean,
   yes?: boolean,
   extraContext?: string,
+  autonomous?: boolean,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -1118,10 +1165,13 @@ async function runLoop(
   process.on("SIGINT", onSignal);
 
   let completed = 0;
+  // Tracks per-task outcomes when a tag filter is active (e.g. self-heal mode).
+  const taggedCompletedItems: CompletedItem[] = [];
 
   try {
     const scope = epicId ? "epic tasks" : "all tasks";
-    info(`Loop mode: running continuously until ${scope} complete or interrupted (Ctrl+C to stop)`);
+    const tagNote = tags?.length ? ` [tag filter: ${tags.join(", ")}]` : "";
+    info(`Loop mode: running continuously until ${scope} complete or interrupted (Ctrl+C to stop)${tagNote}`);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -1131,7 +1181,10 @@ async function runLoop(
       }
 
       completed++;
-      info(`\n${bold(`=== Loop iteration ${completed} ===`)}`);
+      // Banner between iterations: not emitted before the first iteration.
+      if (completed > 1) {
+        info(`\n${formatIterationBanner(completed)}`);
+      }
 
       // Show queue status if there are pending tasks
       if (queue) logQueueStatus(queue);
@@ -1152,7 +1205,7 @@ async function runLoop(
         if (queue) {
           const store = await resolveStore(rexDir);
           schedulingPriority = await peekNextTaskPriority(
-            store, effectiveTaskId, priorityOverride, stuckIds, epicId,
+            store, effectiveTaskId, priorityOverride, stuckIds, epicId, tags,
           );
           await queue.acquire(effectiveTaskId ?? "auto", schedulingPriority);
         }
@@ -1166,12 +1219,22 @@ async function runLoop(
             review,
             stuckIds,
             epicId,
+            tags,
             undefined,
             rollbackOnFailure,
             yes,
             extraContext,
+            autonomous,
+            completed,
           );
           status = result.status;
+          if (tags?.length) {
+            taggedCompletedItems.push({ title: result.taskTitle, status: result.status });
+          }
+          // Close the banner opened by the lifecycle loop. Mirrors the
+          // start banner's format so each run is visually bracketed in
+          // long --loop transcripts.
+          section(`Agent Run #${completed}${model ? ` (${model})` : ""} end`);
         } finally {
           // Release the queue slot after the task completes
           if (queue) queue.release();
@@ -1179,10 +1242,25 @@ async function runLoop(
       } catch (err) {
         if (isNoTasksError(err)) {
           const scope = epicId ? " in epic" : "";
-          info(`\nAll tasks${scope} complete — loop finished after ${completed - 1} task(s).`);
+          if (tags?.length) {
+            printTagFilterCompletionSummary(tags, taggedCompletedItems, completed - 1);
+          } else {
+            info(`\nAll tasks${scope} complete — loop finished after ${completed - 1} task(s).`);
+          }
           break;
         }
         throw err;
+      }
+
+      // After each completed task, check whether any tagged items remain.
+      // This satisfies the "evaluated after each task" requirement and avoids
+      // a spurious extra iteration that would end in isNoTasksError.
+      if (tags?.length && !dryRun) {
+        const stillPending = await hasPendingTaggedTasks(rexDir, tags);
+        if (!stillPending) {
+          printTagFilterCompletionSummary(tags, taggedCompletedItems, completed);
+          break;
+        }
       }
 
       // Emit quota log line(s) at the inter-run boundary.
@@ -1280,6 +1358,7 @@ async function runEpicByEpic(
   rollbackOnFailure?: boolean,
   yes?: boolean,
   extraContext?: string,
+  autonomous?: boolean,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -1339,9 +1418,9 @@ async function runEpicByEpic(
 
       const epic = actionableEpics[epicIdx];
 
-      info(`\n${cyan("═".repeat(60))}`);
+      info(`\n${colorPink("═".repeat(60))}`);
       info(bold(`Epic ${epicIdx + 1}/${actionableEpics.length}: ${epic.title}`));
-      info(cyan("═".repeat(60)));
+      info(colorPink("═".repeat(60)));
 
       // Re-check epic scope (tasks may have changed from prior epic's work)
       const freshScope = await getEpicScopeInfo(store, epic.id);
@@ -1405,10 +1484,12 @@ async function runEpicByEpic(
               review,
               stuckIds,
               epic.id,
+              undefined, // tags (epic-by-epic doesn't apply a tag filter)
               undefined,
               rollbackOnFailure,
               yes,
               extraContext,
+              autonomous,
             );
             status = result.status;
           } finally {
@@ -1489,9 +1570,9 @@ async function runEpicByEpic(
  * Print a summary table of epic-by-epic execution results.
  */
 export function printEpicByEpicSummary(summaries: EpicRunSummary[]): void {
-  info(`\n${cyan("═".repeat(60))}`);
+  info(`\n${colorPink("═".repeat(60))}`);
   info(bold("Epic-by-Epic Execution Summary"));
-  info(cyan("═".repeat(60)));
+  info(colorPink("═".repeat(60)));
 
   let totalCompleted = 0;
   let totalFailed = 0;

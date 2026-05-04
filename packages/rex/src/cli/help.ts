@@ -14,6 +14,7 @@
 
 import { formatHelp } from "@n-dx/llm-client";
 import type { HelpDefinition } from "@n-dx/llm-client";
+import { PRD_TREE_DIRNAME } from "../store/index.js";
 
 /** Map of command name → help definition. */
 const COMMAND_DEFS: Record<string, HelpDefinition> = {
@@ -54,12 +55,15 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       { flag: "--format=tree|json", description: "Output format (default: tree)" },
       { flag: "--group-by=<facet>", description: "Group items by facet value instead of hierarchy" },
       { flag: "--stale", description: "Show only stale items (in_progress > 48h)" },
+      { flag: "--show-individual", description: "Render one labeled section per PRD file (canonical + branch-scoped)" },
     ],
     examples: [
       { command: "rex status", description: "Show PRD tree (hides completed)" },
       { command: "rex status --all", description: "Show everything including completed and deleted items" },
       { command: "rex status --group-by=component", description: "Group items by component facet" },
       { command: "rex status --stale", description: "Show stale in-progress items" },
+      { command: "rex status --show-individual", description: "Per-PRD breakdown (one section per .rex/prd*.md file)" },
+      { command: "rex status --show-individual --format=json", description: "Per-PRD breakdown as a JSON array" },
       { command: "rex status --format=json .", description: "Machine-readable JSON output" },
     ],
     related: ["next", "usage"],
@@ -538,6 +542,42 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
     ],
     related: ["reorganize", "report", "validate"],
   },
+  "migrate-to-folder-tree": {
+    tool: "rex",
+    command: "migrate-to-folder-tree",
+    summary: `migrate prd.md to the .rex/${PRD_TREE_DIRNAME}/ folder-tree format`,
+    usage: "rex migrate-to-folder-tree [dir] [--yes]",
+    description:
+      "Reads the current PRD from .rex/prd.md (or branch-scoped prd_*_*.md files,\n" +
+      `or prd.json as a fallback) and writes the full folder tree to .rex/${PRD_TREE_DIRNAME}/\n` +
+      "using slug-based directory names at all four hierarchy levels.\n\n" +
+      "After a successful migration, prompts to delete prd.md and any branch-scoped\n" +
+      "prd_{branch}_{date}.md files. Pass --yes to auto-confirm deletion.\n\n" +
+      "Idempotent: re-running on an already-migrated project (even after prd.md has\n" +
+      "been deleted) is a no-op. Prints a summary of item counts per PRD level and\n" +
+      "folders/files created.",
+    examples: [
+      { command: "rex migrate-to-folder-tree", description: "Migrate and prompt to delete prd.md" },
+      { command: "rex migrate-to-folder-tree --yes", description: "Migrate and auto-delete prd.md" },
+      { command: "rex migrate-to-folder-tree ./my-project", description: "Migrate a specific project" },
+    ],
+    related: ["init", "status", "validate"],
+  },
+  "migrate-to-md": {
+    tool: "rex",
+    command: "migrate-to-md",
+    summary: "create prd.md from an existing prd.json",
+    usage: "rex migrate-to-md [dir]",
+    description:
+      "Converts the local .rex/prd.json document into .rex/prd.md using the\n" +
+      "markdown serializer, verifies that parsing the generated markdown yields\n" +
+      "the same in-memory PRD tree, and leaves prd.json untouched.",
+    examples: [
+      { command: "rex migrate-to-md", description: "Generate .rex/prd.md in the current project" },
+      { command: "rex migrate-to-md ./my-project", description: "Generate .rex/prd.md in a specific project" },
+    ],
+    related: ["init", "validate", "status"],
+  },
   mcp: {
     tool: "rex",
     command: "mcp",
@@ -581,6 +621,8 @@ const RELATED_COMMANDS: Record<string, string[]> = {
   adapter: ["sync"],
   reorganize: ["health", "prune", "reshape"],
   health: ["reorganize", "report", "validate"],
+  "migrate-to-md": ["init", "validate", "status"],
+  "migrate-to-folder-tree": ["init", "status", "validate"],
   mcp: [],
 };
 

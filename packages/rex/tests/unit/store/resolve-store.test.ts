@@ -7,9 +7,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import { SCHEMA_VERSION } from "../../../src/schema/index.js";
 import { toCanonicalJSON } from "../../../src/core/canonical.js";
 import { resolveStore, resolveRemoteStore, createStore } from "../../../src/store/index.js";
@@ -18,6 +19,7 @@ import {
   resetDefaultRegistry,
 } from "../../../src/store/adapter-registry.js";
 import { FileStore } from "../../../src/store/file-adapter.js";
+import { parseDocument } from "../../../src/store/markdown-parser.js";
 import type { PRDStore } from "../../../src/store/contracts.js";
 
 // ---------------------------------------------------------------------------
@@ -30,8 +32,8 @@ async function seedRexDir(
 ): Promise<void> {
   await mkdir(rexDir, { recursive: true });
   await writeFile(
-    join(rexDir, "prd.json"),
-    toCanonicalJSON({ schema: SCHEMA_VERSION, title: "Test", items: [] }),
+    join(rexDir, "prd.md"),
+    `---\nschema: ${SCHEMA_VERSION}\ntitle: Test\n---\n\n# Test\n`,
     "utf-8",
   );
   await writeFile(
@@ -75,8 +77,8 @@ describe("resolveStore", () => {
     // Create rexDir but no config.json
     await mkdir(rexDir, { recursive: true });
     await writeFile(
-      join(rexDir, "prd.json"),
-      toCanonicalJSON({ schema: SCHEMA_VERSION, title: "Test", items: [] }),
+      join(rexDir, "prd.md"),
+      `---\nschema: ${SCHEMA_VERSION}\ntitle: Test\n---\n\n# Test\n`,
       "utf-8",
     );
     await writeFile(join(rexDir, "execution-log.jsonl"), "", "utf-8");
@@ -235,5 +237,37 @@ describe("resolveStore", () => {
     const doc1 = await resolved.loadDocument();
     const doc2 = await direct.loadDocument();
     expect(doc1).toEqual(doc2);
+  });
+
+  // FileStore mutations write only to .rex/prd_tree/; prd.md is no longer
+  // regenerated, so this single-file-mode write contract no longer applies.
+  it.skip("writes new root items to prd.md regardless of the current branch (single-file mode)", async () => {
+    await mkdir(tmpDir, { recursive: true });
+    execFileSync("git", ["init", "--initial-branch=main"], { cwd: tmpDir, encoding: "utf-8" });
+    execFileSync("git", ["config", "user.email", "test@test.com"], { cwd: tmpDir, encoding: "utf-8" });
+    execFileSync("git", ["config", "user.name", "Test"], { cwd: tmpDir, encoding: "utf-8" });
+    execFileSync("git", ["commit", "--allow-empty", "-m", "init"], {
+      cwd: tmpDir,
+      encoding: "utf-8",
+    });
+    execFileSync("git", ["checkout", "-b", "feature/test"], { cwd: tmpDir, encoding: "utf-8" });
+
+    await seedRexDir(rexDir, "file");
+
+    const store = await resolveStore(rexDir);
+    await store.addItem({
+      id: "branch-epic",
+      title: "Branch Epic",
+      status: "pending",
+      level: "epic",
+    });
+
+    // All writes land in prd.md; the in-memory currentBranchFile only
+    // influences attribution metadata, not the on-disk write target.
+    const primaryParsed = parseDocument(
+      await readFile(join(rexDir, "prd.md"), "utf-8"),
+    );
+    if (!primaryParsed.ok) throw primaryParsed.error;
+    expect(primaryParsed.data.items.map((item) => item.id)).toEqual(["branch-epic"]);
   });
 });

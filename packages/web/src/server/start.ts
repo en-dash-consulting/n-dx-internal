@@ -3,10 +3,11 @@
  */
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { existsSync, watch, type FSWatcher } from "node:fs";
+import { existsSync, watch, mkdirSync, rmSync, readFileSync, writeFileSync, type FSWatcher } from "node:fs";
 import { writeFile, unlink } from "node:fs/promises";
 import { resolve, join, dirname } from "node:path";
 import type { ServerContext, ViewerScope } from "./types.js";
+import { ensureLegacyPrdMigrated } from "./rex-gateway.js";
 import { resolveStaticAssets, handleStaticRoute, isProjectInitialized } from "./routes-static.js";
 import { createDataWatcher, handleDataRoute } from "./routes-data.js";
 import { handleRexRoute, shutdownRexExecution } from "./routes-rex/index.js";
@@ -15,8 +16,8 @@ import { handleTokenUsageRoute } from "./routes-token-usage.js";
 import { handleValidationRoute } from "./routes-validation.js";
 import { handleHenchRoute, startHeartbeatMonitor, startConcurrencyMonitor, startMemoryMonitor, shutdownActiveExecutions, getAggregator } from "./routes-hench.js";
 import { registerUsageScheduler, type CollectAllIdsFn, type RegisterSchedulerOptions } from "./task-usage.js";
-import { loadPRDSync } from "./prd-io.js";
-import { collectAllIds, createRexMcpServer } from "./rex-gateway.js";
+import { loadPRDSync, PRD_CACHE_DIR, PRD_CACHE_JSON } from "./prd-io.js";
+import { collectAllIds, createRexMcpServer, parseDocument, parseFolderTree, PRD_TREE_DIRNAME, SCHEMA_VERSION } from "./rex-gateway.js";
 import { handleWorkflowRoute } from "./routes-workflow.js";
 import { handleAdaptiveRoute } from "./routes-adaptive.js";
 import { handleMcpRoute, initMcpRoutes } from "./routes-mcp.js";
@@ -32,6 +33,7 @@ import { handleFeaturesRoute } from "./routes-features.js";
 import { handleCliTimeoutRoute } from "./routes-cli-timeout.js";
 import { handleCommandsRoute } from "./routes-commands.js";
 import { handleLlmRoute } from "./routes-llm.js";
+import { handleMergeGraphRoute } from "./routes-merge-graph.js";
 import { handleProjectSettingsRoute } from "./routes-project-settings.js";
 import { createWebSocketManager, WsHealthTracker } from "./websocket.js";
 import { ALL_DATA_FILES } from "../shared/index.js";
@@ -233,6 +235,67 @@ function isInScope(scope: ViewerScope | undefined, pkg: ViewerScope): boolean {
   return !scope || scope === pkg;
 }
 
+/**
+ * Regenerate `.rex/.cache/prd.json` from the folder-tree backend (preferred)
+ * or legacy `prd.md`. Called at server boot and whenever the rex watcher fires.
+ * Failures are logged but not thrown — a missing or corrupt cache degrades
+ * gracefully (loadPRDSync falls back to parsing the source on disk).
+ * @internal exported for integration testing only
+ */
+export async function refreshPRDCache(rexDir: string): Promise<void> {
+  const treeRoot = join(rexDir, PRD_TREE_DIRNAME);
+  const prdMdPath = join(rexDir, "prd.md");
+
+  let doc: { schema: string; title: string; items: unknown[] } | null = null;
+
+  if (existsSync(treeRoot)) {
+    try {
+      const { items, warnings } = await parseFolderTree(treeRoot);
+      let title = "PRD";
+      try {
+        const meta = JSON.parse(readFileSync(join(rexDir, "tree-meta.json"), "utf-8")) as Record<string, unknown>;
+        if (typeof meta["title"] === "string") title = meta["title"];
+      } catch {
+        // tree-meta.json is optional
+      }
+      doc = { schema: SCHEMA_VERSION, title, items };
+      for (const w of warnings) {
+        console.warn(`[prd-cache] folder-tree warning at ${w.path}: ${w.message}`);
+      }
+    } catch (err) {
+      console.warn(`[prd-cache] folder-tree parse error: ${(err as Error).message}`);
+    }
+  } else if (existsSync(prdMdPath)) {
+    try {
+      const parsed = parseDocument(readFileSync(prdMdPath, "utf-8"));
+      if (!parsed.ok) {
+        console.warn(`[prd-cache] prd.md parse error: ${parsed.error.message}`);
+        return;
+      }
+      doc = parsed.data;
+    } catch (err) {
+      console.warn(`[prd-cache] prd.md read error: ${(err as Error).message}`);
+      return;
+    }
+  } else {
+    return;
+  }
+
+  if (!doc) return;
+
+  try {
+    const cacheDir = join(rexDir, PRD_CACHE_DIR);
+    mkdirSync(cacheDir, { recursive: true });
+    writeFileSync(
+      join(cacheDir, PRD_CACHE_JSON),
+      JSON.stringify(doc, null, 2) + "\n",
+      "utf-8",
+    );
+  } catch (err) {
+    console.warn(`[prd-cache] failed to write cache: ${(err as Error).message}`);
+  }
+}
+
 function resolveRouteResult(result: RouteResult): Promise<boolean> | boolean {
   return result instanceof Promise ? result : result;
 }
@@ -268,25 +331,48 @@ function registerRexWatcher(
   rexDir: string,
   watcher: ReturnType<typeof createDataWatcher>,
   ws: ReturnType<typeof createWebSocketManager>,
-): FSWatcher | null {
-  if (!isInScope(scope, "rex") || !existsSync(rexDir)) return null;
+): FSWatcher[] {
+  if (!isInScope(scope, "rex") || !existsSync(rexDir)) return [];
   const debouncedRefresh = debounce(() => {
-    watcher.refresh();
-    ws.broadcast({
-      type: "rex:prd-changed",
-      timestamp: new Date().toISOString(),
+    void refreshPRDCache(rexDir).then(() => {
+      watcher.refresh();
+      ws.broadcast({
+        type: "rex:prd-changed",
+        timestamp: new Date().toISOString(),
+      });
     });
   }, WATCHER_DEBOUNCE_MS);
+
+  const watchers: FSWatcher[] = [];
+
+  // Watch .rex/ for legacy prd.md and tree-meta.json changes
   try {
-    return watch(rexDir, (_eventType, filename) => {
-      if (filename === "prd.json") {
+    watchers.push(watch(rexDir, (_eventType, filename) => {
+      if (
+        filename === "prd.md" ||
+        filename === "tree-meta.json" ||
+        (typeof filename === "string" && /^prd_.*\.md$/.test(filename))
+      ) {
         debouncedRefresh();
       }
-    });
+    }));
   } catch {
     // ignore
-    return null;
   }
+
+  // Watch .rex/prd_tree/ recursively for folder-tree changes
+  const treeRoot = join(rexDir, PRD_TREE_DIRNAME);
+  if (existsSync(treeRoot)) {
+    try {
+      watchers.push(watch(treeRoot, { recursive: true }, () => {
+        debouncedRefresh();
+      }));
+    } catch {
+      // fs.watch recursive may not be supported on every platform — non-fatal
+    }
+  }
+
+  return watchers;
 }
 
 function registerHenchWatcher(
@@ -346,6 +432,8 @@ interface WatcherHandles {
   henchRunsDir: string;
   /** Monitor intervals to clear on shutdown. */
   monitorIntervals: ReturnType<typeof setInterval>[];
+  /** Ephemeral PRD JSON cache directory to delete on shutdown (if set). */
+  prdCacheDir?: string;
 }
 
 function registerWatchers(
@@ -358,16 +446,20 @@ function registerWatchers(
   const watchers: FSWatcher[] = [];
   const sv = registerSourcevisionWatcher(ctx.scope, ctx.svDir, watcher, ws);
   if (sv) watchers.push(sv);
-  const rex = registerRexWatcher(ctx.scope, ctx.rexDir, watcher, ws);
-  if (rex) watchers.push(rex);
+  for (const w of registerRexWatcher(ctx.scope, ctx.rexDir, watcher, ws)) {
+    watchers.push(w);
+  }
   const hench = registerHenchWatcher(ctx.scope, henchRunsDir, ws);
   if (hench) watchers.push(hench);
   const dev = registerDevViewerWatcher(ctx.dev, viewerPath, watcher, ws);
   if (dev) watchers.push(dev);
-  return { watchers, henchRunsDir, monitorIntervals: [] };
+  const prdCacheDir = isInScope(ctx.scope, "rex") && existsSync(ctx.rexDir)
+    ? join(ctx.rexDir, PRD_CACHE_DIR)
+    : undefined;
+  return { watchers, henchRunsDir, monitorIntervals: [], prdCacheDir };
 }
 
-/** Close all file system watchers and monitor intervals to release resources. */
+/** Close all file system watchers, monitor intervals, and ephemeral cache on shutdown. */
 function closeWatchers(handles: WatcherHandles): void {
   for (const w of handles.watchers) {
     try { w.close(); } catch { /* ignore */ }
@@ -377,6 +469,14 @@ function closeWatchers(handles: WatcherHandles): void {
     try { clearInterval(interval); } catch { /* ignore */ }
   }
   handles.monitorIntervals.length = 0;
+  if (handles.prdCacheDir) {
+    try {
+      rmSync(handles.prdCacheDir, { recursive: true, force: true });
+      console.log("[shutdown] PRD cache removed");
+    } catch {
+      // Non-fatal
+    }
+  }
 }
 
 function setCorsHeaders(res: ServerResponse): void {
@@ -493,6 +593,7 @@ async function handleApiRoutes(
   if (await handleScopedRoute(isInScope(ctx.scope, "hench"), handleAdaptiveRoute(req, res, ctx))) return true;
   if (isInScope(ctx.scope, "rex") && handleValidationRoute(req, res, ctx)) return true;
   if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleTokenUsageRoute(req, res, ctx))) return true;
+  if (await handleScopedRoute(isInScope(ctx.scope, "rex"), handleMergeGraphRoute(req, res, ctx))) return true;
   if (handleDataRoute(req, res, ctx, watcher)) return true;
   if (assets && handleStaticRoute(req, res, ctx, assets)) return true;
   return false;
@@ -614,6 +715,18 @@ export async function startServer(
     process.exit(1);
   }
 
+  // Ensure legacy .rex/prd.json is migrated to folder-tree format before serving any PRD-backed routes
+  if (isInScope(scope, "rex")) {
+    const migrationResult = await ensureLegacyPrdMigrated(absDir);
+    if (migrationResult.migrated) {
+      const itemCount = migrationResult.itemCount ?? 0;
+      console.log(
+        `✓ Migrated ${itemCount} item(s) from legacy prd.json to folder-tree format.\n` +
+        `  Backup saved to: ${migrationResult.backupPath}`
+      );
+    }
+  }
+
   // Create server context
   const ctx: ServerContext = { projectDir: absDir, svDir, rexDir, dev, scope };
 
@@ -689,17 +802,31 @@ export async function startServer(
         // Non-fatal: port file is a convenience, not a requirement
       }
 
+      // ── Generate ephemeral PRD JSON cache ──────────────────────────────
+      // `.rex/.cache/prd.json` is the fast-path read target for all web
+      // route handlers while the server is running. It is regenerated here
+      // at boot and refreshed by the rex watcher on every change. The
+      // `.cache/` directory is removed on shutdown.
+      if (isInScope(scope, "rex") && existsSync(rexDir)) {
+        await refreshPRDCache(rexDir);
+      }
+
       logStartup(actualPort, ctx, watcherHandles.henchRunsDir);
 
       // ── Graceful shutdown ───────────────────────────────────────────────
       // Single handler coordinates cleanup in dependency order:
-      //   0. File watchers          (release OS file descriptors)
-      //   1. Hench child processes  (avoid orphaned agents)
-      //   2. WebSocket connections  (clean close frames)
-      //   3. HTTP server            (drain in-flight requests)
-      //   4. Port file              (orchestrator discovery)
+      //   0. File watchers + PRD cache  (release OS resources)
+      //   1. Hench child processes      (avoid orphaned agents)
+      //   2. WebSocket connections      (clean close frames)
+      //   3. HTTP server                (drain in-flight requests)
+      //   4. Port file                  (orchestrator discovery)
       // A second signal forces immediate exit; overall timeout prevents hangs.
       registerShutdownHandlers(server, ws, portFilePath, actualPort, undefined, {}, watcherHandles);
+      // Last-resort safety net: remove PRD cache even if graceful shutdown never runs.
+      if (watcherHandles.prdCacheDir) {
+        const cacheToRemove = watcherHandles.prdCacheDir;
+        process.once("exit", () => { try { rmSync(cacheToRemove, { recursive: true, force: true }); } catch { /* ignore */ } });
+      }
 
       resolvePromise({
         port: actualPort,

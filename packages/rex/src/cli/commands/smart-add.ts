@@ -3,8 +3,17 @@ import { access, readFile, unlink } from "node:fs/promises";
 import { atomicWriteJSON } from "../../store/atomic-write.js";
 import { createInterface } from "node:readline";
 import { randomUUID } from "node:crypto";
-import { resolveStore } from "../../store/index.js";
+import {
+  resolveStore,
+  FileStore,
+  resolvePRDFile,
+  findPRDFileForBranch,
+  resolveGitBranch,
+  resolvePRDFilename,
+} from "../../store/index.js";
 import { findItem } from "../../core/tree.js";
+import { getFolderTreePath } from "../folder-tree-path.js";
+import { syncFolderTree } from "./folder-tree-sync.js";
 import { cascadeParentReset } from "../../core/parent-reset.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
@@ -31,7 +40,7 @@ import {
   attachDuplicateReasonsToProposals,
   buildDuplicateOverrideMarkerIndex,
 } from "./smart-add-duplicates.js";
-import type { ProposalDuplicateMatch } from "./smart-add-duplicates.js";
+import type { ProposalDuplicateMatch, ItemFileMap } from "./smart-add-duplicates.js";
 import type { LLMVendor, LLMConfig } from "@n-dx/llm-client";
 import { printVendorModelHeader, resolveVendorModel } from "@n-dx/llm-client";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
@@ -471,6 +480,7 @@ export async function applyDuplicateProposalMerges(
 }> {
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+  const attributionOptions = { applyAttribution: true, projectDir: dir } as const;
   const proposalNodeIndex = buildMergeableProposalNodeIndex(proposals);
   const mergeTargetsByNodeKey: Record<string, string> = {};
   const reopenedItemIds: string[] = [];
@@ -538,7 +548,7 @@ export async function applyDuplicateProposalMerges(
     updates.mergedProposals = [...existingRecords, mergedRecord];
 
     if (Object.keys(updates).length > 0) {
-      await store.updateItem(existing.id, updates as Partial<PRDItem>);
+      await store.updateItem(existing.id, updates as Partial<PRDItem>, attributionOptions);
       mergedCount++;
       mergeTargetsByNodeKey[match.node.key] = existing.id;
     }
@@ -721,6 +731,12 @@ async function validateMergeTarget(
   return mergeTargetId;
 }
 
+interface AcceptProposalsResult {
+  added: number;
+  /** Repo-relative markdown paths of PRD files that received new items. Empty for non-FileStore adapters. */
+  prdPaths: string[];
+}
+
 async function acceptProposals(
   dir: string,
   proposals: Proposal[],
@@ -731,7 +747,7 @@ async function acceptProposals(
     mergedCount?: number;
     reopenedItemIds?: string[];
   } = {},
-): Promise<number> {
+): Promise<AcceptProposalsResult> {
   const {
     parentId,
     overrideMarkersByNodeKey,
@@ -741,13 +757,26 @@ async function acceptProposals(
   } = options;
   const rexDir = join(dir, REX_DIR);
   const store = await resolveStore(rexDir);
+
+  // Ensure the current branch's PRD file exists and is the write target.
+  if (store instanceof FileStore) {
+    const branch = resolveGitBranch(dir);
+    if (branch !== "unknown") {
+      const resolution = await resolvePRDFile(rexDir, dir);
+      store.setCurrentBranchFile(resolution.filename);
+    }
+  }
+
   const parentLevel = await resolveParentLevel(dir, parentId);
+  const attributionOptions = { applyAttribution: true, projectDir: dir } as const;
 
   let addedCount = 0;
   // Track newly created container IDs so we can clean up empty ones after merges
   const newContainerIds: string[] = [];
   // Track existing containers reused via existingId so we cascade-reset them
   const reusedContainerIds: string[] = [];
+  // Track every newly added item ID so we can resolve which PRD files received writes.
+  const addedItemIds: string[] = [];
 
   for (let pIdx = 0; pIdx < proposals.length; pIdx++) {
     const p = proposals[pIdx];
@@ -771,7 +800,7 @@ async function acceptProposals(
           reusedContainerIds.push(epicExistingRef);
           // Update title if the LLM expanded the scope
           if (p.epic.title && p.epic.title !== existing.item.title) {
-            await store.updateItem(epicExistingRef, { title: p.epic.title });
+            await store.updateItem(epicExistingRef, { title: p.epic.title }, attributionOptions);
           }
         }
         // If not found, fall through to create a new epic (LLM hallucinated the ID)
@@ -785,8 +814,9 @@ async function acceptProposals(
           status: "pending",
           source: "smart-add",
           ...(epicMarker ? { overrideMarker: epicMarker } : {}),
-        });
+        }, undefined, attributionOptions);
         addedCount++;
+        addedItemIds.push(epicId);
         newContainerIds.push(epicId);
       }
 
@@ -810,7 +840,7 @@ async function acceptProposals(
             featureReused = true;
             reusedContainerIds.push(featureExistingRef);
             if (f.title && f.title !== existing.item.title) {
-              await store.updateItem(featureExistingRef, { title: f.title });
+              await store.updateItem(featureExistingRef, { title: f.title }, attributionOptions);
             }
           }
         }
@@ -827,8 +857,10 @@ async function acceptProposals(
               ...(featureMarker ? { overrideMarker: featureMarker } : {}),
             },
             epicId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(featureId);
           newContainerIds.push(featureId);
         }
 
@@ -840,9 +872,10 @@ async function acceptProposals(
           );
           if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
+          const taskId = randomUUID();
           await store.addItem(
             {
-              id: randomUUID(),
+              id: taskId,
               title: t.title,
               level: "task",
               status: "pending",
@@ -854,8 +887,10 @@ async function acceptProposals(
               ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             featureId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(taskId);
         }
       }
     } else if (parentLevel === "epic") {
@@ -880,8 +915,10 @@ async function acceptProposals(
               ...(featureMarker ? { overrideMarker: featureMarker } : {}),
             },
             parentId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(featureId);
           newContainerIds.push(featureId);
         }
 
@@ -893,9 +930,10 @@ async function acceptProposals(
           );
           if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
+          const taskId = randomUUID();
           await store.addItem(
             {
-              id: randomUUID(),
+              id: taskId,
               title: t.title,
               level: "task",
               status: "pending",
@@ -907,8 +945,10 @@ async function acceptProposals(
               ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             featureId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(taskId);
         }
       }
     } else if (parentLevel === "feature") {
@@ -924,9 +964,10 @@ async function acceptProposals(
           );
           if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
+          const taskId = randomUUID();
           await store.addItem(
             {
-              id: randomUUID(),
+              id: taskId,
               title: t.title,
               level: "task",
               status: "pending",
@@ -938,8 +979,10 @@ async function acceptProposals(
               ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             parentId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(taskId);
         }
       }
     } else if (parentLevel === "task") {
@@ -954,9 +997,10 @@ async function acceptProposals(
           );
           if (taskMergeTarget) continue;
           const taskMarker = overrideMarkersByNodeKey?.[`p${pIdx}:task:${fIdx}:${tIdx}`];
+          const subtaskId = randomUUID();
           await store.addItem(
             {
-              id: randomUUID(),
+              id: subtaskId,
               title: t.title,
               level: "subtask",
               status: "pending",
@@ -968,8 +1012,10 @@ async function acceptProposals(
               ...(taskMarker ? { overrideMarker: taskMarker } : {}),
             },
             parentId,
+            attributionOptions,
           );
           addedCount++;
+          addedItemIds.push(subtaskId);
         }
       }
     }
@@ -1005,16 +1051,16 @@ async function acceptProposals(
   }
 
   // Reset completed ancestors when adding under a completed parent
-  await cascadeParentReset(store, parentId);
+  await cascadeParentReset(store, parentId, attributionOptions);
 
   // Reset completed reused containers (existingId) and their ancestors
   for (const id of reusedContainerIds) {
-    await cascadeParentReset(store, id);
+    await cascadeParentReset(store, id, attributionOptions);
   }
 
   // Cascade-reset reopened merge targets and their ancestors
   for (const id of reopenedItemIds) {
-    await cascadeParentReset(store, id);
+    await cascadeParentReset(store, id, attributionOptions);
   }
 
   const overrideCount = overrideMarkersByNodeKey
@@ -1028,7 +1074,27 @@ async function acceptProposals(
 
   await clearPending(dir);
 
-  return addedCount;
+  // Persist the updated tree to the folder structure.
+  await syncFolderTree(rexDir, store);
+
+  // Resolve folder-tree paths for newly added items. Items removed by the
+  // empty-container cleanup above are naturally excluded since they're no
+  // longer in addedItemIds.
+  const folderTreePaths: string[] = [];
+  {
+    const doc = await store.loadDocument();
+    const seen = new Set<string>();
+    for (const id of addedItemIds) {
+      const path = getFolderTreePath(doc.items, id);
+      if (path && !seen.has(path)) {
+        seen.add(path);
+        folderTreePaths.push(path);
+      }
+    }
+    folderTreePaths.sort();
+  }
+
+  return { added: addedCount, prdPaths: folderTreePaths };
 }
 
 type SmartAddInput = {
@@ -1042,6 +1108,8 @@ type SmartAddInput = {
 type SmartAddContext = {
   existing: PRDItem[];
   parentLevel?: ItemLevel;
+  /** Item-to-file ownership map for cross-PRD duplicate detection. */
+  itemFileMap?: ItemFileMap;
 };
 
 function parseSmartAddInput(
@@ -1127,9 +1195,22 @@ async function replayCachedIfRequested(
   }
 
   info(`Accepting ${cached.proposals.length} cached proposal(s)...`);
-  const added = await acceptProposals(dir, cached.proposals, { parentId: cached.parentId });
-  result(`Added ${added} items to PRD.`);
+  const acceptResult = await acceptProposals(dir, cached.proposals, { parentId: cached.parentId });
+  emitPrdPaths(acceptResult.prdPaths);
+  result(`Added ${acceptResult.added} items to PRD.`);
   return true;
+}
+
+/**
+ * Emit a human-readable "Added to: <path>" line per touched PRD file.
+ *
+ * Called before the "Added N items to PRD." summary so users see exactly
+ * which Markdown PRD file(s) received the new items.
+ */
+function emitPrdPaths(prdPaths: string[]): void {
+  for (const p of prdPaths) {
+    result(`Added to: ${p}`);
+  }
 }
 
 async function resolveSmartAddModel(
@@ -1177,7 +1258,12 @@ async function loadSmartAddContext(
   const doc = await store.loadDocument();
   const existing = doc.items;
 
-  if (!parentId) return { existing };
+  // Extract item-to-file map for cross-PRD duplicate detection.
+  // FileStore populates this map as a side effect of loadDocument().
+  const itemFileMap: ItemFileMap | undefined =
+    store instanceof FileStore ? store.getItemFileMap() : undefined;
+
+  if (!parentId) return { existing, itemFileMap };
 
   const parentEntry = findItem(existing, parentId);
   if (!parentEntry) {
@@ -1195,7 +1281,7 @@ async function loadSmartAddContext(
     );
   }
 
-  return { existing, parentLevel };
+  return { existing, parentLevel, itemFileMap };
 }
 
 async function generateSmartAddProposals(params: {
@@ -1276,8 +1362,9 @@ function renderSmartAddProposals(params: {
   qualityIssues: QualityIssue[];
   isJson: boolean;
   thresholdWeeks?: number;
+  targetFile?: string;
 }): void {
-  const { proposals, parentId, parentLevel, qualityIssues, isJson, thresholdWeeks } = params;
+  const { proposals, parentId, parentLevel, qualityIssues, isJson, thresholdWeeks, targetFile } = params;
   if (isJson) return;
 
   const summary = formatProposalSummary(proposals, parentLevel);
@@ -1287,6 +1374,9 @@ function renderSmartAddProposals(params: {
     info(`\nProposed structure (${summary}):`);
   }
   info(formatProposalTree(proposals, parentLevel, thresholdWeeks));
+  if (targetFile && targetFile !== "prd.json") {
+    info(`  Target file: ${targetFile}`);
+  }
 
   if (qualityIssues.length > 0) {
     warn("");
@@ -1316,8 +1406,9 @@ async function runInteractiveSmartAddApproval(params: {
   parentLevel?: ItemLevel;
   model?: string;
   thresholdWeeks?: number;
+  itemFileMap?: ItemFileMap;
 }): Promise<void> {
-  const { dir, existing, parentId, parentLevel, model, thresholdWeeks } = params;
+  const { dir, existing, parentId, parentLevel, model, thresholdWeeks, itemFileMap } = params;
   const { adjustGranularity } = await import("../../analyze/index.js");
   const resolvedModel = model;
   let currentProposals = params.proposals;
@@ -1370,7 +1461,7 @@ async function runInteractiveSmartAddApproval(params: {
           info("");
 
           currentDuplicateMatches = filterPlacedDuplicateMatches(
-            matchProposalNodesToPRD(currentProposals, existing),
+            matchProposalNodesToPRD(currentProposals, existing, itemFileMap),
             currentProposals,
           );
           await maybeCacheSmartAddProposals(dir, currentProposals, parentId, hashPRD(existing));
@@ -1420,17 +1511,18 @@ async function runInteractiveSmartAddApproval(params: {
         }
       }
 
-      const added = await acceptProposals(dir, currentProposals, {
+      const acceptResult = await acceptProposals(dir, currentProposals, {
         parentId,
         overrideMarkersByNodeKey,
         mergeTargetsByNodeKey,
         mergedCount,
         reopenedItemIds,
       });
+      emitPrdPaths(acceptResult.prdPaths);
       if (mergedCount > 0) {
-        result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);
+        result(`Merged ${mergedCount} duplicate node(s) and added ${acceptResult.added} new item(s) to PRD.`);
       } else {
-        result(`Added ${added} items to PRD.`);
+        result(`Added ${acceptResult.added} items to PRD.`);
       }
       done = true;
       continue;
@@ -1484,17 +1576,18 @@ async function runInteractiveSmartAddApproval(params: {
       }
     }
 
-    const added = await acceptProposals(dir, selected, {
+    const acceptResult = await acceptProposals(dir, selected, {
       parentId,
       overrideMarkersByNodeKey,
       mergeTargetsByNodeKey,
       mergedCount,
       reopenedItemIds,
     });
+    emitPrdPaths(acceptResult.prdPaths);
     if (mergedCount > 0) {
-      result(`Merged ${mergedCount} duplicate node(s) and added ${added} new item(s) to PRD.`);
+      result(`Merged ${mergedCount} duplicate node(s) and added ${acceptResult.added} new item(s) to PRD.`);
     } else {
-      result(`Added ${added} items to PRD.`);
+      result(`Added ${acceptResult.added} items to PRD.`);
     }
 
     const rejected = currentProposals.filter((_, i) => !decision.approved.includes(i));
@@ -1520,6 +1613,7 @@ async function finalizeSmartAdd(params: {
   parentLevel?: ItemLevel;
   model?: string;
   thresholdWeeks?: number;
+  itemFileMap?: ItemFileMap;
 }): Promise<void> {
   const {
     dir,
@@ -1533,6 +1627,7 @@ async function finalizeSmartAdd(params: {
     parentLevel,
     model,
     thresholdWeeks,
+    itemFileMap,
   } = params;
 
   await maybeCacheSmartAddProposals(dir, proposals, parentId, hashPRD(existing));
@@ -1553,16 +1648,28 @@ async function finalizeSmartAdd(params: {
       return;
     }
 
-    const added = await acceptProposals(dir, proposals, { parentId });
+    const acceptResult = await acceptProposals(dir, proposals, { parentId });
     if (isJson) {
-      result(JSON.stringify({ proposals, added, qualityIssues }, null, 2));
+      result(
+        JSON.stringify(
+          {
+            proposals,
+            added: acceptResult.added,
+            qualityIssues,
+            ...(acceptResult.prdPaths.length > 0 ? { prdPaths: acceptResult.prdPaths } : {}),
+          },
+          null,
+          2,
+        ),
+      );
       return;
     }
 
     if (qualityIssues.length > 0) {
       warn(`Accepted with ${qualityIssues.length} quality warning(s).`);
     }
-    result(`Added ${added} items to PRD.`);
+    emitPrdPaths(acceptResult.prdPaths);
+    result(`Added ${acceptResult.added} items to PRD.`);
     return;
   }
 
@@ -1576,6 +1683,7 @@ async function finalizeSmartAdd(params: {
       parentLevel,
       model,
       thresholdWeeks,
+      itemFileMap,
     });
     return;
   }
@@ -1604,7 +1712,7 @@ export async function cmdSmartAdd(
   }
 
   const model = await resolveSmartAddModel(dir, flags.model);
-  const { existing, parentLevel } = await loadSmartAddContext(dir, input.parentId);
+  const { existing, parentLevel, itemFileMap } = await loadSmartAddContext(dir, input.parentId);
   const proposals = await generateSmartAddProposals({
     dir,
     existing,
@@ -1656,7 +1764,7 @@ export async function cmdSmartAdd(
   }
 
   const duplicateMatches = filterPlacedDuplicateMatches(
-    matchProposalNodesToPRD(consolidatedProposals, existing),
+    matchProposalNodesToPRD(consolidatedProposals, existing, itemFileMap),
     consolidatedProposals,
   );
   const proposalsWithReasons = attachDuplicateReasonsToProposals(consolidatedProposals, duplicateMatches);
@@ -1666,6 +1774,17 @@ export async function cmdSmartAdd(
     return;
   }
 
+  // Resolve target filename for approval display (read-only, no file creation)
+  let targetFile: string | undefined;
+  {
+    const rexDir = join(dir, REX_DIR);
+    const branch = resolveGitBranch(dir);
+    if (branch !== "unknown") {
+      const existingBranchFile = await findPRDFileForBranch(rexDir, branch);
+      targetFile = existingBranchFile ?? resolvePRDFilename(dir) ?? undefined;
+    }
+  }
+
   renderSmartAddProposals({
     proposals: proposalsWithReasons,
     parentId: input.parentId,
@@ -1673,6 +1792,7 @@ export async function cmdSmartAdd(
     qualityIssues,
     isJson: input.isJson,
     thresholdWeeks,
+    targetFile,
   });
 
   await finalizeSmartAdd({
@@ -1687,5 +1807,6 @@ export async function cmdSmartAdd(
     parentLevel,
     model,
     thresholdWeeks,
+    itemFileMap,
   });
 }

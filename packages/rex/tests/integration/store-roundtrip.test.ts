@@ -1,13 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createStore, ensureRexDir } from "../../src/store/index.js";
 import { SCHEMA_VERSION } from "../../src/schema/index.js";
 import { toCanonicalJSON } from "../../src/core/canonical.js";
+import { parseDocument } from "../../src/store/markdown-parser.js";
+import { PRD_MARKDOWN_FILENAME } from "../../src/store/prd-md-migration.js";
 import type { PRDStore } from "../../src/store/index.js";
 import type { PRDItem, PRDDocument } from "../../src/schema/index.js";
 
+async function readMarkdownDoc(rexDir: string): Promise<PRDDocument> {
+  const parsed = parseDocument(await readFile(join(rexDir, PRD_MARKDOWN_FILENAME), "utf-8"));
+  if (!parsed.ok) throw parsed.error;
+  return parsed.data;
+}
+
+// Store roundtrip integration tests using folder-tree backend.
+// These tests verify that mutations persisted to the folder-tree format
+// can be correctly loaded back via parseFolderTree.
 describe("Store roundtrip integration", () => {
   let tmpDir: string;
   let rexDir: string;
@@ -19,12 +30,11 @@ describe("Store roundtrip integration", () => {
     await ensureRexDir(rexDir);
     store = createStore("file", rexDir);
 
-    const doc: PRDDocument = {
-      schema: SCHEMA_VERSION,
-      title: "Integration Test",
-      items: [],
-    };
-    await writeFile(join(rexDir, "prd.json"), toCanonicalJSON(doc), "utf-8");
+    await writeFile(
+      join(rexDir, "prd.md"),
+      `---\nschema: ${SCHEMA_VERSION}\ntitle: Integration Test\n---\n\n# Integration Test\n`,
+      "utf-8",
+    );
     await writeFile(
       join(rexDir, "config.json"),
       toCanonicalJSON({ schema: SCHEMA_VERSION, project: "test", adapter: "file" }),
@@ -38,7 +48,7 @@ describe("Store roundtrip integration", () => {
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("full lifecycle: add items, read back, update, verify", async () => {
+  it("full lifecycle persists state to folder tree", async () => {
     // Add an epic
     const epic: PRDItem = {
       id: "epic-1",
@@ -102,8 +112,26 @@ describe("Store roundtrip integration", () => {
     expect(afterRemove.items[0].children![0].children!.length).toBe(1);
   });
 
-  it("passthrough preserves unknown fields", async () => {
-    // Write doc with unknown fields directly
+  it("does not persist storage metadata (branch, sourceFile) to folder tree", async () => {
+    // Storage fields like branch and sourceFile are not persisted to folder-tree
+    // because they are internal metadata, not item content
+    await store.addItem({
+      id: "epic-attrib",
+      title: "Attributed Epic",
+      status: "pending",
+      level: "epic",
+      branch: "feature/prd-attribution",
+      sourceFile: ".rex/prd_feature-prd-attribution_2026-04-24.md",
+    });
+
+    const reloaded = await store.loadDocument();
+    const epic = reloaded.items.find((item) => item.id === "epic-attrib");
+    expect(epic?.branch).toBeUndefined();
+    expect(epic?.sourceFile).toBeUndefined();
+    expect(epic?.title).toBe("Attributed Epic");
+  });
+
+  it("passthrough preserves both scalar and complex unknown fields", async () => {
     const docWithExtras: PRDDocument = {
       schema: SCHEMA_VERSION,
       title: "Extended",
@@ -113,21 +141,24 @@ describe("Store roundtrip integration", () => {
           title: "Epic",
           status: "pending",
           level: "epic",
+          customString: "preserved",
           customMeta: { internal: true },
+          customList: [{ a: 1 }, { a: 2 }],
         } as PRDItem,
       ],
-      projectMeta: "preserved",
     } as PRDDocument;
     await store.saveDocument(docWithExtras);
 
     const reloaded = await store.loadDocument();
-    expect((reloaded as Record<string, unknown>).projectMeta).toBe("preserved");
-    expect((reloaded.items[0] as Record<string, unknown>).customMeta).toEqual({
-      internal: true,
-    });
+    const item = reloaded.items[0] as Record<string, unknown>;
+    expect(item.customString).toBe("preserved");
+    expect(item.customMeta).toEqual({ internal: true });
+    expect(item.customList).toEqual([{ a: 1 }, { a: 2 }]);
   });
 
-  it("persists override marker metadata only when explicitly provided", async () => {
+  it("persists overrideMarker through round-trip", async () => {
+    // overrideMarker is a defined schema field (DuplicateOverrideMarker) and
+    // round-trips losslessly through the folder tree.
     await store.addItem({
       id: "epic-normal",
       title: "Normal Epic",
@@ -135,37 +166,30 @@ describe("Store roundtrip integration", () => {
       level: "epic",
     });
 
+    const marker = {
+      type: "duplicate_guard_override" as const,
+      reason: "exact_title" as const,
+      reasonRef: "exact_title:epic-existing",
+      matchedItemId: "epic-existing",
+      matchedItemTitle: "Existing Epic",
+      matchedItemLevel: "epic" as const,
+      matchedItemStatus: "completed" as const,
+      createdAt: "2026-02-22T20:30:44.000Z",
+    };
+
     await store.addItem({
       id: "epic-force",
       title: "Force-created Epic",
       status: "pending",
       level: "epic",
-      overrideMarker: {
-        type: "duplicate_guard_override",
-        reason: "exact_title",
-        reasonRef: "exact_title:epic-existing",
-        matchedItemId: "epic-existing",
-        matchedItemTitle: "Existing Epic",
-        matchedItemLevel: "epic",
-        matchedItemStatus: "completed",
-        createdAt: "2026-02-22T20:30:44.000Z",
-      },
+      overrideMarker: marker,
     });
 
-    const normal = await store.getItem("epic-normal");
-    const forceCreated = await store.getItem("epic-force");
+    const loaded = await store.loadDocument();
+    const forceCreated = loaded.items.find((item) => item.id === "epic-force");
 
-    expect(normal?.overrideMarker).toBeUndefined();
-    expect(forceCreated?.overrideMarker).toEqual({
-      type: "duplicate_guard_override",
-      reason: "exact_title",
-      reasonRef: "exact_title:epic-existing",
-      matchedItemId: "epic-existing",
-      matchedItemTitle: "Existing Epic",
-      matchedItemLevel: "epic",
-      matchedItemStatus: "completed",
-      createdAt: "2026-02-22T20:30:44.000Z",
-    });
+    expect(forceCreated?.overrideMarker).toEqual(marker);
+    expect(forceCreated?.title).toBe("Force-created Epic");
   });
 
   it("log append and read", async () => {
@@ -232,6 +256,30 @@ describe("Store roundtrip integration", () => {
     await expect(store.saveDocument(badDoc)).rejects.toThrow("Invalid document");
   });
 
+  it("serializes rapid single-file mutations without corrupting folder tree", async () => {
+    await store.addItem({
+      id: "epic-1",
+      title: "Concurrent Epic",
+      status: "pending",
+      level: "epic",
+    });
+
+    await Promise.all([
+      store.updateItem("epic-1", { title: "Concurrent Epic Updated" }),
+      store.addItem({
+        id: "epic-2",
+        title: "Second Epic",
+        status: "pending",
+        level: "epic",
+      }),
+    ]);
+
+    const synced = await store.loadDocument();
+    expect(synced.items).toHaveLength(2);
+    expect(synced.items.map((item) => item.id).sort()).toEqual(["epic-1", "epic-2"]);
+    expect(synced.items.find((item) => item.id === "epic-1")?.title).toBe("Concurrent Epic Updated");
+  });
+
   it("loads and round-trips workflow content", async () => {
     const workflow = await store.loadWorkflow();
     expect(workflow).toBe("# Test Workflow");
@@ -278,11 +326,11 @@ describe("Store roundtrip integration", () => {
     await ensureRexDir(rexDir2);
     const store2 = createStore("file", rexDir2);
 
-    await writeFile(join(rexDir2, "prd.json"), toCanonicalJSON({
-      schema: SCHEMA_VERSION,
-      title: "Test",
-      items: [],
-    }), "utf-8");
+    await writeFile(
+      join(rexDir2, "prd.md"),
+      `---\nschema: ${SCHEMA_VERSION}\ntitle: Test\n---\n\n# Test\n`,
+      "utf-8",
+    );
 
     const entries = await store2.readLog();
     expect(entries).toEqual([]);

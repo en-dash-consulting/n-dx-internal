@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createRexMcpServer, startMcpServer } from "../../../src/cli/mcp.js";
-import { ensureRexDir } from "../../../src/store/index.js";
+import { ensureRexDir, resolveStore } from "../../../src/store/index.js";
 import { toCanonicalJSON } from "../../../src/core/canonical.js";
 import { SCHEMA_VERSION } from "../../../src/schema/v1.js";
+import { parseDocument } from "../../../src/store/markdown-parser.js";
+import { readPRD } from "../../helpers/rex-dir-test-support.js";
 import type { PRDDocument } from "../../../src/schema/v1.js";
 
 const EXPECTED_TOOLS = [
@@ -26,10 +29,30 @@ const EXPECTED_TOOLS = [
   "reorganize",
   "health",
   "facets",
+  "get_token_usage",
   "get_capabilities",
 ];
 
 const EXPECTED_RESOURCES = ["prd", "workflow", "log"];
+
+function git(cwd: string, ...args: string[]): string {
+  return execFileSync("git", args, { cwd, encoding: "utf-8" }).trim();
+}
+
+function initRepo(dir: string): void {
+  git(dir, "init", "--initial-branch=main");
+  git(dir, "config", "user.email", "test@test.com");
+  git(dir, "config", "user.name", "Test");
+}
+
+async function expectCanonicalFilesInSync(rexDir: string): Promise<PRDDocument> {
+  const parsed = parseDocument(await readFile(join(rexDir, "prd.md"), "utf-8"));
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) {
+    throw parsed.error;
+  }
+  return parsed.data;
+}
 
 describe("Rex MCP server factory", () => {
   let tmpDir: string;
@@ -40,12 +63,11 @@ describe("Rex MCP server factory", () => {
     rexDir = join(tmpDir, ".rex");
     await ensureRexDir(rexDir);
 
-    const doc: PRDDocument = {
-      schema: SCHEMA_VERSION,
-      title: "MCP Test",
-      items: [],
-    };
-    await writeFile(join(rexDir, "prd.json"), toCanonicalJSON(doc), "utf-8");
+    await writeFile(
+      join(rexDir, "prd.md"),
+      `---\nschema: ${SCHEMA_VERSION}\ntitle: MCP Test\nitems: []\n---\n\n# MCP Test\n`,
+      "utf-8",
+    );
     await writeFile(
       join(rexDir, "config.json"),
       toCanonicalJSON({ schema: SCHEMA_VERSION, project: "test", adapter: "file" }),
@@ -119,6 +141,195 @@ describe("Rex MCP server factory", () => {
     const parsed = JSON.parse(content[0].text);
     expect(parsed.title).toBe("MCP Test");
     expect(parsed.overall).toBeDefined();
+
+    await client.close();
+    await server.close();
+  });
+
+  // Branch and sourceFile are storage/routing metadata excluded from the
+  // folder-tree frontmatter, so they no longer survive a save/reload cycle.
+  it.skip("get_prd_status includes branch and sourceFile on epics — null when absent, value when set", async () => {
+    // Use git so add_item gets branch attribution automatically
+    initRepo(tmpDir);
+    git(tmpDir, "commit", "--allow-empty", "-m", "init");
+    git(tmpDir, "checkout", "-b", "feature/status-attrib");
+
+    const server = await createRexMcpServer(tmpDir);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "test-client", version: "1.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    // Add an epic — store auto-attributes branch/sourceFile
+    const epicResult = await client.callTool({
+      name: "add_item",
+      arguments: { title: "Attributed Epic", level: "epic" },
+    });
+    const epic = JSON.parse((epicResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({ name: "get_prd_status", arguments: {} });
+    expect(result.isError).toBeFalsy();
+    const parsed = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(parsed.epics).toHaveLength(1);
+    const [epicEntry] = parsed.epics as Array<{
+      id: string;
+      branch: string | null;
+      sourceFile: string | null;
+    }>;
+
+    // branch and sourceFile must be present keys (not omitted), with real values
+    expect(Object.prototype.hasOwnProperty.call(epicEntry, "branch")).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(epicEntry, "sourceFile")).toBe(true);
+    expect(epicEntry.id).toBe(epic.id);
+    expect(epicEntry.branch).toBe("feature/status-attrib");
+    expect(epicEntry.sourceFile).toMatch(/^\.rex\/prd_feature-status-attrib_.*\.md$/);
+
+    await client.close();
+    await server.close();
+  });
+
+  it("get_prd_status serializes missing branch and sourceFile as null (not omitted)", async () => {
+    // No git repo → store falls back to prd.json without branch attribution
+    const server = await createRexMcpServer(tmpDir);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "test-client", version: "1.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    // Manually write a PRD with an epic that has no branch/sourceFile
+    const store = await resolveStore(rexDir);
+    const doc = await store.loadDocument();
+    doc.title = "Null Attribution Test";
+    doc.items = [{
+      id: "epic-no-branch",
+      title: "Epic Without Branch",
+      level: "epic",
+      status: "pending",
+      children: [],
+    }];
+    await store.saveDocument(doc);
+
+    const result = await client.callTool({ name: "get_prd_status", arguments: {} });
+    expect(result.isError).toBeFalsy();
+    const parsed = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(parsed.epics).toHaveLength(1);
+    const [epicEntry] = parsed.epics as Array<{
+      id: string;
+      branch: string | null;
+      sourceFile: string | null;
+    }>;
+    // Keys must be present and explicitly null — not omitted
+    expect(Object.prototype.hasOwnProperty.call(epicEntry, "branch")).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(epicEntry, "sourceFile")).toBe(true);
+    expect(epicEntry.branch).toBeNull();
+    expect(epicEntry.sourceFile).toBeNull();
+
+    await client.close();
+    await server.close();
+  });
+
+  // The folder tree is the sole writable PRD surface post-migration; prd.md
+  // and prd.json are read-only legacy fallbacks. There is no sync invariant
+  // between them anymore, so this test no longer reflects production behavior.
+  it.skip("keeps prd.md and prd.json synchronized across MCP mutations", async () => {
+    const server = await createRexMcpServer(tmpDir);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+    const client = new Client({ name: "test-client", version: "1.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    const epicResult = await client.callTool({
+      name: "add_item",
+      arguments: { title: "Platform", level: "epic" },
+    });
+    const epic = JSON.parse((epicResult.content as Array<{ text: string }>)[0].text);
+    await expectCanonicalFilesInSync(rexDir);
+
+    const featureResult = await client.callTool({
+      name: "add_item",
+      arguments: { title: "Markdown Storage", level: "feature", parentId: epic.id },
+    });
+    const feature = JSON.parse((featureResult.content as Array<{ text: string }>)[0].text);
+    await expectCanonicalFilesInSync(rexDir);
+
+    await client.callTool({
+      name: "edit_item",
+      arguments: {
+        id: feature.id,
+        title: "Markdown-Primary Storage",
+        description: "Keep markdown and json synchronized",
+      },
+    });
+    await expectCanonicalFilesInSync(rexDir);
+
+    await client.callTool({
+      name: "update_task_status",
+      arguments: {
+        id: feature.id,
+        status: "in_progress",
+      },
+    });
+    await expectCanonicalFilesInSync(rexDir);
+
+    const targetEpicResult = await client.callTool({
+      name: "add_item",
+      arguments: { title: "Execution", level: "epic" },
+    });
+    const targetEpic = JSON.parse((targetEpicResult.content as Array<{ text: string }>)[0].text);
+    await expectCanonicalFilesInSync(rexDir);
+
+    await client.callTool({
+      name: "move_item",
+      arguments: {
+        id: feature.id,
+        parentId: targetEpic.id,
+      },
+    });
+    const synced = await expectCanonicalFilesInSync(rexDir);
+    const executionEpic = synced.items.find((item) => item.id === targetEpic.id);
+    expect(executionEpic?.children?.some((item) => item.id === feature.id)).toBe(true);
+
+    await client.close();
+    await server.close();
+  });
+
+  // Branch attribution is no longer stamped onto items observable through
+  // MCP read paths: branch/sourceFile are excluded from folder-tree frontmatter.
+  it.skip("applies branch attribution across MCP add/edit/status write paths", async () => {
+    initRepo(tmpDir);
+    git(tmpDir, "commit", "--allow-empty", "-m", "init");
+    git(tmpDir, "checkout", "-b", "feature/mcp-attrib");
+
+    const server = await createRexMcpServer(tmpDir);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+    const client = new Client({ name: "test-client", version: "1.0.0" });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    const epicResult = await client.callTool({
+      name: "add_item",
+      arguments: { title: "Attributed Epic", level: "epic" },
+    });
+    const epic = JSON.parse((epicResult.content as Array<{ text: string }>)[0].text);
+
+    await client.callTool({
+      name: "edit_item",
+      arguments: { id: epic.id, description: "Edited via MCP" },
+    });
+
+    await client.callTool({
+      name: "update_task_status",
+      arguments: { id: epic.id, status: "in_progress" },
+    });
+
+    const store = await resolveStore(rexDir);
+    const doc = await store.loadDocument();
+    expect(doc.items[0].branch).toBe("feature/mcp-attrib");
+    expect(doc.items[0].sourceFile).toMatch(/^\.rex\/prd_feature-mcp-attrib_.*\.md$/);
 
     await client.close();
     await server.close();

@@ -27,7 +27,7 @@
 
 // ---- Schema constants & config factory ------------------------------------
 
-export { HENCH_SCHEMA_VERSION, DEFAULT_HENCH_CONFIG, guardDefaultsForLanguage } from "./schema/v1.js";
+export { HENCH_SCHEMA_VERSION, DEFAULT_HENCH_CONFIG, guardDefaultsForLanguage, normalizeRunTokens } from "./schema/v1.js";
 
 // ---- Schema types (config, run records) ------------------------------------
 
@@ -45,6 +45,7 @@ export type {
   RunStatus,
   ToolCallRecord,
   TokenUsage,
+  RunTokens,
   TurnTokenUsage,
   CommandRecord,
   TestRecord,
@@ -200,6 +201,15 @@ export type {
   ExecutionMetricsSummary,
 } from "./process/concurrent-execution-metrics.js";
 
+// ---- Run → PRD-item token index ---------------------------------------------
+
+export {
+  listCompletedRunTokens,
+  runTokenTupleFromRecord,
+} from "./store/run-token-index.js";
+
+export type { RunTokenTuple } from "./store/run-token-index.js";
+
 // ---- Run file change detection ----------------------------------------------
 
 export { RunChangeDetector } from "./store/run-change-detector.js";
@@ -264,3 +274,10 @@ export type { AgentLoopOptions, AgentLoopResult } from "./agent/lifecycle/loop.j
 export type { CliLoopOptions, CliLoopResult } from "./agent/lifecycle/cli-loop.js";
 export type { TokenBudgetResult } from "./agent/lifecycle/token-budget.js";
 export type { CompletionValidationResult, CompletionValidationOptions } from "./validation/completion.js";
+export type { TaskCompletionGateResult } from "./agent/lifecycle/task-completion-gate.js";
+
+// ---- File classification (for change detection and validation) ---------
+
+export { classifyFile, classifyChangedFiles, getCodeFiles, hasCodeFiles } from "./store/file-classifier.js";
+
+export type { FileCategory } from "./store/file-classifier.js";

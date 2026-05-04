@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { readPRD } from "../helpers/rex-dir-test-support.js";
 
 const cliPath = join(
   fileURLToPath(import.meta.url),
@@ -14,6 +15,8 @@ const cliPath = join(
   "cli",
   "index.js",
 );
+
+const CLI_E2E_TIMEOUT = 30000;
 
 function run(args: string[]): string {
   return execFileSync("node", [cliPath, ...args], {
@@ -73,9 +76,7 @@ describe("rex add (smart mode routing)", () => {
     expect(output).toContain("ID:");
 
     // Verify in prd.json
-    const prd = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
+    const prd = readPRD(tmpDir);
     expect(prd.items.some((i: { title: string }) => i.title === "Test Epic")).toBe(true);
   });
 
@@ -97,9 +98,7 @@ describe("rex add (smart mode routing)", () => {
     expect(output).toContain("Created epic: Flag Epic");
     expect(output).toContain("ID:");
 
-    const prd = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
+    const prd = readPRD(tmpDir);
     expect(prd.items.some((i: { title: string }) => i.title === "Flag Epic")).toBe(true);
   });
 
@@ -190,9 +189,7 @@ describe("rex add (smart mode routing)", () => {
     run(["add", "subtask", "--title=S", `--parent=${taskId}`, tmpDir]);
 
     // Read back to find the subtask id
-    const prd = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
+    const prd = readPRD(tmpDir);
     const subtaskId = prd.items[0].children[0].children[0].children[0].id;
 
     const { stderr } = runExpectFail([
@@ -203,7 +200,7 @@ describe("rex add (smart mode routing)", () => {
     ]);
 
     expect(stderr).toContain("subtask");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("smart mode with valid --parent scopes to parent", async () => {
     run(["init", tmpDir]);
@@ -225,7 +222,7 @@ describe("rex add (smart mode routing)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("shows error without .rex/ for smart add", () => {
     const { stderr } = runExpectFail([
@@ -264,7 +261,7 @@ describe("rex add (smart mode routing)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("smart mode with --description flag", async () => {
     run(["init", tmpDir]);
@@ -282,7 +279,7 @@ describe("rex add (smart mode routing)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("non-level argument triggers smart mode, not manual mode error", () => {
     // "notavalidlevel" is not a valid level, so it triggers smart mode
@@ -329,7 +326,7 @@ describe("rex add with multiple descriptions", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("two descriptions route to multi-description mode", async () => {
     run(["init", tmpDir]);
@@ -348,7 +345,7 @@ describe("rex add with multiple descriptions", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("--description flag combined with positional args", async () => {
     run(["init", tmpDir]);
@@ -368,7 +365,7 @@ describe("rex add with multiple descriptions", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("shows error without .rex/ for multi-description mode", () => {
     const { stderr } = runExpectFail([
@@ -400,7 +397,7 @@ describe("rex add with multiple descriptions", () => {
     ).toBe(true);
     // Should NOT say "2 descriptions" (the dir isn't counted as a description)
     expect(combined).not.toContain("2 descriptions");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 });
 
 describe("rex add --file (idea import)", () => {
@@ -452,7 +449,7 @@ describe("rex add --file (idea import)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("supports multiple --file flags", async () => {
     run(["init", tmpDir]);
@@ -477,7 +474,7 @@ describe("rex add --file (idea import)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("--file works alongside a description", async () => {
     run(["init", tmpDir]);
@@ -501,7 +498,7 @@ describe("rex add --file (idea import)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("--file=<path> without positional args routes correctly", async () => {
     run(["init", tmpDir]);
@@ -520,7 +517,7 @@ describe("rex add --file (idea import)", () => {
     // Should NOT show "Missing description" error
     expect(combined).not.toContain("Missing description");
     expect(combined).not.toContain("Missing level");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("positional .md file path auto-detected as file import", async () => {
     run(["init", tmpDir]);
@@ -548,7 +545,7 @@ describe("rex add --file (idea import)", () => {
       combined.includes("Failed") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("positional .txt file path auto-detected as file import", async () => {
     run(["init", tmpDir]);
@@ -565,7 +562,7 @@ describe("rex add --file (idea import)", () => {
     const combined = stderr + stdout;
     expect(combined).not.toContain("Missing description");
     expect(combined).not.toContain("Missing level");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("non-existent .md path treated as description, not file", async () => {
     run(["init", tmpDir]);
@@ -585,7 +582,7 @@ describe("rex add --file (idea import)", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 });
 
 describe("rex add with piped stdin", () => {
@@ -616,7 +613,7 @@ describe("rex add with piped stdin", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("piped multiline input is treated as single description", async () => {
     run(["init", tmpDir]);
@@ -638,7 +635,7 @@ describe("rex add with piped stdin", () => {
       timedOut,
     ).toBe(true);
     expect(combined).not.toContain("3 descriptions");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("piped stdin combines with positional descriptions", async () => {
     run(["init", tmpDir]);
@@ -662,7 +659,7 @@ describe("rex add with piped stdin", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("empty piped input is ignored", async () => {
     run(["init", tmpDir]);
@@ -687,7 +684,7 @@ describe("rex add with piped stdin", () => {
       timedOut,
     ).toBe(true);
     expect(combined).not.toContain("2 descriptions");
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("piped stdin without any other description triggers smart mode", async () => {
     run(["init", tmpDir]);
@@ -709,7 +706,7 @@ describe("rex add with piped stdin", () => {
       combined.includes("claude CLI not found") ||
       timedOut,
     ).toBe(true);
-  }, 10000);
+  }, CLI_E2E_TIMEOUT);
 
   it("shows error with no piped input and no arguments", () => {
     run(["init", tmpDir]);

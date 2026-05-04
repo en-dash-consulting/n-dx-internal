@@ -21,7 +21,7 @@
 import { h, Fragment, Component } from "preact";
 import type { VNode, ComponentChildren } from "preact";
 import { useState, useMemo, useCallback, useEffect, useRef } from "preact/hooks";
-import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution } from "./types.js";
+import type { PRDItemData, PRDDocumentData, ItemStatus, ItemLevel, Priority, TaskUsageSummary, WeeklyBudgetResolution, ItemUsageRollup } from "./types.js";
 import { computeBranchStats, completionRatio, formatTimestamp, itemMatchesFilter } from "./compute.js";
 import { isWorkItem, isRootLevel } from "./levels.js";
 import { defaultStatusFilter } from "../../views/status-filter.js";
@@ -32,7 +32,10 @@ import { resolveTaskUtilization } from "./task-utilization.js";
 import { useTreeEventDelegation } from "./tree-event-delegate.js";
 import { flattenVisibleTree, useVirtualScroll, findFlatNodeIndex, DEFAULT_ITEM_HEIGHT } from "./virtual-scroll.js";
 import type { FlatNode } from "./virtual-scroll.js";
-import { highlightSearchText } from "./tree-search.js";
+import { highlightSearchText, buildBranchVisibleSet } from "./tree-search.js";
+import { getTaskDuration } from "./durations.js";
+import { formatTokensExact, formatDuration, EMPTY_DASH } from "./format-usage.js";
+import { useLiveTick } from "./use-live-tick.js";
 
 /** Levels that can have children added via inline form. */
 const ADDABLE_LEVELS = new Set<ItemLevel>(["epic", "feature", "task"]);
@@ -65,6 +68,10 @@ const LEVEL_LABELS: Record<ItemLevel, string> = {
   task: "Task",
   subtask: "Subtask",
 };
+
+function statusSetKey(statuses: Set<ItemStatus>): string {
+  return Array.from(statuses).sort().join("|");
+}
 
 // ── Helper: collect all node IDs up to a depth ──────────────────────
 
@@ -107,6 +114,19 @@ function PriorityBadge({ priority }: { priority: Priority }) {
     "span",
     { class: `prd-priority-badge ${config.cssClass}` },
     priority,
+  );
+}
+
+function BranchBadge({ branch, sourceFile }: { branch: string; sourceFile?: string | null }) {
+  const tooltip = sourceFile ? `${branch}\n${sourceFile}` : branch;
+  return h(
+    "span",
+    {
+      class: "prd-branch-badge",
+      title: tooltip,
+      "aria-label": `Branch: ${branch}`,
+    },
+    `⎇ ${branch}`,
   );
 }
 
@@ -167,6 +187,154 @@ function TimestampSuffix({ item }: { item: PRDItemData }) {
   return null;
 }
 
+// ── Usage & duration cells ──────────────────────────────────────────
+//
+// These cells appear on every row (epic → subtask). The tree uses flex
+// layout, so an empty cell still occupies its column — a dashed
+// placeholder (`—`) is rendered for items with no recorded runs to
+// distinguish "no work yet" from "zero-token work".
+
+interface UsageCellArgs {
+  item: PRDItemData;
+  usageRollup?: ItemUsageRollup;
+  /** Fallback flat task usage (legacy taskUsageById path). */
+  usage: TaskUsageSummary;
+  showTokenBudget: boolean | undefined;
+  utilization: ReturnType<typeof resolveTaskUtilization>;
+}
+
+function renderUsageCell(args: UsageCellArgs) {
+  const { item, usageRollup, usage, showTokenBudget, utilization } = args;
+
+  // Prefer the server-emitted rollup (works for every level). Fall back
+  // to the flat self-only taskUsage entry when the rollup isn't present
+  // yet (first page-load, PRD mutated, etc.).
+  const totalTokens = usageRollup
+    ? usageRollup.total.totalTokens
+    : usage.totalTokens;
+  const totalRunCount = usageRollup
+    ? usageRollup.total.runCount
+    : usage.runCount;
+  const selfTokens = usageRollup ? usageRollup.self.totalTokens : usage.totalTokens;
+  const descendantTokens = usageRollup ? usageRollup.descendants.totalTokens : 0;
+  const hasAnyRuns = totalRunCount > 0;
+
+  if (!hasAnyRuns) {
+    return h(
+      "span",
+      {
+        class: "prd-usage-cell prd-usage-cell-empty",
+        title: "No runs yet",
+        "aria-label": "No runs recorded",
+      },
+      EMPTY_DASH,
+    );
+  }
+
+  // Secondary text distinguishes self vs. descendant contribution so a
+  // quick glance at an epic tells you whether the cost is concentrated
+  // in one task or spread across children.
+  const hasDescendantBreakdown = Boolean(
+    usageRollup && descendantTokens > 0,
+  );
+  const runPlural = totalRunCount === 1 ? "run" : "runs";
+  const breakdownTitle = hasDescendantBreakdown
+    ? `${formatTokensExact(selfTokens)} self · ${formatTokensExact(descendantTokens)} descendants · ${totalRunCount} ${runPlural}`
+    : `${formatTokensExact(totalTokens)} tokens · ${totalRunCount} ${runPlural}`;
+
+  const mainLabel = `${formatTokensExact(totalTokens)} tokens`;
+
+  // When the token-budget feature toggle is on AND this is a leaf work
+  // item (the historic scope of the budget chip), render the chip with
+  // the utilization pill as before.
+  if (showTokenBudget && isWorkItem(item.level) && selfTokens > 0) {
+    return h(
+      "span",
+      {
+        class: "prd-usage-cell prd-token-badge prd-token-badge--budget",
+        "data-utilization-reason": utilization.reason,
+        title: `${breakdownTitle} · ${utilization.label} weekly utilization`,
+      },
+      `${formatTokensExact(totalTokens)} tokens | ${utilization.label}`,
+    );
+  }
+
+  return h(
+    "span",
+    {
+      class: "prd-usage-cell prd-token-badge",
+      title: breakdownTitle,
+    },
+    mainLabel,
+    hasDescendantBreakdown
+      ? h(
+          "span",
+          {
+            class: "prd-usage-breakdown",
+            "aria-hidden": "true",
+          },
+          ` (${formatTokensExact(selfTokens)} self)`,
+        )
+      : null,
+  );
+}
+
+interface DurationCellArgs {
+  item: PRDItemData;
+  usageRollup?: ItemUsageRollup;
+  hasChildren: boolean;
+  tickMs: number | null;
+}
+
+function renderDurationCell(args: DurationCellArgs) {
+  const { item, usageRollup, hasChildren, tickMs } = args;
+  const nowMs = tickMs ?? Date.now();
+
+  // Leaf items compute duration locally so in-progress rows tick every
+  // frame (the client has the full interval log). Parent rows (epics /
+  // features) don't have descendant intervals on the client — they fall
+  // back to the server rollup's `totalMs`, refreshed on each poll.
+  // `duration` may be absent on older server payloads; fall through to
+  // local computation in that case.
+  let elapsedMs: number;
+  let isRunning: boolean;
+  let hasRecord: boolean;
+  if (hasChildren && usageRollup && usageRollup.duration) {
+    elapsedMs = usageRollup.duration.totalMs;
+    isRunning = usageRollup.duration.isRunning;
+    hasRecord = elapsedMs > 0 || isRunning;
+  } else {
+    const self = getTaskDuration(item, nowMs);
+    elapsedMs = self.elapsedMs;
+    isRunning = self.isRunning;
+    hasRecord = self.hasRecord;
+  }
+
+  if (!hasRecord) {
+    return h(
+      "span",
+      {
+        class: "prd-duration-cell prd-duration-cell-empty",
+        title: "Task has not started",
+        "aria-label": "Task has not started",
+      },
+      EMPTY_DASH,
+    );
+  }
+
+  const formatted = formatDuration(elapsedMs);
+  const cls = `prd-duration-cell${isRunning ? " prd-duration-cell-running" : ""}`;
+  return h(
+    "span",
+    {
+      class: cls,
+      title: isRunning ? "Running — updates each second" : "Final duration",
+      "aria-live": isRunning ? "polite" : undefined,
+    },
+    formatted,
+  );
+}
+
 // ── Single tree node ────────────────────────────────────────────────
 //
 // NodeRow is a pure display component. It carries **no** event handlers of
@@ -183,9 +351,22 @@ function TimestampSuffix({ item }: { item: PRDItemData }) {
 interface NodeRowProps {
   item: PRDItemData;
   taskUsage?: TaskUsageSummary;
+  /**
+   * Rolled-up token totals for this item (self + descendants + total).
+   * Emitted by the server via `/api/hench/task-usage`; the tree never
+   * aggregates usage itself. Absent when the PRD has no runs for this
+   * subtree yet.
+   */
+  usageRollup?: ItemUsageRollup;
   weeklyBudget?: WeeklyBudgetResolution | null;
   /** Whether to show token budget UI (budget percentage in usage chip). */
   showTokenBudget?: boolean;
+  /**
+   * Wall-clock millis supplied by the tree's live-tick. Only in-progress
+   * rows receive a ticking value; for other rows this is `null` so
+   * `shouldComponentUpdate` stays cheap.
+   */
+  tickMs: number | null;
   depth: number;
   isExpanded: boolean;
   hasChildren: boolean;
@@ -241,17 +422,22 @@ class NodeRow extends Component<NodeRowProps> {
     if (p.canInlineAdd !== nextProps.canInlineAdd) return true;
     if (p.canDelete !== nextProps.canDelete) return true;
     if (p.showTokenBudget !== nextProps.showTokenBudget) return true;
-    // taskUsage is an object — reference check (new object ⇒ re-render)
+    // taskUsage / usageRollup are objects — reference check
+    // (new object ⇒ re-render)
     if (p.taskUsage !== nextProps.taskUsage) return true;
+    if (p.usageRollup !== nextProps.usageRollup) return true;
     if (p.weeklyBudget !== nextProps.weeklyBudget) return true;
     if (p.searchQuery !== nextProps.searchQuery) return true;
     if (p.isSearchMatch !== nextProps.isSearchMatch) return true;
+    // Tick: only re-render if this row is actually receiving a live tick
+    // (in-progress rows carry a number; idle rows carry null).
+    if (p.tickMs !== nextProps.tickMs) return true;
     // All props match — skip render
     return false;
   }
 
   render() {
-    const { item, taskUsage, weeklyBudget, showTokenBudget, depth, isExpanded, hasChildren, isSelected, isBulkSelected, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting, searchQuery, isSearchMatch } = this.props;
+    const { item, taskUsage, usageRollup, weeklyBudget, showTokenBudget, tickMs, depth, isExpanded, hasChildren, isSelected, isBulkSelected, canInlineAdd, isInlineAddActive, isHighlighted, nodeRef, canDelete, isDeleting, searchQuery, isSearchMatch } = this.props;
     const children = item.children ?? [];
     const stats = hasChildren ? computeBranchStats(children) : null;
     const ratio = stats ? completionRatio(stats) : 0;
@@ -301,6 +487,10 @@ class NodeRow extends Component<NodeRowProps> {
       h(StatusIndicator, { status: item.status }),
       // Level badge
       h("span", { class: `prd-level-badge prd-level-${item.level}` }, LEVEL_LABELS[item.level]),
+      // Branch badge (only when attribution is present)
+      item.branch
+        ? h(BranchBadge, { branch: item.branch, sourceFile: item.sourceFile })
+        : null,
       // Title (with search highlighting when query is active)
       h("span", { class: "prd-node-title", title: item.title },
         ...(searchQuery ? highlightSearchText(item.title, searchQuery) : [item.title]),
@@ -324,22 +514,13 @@ class NodeRow extends Component<NodeRowProps> {
       item.tags && item.tags.length > 0
         ? h(TagList, { tags: item.tags })
         : null,
-      // Aggregated task token usage — badge only renders for non-zero usage
-      isWorkItem(item.level) && usage.totalTokens > 0
-        ? h(
-            "span",
-            {
-              class: `prd-token-badge${showTokenBudget ? " prd-token-badge--budget" : ""}`,
-              ...(showTokenBudget ? { "data-utilization-reason": utilization.reason } : {}),
-              title: showTokenBudget
-                ? `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"} | ${utilization.label} weekly utilization`
-                : `${usage.runCount} associated run${usage.runCount === 1 ? "" : "s"}`,
-            },
-            showTokenBudget
-              ? `${formatTokenCount(usage.totalTokens)} tokens | ${utilization.label}`
-              : `${formatTokenCount(usage.totalTokens)} tokens`,
-          )
-        : null,
+      // Token usage column — rollup-aware; renders `—` when no runs
+      // have touched this item or its subtree so empty rows don't read
+      // as "zero work" (per brief).
+      renderUsageCell({ item, usageRollup, usage, showTokenBudget, utilization }),
+      // Duration column — live-updating for in-progress rows, static
+      // for terminal rows, `—` when no work has been recorded yet.
+      renderDurationCell({ item, usageRollup, hasChildren, tickMs }),
       // Timestamp
       h(TimestampSuffix, { item }),
       // ── Inline action group (hover-reveal) ──────────────────────────
@@ -437,12 +618,37 @@ function SummaryBar({ items }: { items: PRDItemData[] }) {
 interface ToolbarProps {
   onExpandAll: () => void;
   onCollapseAll: () => void;
+  /** All branch names present in the loaded data. Dropdown shown only when > 1. */
+  availableBranches?: string[];
+  /** Currently active branch filter; null means "All branches". */
+  activeBranch?: string | null;
+  /** Called when the user selects a branch or "All". */
+  onBranchChange?: (branch: string | null) => void;
 }
 
-function Toolbar({ onExpandAll, onCollapseAll }: ToolbarProps) {
+function Toolbar({ onExpandAll, onCollapseAll, availableBranches, activeBranch, onBranchChange }: ToolbarProps) {
+  const showBranchFilter = availableBranches && availableBranches.length > 1;
   return h(
     "div",
     { class: "prd-toolbar" },
+    // Branch filter — only rendered when items from multiple branches are present
+    showBranchFilter
+      ? h(
+          "select",
+          {
+            class: "prd-toolbar-select",
+            value: activeBranch ?? "",
+            onChange: (e: Event) => {
+              const val = (e.target as HTMLSelectElement).value;
+              onBranchChange?.(val || null);
+            },
+            "aria-label": "Filter by branch",
+            title: "Filter by branch",
+          },
+          h("option", { value: "" }, "All branches"),
+          availableBranches!.map((b) => h("option", { key: b, value: b }, b)),
+        )
+      : null,
     h(
       "button",
       {
@@ -471,6 +677,12 @@ export interface PRDTreeProps {
   document: PRDDocumentData;
   /** Aggregated task token usage keyed by task ID. */
   taskUsageById?: Record<string, TaskUsageSummary>;
+  /**
+   * Rolled-up per-item token usage keyed by item ID. Emitted by the
+   * server alongside `taskUsageById`. When absent, rows fall back to
+   * `taskUsageById` for self-only counts.
+   */
+  rollupById?: Record<string, ItemUsageRollup>;
   /** Shared resolved weekly budget used for deterministic utilization display. */
   weeklyBudget?: WeeklyBudgetResolution | null;
   /** Whether to show token budget UI (budget percentage in usage chip). */
@@ -528,6 +740,18 @@ export interface PRDTreeProps {
    * This prop is accepted for backward compatibility but has no effect.
    */
   chunkSize?: number;
+  /**
+   * All branch names present in the loaded data.
+   * When more than one branch is present, the toolbar renders a filter dropdown.
+   */
+  availableBranches?: string[];
+  /**
+   * Currently active branch filter. When set, only items from this branch
+   * (and their ancestors for tree context) are visible. null = All branches.
+   */
+  activeBranch?: string | null;
+  /** Called when the user selects a different branch in the toolbar dropdown. */
+  onBranchChange?: (branch: string | null) => void;
 }
 
 // ── Item lookup helper ──────────────────────────────────────────────
@@ -545,7 +769,7 @@ function buildItemMap(items: PRDItemData[]): Map<string, PRDItemData> {
   return map;
 }
 
-export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, searchQuery, searchVisibleIds, searchMatchIds, chunkSize }: PRDTreeProps) {
+export function PRDTree({ document: doc, taskUsageById, rollupById, weeklyBudget, showTokenBudget, defaultExpandDepth = 2, onSelectItem, selectedItemId, bulkSelectedIds, onBulkSelect, onInlineAddSubmit, highlightedItemId, deepLinkExpandIds, onRemoveItem, onUpdateItem, deletingItemId, activeStatuses: externalStatuses, searchQuery, searchVisibleIds, searchMatchIds, chunkSize, availableBranches, activeBranch, onBranchChange }: PRDTreeProps) {
   // ── Flat item map for delegated event handlers ────────────────────
   const itemMap = useMemo(() => buildItemMap(doc.items), [doc.items]);
   const getItem = useCallback((id: string) => itemMap.get(id) ?? null, [itemMap]);
@@ -582,6 +806,10 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
   // Status filter: controlled (from parent) or internal fallback
   const [internalStatuses] = useState<Set<ItemStatus>>(() => defaultStatusFilter());
   const activeStatuses = externalStatuses ?? internalStatuses;
+  const activeStatusesKey = useMemo(
+    () => statusSetKey(activeStatuses),
+    [activeStatuses],
+  );
 
   // ── Virtual scroll ────────────────────────────────────────────────
   // Flatten the tree into a linear array respecting expansion and filter
@@ -599,10 +827,54 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
     });
   }, [searchVisibleIds]);
 
-  const flatNodes = useMemo(
-    () => flattenVisibleTree(doc.items, expanded, activeStatuses, 0, searchVisibleIds),
-    [doc.items, expanded, activeStatuses, searchVisibleIds],
+  // Branch filter: compute visible set for the active branch
+  const branchVisibleIds = useMemo(
+    () => activeBranch ? buildBranchVisibleSet(doc.items, activeBranch) : undefined,
+    [doc.items, activeBranch],
   );
+
+  // Branch filter: auto-expand ancestors of branch-matched items
+  useEffect(() => {
+    if (!branchVisibleIds || branchVisibleIds.size === 0) return;
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      for (const id of branchVisibleIds) {
+        next.add(id);
+      }
+      return next;
+    });
+  }, [branchVisibleIds]);
+
+  // Combined visibility: intersection of search and branch when both active,
+  // or whichever single filter is active.
+  const combinedVisibleIds = useMemo(() => {
+    if (!searchVisibleIds && !branchVisibleIds) return undefined;
+    if (!branchVisibleIds) return searchVisibleIds;
+    if (!searchVisibleIds || searchVisibleIds.size === 0) return branchVisibleIds;
+    // Intersect: item must satisfy both search and branch filters
+    const intersection = new Set<string>();
+    for (const id of searchVisibleIds) {
+      if (branchVisibleIds.has(id)) intersection.add(id);
+    }
+    return intersection;
+  }, [searchVisibleIds, branchVisibleIds]);
+
+  const flatNodes = useMemo(
+    () => flattenVisibleTree(doc.items, expanded, activeStatuses, 0, combinedVisibleIds),
+    [doc.items, expanded, activeStatusesKey, combinedVisibleIds],
+  );
+
+  // Live tick for in-progress duration badges. The tick is only
+  // scheduled when at least one visible row is running; idle trees
+  // don't pay interval-timer cost. The tick prop is passed *only* to
+  // in-progress rows so `shouldComponentUpdate` on terminal rows
+  // stays a no-op on every tick (preserves 16ms/frame budget on 500+
+  // item trees).
+  const hasInProgressVisible = useMemo(
+    () => flatNodes.some((n) => n.item.status === "in_progress"),
+    [flatNodes],
+  );
+  const liveTickMs = useLiveTick(hasInProgressVisible);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const virtualScroll = useVirtualScroll({
@@ -754,7 +1026,7 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
       "div",
       { class: "prd-header" },
       h("h2", { class: "prd-title" }, doc.title),
-      h(Toolbar, { onExpandAll: expandAll, onCollapseAll: collapseAll }),
+      h(Toolbar, { onExpandAll: expandAll, onCollapseAll: collapseAll, availableBranches, activeBranch, onBranchChange }),
     ),
     // Summary
     h(SummaryBar, { items: doc.items }),
@@ -791,12 +1063,18 @@ export function PRDTree({ document: doc, taskUsageById, weeklyBudget, showTokenB
         const isInlineAddActive = inlineAddParentId === item.id;
         const isHL = highlightedItemId === item.id;
 
+        // Only in-progress rows receive the live tick. Idle rows
+        // receive `null` so their `shouldComponentUpdate` short-circuits.
+        const rowTickMs = item.status === "in_progress" ? liveTickMs : null;
+
         return h(Fragment, { key: item.id },
           h(NodeRow, {
             item,
             taskUsage: taskUsageById?.[item.id],
+            usageRollup: rollupById?.[item.id],
             weeklyBudget,
             showTokenBudget,
+            tickMs: rowTickMs,
             depth,
             isExpanded,
             hasChildren,

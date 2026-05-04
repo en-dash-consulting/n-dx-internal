@@ -4,11 +4,9 @@ import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import {
-  RexConfigSchema,
-  PRDDocumentSchema,
-} from "../../src/schema/validate.js";
+import { RexConfigSchema } from "../../src/schema/validate.js";
 import { SCHEMA_VERSION, DEFAULT_CONFIG } from "../../src/schema/v1.js";
+import { PRD_TREE_DIRNAME } from "../../src/store/index.js";
 
 const cliPath = join(
   fileURLToPath(import.meta.url),
@@ -44,7 +42,7 @@ describe("rex init", () => {
 
     const rexDir = join(tmpDir, ".rex");
     await access(join(rexDir, "config.json"));
-    await access(join(rexDir, "prd.json"));
+    await access(join(rexDir, PRD_TREE_DIRNAME, "index.md"));
     await access(join(rexDir, "execution-log.jsonl"));
     await access(join(rexDir, "workflow.md"));
   });
@@ -99,10 +97,11 @@ describe("rex init", () => {
 
     expect(config.project).toBe("my-custom-project");
 
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
+    const treeIndex = await readFile(
+      join(tmpDir, ".rex", PRD_TREE_DIRNAME, "index.md"),
+      "utf-8",
     );
-    expect(doc.title).toBe("my-custom-project");
+    expect(treeIndex).toContain("# my-custom-project");
   });
 
   it("defaults project name to directory basename", async () => {
@@ -114,47 +113,17 @@ describe("rex init", () => {
     expect(config.project).toBe(basename(tmpDir));
   });
 
-  it("creates valid prd.json", async () => {
-    run(["init", tmpDir]);
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
-    expect(doc.schema).toBe("rex/v1");
-    expect(doc.items).toEqual([]);
-  });
-
-  it("creates prd.json that passes schema validation", async () => {
-    run(["init", tmpDir]);
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
-    const result = PRDDocumentSchema.safeParse(doc);
-
-    expect(result.success).toBe(true);
-    if (!result.success) {
-      throw new Error(`Schema validation failed: ${result.error.message}`);
-    }
-  });
-
-  it("creates prd.json with correct schema version", async () => {
-    run(["init", tmpDir]);
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
-
-    expect(doc.schema).toBe(SCHEMA_VERSION);
-  });
-
-  it("creates prd.json with title matching project name", async () => {
+  it("creates tree/index.md scaffold with project title", async () => {
     run(["init", tmpDir]);
     const config = JSON.parse(
       await readFile(join(tmpDir, ".rex", "config.json"), "utf-8"),
     );
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
+    const treeIndex = await readFile(
+      join(tmpDir, ".rex", PRD_TREE_DIRNAME, "index.md"),
+      "utf-8",
     );
-
-    expect(doc.title).toBe(config.project);
+    expect(treeIndex).toContain(`# ${config.project}`);
+    expect(treeIndex).toContain("rex add epic");
   });
 
   it("creates empty execution-log.jsonl", async () => {
@@ -187,11 +156,8 @@ describe("rex init", () => {
     const output = run(["init", tmpDir]);
     expect(output).toContain("already exists");
 
-    // Files should still be valid
-    const doc = JSON.parse(
-      await readFile(join(tmpDir, ".rex", "prd.json"), "utf-8"),
-    );
-    expect(doc.schema).toBe("rex/v1");
+    // tree scaffold should still be present
+    await access(join(tmpDir, ".rex", PRD_TREE_DIRNAME, "index.md"));
   });
 
   it("preserves valid files on re-run", async () => {
@@ -199,22 +165,25 @@ describe("rex init", () => {
 
     const rexDir = join(tmpDir, ".rex");
     const configRaw1 = await readFile(join(rexDir, "config.json"), "utf-8");
-    const prdRaw1 = await readFile(join(rexDir, "prd.json"), "utf-8");
+    const treeIndexRaw1 = await readFile(
+      join(rexDir, PRD_TREE_DIRNAME, "index.md"),
+      "utf-8",
+    );
 
     run(["init", tmpDir]);
 
     const configRaw2 = await readFile(join(rexDir, "config.json"), "utf-8");
-    const prdRaw2 = await readFile(join(rexDir, "prd.json"), "utf-8");
+    const treeIndexRaw2 = await readFile(
+      join(rexDir, PRD_TREE_DIRNAME, "index.md"),
+      "utf-8",
+    );
 
     // Files unchanged
     expect(configRaw2).toBe(configRaw1);
-    expect(prdRaw2).toBe(prdRaw1);
+    expect(treeIndexRaw2).toBe(treeIndexRaw1);
 
-    // Both still pass schema validation
+    // config still passes schema validation
     const configResult = RexConfigSchema.safeParse(JSON.parse(configRaw2));
     expect(configResult.success).toBe(true);
-
-    const docResult = PRDDocumentSchema.safeParse(JSON.parse(prdRaw2));
-    expect(docResult.success).toBe(true);
   });
 });

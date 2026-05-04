@@ -54,7 +54,9 @@ const ALLOWED = new Set([
   "scripts/run-vitest-bind-aware.mjs",
   // Process monitoring — needs raw execFile for system commands (vm_stat, sysctl)
   "packages/hench/src/process/memory-monitor.ts",
-  // Git operations — need execFileSync for git CLI calls
+  // Git operations — need execFileSync/execFile for git CLI calls
+  "packages/rex/src/store/branch-naming.ts",
+  "packages/rex/src/cli/commands/backfill-commit-attribution.ts",
   "packages/sourcevision/src/analyzers/branch-work-collector.ts",
   "packages/sourcevision/src/analyzers/branch-work-filter.ts",
   "packages/sourcevision/src/cli/commands/git-credential-helper.ts",
@@ -62,12 +64,17 @@ const ALLOWED = new Set([
   // Web server routes — spawn CLI subprocesses for domain tool execution
   "packages/web/src/server/routes-hench.ts",
   "packages/web/src/server/routes-sourcevision.ts",
+  // Merge-history pipeline — walks `git log --merges` via execFileSync for the
+  // PRD ↔ merge context graph endpoint (same pattern as branch-work-collector).
+  "packages/web/src/server/merge-history.ts",
   // Claude Code integration — runs `claude mcp add` via execSync
   "packages/core/claude-integration.js",
   // Codex integration — writes .codex/config.toml, .agents/skills, AGENTS.md
   "packages/core/codex-integration.js",
   // CI preflight script — runs build/test/check steps via child processes
   "scripts/preflight.mjs",
+  // Performance profiling script — measures PRD write latency via pnpm exec
+  "scripts/profile-prd-tree-write.mjs",
 ]);
 
 /** Directories to skip entirely. */
@@ -816,13 +823,23 @@ describe("architecture policy: process execution", () => {
 const COHESION_THRESHOLD = 0.5;
 
 /**
+ * Minimum file count for the cohesion gate to apply.
+ *
+ * Cohesion is the ratio of internal-to-total edges; for very small zones a
+ * single missing edge swings the metric by 0.2+, producing false positives
+ * that whack-a-mole between Louvain re-clusterings. The project already
+ * documents 5 files as the reliability floor (see CLAUDE.md, web-shared
+ * governance section). Zones below this size are skipped here and governed
+ * by structural rules instead (two-consumer rule, boundary-check tests).
+ */
+const MIN_FILES_FOR_COHESION_GATE = 5;
+
+/**
  * Zones exempt from the cohesion gate with documented justifications.
  * Each entry must explain why the zone cannot meet the threshold and
  * what structural condition would allow removing the exemption.
  */
-const COHESION_EXCEPTIONS = new Map([
-  ["web-server-unit", "Mixed zone intentionally co-locating aggregation-cache.ts and routes-token-usage.ts with their unit tests (5 files total). The production-plus-tests composition keeps cohesion at 0.4, just below threshold, but the zone description documents this as a boundary case — splitting tests out would reduce the zone below sourcevision's minimum zone size."],
-]);
+const COHESION_EXCEPTIONS = new Map([]);
 
 describe("architecture policy: zone cohesion gate", () => {
   it(`all production zones meet minimum cohesion threshold (${COHESION_THRESHOLD})`, () => {
@@ -845,6 +862,10 @@ describe("architecture policy: zone cohesion gate", () => {
 
       // Skip zones without cohesion metrics
       if (cohesion === undefined || cohesion === null) continue;
+
+      // Skip statistically-noisy small zones (see MIN_FILES_FOR_COHESION_GATE)
+      const fileCount = summary.fileCount ?? summary.files?.length ?? 0;
+      if (fileCount < MIN_FILES_FOR_COHESION_GATE) continue;
 
       // Skip test/infrastructure zones
       const zoneType = zoneTypes[dir];
@@ -887,6 +908,11 @@ describe("architecture policy: zone cohesion gate", () => {
       }
       const summary = JSON.parse(readFileSync(summaryPath, "utf-8"));
       const cohesion = summary.riskMetrics?.cohesion;
+      const fileCount = summary.fileCount ?? summary.files?.length ?? 0;
+      if (fileCount < MIN_FILES_FOR_COHESION_GATE) {
+        stale.push(`${zoneId} (zone has ${fileCount} files; auto-skipped by size threshold)`);
+        continue;
+      }
       if (cohesion !== undefined && cohesion >= COHESION_THRESHOLD) {
         stale.push(`${zoneId} (cohesion ${cohesion} now meets threshold)`);
       }
@@ -927,8 +953,8 @@ const BOUNDARY_FILES = [
   },
   {
     file: "packages/web/src/server/rex-gateway.ts",
-    maxExports: 50,
-    description: "web→rex gateway (domain types, MCP server factory, tree utilities, constants)",
+    maxExports: 58,
+    description: "web→rex gateway (domain types, MCP server factory, tree utilities, token + duration rollup, constants, Markdown serializer/parser, folder-tree parser, legacy PRD migration)",
   },
   {
     file: "packages/web/src/server/domain-gateway.ts",
@@ -1181,6 +1207,7 @@ const DOCUMENTED_DYNAMIC_IMPORTS = new Map([
   // Rex CLI — lazy-loads command handlers and heavy dependencies
   ["packages/rex/src/cli/index.ts", "CLI command dispatch — lazy-loads command handlers"],
   ["packages/rex/src/cli/commands/analyze.ts", "Chunked-review lazy import — loaded only during interactive proposal review"],
+  ["packages/rex/src/cli/commands/migrate-to-folder-tree.ts", "Lazy-loads node:readline only for the interactive legacy-file cleanup prompt"],
   ["packages/rex/src/cli/commands/prune.ts", "Lazy-loads LLM client for smart prune proposals"],
   ["packages/rex/src/cli/commands/remove.ts", "Lazy-loads LLM client for smart remove analysis"],
   ["packages/rex/src/cli/commands/reorganize.ts", "Lazy-loads LLM client for reorganization proposals"],
@@ -1211,6 +1238,7 @@ const DOCUMENTED_DYNAMIC_IMPORTS = new Map([
   // Hench agent — deferred node: builtins for lock file and cleanup operations
   ["packages/hench/src/agent/lifecycle/shared.ts", "Lazy-loads node:fs and node:path for lock file cleanup — deferred to avoid import overhead on code paths that never touch the filesystem"],
   ["packages/hench/src/tools/cleanup-transformations.ts", "Lazy-loads node:fs/promises for file deletion — async filesystem access isolated to the tool cleanup path"],
+  ["packages/hench/src/tools/test-command-resolver.ts", "Lazy-loads node:readline only when interactive prompts are needed for test command resolution — avoids import cost in automated/config-resolved paths"],
 ]);
 
 describe("architecture policy: dynamic import audit", () => {

@@ -57,6 +57,14 @@ export interface RequirementData {
   priority?: Priority;
 }
 
+/**
+ * @see packages/rex/src/schema/v1.ts — ActiveInterval
+ */
+export interface ActiveIntervalData {
+  start: string;
+  end?: string;
+}
+
 export interface PRDItemData {
   id: string;
   title: string;
@@ -70,8 +78,14 @@ export interface PRDItemData {
   /** @see packages/rex/src/schema/v1.ts — PRDItem.requirements */
   requirements?: RequirementData[];
   startedAt?: string;
+  endedAt?: string;
   completedAt?: string;
+  activeIntervals?: ActiveIntervalData[];
   failureReason?: string;
+  /** @see packages/rex/src/schema/v1.ts — PRDItem.branch */
+  branch?: string | null;
+  /** @see packages/rex/src/schema/v1.ts — PRDItem.sourceFile */
+  sourceFile?: string | null;
   children?: PRDItemData[];
 }
 
@@ -104,6 +118,63 @@ export interface TaskUsageSummary {
   totalTokens: number;
   runCount: number;
   utilization?: TaskUtilizationSummary;
+}
+
+/** Bucketed token totals. */
+export interface ItemUsageBucket {
+  totalTokens: number;
+  runCount: number;
+}
+
+/**
+ * Rolled-up per-item work duration.
+ *
+ * `totalMs` is the sum of this item's elapsed intervals plus every
+ * descendant's `totalMs`. `runningMs` is the portion of `totalMs`
+ * currently "live" (open intervals measured from their start to the
+ * server clock at response time). `isRunning` is true when any interval
+ * in the subtree is open.
+ *
+ * Mirrors the `ItemDurationTotals` wire shape emitted by the
+ * `/api/hench/task-usage` endpoint; the server computes this via rex's
+ * `aggregateItemDurations` so the viewer never aggregates tree duration
+ * itself. Live-tick rendering multiplies elapsed client time against
+ * `runningMs` to avoid re-polling for every frame.
+ *
+ * @see packages/rex/src/core/item-duration-rollup.ts — canonical aggregator
+ */
+export interface ItemDurationRollup {
+  totalMs: number;
+  runningMs: number;
+  isRunning: boolean;
+}
+
+/**
+ * Rolled-up per-item token usage + duration.
+ *
+ * `self` captures runs that directly targeted this item; `descendants`
+ * sums every descendant's `total`; `total = self + descendants`.
+ *
+ * `duration` is the matching duration rollup so the tree row can render
+ * token and duration columns from a single fetch.
+ *
+ * Mirrors the wire shape emitted by `/api/hench/task-usage`; the server
+ * computes this via rex's `aggregateItemTokenUsage` + `aggregateItemDurations`
+ * so the viewer never aggregates tree usage itself.
+ *
+ * @see packages/rex/src/core/item-token-rollup.ts — canonical token aggregator
+ * @see packages/rex/src/core/item-duration-rollup.ts — canonical duration aggregator
+ */
+export interface ItemUsageRollup {
+  self: ItemUsageBucket;
+  descendants: ItemUsageBucket;
+  total: ItemUsageBucket;
+  /**
+   * Duration rollup added in the combined `{ tokens, duration }` accessor.
+   * Optional so older server payloads (pre-combined-accessor) and existing
+   * fixtures without duration fields still type-check.
+   */
+  duration?: ItemDurationRollup;
 }
 
 /** Computed stats for a branch of the tree. */

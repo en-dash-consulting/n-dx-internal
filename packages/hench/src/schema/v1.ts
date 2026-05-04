@@ -124,6 +124,29 @@ export interface HenchConfig {
    * the user to approve the commit before running `git commit -F <file>`.
    */
   autoCommit?: boolean;
+  /**
+   * When true, skip the mandatory full test suite gate before commit.
+   * Default: false (gate is mandatory). The --skip-test-gate CLI flag sets this.
+   * Test gate failure blocks commit unless this flag is set or user selects skip.
+   */
+  skipFullTestGate?: boolean;
+  /**
+   * Full test suite command for mandatory pre-commit gate.
+   * Resolution precedence:
+   * 1. .hench/config.json fullTestCommand field
+   * 2. .n-dx.json hench.fullTestCommand field
+   * 3. Auto-detect from package.json (test, test:all scripts)
+   * 4. Interactive prompt (when none of above are available)
+   * Example: "pnpm test" or "npm run test:all"
+   */
+  fullTestCommand?: string;
+  /**
+   * Maximum number of times to re-prompt the agent when it produces a plan
+   * without executing code modifications (default: 2).
+   * Set to 0 to disable plan-only detection and allow completion with plans only.
+   * Applies to autonomous and pair-programming modes.
+   */
+  planOnlyMaxRetries?: number;
 }
 
 // ── Language-specific guard defaults ──────────────────────────────────
@@ -188,6 +211,8 @@ export function DEFAULT_HENCH_CONFIG(language?: ProjectLanguage): HenchConfig {
     },
     loopPauseMs: 2000,
     maxFailedAttempts: 3,
+    autoCommit: false,
+    planOnlyMaxRetries: 2,
     ...(language ? { language } : {}),
   };
 }
@@ -207,6 +232,40 @@ export interface TokenUsage {
   output: number;
   cacheCreationInput?: number;
   cacheReadInput?: number;
+}
+
+/**
+ * Normalized per-run token totals suitable for PRD rollup.
+ *
+ * Derived from {@link TokenUsage} via {@link normalizeRunTokens}. Stored on
+ * every {@link RunRecord} so that downstream consumers (dashboards, rollup
+ * queries) can join runs to PRD items by `taskId` without re-parsing
+ * transcripts or re-deriving cache accounting on every read.
+ *
+ * - `input`  — uncached input tokens
+ * - `output` — completion tokens
+ * - `cached` — cache-write + cache-read tokens (combined)
+ * - `total`  — sum of the three fields above
+ */
+export interface RunTokens {
+  input: number;
+  output: number;
+  cached: number;
+  total: number;
+}
+
+/**
+ * Normalize a {@link TokenUsage} into the PRD-rollup shape.
+ *
+ * Accepts `undefined` (and missing cache fields) so it can be called
+ * unconditionally at save time — aborted, failed, and zero-usage runs
+ * all produce a valid tuple with the correct zeros.
+ */
+export function normalizeRunTokens(usage: TokenUsage | undefined): RunTokens {
+  const input = usage?.input ?? 0;
+  const output = usage?.output ?? 0;
+  const cached = (usage?.cacheCreationInput ?? 0) + (usage?.cacheReadInput ?? 0);
+  return { input, output, cached, total: input + output + cached };
 }
 
 /** Token usage for a single API turn. */
@@ -389,6 +448,16 @@ export interface RunSummaryData {
   testsRun: TestRecord[];
   /** Automatic post-task test results. */
   postRunTests?: PostRunTestRecord;
+  /**
+   * Files changed with their git status codes (A/M/D/R/C/T).
+   *
+   * Populated from git diff-tree after commit. Format is "STATUS\tPATH"
+   * matching git's output. Provides accurate tracking of what was actually
+   * committed, replacing tool-call-based heuristics.
+   *
+   * v1 additive field — old records without this field load normally.
+   */
+  fileChangesWithStatus?: string[];
   counts: SummaryCounts;
 }
 
@@ -556,10 +625,34 @@ export interface RunRecord {
   summary?: string;
   error?: string;
   tokenUsage: TokenUsage;
+  /**
+   * Normalized per-run token totals used for PRD rollup.
+   *
+   * Populated automatically by `saveRun()` from {@link tokenUsage} on every
+   * write, including aborted/failed runs — so downstream rollups can
+   * `{ itemId: taskId, tokens }`-join to the PRD without undercounting.
+   *
+   * Optional on read for backward compatibility with legacy run files; new
+   * writes always include it.
+   */
+  tokens?: RunTokens;
   /** Per-turn token breakdown. One entry per API call. */
   turnTokenUsage?: TurnTokenUsage[];
   toolCalls: ToolCallRecord[];
   model: string;
+  /**
+   * LLM vendor used for this run ("claude" | "codex").
+   * Also available via `diagnostics.vendor` but captured here for easy commit-time access.
+   * v1 additive field — old records without this field load normally.
+   */
+  vendor?: string;
+  /**
+   * Task weight / tier selected for this run ("light" | "standard").
+   * Used for task-weight tiering to select cheaper models for simple tasks.
+   * Defaults to "standard" if not specified.
+   * v1 additive field — old records without this field load normally.
+   */
+  weight?: string;
   retryAttempts?: number;
   /** Structured metadata derived from tool calls at run finalization. */
   structuredSummary?: RunSummaryData;
@@ -653,4 +746,12 @@ export interface TaskBrief {
   project: TaskBriefProject;
   workflow: string;
   recentLog: TaskBriefLogEntry[];
+  /**
+   * Active session-level filters applied during task selection.
+   * Present when the caller restricted selection (e.g. self-heal tag filter).
+   */
+  sessionFilters?: {
+    /** Only tasks with at least one of these tags were eligible for selection. */
+    tags?: string[];
+  };
 }

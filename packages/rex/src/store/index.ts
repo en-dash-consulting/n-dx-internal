@@ -1,6 +1,53 @@
 export type { PRDStore, StoreCapabilities } from "./contracts.js";
-export { FileStore, ensureRexDir } from "./file-adapter.js";
+export { FileStore, ensureRexDir, PRD_FILENAME } from "./file-adapter.js";
+export { PRD_TREE_DIRNAME } from "./paths.js";
+export {
+  sanitizeBranchName,
+  resolveGitBranch,
+  getFirstCommitDate,
+  generatePRDFilename,
+  resolvePRDFilename,
+} from "./branch-naming.js";
+export {
+  discoverPRDFiles,
+  parsePRDBranchSegment,
+  parsePRDFileDate,
+  findPRDFileForBranch,
+  resolvePRDFile,
+} from "./prd-discovery.js";
+export type { PRDFileResolution } from "./prd-discovery.js";
+export { migrateLegacyPRD } from "./prd-migration.js";
+export type { MigrationResult } from "./prd-migration.js";
+export {
+  migrateJsonPrdToMarkdown,
+  PRD_MARKDOWN_FILENAME,
+  PRDMarkdownMigrationError,
+  jsonToMarkdownFilename,
+  toMarkdownSourcePath,
+} from "./prd-md-migration.js";
+export type { MarkdownMigrationResult } from "./prd-md-migration.js";
+export { serializeDocument } from "./markdown-serializer.js";
+export {
+  serializeFolderTree,
+  slugify,
+  slugifyTitle,
+  resolveSiblingSlugs,
+} from "./folder-tree-serializer.js";
+export type { SerializeResult } from "./folder-tree-serializer.js";
+export { parseFolderTree } from "./folder-tree-parser.js";
+export type { FolderParseResult, ParseWarning } from "./folder-tree-parser.js";
+export {
+  SELF_HEAL_TAG,
+  SELF_HEAL_ENV_VAR,
+  isSelfHealRun,
+  withSelfHealTag,
+} from "./self-heal-tag.js";
 export { withLock, acquireLock } from "./file-lock.js";
+export {
+  ensureLegacyPrdMigrated,
+  LegacyPrdMigrationError,
+} from "./ensure-legacy-prd-migrated.js";
+export type { LegacyPrdMigrationResult } from "./ensure-legacy-prd-migrated.js";
 export { NotionStore, ensureNotionRexDir } from "./notion-adapter.js";
 export type { NotionClient, NotionAdapterConfig } from "./notion-client.js";
 export { LiveNotionClient } from "./notion-client.js";
@@ -46,10 +93,14 @@ export {
 export { notionIntegrationSchema } from "./integration-schemas/notion.js";
 export { jiraIntegrationSchema } from "./integration-schemas/jira.js";
 
-import { FileStore } from "./file-adapter.js";
+import { FileStore, PRD_FILENAME } from "./file-adapter.js";
 import { NotionStore } from "./notion-adapter.js";
 import { LiveNotionClient } from "./notion-client.js";
 import { getDefaultRegistry } from "./adapter-registry.js";
+import { dirname } from "node:path";
+import { resolveGitBranch } from "./branch-naming.js";
+import { findPRDFileForBranch } from "./prd-discovery.js";
+import { PRD_MARKDOWN_FILENAME } from "./prd-md-migration.js";
 import type { PRDStore } from "./contracts.js";
 import type { NotionAdapterConfig } from "./notion-client.js";
 
@@ -94,10 +145,18 @@ export function createNotionStore(
 /**
  * Resolve the local PRDStore for a `.rex/` directory.
  *
- * Always returns a FileStore. Remote adapters (e.g. Notion) are accessed
- * only during explicit sync operations via {@link resolveRemoteStore}.
+ * Always returns a FileStore. Reads aggregate all branch-scoped PRD files
+ * (`prd_{branch}_{date}.json`) plus `prd.json` into one in-memory document.
+ * On first load after the markdown-storage upgrade, `prd.md` is generated from
+ * `prd.json` when the markdown file is missing. When a branch-scoped file
+ * already exists for the current git branch, new root-level items are routed
+ * there; otherwise they go to `prd.json`.
  *
- * This is the preferred way to obtain a store in CLI commands and tools.
+ * CLI commands that write new root items should call {@link resolvePRDFile}
+ * before writing to ensure the branch file exists and the store targets it.
+ *
+ * Remote adapters (e.g. Notion) are accessed only during explicit sync
+ * operations via {@link resolveRemoteStore}.
  *
  * @param rexDir  Path to the `.rex/` directory.
  * @returns A FileStore instance.
@@ -109,7 +168,12 @@ export function createNotionStore(
  * ```
  */
 export async function resolveStore(rexDir: string): Promise<PRDStore> {
-  return new FileStore(rexDir);
+  const projectDir = dirname(rexDir);
+  const branch = resolveGitBranch(projectDir);
+  const currentBranchFile = await findPRDFileForBranch(rexDir, branch);
+  return new FileStore(rexDir, {
+    currentBranchFile: currentBranchFile ?? PRD_FILENAME,
+  });
 }
 
 /**
