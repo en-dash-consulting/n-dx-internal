@@ -861,6 +861,149 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
   });
 });
 
+// ── Single-child filesystem optimization ──────────────────────────────────────
+
+describe("serializeFolderTree: single-child filesystem optimization", () => {
+  it("single-child feature skips directory creation, places task directly in epic", async () => {
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "Task");
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
+      children: [task],
+    });
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
+      children: [feature],
+    });
+
+    await serializeFolderTree([epic], testDir);
+
+    const epicDir = join(testDir, slugify(epic.title, epic.id));
+    const featureSlug = slugify(feature.title, feature.id);
+    const taskSlug = slugify(task.title, task.id);
+
+    // Feature directory should NOT exist (single-child optimization)
+    const epicContents = await readdir(epicDir);
+    expect(epicContents).not.toContain(featureSlug);
+
+    // Task directory should exist directly under epic
+    expect(epicContents).toContain(taskSlug);
+
+    // Task files should have embedded parent metadata
+    const taskIndexPath = join(epicDir, taskSlug, titleToFilename(task.title));
+    const taskContent = await readFile(taskIndexPath, "utf8");
+    expect(taskContent).toContain("__parentId");
+    expect(taskContent).toContain("__parentTitle");
+    expect(taskContent).toContain(feature.id);
+    expect(taskContent).toContain("Feature");
+  });
+
+  it("multi-child feature creates directory as usual, tasks inside", async () => {
+    const task1 = makeTask("t1111111-0000-0000-0000-000000000000", "Task 1");
+    const task2 = makeTask("t2222222-0000-0000-0000-000000000000", "Task 2");
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
+      children: [task1, task2],
+    });
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
+      children: [feature],
+    });
+
+    await serializeFolderTree([epic], testDir);
+
+    const epicDir = join(testDir, slugify(epic.title, epic.id));
+    const featureDir = join(epicDir, slugify(feature.title, feature.id));
+    const featureContents = await readdir(featureDir);
+
+    // Feature directory MUST exist
+    await expect(stat(featureDir)).resolves.toBeTruthy();
+
+    // Task directories must be inside feature
+    expect(featureContents).toContain(slugify(task1.title, task1.id));
+    expect(featureContents).toContain(slugify(task2.title, task2.id));
+
+    // Tasks should NOT have __parentId (not collapsed)
+    const task1Content = await readFile(
+      join(featureDir, slugify(task1.title, task1.id), titleToFilename(task1.title)),
+      "utf8",
+    );
+    expect(task1Content).not.toContain("__parentId");
+  });
+
+  it("nested single-child at two levels (feature→task) places task directly in epic", async () => {
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "Nested Task", {
+      status: "in_progress",
+      priority: "high",
+    });
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
+      children: [task],
+    });
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
+      children: [feature],
+    });
+
+    await serializeFolderTree([epic], testDir);
+
+    const epicDir = join(testDir, slugify(epic.title, epic.id));
+    const epicContents = await readdir(epicDir);
+
+    // Neither feature nor independent task dir exists at this level
+    expect(epicContents).not.toContain(slugify(feature.title, feature.id));
+
+    // Only task directory exists directly under epic
+    expect(epicContents).toContain(slugify(task.title, task.id));
+
+    // Verify task has multiple levels of parent metadata
+    const taskIndexPath = join(
+      epicDir,
+      slugify(task.title, task.id),
+      titleToFilename(task.title),
+    );
+    const taskContent = await readFile(taskIndexPath, "utf8");
+
+    // Should have direct parent (feature) metadata
+    expect(taskContent).toContain("__parentId:");
+    expect(taskContent).toContain(`"${feature.id}"`);
+    expect(taskContent).toContain("__parentTitle:");
+    expect(taskContent).toContain("Feature");
+    expect(taskContent).toContain("__parentLevel:");
+    expect(taskContent).toContain("feature");
+
+    // Task metadata preserved
+    expect(taskContent).toContain("in_progress");
+    expect(taskContent).toContain("high");
+  });
+
+  it("single-child in isolation produces no parent directory, with metadata embedded", async () => {
+    // Verify that when a feature has one task, the feature directory is skipped
+    // and the task appears directly in the epic with embedded parent metadata
+    const task = makeTask("t1111111-0000-0000-0000-000000000000", "Lone Task");
+    const feature = makeFeature("f1111111-0000-0000-0000-000000000000", "Lone Feature", {
+      children: [task],
+    });
+    const epic = makeEpic("e1111111-0000-0000-0000-000000000000", "Test Epic", {
+      children: [feature],
+    });
+
+    await serializeFolderTree([epic], testDir);
+
+    const epicDir = join(testDir, slugify(epic.title, epic.id));
+    const featureSlug = slugify(feature.title, feature.id);
+    const taskSlug = slugify(task.title, task.id);
+
+    // Feature directory should NOT exist
+    const featureDir = join(epicDir, featureSlug);
+    await expect(stat(featureDir)).rejects.toThrow();
+
+    // Task directory should exist directly under epic
+    const taskDir = join(epicDir, taskSlug);
+    await expect(stat(taskDir)).resolves.toBeTruthy();
+
+    // Task files should contain embedded parent metadata
+    const taskIndex = await readFile(join(taskDir, titleToFilename(task.title)), "utf8");
+    expect(taskIndex).toContain("__parentId");
+    expect(taskIndex).toContain(feature.id);
+    expect(taskIndex).toContain("__parentTitle");
+    expect(taskIndex).toContain("Feature");
+  });
+});
+
 // ── Strict round-trip deep equality ──────────────────────────────────────────
 
 describe("serializeFolderTree: strict round-trip deep equality", () => {
