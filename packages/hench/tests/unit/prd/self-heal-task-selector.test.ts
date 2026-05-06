@@ -27,7 +27,7 @@ import type { PRDItem } from "../../../src/prd/rex-gateway.js";
 it("SELF_HEAL_TAG matches the fixture tag string used throughout self-heal tests", () => {
   // The string literal below is intentionally hard-coded so that renaming
   // SELF_HEAL_TAG (e.g. to "sh" or "auto-heal") causes this assertion to fail.
-  const FIXTURE_TAG = "self-heal";
+  const FIXTURE_TAG = "self-heal-items";
   expect(SELF_HEAL_TAG).toBe(FIXTURE_TAG);
 });
 

@@ -1,7 +1,0 @@
----
-id: "feature-547"
-level: "feature"
-title: "Feature 547: Core capability"
-status: "pending"
-priority: "medium"
----
