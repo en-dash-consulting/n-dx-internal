@@ -2,7 +2,7 @@
 id: "55365572-23e3-497d-a072-7aee77c8bf4f"
 level: "task"
 title: "Add architecture-policy test enforcing prd.md is not read or written outside migration helper"
-status: "pending"
+status: "completed"
 priority: "medium"
 tags:
   - "rex"
@@ -10,6 +10,11 @@ tags:
   - "testing"
   - "architecture"
 source: "smart-add"
+startedAt: "2026-05-06T13:01:25.912Z"
+completedAt: "2026-05-06T13:08:30.871Z"
+endedAt: "2026-05-06T13:08:30.871Z"
+resolutionType: "code-change"
+resolutionDetail: "Added three new test cases to tests/e2e/architecture-policy.test.js that enforce the PRD storage invariant: no source files read/write .rex/prd.md outside the migration helper (migrate-to-folder-tree.ts, migrate-to-md.ts, prd-md-migration.ts). Test scans all packages, identifies violations with file:line references, and validates the allow list. Updated DOCUMENTED_POLICIES registry (count: 19→20)."
 acceptanceCriteria:
   - "New e2e architecture-policy test scans all packages for '.rex/prd.md' string and path references"
   - "Test passes when references are confined to the migration helper and its tests"

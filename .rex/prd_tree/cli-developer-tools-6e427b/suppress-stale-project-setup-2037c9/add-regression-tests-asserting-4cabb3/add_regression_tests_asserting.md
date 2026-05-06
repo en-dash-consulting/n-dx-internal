@@ -2,13 +2,14 @@
 id: "4cabb3da-ccac-42f2-9bdb-43fce6da3743"
 level: "task"
 title: "Add regression tests asserting stale-setup notice fires only on missing tool directories"
-status: "pending"
+status: "in_progress"
 priority: "medium"
 tags:
   - "cli"
   - "tests"
   - "regression"
 source: "smart-add"
+startedAt: "2026-05-06T13:08:49.974Z"
 acceptanceCriteria:
   - "Test covers the all-present case and asserts no stale-setup output is produced"
   - "Tests cover each single-missing-directory case and assert the missing directory is named in the output"

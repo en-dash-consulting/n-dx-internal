@@ -25,7 +25,7 @@ PRD persistence model: folder-tree storage, markdown serialization, schema evolu
 | Commit Hash and Author Metadata on PRD Items | feature | completed | 2026-04-30 |
 | Consolidate PRD Files into Single 'prd' File | feature | completed | 2026-04-23 |
 | Cross-PRD Duplicate Detection and Merge-Into-Older Semantics | feature | completed | 2026-04-22 |
-| Eliminate prd.md from Read and Write Paths in ndx add and Related Commands | feature | pending | 1970-01-01 |
+| Eliminate prd.md from Read and Write Paths in ndx add and Related Commands | feature | completed | 2026-05-06 |
 | Epic-Scoped Slug Naming Convention for Folder-Tree Directories | feature | completed | 2026-04-29 |
 | Folder-Based PRD Schema Design and Serialization | feature | completed | 2026-04-27 |
 | Folder-Level index.md Summary Aggregation | feature | completed | 2026-04-30 |

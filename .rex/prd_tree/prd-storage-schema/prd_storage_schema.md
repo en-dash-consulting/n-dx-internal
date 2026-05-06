@@ -17,7 +17,7 @@ description: "PRD persistence model: folder-tree storage, markdown serialization
 | [Commit Hash and Author Metadata on PRD Items](./commit-hash-and-author-metadata-78798e/index.md) | completed |
 | [Consolidate PRD Files into Single 'prd' File](./consolidate-prd-files-into-be363d/index.md) | completed |
 | [Cross-PRD Duplicate Detection and Merge-Into-Older Semantics](./cross-prd-duplicate-detection-44c387/index.md) | completed |
-| [Eliminate prd.md from Read and Write Paths in ndx add and Related Commands](./eliminate-prd-md-from-read-and-5ec163/index.md) | pending |
+| [Eliminate prd.md from Read and Write Paths in ndx add and Related Commands](./eliminate-prd-md-from-read-and-5ec163/index.md) | completed |
 | [Epic-Scoped Slug Naming Convention for Folder-Tree Directories](./epic-scoped-slug-naming-f9376f/index.md) | completed |
 | [Folder-Based PRD Schema Design and Serialization](./folder-based-prd-schema-design-7286f1/index.md) | completed |
 | [Folder-Level index.md Summary Aggregation](./folder-level-index-md-summary-722b72/index.md) | completed |
