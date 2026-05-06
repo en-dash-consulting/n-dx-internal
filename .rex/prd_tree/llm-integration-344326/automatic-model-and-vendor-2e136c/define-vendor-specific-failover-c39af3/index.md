@@ -2,12 +2,17 @@
 id: "c39af3ae-f049-4e93-8892-d4773cdc8501"
 level: "task"
 title: "Define vendor-specific failover chains and selection policy in llm-client"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "llm"
   - "self-heal-items"
 source: "smart-add"
+startedAt: "2026-05-06T14:49:15.236Z"
+completedAt: "2026-05-06T14:52:55.748Z"
+endedAt: "2026-05-06T14:52:55.748Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented vendor-failover.ts with pure function getNextFailoverAttempt() that encodes ordered failover chains (Claude: sonnet→haiku→codex-std→codex-light; Codex: light→claude-std→claude-light). All model IDs resolved via resolveVendorModel(), chain terminates after 3 attempts. 17 unit tests cover all chains, exhaustion, and custom config. Public API exports added."
 acceptanceCriteria:
   - "Pure function returns the ordered failover sequence for a given starting (vendor, model) — Claude-origin and Codex-origin both covered"
   - "Concrete model IDs come from the existing tier registry / resolveVendorModel and are not hardcoded literals in the chain"
@@ -18,7 +23,7 @@ description: "Encode the ordered failover chains in the llm-client foundation: w
 
 # Define vendor-specific failover chains and selection policy in llm-client
 
-🟠 [pending]
+🟠 [completed]
 
 ## Summary
 
@@ -26,7 +31,10 @@ Encode the ordered failover chains in the llm-client foundation: when active ven
 
 ## Info
 
-- **Status:** pending
+- **Status:** completed
 - **Priority:** high
 - **Tags:** llm, self-heal-items
 - **Level:** task
+- **Started:** 2026-05-06T14:49:15.236Z
+- **Completed:** 2026-05-06T14:52:55.748Z
+- **Duration:** 3m
