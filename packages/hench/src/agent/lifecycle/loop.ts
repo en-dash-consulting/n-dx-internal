@@ -120,7 +120,7 @@ async function callWithFailover(
     return await callWithRetry(client, params);
   } catch (originalError) {
     // If failover is disabled, rethrow immediately (no-op path)
-    if (!config.autoFailover) {
+    if (!llmConfig.autoFailover) {
       throw originalError;
     }
 

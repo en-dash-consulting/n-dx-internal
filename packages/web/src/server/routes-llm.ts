@@ -198,7 +198,7 @@ export async function handleLlmRoute(
             return true;
           }
         }
-        if (path === "llm.vendor" && value !== null && !VALID_VENDORS.has(value)) {
+        if (path === "llm.vendor" && value !== null && !VALID_VENDORS.has(value.toString())) {
           errorResponse(res, 400, `llm.vendor must be "claude" or "codex", got "${value}"`);
           return true;
         }
