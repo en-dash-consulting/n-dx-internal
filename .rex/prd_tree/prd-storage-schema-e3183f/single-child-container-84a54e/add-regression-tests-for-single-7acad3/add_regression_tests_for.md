@@ -2,7 +2,7 @@
 id: "7acad3da-6e29-4e52-bed1-121ad63b4fd3"
 level: "task"
 title: "Add regression tests for single-child compaction across write path and reshape migration"
-status: "pending"
+status: "completed"
 priority: "medium"
 tags:
   - "rex"
@@ -10,6 +10,11 @@ tags:
   - "folder-tree"
   - "reshape"
 source: "smart-add"
+startedAt: "2026-05-06T20:06:01.842Z"
+completedAt: "2026-05-06T20:21:01.411Z"
+endedAt: "2026-05-06T20:21:01.411Z"
+resolutionType: "code-change"
+resolutionDetail: "Added comprehensive regression tests for single-child compaction. Covered: (1) serializer unit tests showing single-child optimization produces flat files with embedded parent metadata, (2) reshape integration tests validating compaction of 3 over-wrapped directories, (3) parser round-trip tests confirming metadata preservation through the full cycle. All 9 new tests pass, 29 existing parser tests still pass."
 acceptanceCriteria:
   - "Serializer unit test: single-child container produces a flat file, not a subdirectory + index.md"
   - "Serializer unit test: two-child container still produces the existing subdirectory structure"

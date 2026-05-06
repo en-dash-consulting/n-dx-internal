@@ -2,7 +2,7 @@
 id: "2d77d055-20f4-4d3b-b1b4-73bf7133cd35"
 level: "task"
 title: "Add single-child detection to PRD folder-tree serializer to skip container directory when parent has exactly one child"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "rex"
@@ -10,6 +10,10 @@ tags:
   - "folder-tree"
 source: "smart-add"
 startedAt: "2026-05-06T19:08:38.021Z"
+completedAt: "2026-05-06T19:51:21.286Z"
+endedAt: "2026-05-06T19:51:21.286Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented single-child detection in PRD folder-tree serializer and parser. Serializer skips parent directory creation when a feature (or lower-level container) has exactly one child, embedding parent metadata in child's frontmatter using __parent* fields. Parser reconstructs parent-child relationships from embedded metadata, handling ancestor chains for nested single-children. All 29 parser tests passing, including 5 new single-child optimization tests validating round-trip serialization, metadata preservation, multi-child control, and nested chains."
 acceptanceCriteria:
   - "Serializing a feature with exactly one task writes only the task file directly under the parent directory, with no subdirectory or index.md created for that feature"
   - "Serializing a feature with two or more tasks produces the existing subdirectory + index.md structure unchanged"
@@ -21,7 +25,7 @@ overrideMarker: {"type":"duplicate_guard_override","reason":"content_overlap","r
 
 # Add single-child detection to PRD folder-tree serializer to skip container directory when parent has exactly one child
 
-🟠 [in_progress]
+🟠 [completed]
 
 ## Summary
 
@@ -29,8 +33,10 @@ Modify the PRD folder-tree serializer so that when a feature (or lower-level con
 
 ## Info
 
-- **Status:** in_progress
+- **Status:** completed
 - **Priority:** high
 - **Tags:** rex, prd-storage, folder-tree
 - **Level:** task
 - **Started:** 2026-05-06T19:08:38.021Z
+- **Completed:** 2026-05-06T19:51:21.286Z
+- **Duration:** 42m
