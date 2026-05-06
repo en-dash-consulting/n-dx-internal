@@ -84,27 +84,76 @@ export async function parseFolderTree(treeRoot: string): Promise<FolderParseResu
  * directory with `__parentId` in its frontmatter, it is a flattened single-child.
  * The parent is reconstructed from `__parent*` fields, and this orphaned item
  * becomes the parent's only child.
+ *
+ * @param dir - Directory to parse
+ * @param depth - Directory depth (for level inference and warnings)
+ * @param warnings - Warnings accumulator
+ * @param fromReconstructedParent - If true, suppress depth mismatch warnings (we're inside a single-child flattened tree)
  */
 async function parseDirRecursive(
   dir: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): Promise<PRDItem | null> {
   const itemFile = await discoverItemFile(dir, warnings);
   if (!itemFile) return null;
 
-  const item = await parseItemFileFromFrontmatter(itemFile, depth, warnings);
+  const item = await parseItemFileFromFrontmatter(itemFile, depth, warnings, fromReconstructedParent);
   if (!item) return null;
 
   // Check for single-child reconstruction: if this item has __parentId,
   // reconstruct the parent and return the parent (with this item as its child).
+  // Also handle ancestor chains (grandparent, great-grandparent, etc.) for nested single-children.
   if ((item as Record<string, unknown>).__parentId !== undefined) {
-    const parent = reconstructParentFromChildMetadata(item, warnings);
-    if (parent) {
-      // Remove parent fields from child before attaching
-      cleanupParentMetadataFromChild(item);
-      parent.children = [item];
-      return parent;
+    let directParent = reconstructParentFromChildMetadata(item, warnings);
+    if (directParent) {
+      let current = item;
+      // Clean up __parent* fields from the immediate child
+      cleanupParentMetadataFromChild(current);
+
+      // Before building the ancestor chain, parse subdirectories as children of current item
+      // (not of the reconstructed parent). This ensures that when a feature is collapsed
+      // with its parent epic, the feature's children are still attached correctly.
+      // Since this item was reconstructed from a parent (single-child optimization),
+      // pass fromReconstructedParent=true to suppress depth mismatch warnings for children.
+      const childItems: PRDItem[] = [];
+      for (const childDir of await listSubdirs(dir)) {
+        const child = await parseDirRecursive(join(dir, childDir), depth + 1, warnings, true);
+        if (child) childItems.push(child);
+      }
+      // Tasks may also carry legacy `## Subtask:` sections if this is a task item.
+      if (current.level === "task") {
+        const legacySubtasks = await readLegacySubtasksIfTask(itemFile, warnings);
+        if (legacySubtasks.length > 0) {
+          const seenIds = new Set(childItems.map((c) => c.id));
+          for (const legacy of legacySubtasks) {
+            if (!seenIds.has(legacy.id)) childItems.push(legacy);
+          }
+        }
+      }
+      if (childItems.length > 0) current.children = childItems;
+
+      // Attach the item to its direct parent
+      directParent.children = [current];
+
+      // Build ancestor chain: keep reconstructing while parent has __parentId
+      let ancestor = directParent;
+      while ((ancestor as Record<string, unknown>).__parentId !== undefined) {
+        const nextAncestor = reconstructParentFromChildMetadata(ancestor, warnings);
+        cleanupParentMetadataFromChild(ancestor);
+        if (nextAncestor) {
+          // Attach the current ancestor as a child of the next level up
+          nextAncestor.children = [ancestor];
+          ancestor = nextAncestor;
+        } else {
+          // Stop if we can't reconstruct further
+          break;
+        }
+      }
+
+      // Return the root ancestor (or direct parent if no further ancestors)
+      return ancestor;
     }
     // If reconstruction failed, emit warning and continue with child as-is
     // (treat it as a standalone item with orphaned metadata)
@@ -264,6 +313,11 @@ function reconstructParentFromChildMetadata(
     parent.failureReason = parentFailureReason;
   }
 
+  const parentAcceptanceCriteria = childRecord.__parentAcceptanceCriteria as string[] | undefined;
+  if (parentAcceptanceCriteria !== undefined) {
+    parent.acceptanceCriteria = parentAcceptanceCriteria;
+  }
+
   const parentLoe = childRecord.__parentLoe as string | undefined;
   if (parentLoe !== undefined) {
     (parent as Record<string, unknown>).loe = parentLoe;
@@ -274,7 +328,7 @@ function reconstructParentFromChildMetadata(
     "__parentId", "__parentTitle", "__parentStatus", "__parentLevel", "__parentDescription",
     "__parentPriority", "__parentTags", "__parentBlockedBy", "__parentSource", "__parentStartedAt",
     "__parentCompletedAt", "__parentEndedAt", "__parentResolutionType", "__parentResolutionDetail",
-    "__parentFailureReason", "__parentLoe",
+    "__parentFailureReason", "__parentAcceptanceCriteria", "__parentLoe",
   ]);
   for (const [key, value] of Object.entries(childRecord)) {
     if (key.startsWith("__parent") && !knownParentPrefixes.has(key)) {
@@ -452,6 +506,7 @@ async function parseItemFileFromFrontmatter(
   filePath: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): Promise<PRDItem | null> {
   const text = await readIndexFile(filePath, warnings);
   if (text === null) return null;
@@ -459,7 +514,7 @@ async function parseItemFileFromFrontmatter(
   const fm = parseFrontmatter(text, filePath, warnings);
   if (fm === null) return null;
 
-  return buildItem(fm, filePath, depth, warnings);
+  return buildItem(fm, filePath, depth, warnings, fromReconstructedParent);
 }
 
 async function readIndexFile(filePath: string, warnings: ParseWarning[]): Promise<string | null> {
@@ -478,6 +533,7 @@ function buildItem(
   filePath: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): PRDItem | null {
   const expectedLevel = depthToLevel(depth);
   const id = asString(fm["id"]);
@@ -572,7 +628,12 @@ function buildItem(
   // Skip-level placements (e.g. a task at depth 2 with no intermediate
   // feature) are legal under LEVEL_HIERARCHY, so we surface a warning when
   // depth and frontmatter disagree but never mutate the level.
-  if (expectedLevel !== null && level !== expectedLevel) {
+  // Exception 1: single-child optimized items have __parentId and can be at any
+  // directory depth due to flattening, so suppress the depth mismatch warning.
+  // Exception 2: items parsed as children of reconstructed parents are also affected
+  // by flattening, so suppress warnings for them too.
+  const isSingleChildOptimized = (fm["__parentId"] !== undefined);
+  if (expectedLevel !== null && level !== expectedLevel && !isSingleChildOptimized && !fromReconstructedParent) {
     warnings.push({
       path: filePath,
       message: `Frontmatter level "${level}" does not match depth-derived level "${expectedLevel}" — preserving frontmatter (item id=${id})`,

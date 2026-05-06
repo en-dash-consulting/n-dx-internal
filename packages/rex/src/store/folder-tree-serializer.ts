@@ -102,6 +102,7 @@ async function serializeChildren(
   // internal serialization path uses positional slugs.
   const positionalSlugs = resolvePositionalSiblingSlugs(items);
   const expectedSlugs = new Set<string>();
+  let hadSingleChildOptimization = false;
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -109,16 +110,23 @@ async function serializeChildren(
     const children = item.children ?? [];
     const childSlugs = resolveSiblingSlugs(children);
 
-    // Single-child optimization: if this item has exactly one child,
-    // embed parent metadata in the child and serialize the child directly
-    // to parentDir instead of creating a directory for the parent.
-    if (children.length === 1) {
+    // Single-child optimization: if this item is a feature (or lower level)
+    // and has exactly one child, embed parent metadata in the child and serialize
+    // the child directly to parentDir instead of creating a directory for the parent.
+    // Epics are not optimized to preserve the expected folder structure.
+    const isFeatureOrLower = item.level !== "epic";
+    if (isFeatureOrLower && children.length === 1) {
       const singleChild = children[0];
       embedParentMetadata(singleChild, item);
       // Serialize the child directly to parentDir (skipping parent's directory)
+      // The recursive call will create subdirectories and track them in its own cleanup
       await serializeChildren([singleChild], parentDir, result);
+      hadSingleChildOptimization = true;
       // Do NOT add itemSlug to expectedSlugs (parent directory doesn't exist)
-      // The child's directory will be created and tracked by the recursive call
+      // Note: we don't track the child's slug here because the recursive call
+      // has already handled cleanup for its own level. Single-child optimization
+      // creates only the leaf-most directory, which is handled correctly by the
+      // deepest serializeChildren call.
       continue;
     }
 
@@ -145,7 +153,14 @@ async function serializeChildren(
     await serializeChildren(children, itemDir, result);
   }
 
-  await removeStaleSubdirs(parentDir, expectedSlugs, result);
+  // For single-child optimization: when some (or all) items at this level are single-child,
+  // the recursive calls have already created subdirectories and cleaned up their own levels.
+  // Only call removeStaleSubdirs if we created directories at this level, OR if we need
+  // to clean up after removing items.
+  const shouldCleanup = expectedSlugs.size > 0 || items.length === 0;
+  if (shouldCleanup) {
+    await removeStaleSubdirs(parentDir, expectedSlugs, result);
+  }
 }
 
 /**
@@ -199,6 +214,9 @@ function embedParentMetadata(child: PRDItem, parent: PRDItem): void {
   }
   if (parent.failureReason !== undefined) {
     childRecord.__parentFailureReason = parent.failureReason;
+  }
+  if (parent.acceptanceCriteria !== undefined) {
+    childRecord.__parentAcceptanceCriteria = parent.acceptanceCriteria;
   }
   if ((parent as Record<string, unknown>).loe !== undefined) {
     childRecord.__parentLoe = (parent as Record<string, unknown>).loe;
