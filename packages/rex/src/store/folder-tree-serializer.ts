@@ -78,10 +78,15 @@ export async function serializeFolderTree(
  * (e.g. a task placed directly under an epic without an intermediate
  * feature) without dropping or re-typing data.
  *
+ * Single-child optimization: When an item has exactly one child, the child's
+ * file is written directly to the parent's directory (not in a subdirectory),
+ * and the parent's metadata is embedded in the child's frontmatter using
+ * `__parent*` fields. The parent's own .md file is not created.
+ *
  * The directory contains:
  *   - `<title>.md` — the item's primary markdown (with full frontmatter)
  *   - `index.md`   — human-readable summary (Progress / Subtask sections)
- * and one subdirectory per child, recursively.
+ * and one subdirectory per child, recursively (unless single-child optimization applies).
  *
  * Stale sibling directories under `parentDir` (items removed from the
  * source tree) are deleted via {@link removeStaleSubdirs}.
@@ -101,12 +106,26 @@ async function serializeChildren(
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const itemSlug = positionalSlugs[i];
+    const children = item.children ?? [];
+    const childSlugs = resolveSiblingSlugs(children);
+
+    // Single-child optimization: if this item has exactly one child,
+    // embed parent metadata in the child and serialize the child directly
+    // to parentDir instead of creating a directory for the parent.
+    if (children.length === 1) {
+      const singleChild = children[0];
+      embedParentMetadata(singleChild, item);
+      // Serialize the child directly to parentDir (skipping parent's directory)
+      await serializeChildren([singleChild], parentDir, result);
+      // Do NOT add itemSlug to expectedSlugs (parent directory doesn't exist)
+      // The child's directory will be created and tracked by the recursive call
+      continue;
+    }
+
+    // Multi-child case: create directory for this item, then recurse into itemDir.
     expectedSlugs.add(itemSlug);
     const itemDir = join(parentDir, itemSlug);
     await ensureDir(itemDir, result);
-
-    const children = item.children ?? [];
-    const childSlugs = resolveSiblingSlugs(children);
 
     // Item file: <title>.md with full frontmatter and a Children link table.
     const itemContent = renderItemIndexMd(item, children, childSlugs);
@@ -127,6 +146,84 @@ async function serializeChildren(
   }
 
   await removeStaleSubdirs(parentDir, expectedSlugs, result);
+}
+
+/**
+ * Embed parent metadata into a child item using `__parent*` fields.
+ * These fields are preserved through serialization and can be used by the
+ * parser to reconstruct the parent during single-child optimization round-trips.
+ *
+ * Called only when a parent has exactly one child and single-child optimization applies.
+ *
+ * Note: Does not embed the parent's own `__parent*` fields (which would be from
+ * the parent's parent). Those are handled separately during recursive embedding.
+ */
+function embedParentMetadata(child: PRDItem, parent: PRDItem): void {
+  const childRecord = child as Record<string, unknown>;
+
+  // Embed all parent metadata using __parent prefix
+  childRecord.__parentId = parent.id;
+  childRecord.__parentTitle = parent.title;
+  childRecord.__parentStatus = parent.status;
+  childRecord.__parentLevel = parent.level;
+
+  if (parent.description !== undefined) {
+    childRecord.__parentDescription = parent.description;
+  }
+  if (parent.priority !== undefined) {
+    childRecord.__parentPriority = parent.priority;
+  }
+  if (parent.tags !== undefined) {
+    childRecord.__parentTags = parent.tags;
+  }
+  if (parent.blockedBy !== undefined) {
+    childRecord.__parentBlockedBy = parent.blockedBy;
+  }
+  if (parent.source !== undefined) {
+    childRecord.__parentSource = parent.source;
+  }
+  if (parent.startedAt !== undefined) {
+    childRecord.__parentStartedAt = parent.startedAt;
+  }
+  if (parent.completedAt !== undefined) {
+    childRecord.__parentCompletedAt = parent.completedAt;
+  }
+  if (parent.endedAt !== undefined) {
+    childRecord.__parentEndedAt = parent.endedAt;
+  }
+  if (parent.resolutionType !== undefined) {
+    childRecord.__parentResolutionType = parent.resolutionType;
+  }
+  if (parent.resolutionDetail !== undefined) {
+    childRecord.__parentResolutionDetail = parent.resolutionDetail;
+  }
+  if (parent.failureReason !== undefined) {
+    childRecord.__parentFailureReason = parent.failureReason;
+  }
+  if ((parent as Record<string, unknown>).loe !== undefined) {
+    childRecord.__parentLoe = (parent as Record<string, unknown>).loe;
+  }
+  // Preserve any unknown fields from parent as well.
+  // If the parent has __parent* fields (from its own parent), copy them with
+  // an additional __parent prefix to preserve the ancestor chain.
+  const knownParentFields = new Set([
+    "id", "level", "title", "status", "description", "priority", "tags", "blockedBy",
+    "source", "startedAt", "completedAt", "endedAt", "resolutionType",
+    "resolutionDetail", "failureReason", "acceptanceCriteria", "loe", "children",
+  ]);
+  for (const [key, value] of Object.entries(parent)) {
+    if (knownParentFields.has(key) || value === undefined || value === null) {
+      continue;
+    }
+    if (key.startsWith("__parent")) {
+      // Preserve ancestor fields with an additional __parent prefix
+      // __parentId → __parent__parentId, __parentTitle → __parent__parentTitle, etc.
+      childRecord[`__parent${key}`] = value;
+    } else {
+      // Add __parent prefix for other unknown fields
+      childRecord[`__parent${key.charAt(0).toUpperCase()}${key.slice(1)}`] = value;
+    }
+  }
 }
 
 /**
