@@ -2,7 +2,8 @@
 id: "738f6000-aa94-41a0-86da-1d505e2674dd"
 level: "epic"
 title: "Testing & Documentation"
-status: "pending"
+status: "in_progress"
+startedAt: "2026-05-06T13:27:57.504Z"
 description: "Local testing infrastructure (gauntlet config validation), platform/prerequisite documentation, and ongoing documentation refresh for PRD-related changes."
 ---
 
