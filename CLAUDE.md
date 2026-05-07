@@ -258,7 +258,11 @@ ndx add "description"     # smart-add PRD items from freeform descriptions
 ndx add --file=spec.md    # import ideas from a text file
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
-ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, --yes, etc.)
+ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, --yes,
+                          #   --permission-mode=<default|acceptEdits|bypassPermissions|plan>, etc.)
+                          # Autonomous runs (--auto/--loop/--epic-by-epic) default to
+                          # acceptEdits so the spawned Claude session won't stall in plan
+                          # mode. Override with --permission-mode or hench.permissionMode.
 ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute; --yes for unattended)
 ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
 ndx status [dir]          # rex status (pass --format=json)

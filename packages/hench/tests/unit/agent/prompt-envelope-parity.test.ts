@@ -52,11 +52,7 @@ function extractClaudeContent(envelope: PromptEnvelope): {
   systemPrompt: string;
   taskPrompt: string;
 } {
-  const config = claudeCliAdapter.buildSpawnConfig(
-    envelope,
-    DEFAULT_EXECUTION_POLICY,
-    undefined,
-  );
+  const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
   if (process.platform === "win32") {
     // On Windows, system+task are concatenated in stdin — use assemblePrompt
@@ -79,11 +75,7 @@ function extractCodexContent(envelope: PromptEnvelope): {
   systemPrompt: string;
   taskPrompt: string;
 } {
-  const config = codexCliAdapter.buildSpawnConfig(
-    envelope,
-    DEFAULT_EXECUTION_POLICY,
-    undefined,
-  );
+  const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
   const lastArg = config.args[config.args.length - 1] as string;
   const systemStart = lastArg.indexOf("SYSTEM:\n") + "SYSTEM:\n".length;
@@ -222,10 +214,10 @@ describe("AC1: both adapters receive identical section names", () => {
       // before and after each adapter call to verify no mutation.
       const beforeDiags = extractPromptSectionDiagnostics(envelope);
 
-      claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+      claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
       const afterClaudeDiags = extractPromptSectionDiagnostics(envelope);
 
-      codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+      codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
       const afterCodexDiags = extractPromptSectionDiagnostics(envelope);
 
       // Section names must be identical across all three snapshots
@@ -255,8 +247,8 @@ describe("AC1: both adapters receive identical section names", () => {
     expect(names).toEqual(["completion", "system", "brief", "workflow", "files"]);
 
     // Neither adapter mutates the ordering
-    claudeCliAdapter.buildSpawnConfig(customOrder, DEFAULT_EXECUTION_POLICY, undefined);
-    codexCliAdapter.buildSpawnConfig(customOrder, DEFAULT_EXECUTION_POLICY, undefined);
+    claudeCliAdapter.buildSpawnConfig(customOrder, DEFAULT_EXECUTION_POLICY, {});
+    codexCliAdapter.buildSpawnConfig(customOrder, DEFAULT_EXECUTION_POLICY, {});
 
     const postNames = extractPromptSectionDiagnostics(customOrder).map((d) => d.name);
     expect(postNames).toEqual(names);
@@ -299,10 +291,10 @@ describe("AC2: section content equivalence between adapters", () => {
     // Both adapters operate on the same immutable envelope, so diagnostics
     // must be identical regardless of when they are captured.
     const beforeClaude = extractPromptSectionDiagnostics(envelope);
-    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
     const afterClaude = extractPromptSectionDiagnostics(envelope);
 
-    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
     const afterCodex = extractPromptSectionDiagnostics(envelope);
 
     // Byte lengths must be identical
@@ -332,8 +324,8 @@ describe("AC2: section content equivalence between adapters", () => {
     const envelope = fullEnvelope();
 
     for (const policy of [STANDARD_POLICY, READONLY_POLICY, FULL_ACCESS_POLICY]) {
-      const claudeConfig = claudeCliAdapter.buildSpawnConfig(envelope, policy, undefined);
-      const codexConfig = codexCliAdapter.buildSpawnConfig(envelope, policy, undefined);
+      const claudeConfig = claudeCliAdapter.buildSpawnConfig(envelope, policy, {});
+      const codexConfig = codexCliAdapter.buildSpawnConfig(envelope, policy, {});
 
       // The policy affects CLI flags, not prompt content.
       // Extract content and verify it's the same across adapters.
@@ -357,8 +349,8 @@ describe("AC2: section content equivalence between adapters", () => {
     const canonical = assemblePrompt(envelope);
 
     // Model override affects the spawn args but not the prompt content
-    const claude = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, "claude-opus-4");
-    const codex = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, "gpt-5-codex");
+    const claude = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, { model: "claude-opus-4" });
+    const codex = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, { model: "gpt-5-codex" });
 
     expect(claude.stdinContent).toBe(canonical.taskPrompt);
 
@@ -580,10 +572,10 @@ describe("symmetry proof: adapter order does not affect content", () => {
     const envelope = fullEnvelope();
     const snapshot = JSON.stringify(envelope);
 
-    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
     expect(JSON.stringify(envelope)).toBe(snapshot);
 
-    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
     expect(JSON.stringify(envelope)).toBe(snapshot);
   });
 });

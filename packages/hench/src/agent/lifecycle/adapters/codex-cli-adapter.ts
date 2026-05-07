@@ -25,7 +25,7 @@
  * @see docs/architecture/phase2-vendor-normalization.md — design rationale
  */
 
-import type { VendorAdapter, SpawnConfig } from "../vendor-adapter.js";
+import type { VendorAdapter, SpawnConfig, VendorSpawnOptions } from "../vendor-adapter.js";
 import type {
   PromptEnvelope,
   ExecutionPolicy,
@@ -640,7 +640,7 @@ export const codexCliAdapter: VendorAdapter = {
   buildSpawnConfig(
     envelope: PromptEnvelope,
     policy: ExecutionPolicy,
-    model: string | undefined,
+    opts: VendorSpawnOptions,
   ): SpawnConfig {
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
@@ -653,12 +653,15 @@ export const codexCliAdapter: VendorAdapter = {
     // Replaces --full-auto so preset aliases cannot override intent.
     const policyFlags = compileCodexPolicyFlags(policy);
 
+    // opts.permissionMode is intentionally ignored — it is a Claude-CLI
+    // concept with no Codex equivalent; the run.ts caller drops it with a
+    // warning before reaching this adapter.
     const args = [
       "exec",
       ...policyFlags,
       "--json",
       "--skip-git-repo-check",
-      ...(model ? ["-m", model] : []),
+      ...(opts.model ? ["-m", opts.model] : []),
       prompt,
     ];
 

@@ -24,7 +24,7 @@
 
 import { spawn } from "node:child_process";
 import type { PRDStore } from "../../prd/rex-gateway.js";
-import type { HenchConfig, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage } from "../../schema/index.js";
+import type { HenchConfig, PermissionMode, RetryConfig, RunRecord, ToolCallRecord, TurnTokenUsage } from "../../schema/index.js";
 import { validateCompletion, formatValidationResult } from "../../validation/completion.js";
 import { toolRexUpdateStatus, toolRexAppendLog } from "../../tools/rex.js";
 import { checkTokenBudget } from "./token-budget.js";
@@ -66,6 +66,7 @@ import { resolveVendorAdapter } from "./adapters/index.js";
 import { EventAccumulator } from "./event-accumulator.js";
 import { extractPromptSectionDiagnostics, logPromptSections } from "./prompt-diagnostics.js";
 import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schema/index.js";
+import { handlePlanModeStall, formatPlanModeAppendix } from "./plan-mode-prompt.js";
 
 // ── normalizeCodexResponse ────────────────────────────────────────────────
 
@@ -96,6 +97,12 @@ export function normalizeCodexResponse(output: string): {
 
 export interface CliLoopOptions extends SharedLoopOptions {
   spawnModel?: string;
+  /**
+   * Permission posture forwarded to the spawned Claude CLI. When undefined
+   * the flag is omitted entirely (Claude CLI uses its built-in default).
+   * Codex spawns ignore this field.
+   */
+  permissionMode?: PermissionMode;
 }
 
 export interface CliLoopResult {
@@ -117,6 +124,14 @@ interface SpawnResult {
   summary?: string;
   error?: string;
   costUsd?: number;
+  /**
+   * Set when the spawn was terminated early because the agent emitted an
+   * `ExitPlanMode` tool_use. The outer cliLoop reads this signal, surfaces
+   * the plan to the user (or auto-accepts when non-interactive), and either
+   * re-spawns with `permissionMode: "acceptEdits"` plus the plan threaded
+   * back into the brief, or aborts the run with status "cancelled".
+   */
+  planModeIntercept?: { planText: string };
 }
 
 interface SpawnTokenMetadata {
@@ -762,7 +777,10 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
         }
       }
 
-      if (code !== 0 && !result.error) {
+      // Don't synthesize an error when we deliberately killed the spawn to
+      // intercept plan mode — the outer loop owns that flow and will either
+      // re-spawn with permissionMode=acceptEdits or surface a cancelled status.
+      if (code !== 0 && !result.error && !result.planModeIntercept) {
         result.error = stderr.trim() || `${adapter.vendor} exited with code ${code}`;
       }
 
@@ -774,6 +792,24 @@ function spawnWithAdapter(opts: SpawnWithAdapterOptions): Promise<SpawnResult> {
     function processLine(line: string): void {
       // Step 1: Parse the line through the adapter for event classification
       const event = adapter.parseEvent(line, turnCounter.value + 1, {});
+
+      // Plan-mode intercept: when the agent calls ExitPlanMode, capture the
+      // plan text and terminate the spawn so the outer loop can prompt the
+      // user (or auto-accept) and re-run with permissionMode "acceptEdits".
+      if (
+        event?.type === "tool_use" &&
+        event.toolCall?.tool === "ExitPlanMode" &&
+        !result.planModeIntercept
+      ) {
+        const planInput = event.toolCall.input as { plan?: unknown } | undefined;
+        const planText = typeof planInput?.plan === "string" ? planInput.plan : "";
+        result.planModeIntercept = { planText };
+        try {
+          proc.kill("SIGTERM");
+        } catch {
+          // Process may already be exiting; the close handler will resolve.
+        }
+      }
 
       if (useEventPipeline && accumulator) {
         // ── Event pipeline: push to accumulator + emit UI ──
@@ -1169,60 +1205,124 @@ export async function cliLoop(opts: CliLoopOptions): Promise<CliLoopResult> {
       : `Agent Run${opts.spawnModel ? ` (${opts.spawnModel})` : ""}`,
   );
 
+  // Plan-mode bookkeeping: when the spawned Claude session emits an
+  // ExitPlanMode tool_use we kill the spawn, prompt the user (or auto-accept
+  // when no TTY is attached), and re-spawn with permissionMode=acceptEdits
+  // plus the plan threaded back into the brief. Capped to a small number of
+  // re-spawns per run to avoid runaway loops if the agent keeps asking.
+  let currentPermissionMode = opts.permissionMode;
+  let planModeAppendix: string | undefined;
+  const MAX_PLAN_RESPAWNS = 2;
+  let planRespawns = 0;
+  let cancelledByUser = false;
+
   try {
     for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
-      const promptText = attempt === 0
-        ? boundedBriefText
-        : boundedBriefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulated.turns);
+      let result!: SpawnResult;
+      let attemptAccumulator: EventAccumulator | undefined;
 
-      // Build the per-attempt PromptEnvelope. On the first attempt we use
-      // the base envelope from prepareBrief directly. On retries we replace
-      // the "brief" section with the retry-augmented prompt text.
-      const envelope = attempt === 0
-        ? baseEnvelope
-        : createPromptEnvelope([
-            { name: "system" as PromptSectionName, content: systemPrompt } as PromptSection,
-            { name: "brief" as PromptSectionName, content: promptText } as PromptSection,
-          ]);
+      // Inner re-spawn loop: handles plan-mode interceptions without
+      // consuming retry budget. Exits as soon as a spawn completes without
+      // triggering ExitPlanMode (or when the plan-respawn cap is hit / the
+      // user rejects the plan).
+      while (true) {
+        const briefContent =
+          (attempt === 0
+            ? boundedBriefText
+            : boundedBriefText + buildRetryNotice(attempt, retryConfig.maxRetries, accumulated.turns)) +
+          (planModeAppendix ? `\n\n${planModeAppendix}` : "");
 
-      // Use the adapter to build the vendor-specific spawn configuration
-      const spawnConfig = adapter.buildSpawnConfig(envelope, policy, opts.spawnModel);
+        // Build the per-attempt PromptEnvelope. On the first attempt with
+        // no plan-mode appendix we reuse the base envelope from prepareBrief.
+        // Otherwise we rebuild it so the augmented brief is delivered.
+        const envelope = attempt === 0 && !planModeAppendix
+          ? baseEnvelope
+          : createPromptEnvelope([
+              { name: "system" as PromptSectionName, content: systemPrompt } as PromptSection,
+              { name: "brief" as PromptSectionName, content: briefContent } as PromptSection,
+            ]);
 
-      // Capture prompt section diagnostics on the first attempt for run-level storage.
-      // Log section names and byte sizes on every attempt for CLI observability.
-      const sectionDiags = extractPromptSectionDiagnostics(envelope);
-      if (attempt === 0) {
-        promptSectionDiagnostics = sectionDiags;
+        // Use the adapter to build the vendor-specific spawn configuration
+        const spawnConfig = adapter.buildSpawnConfig(envelope, policy, {
+          model: opts.spawnModel,
+          permissionMode: currentPermissionMode,
+        });
+
+        // Capture prompt section diagnostics on the first attempt for run-level storage.
+        // Log section names and byte sizes on every attempt for CLI observability.
+        const sectionDiags = extractPromptSectionDiagnostics(envelope);
+        if (attempt === 0 && !promptSectionDiagnostics) {
+          promptSectionDiagnostics = sectionDiags;
+        }
+
+        if (attempt > 0 && planRespawns === 0) {
+          subsection(`Retry ${attempt}/${retryConfig.maxRetries}`);
+        } else if (planRespawns > 0) {
+          subsection(`Re-spawn after plan-mode approval (${planRespawns}/${MAX_PLAN_RESPAWNS})`);
+        }
+        stream("CLI", `Spawning ${vendor}${opts.spawnModel ? ` (model: ${opts.spawnModel})` : ""}...`);
+        logPromptSections(sectionDiags);
+
+        // Event pipeline: create a per-attempt accumulator. Events from this
+        // attempt are pushed here, then merged into runAccumulator after spawn.
+        attemptAccumulator = useEventPipeline ? new EventAccumulator() : undefined;
+
+        // Generic adapter-based spawn — replaces dispatchVendorSpawn
+        result = await spawnWithAdapter({
+          adapter,
+          spawnConfig,
+          cliBinary,
+          cliEnv,
+          cwd: projectDir,
+          tokenMetadata,
+          useEventPipeline,
+          accumulator: attemptAccumulator,
+        });
+
+        // Merge per-attempt events into the cross-retry accumulator. Includes
+        // events from spawns terminated by plan-mode interception so token
+        // usage and assistant text aren't lost.
+        if (useEventPipeline && attemptAccumulator && runAccumulator) {
+          runAccumulator.push(...attemptAccumulator.events);
+        }
+
+        accumulateResult(accumulated, result);
+
+        if (!result.planModeIntercept) break;
+
+        const decision = await handlePlanModeStall(result.planModeIntercept.planText, {
+          isTty: process.stdin.isTTY === true,
+        });
+        if (decision.action === "reject") {
+          run.status = "cancelled";
+          run.error = "Plan mode rejected by user";
+          await toolRexAppendLog(store, taskId, {
+            event: "task_cancelled",
+            detail: "Plan mode rejected by user.",
+          });
+          cancelledByUser = true;
+          break;
+        }
+
+        currentPermissionMode = "acceptEdits";
+        planModeAppendix = formatPlanModeAppendix(result.planModeIntercept.planText, decision);
+        planRespawns++;
+        if (planRespawns > MAX_PLAN_RESPAWNS) {
+          run.status = "failed";
+          run.error =
+            "Plan-mode re-spawn limit exceeded — the agent kept entering plan " +
+            "mode even after switching to permissionMode=acceptEdits.";
+          await toolRexAppendLog(store, taskId, {
+            event: "task_failed",
+            detail: run.error,
+          });
+          cancelledByUser = true;
+          break;
+        }
+        // else: re-enter the inner loop with new permissionMode + appendix
       }
 
-      if (attempt > 0) {
-        subsection(`Retry ${attempt}/${retryConfig.maxRetries}`);
-      }
-      stream("CLI", `Spawning ${vendor}${opts.spawnModel ? ` (model: ${opts.spawnModel})` : ""}...`);
-      logPromptSections(sectionDiags);
-
-      // Event pipeline: create a per-attempt accumulator. Events from this
-      // attempt are pushed here, then merged into runAccumulator after spawn.
-      const attemptAccumulator = useEventPipeline ? new EventAccumulator() : undefined;
-
-      // Generic adapter-based spawn — replaces dispatchVendorSpawn
-      const result = await spawnWithAdapter({
-        adapter,
-        spawnConfig,
-        cliBinary,
-        cliEnv,
-        cwd: projectDir,
-        tokenMetadata,
-        useEventPipeline,
-        accumulator: attemptAccumulator,
-      });
-
-      // Merge per-attempt events into the cross-retry accumulator
-      if (useEventPipeline && attemptAccumulator && runAccumulator) {
-        runAccumulator.push(...attemptAccumulator.events);
-      }
-
-      accumulateResult(accumulated, result);
+      if (cancelledByUser) break;
 
       if (!result.error) {
         const action = await processSuccessfulResult({

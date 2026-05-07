@@ -72,6 +72,27 @@ export interface RetryConfig {
 
 export type Provider = "cli" | "api";
 
+/**
+ * Permission posture for the spawned Claude CLI session.
+ *
+ * Maps directly to Claude CLI's `--permission-mode` flag values.
+ * Only meaningful when `provider === "cli"` and the active vendor is Claude;
+ * Codex ignores it.
+ */
+export type PermissionMode = "default" | "acceptEdits" | "bypassPermissions" | "plan";
+
+/** All four valid PermissionMode values, in stable order for validation/UX. */
+export const PERMISSION_MODES: readonly PermissionMode[] = [
+  "default",
+  "acceptEdits",
+  "bypassPermissions",
+  "plan",
+];
+
+export function isPermissionMode(value: unknown): value is PermissionMode {
+  return typeof value === "string" && (PERMISSION_MODES as readonly string[]).includes(value);
+}
+
 export interface HenchConfig {
   schema: string;
   provider: Provider;
@@ -147,6 +168,20 @@ export interface HenchConfig {
    * Applies to autonomous and pair-programming modes.
    */
   planOnlyMaxRetries?: number;
+  /**
+   * Permission posture for the spawned Claude CLI session.
+   *
+   * When set, hench passes `--permission-mode <value>` to the Claude CLI.
+   * When omitted, hench picks a default at runtime: autonomous runs
+   * (`--auto`/`--loop`/`--epic-by-epic`) default to `"acceptEdits"` so the
+   * agent can drive edits to completion without waiting on plan-mode
+   * approval; interactive one-shot runs leave the flag off so Claude CLI
+   * uses its built-in `default` mode and the user approves each tool.
+   *
+   * Only meaningful when `provider === "cli"` and the active vendor is
+   * Claude — Codex ignores the field.
+   */
+  permissionMode?: PermissionMode;
 }
 
 // ── Language-specific guard defaults ──────────────────────────────────

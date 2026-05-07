@@ -90,11 +90,7 @@ describe("CodexCliAdapter: VendorAdapter interface", () => {
 describe("CodexCliAdapter: buildSpawnConfig", () => {
   it("returns a valid SpawnConfig", () => {
     const envelope = createStandardEnvelope();
-    const config: SpawnConfig = codexCliAdapter.buildSpawnConfig(
-      envelope,
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config: SpawnConfig = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.binary).toBe("codex");
     expect(Array.isArray(config.args)).toBe(true);
@@ -104,11 +100,7 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
   });
 
   it("includes required Codex CLI flags", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).toContain("exec");
     expect(config.args).toContain("--json");
@@ -116,22 +108,14 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
   });
 
   it("compiles default policy to the supported --full-auto preset", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).toContain("--full-auto");
     expect(config.args).not.toContain("--approval-policy");
   });
 
   it("compiles read-only policy correctly", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      READONLY_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), READONLY_POLICY, {});
 
     const sandboxIdx = config.args.indexOf("--sandbox");
     expect(config.args[sandboxIdx + 1]).toBe("read-only");
@@ -139,22 +123,14 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
   });
 
   it("compiles full-access policy correctly", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      FULL_ACCESS_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), FULL_ACCESS_POLICY, {});
 
     expect(config.args).toContain("--dangerously-bypass-approvals-and-sandbox");
     expect(config.args).not.toContain("--approval-policy");
   });
 
   it("places model override as -m flag", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      "gpt-5-codex",
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, { model: "gpt-5-codex" });
 
     expect(config.args).toContain("-m");
     expect(config.args).toContain("gpt-5-codex");
@@ -163,21 +139,13 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
   });
 
   it("omits -m when model is undefined", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).not.toContain("-m");
   });
 
   it("includes the prompt as the last argument", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     const lastArg = config.args[config.args.length - 1];
     // The prompt should contain both system and task content
@@ -188,22 +156,14 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
   });
 
   it("stdinContent is null (Codex uses args-based delivery)", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.stdinContent).toBeNull();
   });
 
   it("policy flags match compileCodexPolicyFlags output", () => {
     const policy = STANDARD_POLICY;
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      policy,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), policy, {});
 
     const expectedFlags = compileCodexPolicyFlags(policy);
     // The policy flags should appear in the args in order
@@ -217,11 +177,7 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
 
 describe("CodexCliAdapter: snapshot parity", () => {
   it("SNAPSHOT: standard Codex CLI args are deterministic", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     // Remove the prompt (last arg) since it has variable content from assemblePrompt
     const argsWithoutPrompt = config.args.slice(0, -1);
@@ -234,11 +190,7 @@ describe("CodexCliAdapter: snapshot parity", () => {
   });
 
   it("SNAPSHOT: Codex CLI args with model override are deterministic", () => {
-    const config = codexCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      "gpt-5-codex",
-    );
+    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, { model: "gpt-5-codex" });
 
     const argsWithoutPrompt = config.args.slice(0, -1);
     expect(argsWithoutPrompt).toEqual([
@@ -851,11 +803,7 @@ describe("CodexCliAdapter: normalizeCodexResponse", () => {
 describe("CodexCliAdapter: end-to-end pipeline", () => {
   it("envelope → buildSpawnConfig → verify args are parseable", () => {
     const envelope = createStandardEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(
-      envelope,
-      STANDARD_POLICY,
-      undefined,
-    );
+    const config = codexCliAdapter.buildSpawnConfig(envelope, STANDARD_POLICY, {});
 
     // Binary is "codex"
     expect(config.binary).toBe("codex");

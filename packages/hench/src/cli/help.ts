@@ -54,6 +54,7 @@ const COMMAND_DEFS: Record<string, HelpDefinition> = {
       { flag: "--max-turns=<n>", description: "Override max agent turns per task" },
       { flag: "--token-budget=<n>", description: "Cap total tokens per run (0 = unlimited)" },
       { flag: "--model=<model>", description: "Override the Claude model" },
+      { flag: "--permission-mode=<mode>", description: "Claude permission posture: default | acceptEdits | bypassPermissions | plan (autonomous runs default to acceptEdits)" },
     ],
     examples: [
       { command: "hench run", description: "Run next task (interactive selection)" },

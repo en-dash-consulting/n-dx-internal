@@ -2,7 +2,7 @@
 id: "4feb768c-2c8b-42d4-abb1-92fcb755106e"
 level: "task"
 title: "Add folder-per-task structural migration pass to ndx reshape and ndx add"
-status: "in_progress"
+status: "pending"
 priority: "high"
 tags:
   - "prd-storage"

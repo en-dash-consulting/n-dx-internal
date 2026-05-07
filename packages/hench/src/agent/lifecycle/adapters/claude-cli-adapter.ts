@@ -24,7 +24,7 @@
  * @see docs/architecture/phase2-vendor-normalization.md — design rationale
  */
 
-import type { VendorAdapter, SpawnConfig } from "../vendor-adapter.js";
+import type { VendorAdapter, SpawnConfig, VendorSpawnOptions } from "../vendor-adapter.js";
 import type {
   PromptEnvelope,
   ExecutionPolicy,
@@ -37,6 +37,7 @@ import {
   assemblePrompt,
   classifyVendorError,
 } from "../../../prd/llm-gateway.js";
+import type { PermissionMode } from "../../../schema/index.js";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -72,6 +73,14 @@ export interface ClaudeCliInput {
   promptText: string;
   allowedTools: string[];
   modelOverride?: string;
+  /**
+   * Permission posture for the spawned session.
+   *
+   * When present, appended as `--permission-mode <mode>` to the CLI args.
+   * When undefined, the flag is omitted entirely so Claude CLI uses its
+   * built-in default mode.
+   */
+  permissionMode?: PermissionMode;
 }
 
 export function buildClaudeCliArgs(input: ClaudeCliInput): { args: string[]; stdinContent: string } {
@@ -93,6 +102,7 @@ export function buildClaudeCliArgs(input: ClaudeCliInput): { args: string[]; std
     // Bash(cmd:*) patterns contain ( ) which are special to cmd.exe without quoting.
     ...(isWindows ? [`"${input.allowedTools.join(",")}"`] : input.allowedTools),
     ...(input.modelOverride ? ["--model", input.modelOverride] : []),
+    ...(input.permissionMode ? ["--permission-mode", input.permissionMode] : []),
   ];
 
   return { args, stdinContent };
@@ -319,7 +329,7 @@ export const claudeCliAdapter: VendorAdapter = {
   buildSpawnConfig(
     envelope: PromptEnvelope,
     policy: ExecutionPolicy,
-    model: string | undefined,
+    opts: VendorSpawnOptions,
   ): SpawnConfig {
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
     const allowedTools = buildAllowedTools(policy.allowedCommands);
@@ -328,7 +338,8 @@ export const claudeCliAdapter: VendorAdapter = {
       systemPrompt,
       promptText: taskPrompt,
       allowedTools,
-      modelOverride: model,
+      modelOverride: opts.model,
+      permissionMode: opts.permissionMode,
     });
 
     return {

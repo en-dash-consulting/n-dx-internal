@@ -20,7 +20,7 @@ Make ndx reshape and ndx add idempotently bring any pre-existing PRD tree into c
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Add folder-per-task structural migration pass to ndx reshape and ndx add | task | in_progress | 2026-05-07 |
+| Add folder-per-task structural migration pass to ndx reshape and ndx add | task | pending | 2026-05-07 |
 | Snapshot .rex/prd_tree to a timestamped backup before structural migration | task | pending | 1970-01-01 |
 
 ## Info
