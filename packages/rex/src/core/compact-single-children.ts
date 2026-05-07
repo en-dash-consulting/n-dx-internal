@@ -111,15 +111,18 @@ async function compactDirRecursive(dir: string, result: CompactionResult): Promi
     }
   }
 
-  // Check if this directory is a single-child wrapper
-  // Single-child case: exactly one subdirectory and an index.md file
+  // Check if this directory is a single-child wrapper.
+  // Single-child case: exactly one subdirectory and an index.md file, AND the
+  // wrapper's level is feature-or-lower. Epics are deliberately preserved as
+  // top-level directories — the runtime serializer mirrors this rule (see
+  // `isFeatureOrLower` in folder-tree-serializer.ts) and removing the epic
+  // directory would lose its addressability and break parser depth checks.
   if (subdirs.length === 1 && files.has("index.md")) {
     const childName = subdirs[0];
     const childPath = join(dir, childName);
+    const wrapperLevel = await readItemLevel(join(dir, "index.md"));
 
-    // Check if the child already has __parent* fields (already optimized)
-    if (!(await isAlreadyOptimized(childPath))) {
-      // Compact this directory
+    if (wrapperLevel && wrapperLevel !== "epic" && !(await isAlreadyOptimized(childPath))) {
       try {
         await compactWrapper(dir, childName, result);
         result.compactedCount++;
@@ -143,6 +146,22 @@ async function compactDirRecursive(dir: string, result: CompactionResult): Promi
   }
 
   return false;
+}
+
+/**
+ * Read the `level` field from an item's index.md frontmatter. Returns null
+ * when the file is missing, malformed, or has no level field.
+ */
+async function readItemLevel(indexPath: string): Promise<string | null> {
+  try {
+    const content = await readFile(indexPath, "utf-8");
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return null;
+    const levelMatch = fmMatch[1].match(/^level:\s*"?([^"\n]+)"?/m);
+    return levelMatch ? levelMatch[1].trim() : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

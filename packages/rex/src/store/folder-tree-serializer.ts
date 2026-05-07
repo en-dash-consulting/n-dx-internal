@@ -64,13 +64,15 @@ export async function serializeFolderTree(
   };
 
   await ensureDir(treeRoot, result);
-  await serializeChildren(items, treeRoot, result);
+  const writtenSlugs = await writeSiblings(items, treeRoot, result);
+  await removeStaleSubdirs(treeRoot, writtenSlugs, result);
 
   return result;
 }
 
 /**
- * Recursively serialize a list of sibling items into `parentDir`.
+ * Recursively serialize a list of sibling items into `parentDir` and return
+ * the set of directory names written directly inside `parentDir`.
  *
  * Each item gets its own directory, regardless of level. Children are
  * serialized one level deeper, also regardless of level. This preserves
@@ -78,31 +80,29 @@ export async function serializeFolderTree(
  * (e.g. a task placed directly under an epic without an intermediate
  * feature) without dropping or re-typing data.
  *
- * Single-child optimization: When an item has exactly one child, the child's
- * file is written directly to the parent's directory (not in a subdirectory),
- * and the parent's metadata is embedded in the child's frontmatter using
- * `__parent*` fields. The parent's own .md file is not created.
+ * Single-child optimization: When an item is a feature (or lower) with exactly
+ * one child, the child's file is written directly to `parentDir`, and the
+ * parent's metadata is embedded in the child's frontmatter using `__parent*`
+ * fields. The parent's own directory is skipped. The child's slug is included
+ * in the returned set so the caller's `removeStaleSubdirs` cleanup at
+ * `parentDir` does not delete it.
  *
- * The directory contains:
+ * Each non-optimized item's directory contains:
  *   - `<title>.md` — the item's primary markdown (with full frontmatter)
- *   - `index.md`   — human-readable summary (Progress / Subtask sections)
- * and one subdirectory per child, recursively (unless single-child optimization applies).
- *
- * Stale sibling directories under `parentDir` (items removed from the
- * source tree) are deleted via {@link removeStaleSubdirs}.
+ *   - `index.md`   — human-readable summary (only when the item has children)
+ * and one subdirectory per child, recursively. Stale child subdirectories
+ * (items removed from the source tree) are cleaned up at the *child* level
+ * before this function returns the slugs it wrote.
  */
-async function serializeChildren(
+async function writeSiblings(
   items: PRDItem[],
   parentDir: string,
   result: SerializeResult,
-): Promise<void> {
+): Promise<Set<string>> {
   // Position-keyed slugs survive duplicate-id inputs: id-keyed lookups would
-  // collapse two same-id items into one slot. The public id-keyed
-  // `resolveSiblingSlugs` API is unchanged for external callers — only this
-  // internal serialization path uses positional slugs.
+  // collapse two same-id items into one slot.
   const positionalSlugs = resolvePositionalSiblingSlugs(items);
-  const expectedSlugs = new Set<string>();
-  let hadSingleChildOptimization = false;
+  const writtenSlugs = new Set<string>();
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
@@ -110,49 +110,38 @@ async function serializeChildren(
     const children = item.children ?? [];
     const childSlugs = resolveSiblingSlugs(children);
 
-    // Single-child optimization: if this item is a feature (or lower level)
-    // and has exactly one child, embed parent metadata in the child and serialize
-    // the child directly to parentDir instead of creating a directory for the parent.
-    // Epics are not optimized to preserve the expected folder structure.
+    // Single-child optimization: when this item is a feature (or lower) with
+    // exactly one child, skip the directory for `item` and write the child
+    // directly into `parentDir`. The recursion returns whichever slug landed
+    // at `parentDir` (it may itself be a further-optimized descendant).
     const isFeatureOrLower = item.level !== "epic";
     if (isFeatureOrLower && children.length === 1) {
       const singleChild = children[0];
       embedParentMetadata(singleChild, item);
-      // Serialize the child directly to parentDir (skipping parent's directory)
-      // The recursive call will create subdirectories and track them in its own cleanup
-      await serializeChildren([singleChild], parentDir, result);
-      hadSingleChildOptimization = true;
-      // Do NOT add itemSlug to expectedSlugs (parent directory doesn't exist)
-      // Note: we don't track the child's slug here because the recursive call
-      // has already handled cleanup for its own level. Single-child optimization
-      // creates only the leaf-most directory, which is handled correctly by the
-      // deepest serializeChildren call.
+      const innerSlugs = await writeSiblings([singleChild], parentDir, result);
+      for (const slug of innerSlugs) writtenSlugs.add(slug);
       continue;
     }
 
-    // Multi-child case: create directory for this item, then recurse into itemDir.
-    expectedSlugs.add(itemSlug);
+    // Multi-child (or zero-child) case: create the item's own directory and
+    // recurse into it.
+    writtenSlugs.add(itemSlug);
     const itemDir = join(parentDir, itemSlug);
     await ensureDir(itemDir, result);
 
-    // Item file: <title>.md with full frontmatter and a Children link table.
     const itemContent = renderItemIndexMd(item, children, childSlugs);
     const itemFilename = titleToFilename(item.title);
     const itemPath = join(itemDir, itemFilename);
     await writeIfChanged(itemPath, itemContent, result);
     await removeOrphanedMarkdownFiles(itemDir, itemFilename);
 
-    // index.md: human-readable summary (delegates to generateIndexMd, which
-    // selectively renders Progress / Subtask sections based on item.level).
-    // Only write index.md when the item has children — suppresses duplicate
-    // frontmatter for leaf items and ensures index.md serves as a hub/summary only.
+    // index.md: human-readable summary. Only emitted for items with children
+    // (containers/hubs); leaf items rely on `<title>.md` alone.
+    const itemIndexPath = join(itemDir, "index.md");
     if (children.length > 0) {
       const itemIndexContent = generateIndexMd(item, children, []);
-      const itemIndexPath = join(itemDir, "index.md");
       await writeIfChanged(itemIndexPath, itemIndexContent, result);
     } else {
-      // For leaf items (no children), remove any stale index.md
-      const itemIndexPath = join(itemDir, "index.md");
       try {
         await rm(itemIndexPath, { force: true });
       } catch {
@@ -160,19 +149,15 @@ async function serializeChildren(
       }
     }
 
-    // Always recurse so stale child subdirectories are cleaned up even when
-    // the item now has no children (e.g. after a move that empties this parent).
-    await serializeChildren(children, itemDir, result);
+    // Recurse into the item's directory and clean it up against the slugs we
+    // actually wrote there. Cleanup is keyed off the recursion's *return
+    // value*, not the loop's local accumulator, so single-child-optimized
+    // descendants survive even when their direct parent was elided.
+    const childWrittenSlugs = await writeSiblings(children, itemDir, result);
+    await removeStaleSubdirs(itemDir, childWrittenSlugs, result);
   }
 
-  // For single-child optimization: when some (or all) items at this level are single-child,
-  // the recursive calls have already created subdirectories and cleaned up their own levels.
-  // Only call removeStaleSubdirs if we created directories at this level, OR if we need
-  // to clean up after removing items.
-  const shouldCleanup = expectedSlugs.size > 0 || items.length === 0;
-  if (shouldCleanup) {
-    await removeStaleSubdirs(parentDir, expectedSlugs, result);
-  }
+  return writtenSlugs;
 }
 
 /**
