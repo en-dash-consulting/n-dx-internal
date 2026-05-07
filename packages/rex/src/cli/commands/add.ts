@@ -10,11 +10,12 @@ import {
 import { LEVEL_HIERARCHY, CHILD_LEVEL, isItemLevel } from "../../schema/index.js";
 import { findItem } from "../../core/tree.js";
 import { validateDAG } from "../../core/dag.js";
+import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { REX_DIR } from "./constants.js";
 import { syncFolderTree } from "./folder-tree-sync.js";
 import { cascadeParentReset } from "../../core/parent-reset.js";
 import { CLIError } from "../errors.js";
-import { info, result } from "../output.js";
+import { info, result, warn } from "../output.js";
 import { emitMigrationNotification } from "../migration-notification.js";
 import { getFolderTreePath } from "../folder-tree-path.js";
 import type { PRDItem, ItemLevel, ItemStatus, Priority } from "../../schema/index.js";
@@ -40,6 +41,21 @@ export async function cmdAdd(
 
   // Emit migration notification to CLI and execution log
   await emitMigrationNotification(migrationResult, flags, (entry) => store.appendLog(entry));
+
+  // Run folder-per-task structural migration pass (pre-write check)
+  const treeRoot = join(rexDir, "prd_tree");
+  if (flags.format !== "json") {
+    info("Checking PRD tree conformance...");
+  }
+  const folderPerTaskMigrationResult = await migrateToFolderPerTask(treeRoot);
+  if (folderPerTaskMigrationResult.errors.length > 0) {
+    for (const err of folderPerTaskMigrationResult.errors) {
+      warn(`  Warning: ${err.error} (${err.path})`);
+    }
+  }
+  if (folderPerTaskMigrationResult.migratedCount > 0 && flags.format !== "json") {
+    info(`Migrated ${folderPerTaskMigrationResult.migratedCount} item${folderPerTaskMigrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
+  }
 
   // Ensure the current branch's PRD file exists and is the write target.
   // resolveStore does a read-only lookup; resolvePRDFile creates the file if needed.
@@ -159,12 +175,20 @@ export async function cmdAdd(
     projectDir: dir,
   });
 
-  // Log the addition
+  // Log the addition with migration details
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "item_added",
     itemId: id,
-    detail: `Added ${resolvedLevel}: ${title}`,
+    detail: JSON.stringify({
+      addedItem: `${resolvedLevel}: ${title}`,
+      folderPerTaskMigrations: folderPerTaskMigrationResult.migratedCount,
+      migrations: folderPerTaskMigrationResult.migrations.map((m) => ({
+        type: m.type,
+        beforePath: m.beforePath,
+        afterPath: m.afterPath,
+      })),
+    }),
   });
 
   // Persist the updated tree to the folder structure.
