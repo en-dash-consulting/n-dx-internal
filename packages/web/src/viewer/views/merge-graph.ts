@@ -3,14 +3,21 @@
  *
  * Renders PRD items and git merge commits as a connected graph so users can
  * see which code changes were shipped against which planned work. PRD items
- * form a hierarchical tree (left side). Merge nodes cluster on the right side,
- * linked to the PRD items they implemented.
+ * form a top-down hierarchical tree: epics sit at the top and descendants
+ * flow downward, with siblings spread horizontally. Merge commits cluster in
+ * a column to the right of the deepest visible PRD level.
+ *
+ * Progressive disclosure: only top-level PRD items (epics) are visible on
+ * initial load. Clicking a PRD node toggles its direct children open or
+ * closed, so the user explores depth on demand instead of scanning the entire
+ * tree at once.
  *
  * Interactions:
  * - Pan: mouse drag or two-finger drag on the canvas
  * - Zoom: Ctrl+scroll or pinch
+ * - Click a PRD node: select it (highlight subtree, open detail panel) AND
+ *   toggle expand/collapse if it has children
  * - Click a merge node: show file-change list in the detail panel
- * - Click a PRD node: highlight all merge nodes linked to it
  * - Toolbar: zoom in/out/fit, filter by status and date range
  *
  * @module web/viewer/views/merge-graph
@@ -96,10 +103,17 @@ interface MergeGraph {
 }
 
 // ── Layout constants ─────────────────────────────────────────────────────────
+//
+// Top-down hierarchy:
+//   y = level depth (epic at top, descendants below)
+//   x = sibling order (DFS traversal places leaves left-to-right)
+//
+// Merge nodes cluster in a column to the right of the deepest visible PRD x.
 
-const COL_W = 200;   // horizontal spacing per PRD level
-const ROW_H = 44;    // vertical spacing between nodes
-const MERGE_X_GAP = COL_W * 1.5; // gap between last PRD column and merge column
+const ROW_H_LEVEL = 110; // vertical spacing per PRD level (parents above children)
+const COL_W_LEAF = 180;  // horizontal spacing per leaf in DFS layout
+const MERGE_ROW_H = 44;  // vertical spacing between merge nodes in their column
+const MERGE_X_GAP = COL_W_LEAF * 1.2; // gap between rightmost PRD x and merge column
 
 // ── Status and level config ──────────────────────────────────────────────────
 
@@ -180,32 +194,30 @@ function computeLayout(
     childrenMap.set(parentKey, arr);
   }
 
-  // ── DFS traversal to assign y positions ─────────────────────────────────
+  // ── DFS traversal to assign x positions (siblings spread horizontally) ──
+  // y is determined purely by level depth so parents always sit above
+  // children. x is assigned by leaf order; non-leaf parents centre over
+  // their visible children.
   const positions = new Map<string, { x: number; y: number }>();
-  let yCounter = 0;
+  let xCounter = 0;
 
   function traverse(nodeId: string): void {
     const node = prdNodes.find((p) => p.id === nodeId);
     if (!node) return;
+    const y = (LEVEL_DEPTH[node.level] ?? 3) * ROW_H_LEVEL;
     const kids = childrenMap.get(nodeId) ?? [];
 
     if (kids.length === 0) {
-      positions.set(nodeId, {
-        x: (LEVEL_DEPTH[node.level] ?? 3) * COL_W + COL_W / 2,
-        y: yCounter * ROW_H,
-      });
-      yCounter++;
+      positions.set(nodeId, { x: xCounter * COL_W_LEAF, y });
+      xCounter++;
       return;
     }
 
-    const startY = yCounter;
+    const startX = xCounter;
     for (const kid of kids) traverse(kid.id);
-    const endY = yCounter - 1;
+    const endX = xCounter - 1;
 
-    positions.set(nodeId, {
-      x: (LEVEL_DEPTH[node.level] ?? 3) * COL_W + COL_W / 2,
-      y: ((startY + endY) / 2) * ROW_H,
-    });
+    positions.set(nodeId, { x: ((startX + endX) / 2) * COL_W_LEAF, y });
   }
 
   for (const root of childrenMap.get(null) ?? []) {
@@ -221,7 +233,7 @@ function computeLayout(
     }
   }
 
-  // ── Build tree edges ─────────────────────────────────────────────────────
+  // ── Build tree edges (parent → child, flowing top to bottom) ─────────────
   const layoutEdges: LayoutEdge[] = [];
   for (const n of prdNodes) {
     if (n.parentId && visiblePrdIds.has(n.parentId)) {
@@ -238,11 +250,14 @@ function computeLayout(
   }
 
   // ── Position merge nodes ─────────────────────────────────────────────────
-  // x = one column to the right of the deepest PRD level
-  const maxLevelDepth = prdNodes.length > 0
-    ? Math.max(...prdNodes.map((n) => LEVEL_DEPTH[n.level] ?? 3))
-    : 3;
-  const mergeX = (maxLevelDepth + 1) * COL_W + COL_W / 2 + MERGE_X_GAP;
+  // Merges sit in a column to the right of the rightmost PRD x. Each merge's
+  // y is anchored to the average y of its linked PRD targets (which sink to
+  // the deepest visible level), with collision avoidance to keep them from
+  // stacking on top of one another.
+  const maxPrdX = prdNodes.length > 0
+    ? Math.max(...prdNodes.map((n) => positions.get(n.id)?.x ?? 0))
+    : 0;
+  const mergeX = maxPrdX + MERGE_X_GAP;
 
   // Edges from this view (filtered)
   const visibleEdges = graph.edges.filter(
@@ -272,17 +287,17 @@ function computeLayout(
   const mergePositions = new Map<string, { x: number; y: number }>();
   let lastY = -Infinity;
   for (const mn of linkedMerges) {
-    let y = mergeIdealY.get(mn.id) ?? lastY + ROW_H;
-    if (y < lastY + ROW_H) y = lastY + ROW_H;
+    let y = mergeIdealY.get(mn.id) ?? lastY + MERGE_ROW_H;
+    if (y < lastY + MERGE_ROW_H) y = lastY + MERGE_ROW_H;
     lastY = y;
     mergePositions.set(mn.id, { x: mergeX, y });
   }
 
   // Unlinked merges cluster below linked ones
-  let unlinkedY = lastY === -Infinity ? 0 : lastY + ROW_H * 2;
+  let unlinkedY = lastY === -Infinity ? 0 : lastY + MERGE_ROW_H * 2;
   for (const mn of unlinkedMerges) {
     mergePositions.set(mn.id, { x: mergeX, y: unlinkedY });
-    unlinkedY += ROW_H;
+    unlinkedY += MERGE_ROW_H;
   }
 
   for (const mn of mergeNodes) {
@@ -318,11 +333,12 @@ function computeLayout(
   }
   const xs = layoutNodes.map((n) => n.x);
   const ys = layoutNodes.map((n) => n.y);
-  const pad = COL_W * 0.7;
-  const minX = Math.min(...xs) - pad;
-  const minY = Math.min(...ys) - pad;
-  const maxX = Math.max(...xs) + pad;
-  const maxY = Math.max(...ys) + pad;
+  const padX = COL_W_LEAF * 0.7;
+  const padY = ROW_H_LEVEL * 0.6;
+  const minX = Math.min(...xs) - padX;
+  const minY = Math.min(...ys) - padY;
+  const maxX = Math.max(...xs) + padX;
+  const maxY = Math.max(...ys) + padY;
   return {
     nodes: layoutNodes,
     edges: layoutEdges,
@@ -492,6 +508,55 @@ export function collectPrdSubtreeIds(graph: MergeGraph, rootId: string): Set<str
     }
   }
   return result;
+}
+
+/**
+ * Filter `filteredPrdIds` down to nodes the user can currently see based on
+ * the expand/collapse state. A PRD node is visible iff itself passes the
+ * filters AND every ancestor up to the root is in `expandedIds`.
+ *
+ * Top-level PRD items (no `parentId`) are always visible when filtered in,
+ * which gives the "only top-level visible on initial load" behaviour for
+ * an empty `expandedIds`.
+ *
+ * Exported so the visibility rule can be unit-tested without mounting the
+ * full view.
+ */
+export function applyExpansionVisibility(
+  graph: MergeGraph,
+  filteredPrdIds: Set<string>,
+  expandedIds: Set<string>,
+): Set<string> {
+  const parentById = new Map<string, string | undefined>();
+  for (const n of graph.nodes) {
+    if (n.kind === "prd") parentById.set(n.id, n.parentId);
+  }
+
+  const result = new Set<string>();
+  for (const id of filteredPrdIds) {
+    let cur = parentById.get(id);
+    let visible = true;
+    while (cur) {
+      if (!expandedIds.has(cur)) { visible = false; break; }
+      cur = parentById.get(cur);
+    }
+    if (visible) result.add(id);
+  }
+  return result;
+}
+
+/**
+ * Build a `parentId -> child count` map from the raw graph. Used to decide
+ * whether a node renders its expand/collapse affordance.
+ */
+export function buildPrdChildCount(graph: MergeGraph): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const n of graph.nodes) {
+    if (n.kind === "prd" && n.parentId) {
+      m.set(n.parentId, (m.get(n.parentId) ?? 0) + 1);
+    }
+  }
+  return m;
 }
 
 // ── Detail panel ─────────────────────────────────────────────────────────────
@@ -804,6 +869,10 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
+  // Set of PRD ids whose direct children are currently revealed. Empty by
+  // default so only top-level (epic) items render on initial load. Pan/zoom
+  // never touches this set, so user expansion survives viewport changes.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const abortRef = useRef<AbortController | null>(null);
 
   // ── Fetch graph ────────────────────────────────────────────────────────────
@@ -859,25 +928,13 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     return graph.nodes.filter((n): n is PrdNode => n.kind === "prd" && n.level === "epic");
   }, [graph]);
 
-  const { visiblePrdIds, visibleMergeIds } = useMemo(() => {
-    if (!graph) return { visiblePrdIds: new Set<string>(), visibleMergeIds: new Set<string>() };
+  // Filter pass: which PRD/merge ids survive epic+status+date filters before
+  // the expand/collapse rule narrows things further.
+  const { filteredPrdIds, visibleMergeIds } = useMemo(() => {
+    if (!graph) return { filteredPrdIds: new Set<string>(), visibleMergeIds: new Set<string>() };
 
     const prdNodes = graph.nodes.filter((n): n is PrdNode => n.kind === "prd");
     const mergeNodes = graph.nodes.filter((n): n is MergeNode => n.kind === "merge");
-
-    // Build ancestor map (id -> set of ancestor ids including self)
-    const parentMap = new Map<string, string | undefined>();
-    for (const n of prdNodes) parentMap.set(n.id, n.parentId);
-
-    function getAncestors(id: string): Set<string> {
-      const result = new Set<string>();
-      let cur: string | undefined = id;
-      while (cur) {
-        result.add(cur);
-        cur = parentMap.get(cur);
-      }
-      return result;
-    }
 
     // Build subtree sets for each epic
     const epicSubtrees = new Map<string, Set<string>>();
@@ -924,8 +981,22 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
       mergeSet.add(mn.id);
     }
 
-    return { visiblePrdIds: prdSet, visibleMergeIds: mergeSet };
+    return { filteredPrdIds: prdSet, visibleMergeIds: mergeSet };
   }, [graph, epics, filters]);
+
+  // Expansion pass: a node is visible only if its full ancestor chain is
+  // expanded. Top-level (epic) PRDs have no parents so they always show.
+  const visiblePrdIds = useMemo(() => {
+    if (!graph) return new Set<string>();
+    return applyExpansionVisibility(graph, filteredPrdIds, expandedIds);
+  }, [graph, filteredPrdIds, expandedIds]);
+
+  // Map<parentId, childCount> drives the expand-affordance and the
+  // "should clicking toggle expansion?" decision in the click handler.
+  const childCountByParent = useMemo(
+    () => (graph ? buildPrdChildCount(graph) : new Map<string, number>()),
+    [graph],
+  );
 
   // ── Compute layout ─────────────────────────────────────────────────────────
   const layout = useMemo(() => {
@@ -975,7 +1046,19 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
       .map((e) => e.from);
     setSelected({ kind: "prd", node, linkedMergeIds });
     setHighlightIds(new Set([...subtreeIds, ...subtreeMergeIds]));
-  }, [graph, visibleMergeIds]);
+
+    // Progressive disclosure: clicking a PRD with children also flips its
+    // expansion state. Leaves are select-only — there is nothing to expand.
+    const childCount = childCountByParent.get(node.id) ?? 0;
+    if (childCount > 0) {
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(node.id)) next.delete(node.id);
+        else next.add(node.id);
+        return next;
+      });
+    }
+  }, [graph, visibleMergeIds, childCountByParent]);
 
   const handleMergeClick = useCallback((node: MergeNode) => {
     if (!graph) return;
@@ -1218,17 +1301,20 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
               : false;
 
             if (edge.kind === "tree") {
-              // Elbow connector: horizontal then vertical
-              const midX = (edge.x1 + edge.x2) / 2;
+              // Top-down tree edge: vertical S-curve. Control points share
+              // the source/target x and the midpoint y, so the line drops
+              // straight down from the parent and into the child.
+              const midY = (edge.y1 + edge.y2) / 2;
               return h("path", {
                 key: edge.id,
                 class: `mg-edge-tree${isHighlighted ? " highlighted" : ""}`,
-                d: `M${edge.x1},${edge.y1} C${midX},${edge.y1} ${midX},${edge.y2} ${edge.x2},${edge.y2}`,
+                d: `M${edge.x1},${edge.y1} C${edge.x1},${midY} ${edge.x2},${midY} ${edge.x2},${edge.y2}`,
                 fill: "none",
               });
             }
 
-            // Merge link: straight line
+            // Merge link: horizontal-leaning bezier from the merge column to
+            // its linked PRD node.
             const stroke = attributionStroke(edge.attribution);
             const midX = (edge.x1 + edge.x2) / 2;
             return h("path", {
@@ -1252,27 +1338,53 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
               const fill = STATUS_COLOR[n.status] ?? "var(--text-muted)";
               const isHighlighted = hasHighlight ? highlightIds.has(n.id) : true;
               const isSelected = selected?.kind === "prd" && selected.node.id === n.id;
+              const childCount = childCountByParent.get(n.id) ?? 0;
+              const hasChildren = childCount > 0;
+              const isExpanded = expandedIds.has(n.id);
               return h("g", {
                 key: n.id,
-                class: `mg-node mg-prd-node${isSelected ? " selected" : ""}`,
+                class: `mg-node mg-prd-node${isSelected ? " selected" : ""}`
+                  + (hasChildren
+                      ? (isExpanded ? " has-children expanded" : " has-children collapsed")
+                      : ""),
                 transform: `translate(${ln.x},${ln.y})`,
+                "data-prd-id": n.id,
+                "data-expanded": hasChildren ? (isExpanded ? "true" : "false") : "leaf",
                 onClick: (e: MouseEvent) => { e.stopPropagation(); handlePrdClick(n); },
                 role: "button",
                 tabIndex: 0,
-                "aria-label": `PRD ${n.level}: ${n.title} (${n.status}) - ${n.shape || "circle"}`,
+                "aria-label": `PRD ${n.level}: ${n.title} (${n.status}) - ${n.shape || "circle"}`
+                  + (hasChildren ? (isExpanded ? " - expanded" : " - collapsed") : ""),
+                "aria-expanded": hasChildren ? (isExpanded ? "true" : "false") : undefined,
                 onKeyDown: (e: KeyboardEvent) => {
                   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handlePrdClick(n); }
                 },
                 style: { opacity: isHighlighted ? 1 : 0.2 },
               },
                 ...renderNodeShape(n.shape, r, fill, isSelected),
+                // Expand/collapse affordance — a chevron pinned to the upper-
+                // right of the shape. Pointer-events disabled so it doesn't
+                // intercept clicks meant for the shape's hit target.
+                hasChildren
+                  ? h("text", {
+                      x: r + 4,
+                      y: -r + 2,
+                      class: `mg-affordance${isExpanded ? " expanded" : " collapsed"}`,
+                      "font-size": 10,
+                      "pointer-events": "none",
+                      "aria-hidden": "true",
+                    }, isExpanded ? "▼" : "▶")
+                  : null,
+                // Label below the shape, centred, so siblings stack cleanly
+                // in the top-down layout without overlapping each other.
                 h("text", {
-                  x: r + 6,
-                  y: 4,
-                  class: "mg-label",
+                  x: 0,
+                  y: r + 14,
+                  class: "mg-label mg-prd-label",
+                  "text-anchor": "middle",
                   "font-size": n.level === "epic" ? 11 : 9,
                   "font-weight": n.level === "epic" ? 600 : 400,
-                }, shortStatus(n.status) + " " + (n.title.length > 28 ? n.title.slice(0, 26) + "…" : n.title)),
+                }, shortStatus(n.status) + " " + (n.title.length > 22 ? n.title.slice(0, 20) + "…" : n.title)),
               );
             }),
         ),
@@ -1326,24 +1438,29 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
             }),
         ),
 
-        // ── Column labels ────────────────────────────────────────────────────
+        // ── Level labels (left gutter, one per row) ──────────────────────────
+        // In the top-down layout the levels stack vertically, so we anchor
+        // the labels to the left edge of the viewport at the y of each row.
+        // They scroll with the canvas so the level for any given row stays
+        // identifiable while panning.
         visiblePrdIds.size > 0
           ? h("g", { class: "mg-col-labels", "pointer-events": "none" },
               Object.entries(LEVEL_DEPTH).map(([level, depth]) => {
-                const x = depth * COL_W + COL_W / 2;
-                const y = viewBox.y + 16;
+                const y = depth * ROW_H_LEVEL;
+                const x = viewBox.x + 12;
                 return h("text", {
                   key: level,
                   x, y,
                   class: "mg-col-label",
                   "font-size": 10,
-                  "text-anchor": "middle",
+                  "text-anchor": "start",
+                  "dominant-baseline": "middle",
                 }, level.toUpperCase());
               }),
               mergesColX(layout) !== null
                 ? h("text", {
                     x: mergesColX(layout)!,
-                    y: viewBox.y + 16,
+                    y: viewBox.y + 14,
                     class: "mg-col-label",
                     "font-size": 10,
                     "text-anchor": "middle",

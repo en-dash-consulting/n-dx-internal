@@ -386,6 +386,21 @@
 
 .mg-node { cursor: pointer; }
 
+/*
+ * Fade-in animation for newly-mounted nodes. When a parent is expanded the
+ * children render fresh, picking up this animation; collapsing simply
+ * unmounts them. Animation only applies to entrance — no exit transition is
+ * needed for the spec's "smooth transition" requirement.
+ */
+@keyframes mg-node-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mg-prd-node, .mg-merge-node {
+  animation: mg-node-enter 220ms ease-out;
+}
+
 .mg-node.selected .mg-circle,
 .mg-node.selected .mg-diamond,
 .mg-node.selected .mg-square,
@@ -408,6 +423,22 @@
 .mg-col-label {
   fill: var(--text-muted);
   letter-spacing: 0.08em;
+}
+
+/*
+ * Expand/collapse affordance. The chevron sits at the top-right of any PRD
+ * node that has children, rotating slightly when expanded so the toggle
+ * state reads at a glance.
+ */
+.mg-affordance {
+  fill: var(--text-muted);
+  font-family: monospace;
+  user-select: none;
+}
+
+.mg-prd-node.has-children:hover .mg-affordance,
+.mg-prd-node.selected .mg-affordance {
+  fill: var(--accent);
 }
 
 .mg-edge-tree {
