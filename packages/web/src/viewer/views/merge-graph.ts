@@ -736,6 +736,11 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     return computeLayout(graph, visiblePrdIds, visibleMergeIds);
   }, [graph, visiblePrdIds, visibleMergeIds]);
 
+  const clearSelection = useCallback(() => {
+    setSelected(null);
+    setHighlightIds(new Set());
+  }, []);
+
   // ── Escape key to close detail panel ────────────────────────────────────────
   useEffect(() => {
     if (!selected) return;
@@ -773,11 +778,6 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     setSelected({ kind: "merge", node });
     setHighlightIds(new Set([node.id, ...linkedPrdIds]));
   }, [graph, visiblePrdIds]);
-
-  const clearSelection = useCallback(() => {
-    setSelected(null);
-    setHighlightIds(new Set());
-  }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   if (loading) {
