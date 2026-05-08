@@ -410,10 +410,17 @@
   filter: drop-shadow(0 0 4px currentColor);
 }
 
+/*
+ * Inline labels next to each node. The compact folder-tree layout places
+ * labels to the right of the shape on the same row, mirroring the dashboard
+ * tree view's "shape + title" rhythm. Letter-spacing is tightened slightly
+ * so longer titles still fit in a single row.
+ */
 .mg-label {
-  fill: var(--text-dim);
+  fill: var(--text);
   pointer-events: none;
   dominant-baseline: middle;
+  letter-spacing: -0.2px;
 }
 
 .mg-merge-label {
@@ -441,15 +448,22 @@
   fill: var(--accent);
 }
 
+/*
+ * Folder-tree connector rails. Drawn as straight L-shaped paths (no curves)
+ * so the indent guides read crisply at small sizes. Slightly heavier when a
+ * subtree is highlighted, but never so dark that they compete with nodes.
+ */
 .mg-edge-tree {
   stroke: var(--border);
   stroke-width: 1px;
-  stroke-opacity: 0.5;
+  stroke-opacity: 0.55;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   pointer-events: none;
 }
 
 .mg-edge-tree.highlighted {
-  stroke-opacity: 0.9;
+  stroke-opacity: 0.95;
   stroke: var(--border-strong);
 }
 

@@ -3,9 +3,10 @@
  *
  * Renders PRD items and git merge commits as a connected graph so users can
  * see which code changes were shipped against which planned work. PRD items
- * form a top-down hierarchical tree: epics sit at the top and descendants
- * flow downward, with siblings spread horizontally. Merge commits cluster in
- * a column to the right of the deepest visible PRD level.
+ * use a compact, indented folder-tree layout — each visible node sits on its
+ * own row, horizontally indented by depth — visually echoing the on-disk
+ * `.rex/prd_tree/` hierarchy. Merge commits cluster in a column to the right
+ * of the deepest visible PRD indent.
  *
  * Progressive disclosure: only top-level PRD items (epics) are visible on
  * initial load. Clicking a PRD node toggles its direct children open or
@@ -104,16 +105,18 @@ interface MergeGraph {
 
 // ── Layout constants ─────────────────────────────────────────────────────────
 //
-// Top-down hierarchy:
-//   y = level depth (epic at top, descendants below)
-//   x = sibling order (DFS traversal places leaves left-to-right)
+// Compact folder-tree layout:
+//   y = sequential row index × ROW_H (DFS pre-order; each visible node owns a
+//       single row so the rhythm matches the dashboard's PRD tree view)
+//   x = depth × INDENT_W (each level indents by a fixed amount, just like a
+//       file tree)
 //
 // Merge nodes cluster in a column to the right of the deepest visible PRD x.
 
-const ROW_H_LEVEL = 110; // vertical spacing per PRD level (parents above children)
-const COL_W_LEAF = 180;  // horizontal spacing per leaf in DFS layout
-const MERGE_ROW_H = 44;  // vertical spacing between merge nodes in their column
-const MERGE_X_GAP = COL_W_LEAF * 1.2; // gap between rightmost PRD x and merge column
+const ROW_H = 22;        // vertical rhythm: tight, one row per visible PRD node
+const INDENT_W = 22;     // horizontal indent per depth level (folder-tree style)
+const MERGE_ROW_H = 22;  // matches PRD row height so adjacent rails align
+const MERGE_X_GAP = 80;  // gap between rightmost PRD x and merge column
 
 // ── Status and level config ──────────────────────────────────────────────────
 
@@ -130,8 +133,10 @@ const LEVEL_DEPTH: Record<string, number> = {
   epic: 0, feature: 1, task: 2, subtask: 3,
 };
 
+// Reduced node radii so the compact layout doesn't crowd. Values are tuned so
+// each node fits comfortably inside the ROW_H rhythm with room for stroke.
 const LEVEL_RADIUS: Record<string, number> = {
-  epic: 13, feature: 10, task: 7, subtask: 5,
+  epic: 7, feature: 6, task: 5, subtask: 4,
 };
 
 // ── Layout computation ────────────────────────────────────────────────────────
@@ -169,6 +174,8 @@ interface Layout {
   nodes: LayoutNode[];
   edges: LayoutEdge[];
   fitVB: { x: number; y: number; w: number; h: number };
+  /** Depth in tree levels of the deepest visible PRD node (0 if none). */
+  maxDepth: number;
 }
 
 function computeLayout(
@@ -183,7 +190,7 @@ function computeLayout(
     (n): n is MergeNode => n.kind === "merge" && visibleMergeIds.has(n.id),
   );
 
-  // ── Build parent→children map ────────────────────────────────────────────
+  // ── Build parent→children map (preserve graph order within each parent) ──
   const childrenMap = new Map<string | null, PrdNode[]>();
   childrenMap.set(null, []);
 
@@ -194,30 +201,28 @@ function computeLayout(
     childrenMap.set(parentKey, arr);
   }
 
-  // ── DFS traversal to assign x positions (siblings spread horizontally) ──
-  // y is determined purely by level depth so parents always sit above
-  // children. x is assigned by leaf order; non-leaf parents centre over
-  // their visible children.
-  const positions = new Map<string, { x: number; y: number }>();
-  let xCounter = 0;
+  // ── DFS pre-order traversal: each visible node claims one row ────────────
+  // Compact folder-tree layout — y advances monotonically as we walk the tree
+  // depth-first, so parents always sit above their children and siblings
+  // stack vertically. x is the indent depth for the node's level (epic=0,
+  // feature=1, …). This mirrors the on-disk `.rex/prd_tree/` rendering used
+  // elsewhere in the dashboard.
+  const positions = new Map<string, { x: number; y: number; depth: number }>();
+  let yCounter = 0;
+  let maxDepth = 0;
 
   function traverse(nodeId: string): void {
     const node = prdNodes.find((p) => p.id === nodeId);
     if (!node) return;
-    const y = (LEVEL_DEPTH[node.level] ?? 3) * ROW_H_LEVEL;
-    const kids = childrenMap.get(nodeId) ?? [];
-
-    if (kids.length === 0) {
-      positions.set(nodeId, { x: xCounter * COL_W_LEAF, y });
-      xCounter++;
-      return;
-    }
-
-    const startX = xCounter;
-    for (const kid of kids) traverse(kid.id);
-    const endX = xCounter - 1;
-
-    positions.set(nodeId, { x: ((startX + endX) / 2) * COL_W_LEAF, y });
+    const depth = LEVEL_DEPTH[node.level] ?? 3;
+    if (depth > maxDepth) maxDepth = depth;
+    positions.set(nodeId, {
+      x: depth * INDENT_W,
+      y: yCounter * ROW_H,
+      depth,
+    });
+    yCounter++;
+    for (const kid of childrenMap.get(nodeId) ?? []) traverse(kid.id);
   }
 
   for (const root of childrenMap.get(null) ?? []) {
@@ -233,7 +238,12 @@ function computeLayout(
     }
   }
 
-  // ── Build tree edges (parent → child, flowing top to bottom) ─────────────
+  // ── Build tree edges (parent rail → child elbow) ─────────────────────────
+  // Folder-tree connector: a vertical rail drops from the parent's column
+  // (`parentX`) down to the child's row, then a short horizontal elbow
+  // reaches across the child's indent into the child's node. The path is
+  // emitted as straight `M..L..L..` segments by the renderer so the rails
+  // stay crisp at small sizes.
   const layoutEdges: LayoutEdge[] = [];
   for (const n of prdNodes) {
     if (n.parentId && visiblePrdIds.has(n.parentId)) {
@@ -329,20 +339,25 @@ function computeLayout(
       nodes: layoutNodes,
       edges: layoutEdges,
       fitVB: { x: -50, y: -50, w: 900, h: 600 },
+      maxDepth,
     };
   }
   const xs = layoutNodes.map((n) => n.x);
   const ys = layoutNodes.map((n) => n.y);
-  const padX = COL_W_LEAF * 0.7;
-  const padY = ROW_H_LEVEL * 0.6;
-  const minX = Math.min(...xs) - padX;
+  // Generous right padding leaves room for the inline labels that sit to the
+  // right of each shape. Top/bottom padding scales with the tighter rhythm.
+  const padLeft = INDENT_W * 1.2;
+  const padRight = INDENT_W * 12;
+  const padY = ROW_H * 1.2;
+  const minX = Math.min(...xs) - padLeft;
   const minY = Math.min(...ys) - padY;
-  const maxX = Math.max(...xs) + padX;
+  const maxX = Math.max(...xs) + padRight;
   const maxY = Math.max(...ys) + padY;
   return {
     nodes: layoutNodes,
     edges: layoutEdges,
-    fitVB: { x: minX, y: minY, w: Math.max(maxX - minX, 400), h: Math.max(maxY - minY, 300) },
+    fitVB: { x: minX, y: minY, w: Math.max(maxX - minX, 400), h: Math.max(maxY - minY, 200) },
+    maxDepth,
   };
 }
 
@@ -1301,14 +1316,14 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
               : false;
 
             if (edge.kind === "tree") {
-              // Top-down tree edge: vertical S-curve. Control points share
-              // the source/target x and the midpoint y, so the line drops
-              // straight down from the parent and into the child.
-              const midY = (edge.y1 + edge.y2) / 2;
+              // Folder-tree connector: vertical rail aligned with the parent's
+              // x, dropping past the child's row, then a horizontal elbow
+              // reaching into the child. Mirrors the indent rail used by the
+              // dashboard's PRD tree view.
               return h("path", {
                 key: edge.id,
                 class: `mg-edge-tree${isHighlighted ? " highlighted" : ""}`,
-                d: `M${edge.x1},${edge.y1} C${edge.x1},${midY} ${edge.x2},${midY} ${edge.x2},${edge.y2}`,
+                d: `M${edge.x1},${edge.y1} L${edge.x1},${edge.y2} L${edge.x2},${edge.y2}`,
                 fill: "none",
               });
             }
@@ -1362,29 +1377,35 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
                 style: { opacity: isHighlighted ? 1 : 0.2 },
               },
                 ...renderNodeShape(n.shape, r, fill, isSelected),
-                // Expand/collapse affordance — a chevron pinned to the upper-
-                // right of the shape. Pointer-events disabled so it doesn't
-                // intercept clicks meant for the shape's hit target.
+                // Expand/collapse affordance — a chevron rendered to the
+                // *left* of the shape, just like the chevrons in the
+                // dashboard's PRD folder-tree view, so the column of toggles
+                // lines up cleanly along the indent rail. Pointer-events
+                // disabled so it doesn't intercept shape clicks.
                 hasChildren
                   ? h("text", {
-                      x: r + 4,
-                      y: -r + 2,
+                      x: -(r + 6),
+                      y: 0,
                       class: `mg-affordance${isExpanded ? " expanded" : " collapsed"}`,
-                      "font-size": 10,
+                      "font-size": 9,
+                      "text-anchor": "end",
+                      "dominant-baseline": "middle",
                       "pointer-events": "none",
                       "aria-hidden": "true",
                     }, isExpanded ? "▼" : "▶")
                   : null,
-                // Label below the shape, centred, so siblings stack cleanly
-                // in the top-down layout without overlapping each other.
+                // Label sits to the right of the shape on the same row — the
+                // compact folder-tree rhythm trades the previous "label below"
+                // layout for the indented one-line-per-node style.
                 h("text", {
-                  x: 0,
-                  y: r + 14,
+                  x: r + 6,
+                  y: 0,
                   class: "mg-label mg-prd-label",
-                  "text-anchor": "middle",
-                  "font-size": n.level === "epic" ? 11 : 9,
+                  "text-anchor": "start",
+                  "dominant-baseline": "middle",
+                  "font-size": n.level === "epic" ? 11 : 10,
                   "font-weight": n.level === "epic" ? 600 : 400,
-                }, shortStatus(n.status) + " " + (n.title.length > 22 ? n.title.slice(0, 20) + "…" : n.title)),
+                }, shortStatus(n.status) + " " + (n.title.length > 48 ? n.title.slice(0, 46) + "…" : n.title)),
               );
             }),
         ),
@@ -1398,7 +1419,7 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
               const isHighlighted = hasHighlight ? highlightIds.has(n.id) : true;
               const isSelected = selected?.kind === "merge" && selected.node.id === n.id;
               const fill = ln.linked ? "var(--brand-purple)" : "var(--text-muted)";
-              const sz = 8; // half-size of diamond
+              const sz = 6; // half-size of diamond — sized to match PRD radii
               return h("g", {
                 key: n.id,
                 class: `mg-node mg-merge-node${isSelected ? " selected" : ""}`,
@@ -1430,42 +1451,30 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
                 }),
                 h("text", {
                   x: sz + 6,
-                  y: 4,
+                  y: 0,
                   class: "mg-label mg-merge-label",
+                  "text-anchor": "start",
+                  "dominant-baseline": "middle",
                   "font-size": 9,
-                }, n.shortSha + " " + (n.subject.length > 24 ? n.subject.slice(0, 22) + "…" : n.subject)),
+                }, n.shortSha + " " + (n.subject.length > 32 ? n.subject.slice(0, 30) + "…" : n.subject)),
               );
             }),
         ),
 
-        // ── Level labels (left gutter, one per row) ──────────────────────────
-        // In the top-down layout the levels stack vertically, so we anchor
-        // the labels to the left edge of the viewport at the y of each row.
-        // They scroll with the canvas so the level for any given row stays
-        // identifiable while panning.
-        visiblePrdIds.size > 0
+        // ── Column header for the merges column ──────────────────────────────
+        // In the compact folder-tree layout level identity is encoded by the
+        // node's shape and indent depth, so per-row level labels are
+        // redundant. We keep a single "MERGES" header above the merge column
+        // to anchor the right-hand stack visually.
+        visiblePrdIds.size > 0 && mergesColX(layout) !== null
           ? h("g", { class: "mg-col-labels", "pointer-events": "none" },
-              Object.entries(LEVEL_DEPTH).map(([level, depth]) => {
-                const y = depth * ROW_H_LEVEL;
-                const x = viewBox.x + 12;
-                return h("text", {
-                  key: level,
-                  x, y,
-                  class: "mg-col-label",
-                  "font-size": 10,
-                  "text-anchor": "start",
-                  "dominant-baseline": "middle",
-                }, level.toUpperCase());
-              }),
-              mergesColX(layout) !== null
-                ? h("text", {
-                    x: mergesColX(layout)!,
-                    y: viewBox.y + 14,
-                    class: "mg-col-label",
-                    "font-size": 10,
-                    "text-anchor": "middle",
-                  }, "MERGES")
-                : null,
+              h("text", {
+                x: mergesColX(layout)!,
+                y: viewBox.y + 14,
+                class: "mg-col-label",
+                "font-size": 10,
+                "text-anchor": "middle",
+              }, "MERGES"),
             )
           : null,
       ),

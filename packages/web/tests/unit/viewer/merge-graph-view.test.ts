@@ -765,6 +765,100 @@ describe("MergeGraphView selection behaviour", () => {
     expect(e1y).toBeLessThan(f1y);
     expect(f1y).toBeLessThan(t1y);
   });
+
+  // ── Visual regression: compact folder-tree layout ────────────────────────
+  //
+  // Locks in the new rhythm so a future "let's spread the graph out again"
+  // change registers as an obvious snapshot diff. Captures, for the standard
+  // 4-node PRD fixture (E1 → F1 → T1, T2 + E2), each node's position, the
+  // overall vertical span, and the indent rhythm. Fixture and assertions
+  // intentionally stay simple so the snapshot is easy to update if (and only
+  // if) the design moves on purpose.
+
+  it("renders the compact folder-tree layout for a representative PRD fixture", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+    });
+
+    // Fully expand the E1 subtree so all four nodes (E1, F1, T1, T2) plus E2
+    // are visible at once — the most-coverage state for the snapshot.
+    await clickPrd(root, "Epic One");
+    await waitFor(() => {
+      expect(findPrdNode(root, "Feature One")).toBeTruthy();
+    });
+    await clickPrd(root, "Feature One");
+    await waitFor(() => {
+      expect(findPrdNode(root, "Task One")).toBeTruthy();
+      expect(findPrdNode(root, "Task Two")).toBeTruthy();
+      expect(findPrdNode(root, "Epic Two")).toBeTruthy();
+    });
+
+    const parseXY = (el: SVGGElement): { x: number; y: number } => {
+      const t = el.getAttribute("transform") ?? "";
+      const m = /translate\(([^,]+),([^)]+)\)/.exec(t);
+      if (!m) throw new Error(`missing transform: ${t}`);
+      return { x: parseFloat(m[1]), y: parseFloat(m[2]) };
+    };
+
+    const positions: Record<string, { x: number; y: number }> = {};
+    for (const title of ["Epic One", "Feature One", "Task One", "Task Two", "Epic Two"]) {
+      const node = findPrdNode(root, title);
+      expect(node, `${title} should be visible`).toBeTruthy();
+      positions[title] = parseXY(node!);
+    }
+
+    // Snapshot: exact positions for the compact folder-tree layout.
+    //
+    //   • Indent (x): epic=0, feature=22, task=44 — every level adds INDENT_W.
+    //   • Pitch  (y): every visible node owns a row of ROW_H=22 in DFS
+    //     pre-order, so the column reads as a single tight stack.
+    expect(positions).toEqual({
+      "Epic One":    { x: 0,  y: 0 },
+      "Feature One": { x: 22, y: 22 },
+      "Task One":    { x: 44, y: 44 },
+      "Task Two":    { x: 44, y: 66 },
+      "Epic Two":    { x: 0,  y: 88 },
+    });
+
+    // The whole 5-node tree fits inside 88px of vertical space — well under
+    // the prior flowchart layout's ~330px (3 levels × ROW_H_LEVEL=110) — so
+    // a typical PRD prints in noticeably less space.
+    const ys = Object.values(positions).map((p) => p.y);
+    const verticalSpan = Math.max(...ys) - Math.min(...ys);
+    expect(verticalSpan).toBeLessThanOrEqual(100);
+    expect(verticalSpan).toBeLessThan(330);
+
+    // Adjacent rows in DFS order are exactly one ROW_H apart — the rhythm
+    // that gives the layout its folder-tree feel.
+    const sortedYs = [...ys].sort((a, b) => a - b);
+    for (let i = 1; i < sortedYs.length; i++) {
+      expect(sortedYs[i] - sortedYs[i - 1]).toBe(22);
+    }
+
+    // The single MERGES column header is the only column label — per-row
+    // level labels were dropped because shape + indent already encode level.
+    const colLabels = root.querySelectorAll(".mg-col-label");
+    expect(colLabels.length).toBe(1);
+    expect(colLabels[0].textContent).toBe("MERGES");
+
+    // Tree edges render as straight L-shapes (no curve commands) so the
+    // indent rails read crisply at small sizes.
+    const treeEdgeDs = [...root.querySelectorAll<SVGPathElement>(".mg-edge-tree")]
+      .map((p) => p.getAttribute("d") ?? "");
+    expect(treeEdgeDs.length).toBeGreaterThan(0);
+    for (const d of treeEdgeDs) {
+      expect(d).not.toMatch(/[CcQqSsTt]/); // no Bézier curve commands
+      expect(d).toMatch(/^M[^L]+L[^L]+L[^L]+$/); // M …, L …, L …
+    }
+  });
 });
 
 // ── applyExpansionVisibility (pure helper) ────────────────────────────────────
