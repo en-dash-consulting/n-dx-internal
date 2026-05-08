@@ -158,7 +158,7 @@ describe("Viewer type mirrors match canonical definitions", () => {
     expect(CANONICAL_CHILD_LEVEL.epic).toBe("feature");
     expect(CANONICAL_CHILD_LEVEL.feature).toBe("task");
     expect(CANONICAL_CHILD_LEVEL.task).toBe("subtask");
-    expect(CANONICAL_CHILD_LEVEL.subtask).toBeNull();
+    expect(CANONICAL_CHILD_LEVEL.subtask).toBe("subtask");
   });
 
   it("RequirementCategory covers exactly 6 values", () => {
