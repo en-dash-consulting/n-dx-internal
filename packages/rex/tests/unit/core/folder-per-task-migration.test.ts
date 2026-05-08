@@ -25,17 +25,14 @@ describe("migrateToFolderPerTask", () => {
     }
   });
 
-  it("detects and migrates bare task .md files to folder form", async () => {
-    // Create a pre-migration structure:
-    // testDir/
-    //   epic-slug/
-    //     feature_title.md  <- feature at proper level (should not be migrated)
-    //   task_title.md       <- bare task .md at feature level (should be migrated)
-
+  it("wraps a bare task .md that has child siblings into its own folder", async () => {
+    // Under the unified leaf rule a bare `<slug>.md` next to its parent's
+    // `index.md` is the canonical shape for a leaf — only a bare file with
+    // sibling subdirs that look like its children is non-conforming and
+    // needs wrapping.
     const epicDir = join(testDir, "epic-slug");
     await mkdir(epicDir, { recursive: true });
 
-    // Write a feature file (this is OK at feature level)
     const featureContent = `---
 id: "feature-123"
 level: "feature"
@@ -49,7 +46,8 @@ acceptanceCriteria: []
 `;
     await writeFile(join(epicDir, "feature_title.md"), featureContent);
 
-    // Write a bare task .md at the wrong level
+    // Bare task .md at feature level with a sibling subdir that looks like
+    // its child — this is the legacy shape that needs migration.
     const taskId = randomUUID();
     const taskContent = `---
 id: "${taskId}"
@@ -63,25 +61,87 @@ acceptanceCriteria: []
 # Task Title
 `;
     await writeFile(join(epicDir, "task_title.md"), taskContent);
+    await mkdir(join(epicDir, "task_title-child1"), { recursive: true });
+    await writeFile(
+      join(epicDir, "task_title-child1", "child_one.md"),
+      `---
+id: "child-1"
+level: "subtask"
+title: "Child One"
+status: "pending"
+---
 
-    // Run migration
+# Child One
+`,
+    );
+
     const result = await migrateToFolderPerTask(testDir);
 
-    // The migration may apply multiple passes (e.g. rename a legacy
-    // `<title>.md` to `index.md` after wrapping). Assert that at least the
-    // bare-task-to-folder migration ran and no errors were emitted.
     expect(result.migratedCount).toBeGreaterThanOrEqual(1);
     expect(result.errors).toHaveLength(0);
     expect(result.migrations.some((m) => m.type === "bare-task-to-folder")).toBe(true);
 
-    // Verify the task file was moved
     const entries = await readdir(epicDir);
-    const taskFileExists = entries.includes("task_title.md");
-    expect(taskFileExists).toBe(false);
+    expect(entries.includes("task_title.md")).toBe(false);
+    expect(entries.some((e) => e.startsWith("task_title-"))).toBe(true);
+  });
 
-    // Verify a folder was created for the task
-    const folderCreated = entries.some((e) => e.startsWith("task_title-"));
-    expect(folderCreated).toBe(true);
+  it("leaves a bare task `.md` without children alone (canonical leaf)", async () => {
+    // Sibling structure: epic folder with a feature `index.md` and a bare
+    // task leaf next to it. This is the canonical shape under the unified
+    // leaf rule and the migration must not touch it.
+    const epicDir = join(testDir, "epic-slug");
+    await mkdir(epicDir, { recursive: true });
+
+    await writeFile(
+      join(epicDir, "index.md"),
+      `---
+id: "epic-1"
+level: "epic"
+title: "Epic"
+status: "pending"
+description: ""
+---
+
+# Epic
+`,
+    );
+
+    const featureDir = join(epicDir, "feature-slug");
+    await mkdir(featureDir, { recursive: true });
+    await writeFile(
+      join(featureDir, "index.md"),
+      `---
+id: "feature-1"
+level: "feature"
+title: "Feature"
+status: "pending"
+description: ""
+acceptanceCriteria: []
+---
+
+# Feature
+`,
+    );
+    await writeFile(
+      join(featureDir, "task-slug.md"),
+      `---
+id: "task-1"
+level: "task"
+title: "Task"
+status: "pending"
+description: ""
+acceptanceCriteria: []
+---
+
+# Task
+`,
+    );
+
+    const result = await migrateToFolderPerTask(testDir);
+
+    expect(result.migratedCount).toBe(0);
+    expect(result.errors).toHaveLength(0);
   });
 
   it("detects subtask .md files with orphaned child siblings", async () => {
@@ -167,12 +227,15 @@ description: ""
   });
 
   it("is idempotent - second run produces no changes", async () => {
-    // Create a pre-migration structure
+    // Pre-migration: a bare task with sibling subdirs that look like its
+    // children. The first run wraps it; the second must be a no-op.
     const epicDir = join(testDir, "epic-slug");
     await mkdir(epicDir, { recursive: true });
 
     const taskId = randomUUID();
-    const taskContent = `---
+    await writeFile(
+      join(epicDir, "task_title.md"),
+      `---
 id: "${taskId}"
 level: "task"
 title: "Task Title"
@@ -182,14 +245,25 @@ acceptanceCriteria: []
 ---
 
 # Task Title
-`;
-    await writeFile(join(epicDir, "task_title.md"), taskContent);
+`,
+    );
+    await mkdir(join(epicDir, "task_title-child"), { recursive: true });
+    await writeFile(
+      join(epicDir, "task_title-child", "child.md"),
+      `---
+id: "child-1"
+level: "subtask"
+title: "Child"
+status: "pending"
+---
 
-    // First run
+# Child
+`,
+    );
+
     const result1 = await migrateToFolderPerTask(testDir);
-    expect(result1.migratedCount).toBe(1);
+    expect(result1.migratedCount).toBeGreaterThanOrEqual(1);
 
-    // Second run
     const result2 = await migrateToFolderPerTask(testDir);
     expect(result2.migratedCount).toBe(0);
     expect(result2.errors).toHaveLength(0);

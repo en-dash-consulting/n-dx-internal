@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in rex-fix-command: src/core/fix.ts is separated from the src/fix/ entry point by an artificial dire](./fix-structural-in-rex-fix-b2b443/index.md) | completed |
+| [Fix structural in rex-fix-command: src/core/fix.ts is separated from the src/fix/ entry point by an artificial dire](./fix-structural-in-rex-fix-b2b443.md) | completed |

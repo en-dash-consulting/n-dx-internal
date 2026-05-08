@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Documentation and Testing](./documentation-and-testing/index.md) | completed |
-| [Enhanced Validation and Error Handling](./enhanced-validation-and-error-handling/index.md) | completed |
-| [Extended Selector Syntax Parsing](./extended-selector-syntax-parsing/index.md) | completed |
-| [PRD Creation Integration](./prd-creation-integration/index.md) | completed |
+| [Documentation and Testing](./documentation-and-testing.md) | completed |
+| [Enhanced Validation and Error Handling](./enhanced-validation-and-error-handling.md) | completed |
+| [Extended Selector Syntax Parsing](./extended-selector-syntax-parsing.md) | completed |
+| [PRD Creation Integration](./prd-creation-integration.md) | completed |

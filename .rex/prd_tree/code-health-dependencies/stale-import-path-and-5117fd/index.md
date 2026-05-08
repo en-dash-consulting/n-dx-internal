@@ -14,4 +14,4 @@ description: "Scan the codebase for imports referencing moved or renamed interna
 
 | Title | Status |
 |-------|--------|
-| [Scan and fix stale import paths, deprecated Node.js APIs, and outdated module references across packages](./scan-and-fix-stale-import-paths-967804/index.md) | completed |
+| [Scan and fix stale import paths, deprecated Node.js APIs, and outdated module references across packages](./scan-and-fix-stale-import-paths-967804.md) | completed |

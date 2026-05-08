@@ -14,5 +14,5 @@ description: "Several rex commands that make LLM calls (reshape, reorganize, pru
 
 | Title | Status |
 |-------|--------|
-| [Add explicit resolveVendorModel and vendor/model header to reshape, reorganize, and prune commands](./add-explicit-resolvevendormodel-11e14b/index.md) | completed |
-| [Replace hardcoded model defaults in sourcevision analyze with centralized resolveVendorModel](./replace-hardcoded-model-15313b/index.md) | completed |
+| [Add explicit resolveVendorModel and vendor/model header to reshape, reorganize, and prune commands](./add-explicit-resolvevendormodel-11e14b.md) | completed |
+| [Replace hardcoded model defaults in sourcevision analyze with centralized resolveVendorModel](./replace-hardcoded-model-15313b.md) | completed |

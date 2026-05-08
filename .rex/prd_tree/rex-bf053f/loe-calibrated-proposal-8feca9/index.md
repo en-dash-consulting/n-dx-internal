@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [LoE-Aware Consolidated Proposal Generation](./loe-aware-consolidated-proposal-b4127a/index.md) | completed |
-| [LoE Threshold-Driven Proposal Decomposition](./loe-threshold-driven-proposal-c12a55/index.md) | completed |
+| [LoE-Aware Consolidated Proposal Generation](./loe-aware-consolidated-proposal-b4127a.md) | completed |
+| [LoE Threshold-Driven Proposal Decomposition](./loe-threshold-driven-proposal-c12a55.md) | completed |

@@ -14,6 +14,6 @@ description: "Classify each LLM-calling command by its natural task weight and w
 
 | Title | Status |
 |-------|--------|
-| [Add unit and integration tests for weight-aware model resolution across packages](./add-unit-and-integration-tests-00b941/index.md) | completed |
-| [Surface active model tier in vendor header output and log task weight reasoning](./surface-active-model-tier-in-565c00/index.md) | completed |
-| [Wire light-tier model selection into rex smart-add and lightweight analysis paths](./wire-light-tier-model-selection-891e3a/index.md) | completed |
+| [Add unit and integration tests for weight-aware model resolution across packages](./add-unit-and-integration-tests-00b941.md) | completed |
+| [Surface active model tier in vendor header output and log task weight reasoning](./surface-active-model-tier-in-565c00.md) | completed |
+| [Wire light-tier model selection into rex smart-add and lightweight analysis paths](./wire-light-tier-model-selection-891e3a.md) | completed |

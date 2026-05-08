@@ -13,8 +13,8 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Diagnostics, Fallbacks, and Test Coverage](./diagnostics-fallbacks-and-test-49cac3/index.md) | completed |
-| [Rex Dashboard IA and LLM Utilization View](./rex-dashboard-ia-and-llm-b87128/index.md) | completed |
-| [Task-Level Usage Visibility and Budget Context](./task-level-usage-visibility-and-6a135d/index.md) | completed |
-| [Token Usage Data Pipeline Recovery](./token-usage-data-pipeline-recovery/index.md) | completed |
-| [Vendor/Model Budget Configuration and Percentage Engine](./vendor-model-budget-dc1bc8/index.md) | completed |
+| [Diagnostics, Fallbacks, and Test Coverage](./diagnostics-fallbacks-and-test-49cac3.md) | completed |
+| [Rex Dashboard IA and LLM Utilization View](./rex-dashboard-ia-and-llm-b87128.md) | completed |
+| [Task-Level Usage Visibility and Budget Context](./task-level-usage-visibility-and-6a135d.md) | completed |
+| [Token Usage Data Pipeline Recovery](./token-usage-data-pipeline-recovery.md) | completed |
+| [Vendor/Model Budget Configuration and Percentage Engine](./vendor-model-budget-dc1bc8.md) | completed |

@@ -484,11 +484,10 @@ describe("cmdRemove", () => {
       expect(existsSync(join(treeRoot, slugify("Epic Two", "e2")))).toBe(true);
     });
 
-    it("removes task folder from tree after task removal", async () => {
-      // Use a tree where Feature 1 keeps two tasks after the removal so it is
-      // not collapsed by single-child compaction. Without a sibling, removing
-      // t1 would leave Feature 1 with one child (t2), triggering compaction
-      // and eliding the feature directory.
+    it("removes task entry from tree after task removal", async () => {
+      // Initial Feature 1: [t1 (with subtask), t2 (leaf), t9 (leaf, added)].
+      // After removing t1, the surviving siblings are leaves and live as
+      // bare `<slug>.md` files inside the feature folder.
       const items = JSON.parse(JSON.stringify(fullTree())) as ReturnType<typeof fullTree>;
       const f1 = items[0].children![0];
       f1.children!.push({ id: "t9", title: "Task Nine", level: "task", status: "pending" } as any);
@@ -499,11 +498,14 @@ describe("cmdRemove", () => {
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       const epicDir = join(treeRoot, slugify("Epic One", "e1"));
       const featureDir = join(epicDir, slugify("Feature 1", "f1"));
+      // t1 removed entirely (no folder, no leaf file).
       expect(existsSync(join(featureDir, slugify("Task 1", "t1")))).toBe(false);
-      expect(existsSync(join(featureDir, slugify("Task 2", "t2")))).toBe(true);
+      expect(existsSync(join(featureDir, `${slugify("Task 1", "t1")}.md`))).toBe(false);
+      // t2 (leaf) survives as `<slug>.md`.
+      expect(existsSync(join(featureDir, `${slugify("Task 2", "t2")}.md`))).toBe(true);
     });
 
-    it("removes feature folder from tree after feature removal", async () => {
+    it("removes feature entry from tree after feature removal", async () => {
       const items = [
         {
           id: "e1", title: "Epic One", level: "epic", status: "pending",
@@ -526,8 +528,11 @@ describe("cmdRemove", () => {
 
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       const epicDir = join(treeRoot, slugify("Epic One", "e1"));
+      // f1 was a folder (had a task child); after removal, no folder or leaf file remains.
       expect(existsSync(join(epicDir, slugify("Feature One", "f1")))).toBe(false);
-      expect(existsSync(join(epicDir, slugify("Feature Two", "f2")))).toBe(true);
+      expect(existsSync(join(epicDir, `${slugify("Feature One", "f1")}.md`))).toBe(false);
+      // f2 was always a leaf — survives as `<slug>.md`.
+      expect(existsSync(join(epicDir, `${slugify("Feature Two", "f2")}.md`))).toBe(true);
     });
   });
 });

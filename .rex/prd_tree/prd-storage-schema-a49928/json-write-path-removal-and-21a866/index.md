@@ -15,6 +15,6 @@ description: "Remove all code that writes to .rex/prd.json (and any branch-scope
 
 | Title | Status |
 |-------|--------|
-| [Add regression tests asserting no JSON writes occur outside ndx start](./add-regression-tests-asserting-67246c/index.md) | completed |
-| [Audit and remove residual JSON write calls from rex CLI and MCP handlers](./audit-and-remove-residual-json-eb208a/index.md) | completed |
-| [Remove JSON dual-write from PRDStore save operations](./remove-json-dual-write-from-72581f/index.md) | completed |
+| [Add regression tests asserting no JSON writes occur outside ndx start](./add-regression-tests-asserting-67246c.md) | completed |
+| [Audit and remove residual JSON write calls from rex CLI and MCP handlers](./audit-and-remove-residual-json-eb208a.md) | completed |
+| [Remove JSON dual-write from PRDStore save operations](./remove-json-dual-write-from-72581f.md) | completed |

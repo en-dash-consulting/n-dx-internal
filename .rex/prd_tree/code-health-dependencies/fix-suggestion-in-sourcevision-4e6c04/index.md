@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix suggestion in sourcevision-3: Zone "sourcevision-3" has a numeric suffix indicating an overflow community — pi](./fix-suggestion-in-sourcevision-d4bc1b/index.md) | completed |
+| [Fix suggestion in sourcevision-3: Zone "sourcevision-3" has a numeric suffix indicating an overflow community — pi](./fix-suggestion-in-sourcevision-d4bc1b.md) | completed |

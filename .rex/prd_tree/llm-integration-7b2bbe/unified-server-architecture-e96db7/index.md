@@ -18,9 +18,9 @@ description: "Replace the current stdio-only MCP setup with HTTP-served MCP endp
 
 | Title | Status |
 |-------|--------|
-| [MCP over HTTP transport](./mcp-over-http-transport/index.md) | completed |
-| [`ndx start` orchestration command](./ndx-start-orchestration-command/index.md) | completed |
-| [rex_edit_item MCP tool](./rex-edit-item-mcp-tool/index.md) | completed |
-| [Rex PRD management UI](./rex-prd-management-ui/index.md) | completed |
-| [Unified web viewer architecture](./unified-web-viewer-architecture/index.md) | completed |
-| [Web server and API integration](./web-server-and-api-integration/index.md) | completed |
+| [MCP over HTTP transport](./mcp-over-http-transport.md) | completed |
+| [`ndx start` orchestration command](./ndx-start-orchestration-command.md) | completed |
+| [rex_edit_item MCP tool](./rex-edit-item-mcp-tool.md) | completed |
+| [Rex PRD management UI](./rex-prd-management-ui.md) | completed |
+| [Unified web viewer architecture](./unified-web-viewer-architecture.md) | completed |
+| [Web server and API integration](./web-server-and-api-integration.md) | completed |

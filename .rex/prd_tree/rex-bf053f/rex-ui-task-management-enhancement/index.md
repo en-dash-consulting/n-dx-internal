@@ -13,8 +13,8 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Detail Panel Task Creation](./detail-panel-task-creation/index.md) | completed |
-| [Rex Task Search](./rex-task-search/index.md) | completed |
-| [Smart Add Command Construction and Submission UX Fix](./smart-add-command-construction-7de88f/index.md) | completed |
-| [Smart Add Command Regression Fix](./smart-add-command-regression-fix/index.md) | completed |
-| [Status-based Tree Filtering](./status-based-tree-filtering/index.md) | completed |
+| [Detail Panel Task Creation](./detail-panel-task-creation.md) | completed |
+| [Rex Task Search](./rex-task-search.md) | completed |
+| [Smart Add Command Construction and Submission UX Fix](./smart-add-command-construction-7de88f.md) | completed |
+| [Smart Add Command Regression Fix](./smart-add-command-regression-fix.md) | completed |
+| [Status-based Tree Filtering](./status-based-tree-filtering.md) | completed |

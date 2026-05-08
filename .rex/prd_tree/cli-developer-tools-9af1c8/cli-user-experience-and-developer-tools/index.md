@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Configuration management](./configuration-management/index.md) | completed |
-| [Error handling improvements](./error-handling-improvements/index.md) | completed |
-| [Interactive help navigation and discovery](./interactive-help-navigation-and-4ade01/index.md) | completed |
-| [Output and formatting](./output-and-formatting/index.md) | completed |
+| [Configuration management](./configuration-management.md) | completed |
+| [Error handling improvements](./error-handling-improvements.md) | completed |
+| [Interactive help navigation and discovery](./interactive-help-navigation-and-4ade01.md) | completed |
+| [Output and formatting](./output-and-formatting.md) | completed |

@@ -15,6 +15,6 @@ description: "Any CLI command, MCP tool, or web server entry point that reads or
 
 | Title | Status |
 |-------|--------|
-| [Implement shared legacy-PRD detection, backup, and migration helper](./implement-shared-legacy-prd-015a9f/index.md) | completed |
-| [Surface clear user-facing migration notification across CLI, MCP, and dashboard](./surface-clear-user-facing-1d772c/index.md) | completed |
-| [Wire legacy-PRD migration check into all PRD-touching command entry points](./wire-legacy-prd-migration-check-c27cc0/index.md) | completed |
+| [Implement shared legacy-PRD detection, backup, and migration helper](./implement-shared-legacy-prd-015a9f.md) | completed |
+| [Surface clear user-facing migration notification across CLI, MCP, and dashboard](./surface-clear-user-facing-1d772c.md) | completed |
+| [Wire legacy-PRD migration check into all PRD-touching command entry points](./wire-legacy-prd-migration-check-c27cc0.md) | completed |

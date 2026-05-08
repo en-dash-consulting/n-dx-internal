@@ -14,5 +14,5 @@ description: "Extend the ndx add duplicate detection pipeline to operate across 
 
 | Title | Status |
 |-------|--------|
-| [Implement cross-PRD duplicate detection with merge-into-older-file resolution](./implement-cross-prd-duplicate-4f0263/index.md) | completed |
-| [Update rex add and ndx add pipelines to use branch-scoped PRD file creation and targeting](./update-rex-add-and-ndx-add-c4b9b3/index.md) | completed |
+| [Implement cross-PRD duplicate detection with merge-into-older-file resolution](./implement-cross-prd-duplicate-4f0263.md) | completed |
+| [Update rex add and ndx add pipelines to use branch-scoped PRD file creation and targeting](./update-rex-add-and-ndx-add-c4b9b3.md) | completed |

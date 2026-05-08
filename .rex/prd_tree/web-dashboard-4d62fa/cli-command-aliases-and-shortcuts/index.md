@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [CLI Installation and Distribution](./cli-installation-and-distribution/index.md) | completed |
-| [Direct Package Command Access](./direct-package-command-access/index.md) | completed |
-| [Sourcevision Short Alias](./sourcevision-short-alias/index.md) | completed |
+| [CLI Installation and Distribution](./cli-installation-and-distribution.md) | completed |
+| [Direct Package Command Access](./direct-package-command-access.md) | completed |
+| [Sourcevision Short Alias](./sourcevision-short-alias.md) | completed |

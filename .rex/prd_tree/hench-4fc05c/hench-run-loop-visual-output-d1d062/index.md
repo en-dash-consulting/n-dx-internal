@@ -14,5 +14,5 @@ description: "Apply consistent semantic color conventions and styled separators 
 
 | Title | Status |
 |-------|--------|
-| [Add pink loop-iteration separator line to hench run output](./add-pink-loop-iteration-62f1d0/index.md) | completed |
-| [Apply semantic success and pause colors to hench run-loop status messages](./apply-semantic-success-and-c5ba3c/index.md) | completed |
+| [Add pink loop-iteration separator line to hench run output](./add-pink-loop-iteration-62f1d0.md) | completed |
+| [Apply semantic success and pause colors to hench run-loop status messages](./apply-semantic-success-and-c5ba3c.md) | completed |

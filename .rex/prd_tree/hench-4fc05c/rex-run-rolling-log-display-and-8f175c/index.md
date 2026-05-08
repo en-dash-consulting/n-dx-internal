@@ -14,5 +14,5 @@ description: "Limit live console output during rex runs to a rolling 10-line gre
 
 | Title | Status |
 |-------|--------|
-| [Implement rolling 10-line grey output window for rex run console](./implement-rolling-10-line-grey-b86e2a/index.md) | completed |
-| [Persist full rex run log to .run-logs/ and add directory to .gitignore](./persist-full-rex-run-log-to-run-b892e5/index.md) | completed |
+| [Implement rolling 10-line grey output window for rex run console](./implement-rolling-10-line-grey-b86e2a.md) | completed |
+| [Persist full rex run log to .run-logs/ and add directory to .gitignore](./persist-full-rex-run-log-to-run-b892e5.md) | completed |

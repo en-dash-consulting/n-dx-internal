@@ -14,6 +14,6 @@ description: "Ensure a single, authoritative vendor/model resolution path is use
 
 | Title | Status |
 |-------|--------|
-| [Implement centralized vendor/model resolver with newest-model default](./implement-centralized-vendor-d9eaeb/index.md) | completed |
-| [Propagate resolved vendor/model uniformly to all LLM call sites](./propagate-resolved-vendor-model-abcdda/index.md) | completed |
-| [Surface active vendor and model in ndx console output](./surface-active-vendor-and-model-08f6d0/index.md) | completed |
+| [Implement centralized vendor/model resolver with newest-model default](./implement-centralized-vendor-d9eaeb.md) | completed |
+| [Propagate resolved vendor/model uniformly to all LLM call sites](./propagate-resolved-vendor-model-abcdda.md) | completed |
+| [Surface active vendor and model in ndx console output](./surface-active-vendor-and-model-08f6d0.md) | completed |

@@ -14,5 +14,5 @@ description: "The main README references .local_testing/ in passing but has no d
 
 | Title | Status |
 |-------|--------|
-| [Add Local Platform Testing section to main README with prerequisites and run commands](./add-local-platform-testing-113433/index.md) | completed |
-| [Update .local_testing/README.md to cover macOS suite and unify platform guidance](./update-local-testing-readme-md-5f5144/index.md) | completed |
+| [Add Local Platform Testing section to main README with prerequisites and run commands](./add-local-platform-testing-113433.md) | completed |
+| [Update .local_testing/README.md to cover macOS suite and unify platform guidance](./update-local-testing-readme-md-5f5144.md) | completed |

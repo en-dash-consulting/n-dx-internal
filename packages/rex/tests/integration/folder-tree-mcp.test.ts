@@ -64,16 +64,22 @@ async function treeEpics(rexDir: string): Promise<PRDItem[]> {
 }
 
 /**
- * Read the markdown file for an item given its directory path. Uses the same
- * discovery rule as the production parser: prefer a single non-`index.md`
- * markdown file, falling back to `index.md`.
+ * Read the markdown content for an item given its path segments. Branch
+ * items live in `<seg>/index.md`; leaf items (the last segment) live as a
+ * bare `<slug>.md` next to the parent's `index.md`. Try the folder shape
+ * first, then fall back to the leaf shape.
  */
 async function readIndexMd(rexDir: string, ...pathParts: string[]): Promise<string> {
-  const itemDir = join(rexDir, PRD_TREE_DIRNAME, ...pathParts);
-  const entries = await readdir(itemDir);
-  const titleNamed = entries.filter((f) => f.endsWith(".md") && f !== "index.md");
-  if (titleNamed.length === 1) return readFile(join(itemDir, titleNamed[0]), "utf-8");
-  return readFile(join(itemDir, "index.md"), "utf-8");
+  const treeRoot = join(rexDir, PRD_TREE_DIRNAME);
+  const itemDir = join(treeRoot, ...pathParts);
+  try {
+    return await readFile(join(itemDir, "index.md"), "utf-8");
+  } catch {
+    // Not a folder — try the leaf `<slug>.md` shape.
+    const lastSegment = pathParts[pathParts.length - 1];
+    const parentDir = join(treeRoot, ...pathParts.slice(0, -1));
+    return readFile(join(parentDir, `${lastSegment}.md`), "utf-8");
+  }
 }
 
 /** Resolve the slug directory name for an item. */
@@ -156,9 +162,9 @@ describe("MCP write tools — folder tree state", () => {
     const epicIndexMd = await readIndexMd(rexDir, epicSlug);
     expect(epicIndexMd).toContain("## Children");
     expect(epicIndexMd).toContain("Child Feature");
-    // Children table links to feature subdirectory
+    // Child Feature is a leaf (no children) → linked as `<slug>.md`.
     const featSlug = slug("Child Feature", featId);
-    expect(epicIndexMd).toContain(`./${featSlug}/index.md`);
+    expect(epicIndexMd).toContain(`./${featSlug}.md`);
   });
 
   it("add_item three epics produces three directories, each with correct id", async () => {

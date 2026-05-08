@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix code in task-usage-scheduler: start.ts satisfies RegisterSchedulerOptions by passing a concrete options litera (+2 more)](./fix-code-in-task-usage-0804a3/index.md) | completed |
+| [Fix code in task-usage-scheduler: start.ts satisfies RegisterSchedulerOptions by passing a concrete options litera (+2 more)](./fix-code-in-task-usage-0804a3.md) | completed |

@@ -14,5 +14,5 @@ description: "Ensure that no worker threads or child processes are left behind d
 
 | Title | Status |
 |-------|--------|
-| [Audit and enforce worker thread cleanup across all CLI entry points](./audit-and-enforce-worker-thread-b1dc58/index.md) | completed |
-| [Implement orphan process detection and cleanup for spawned subcommands](./implement-orphan-process-4e870c/index.md) | completed |
+| [Audit and enforce worker thread cleanup across all CLI entry points](./audit-and-enforce-worker-thread-b1dc58.md) | completed |
+| [Implement orphan process detection and cleanup for spawned subcommands](./implement-orphan-process-4e870c.md) | completed |

@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in viewer-polling-engine: Cohesion (0.4) and coupling (0.6) are both at warning thresholds; the three-file](./fix-structural-in-viewer-94bc74/index.md) | completed |
+| [Fix structural in viewer-polling-engine: Cohesion (0.4) and coupling (0.6) are both at warning thresholds; the three-file](./fix-structural-in-viewer-94bc74.md) | completed |

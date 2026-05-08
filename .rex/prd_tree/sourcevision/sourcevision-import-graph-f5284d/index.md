@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Graph Organization and Layout](./graph-organization-and-layout/index.md) | completed |
-| [Interactive Graph Controls](./interactive-graph-controls/index.md) | completed |
+| [Graph Organization and Layout](./graph-organization-and-layout.md) | completed |
+| [Interactive Graph Controls](./interactive-graph-controls.md) | completed |

@@ -14,4 +14,4 @@ description: "Codex CLI prints token usage statistics to stdout after each invoc
 
 | Title | Status |
 |-------|--------|
-| [Implement and integrate Codex CLI token usage extraction into hench run tracking](./implement-and-integrate-codex-f73fe7/index.md) | completed |
+| [Implement and integrate Codex CLI token usage extraction into hench run tracking](./implement-and-integrate-codex-f73fe7.md) | completed |

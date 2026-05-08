@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in web-server: Low cohesion (0.33) — files are loosely related, consider splitting this zone](./fix-observation-in-web-server-19f2f8/index.md) | completed |
+| [Fix observation in web-server: Low cohesion (0.33) — files are loosely related, consider splitting this zone](./fix-observation-in-web-server-19f2f8.md) | completed |

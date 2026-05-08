@@ -15,6 +15,6 @@ description: "Define and implement a folder-tree layout where each PRD level (ep
 
 | Title | Status |
 |-------|--------|
-| [Design folder naming conventions, index.md content schema, and recursive summary contract for each PRD level](./design-folder-naming-69ff95/index.md) | completed |
-| [Implement folder-tree-to-PRD parser that aggregates index.md files into the PRD item tree](./implement-folder-tree-to-prd-210532/index.md) | completed |
-| [Implement PRD-to-folder-tree serializer that writes nested directories with index.md files](./implement-prd-to-folder-tree-3b8010/index.md) | completed |
+| [Design folder naming conventions, index.md content schema, and recursive summary contract for each PRD level](./design-folder-naming-69ff95.md) | completed |
+| [Implement folder-tree-to-PRD parser that aggregates index.md files into the PRD item tree](./implement-folder-tree-to-prd-210532.md) | completed |
+| [Implement PRD-to-folder-tree serializer that writes nested directories with index.md files](./implement-prd-to-folder-tree-3b8010.md) | completed |

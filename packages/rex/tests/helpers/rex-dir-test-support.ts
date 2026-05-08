@@ -185,22 +185,23 @@ export function readPRD(dir: string): PRDDocument {
   }
 
   const treeRoot = join(dir, ".rex", PRD_TREE_DIRNAME);
-  if (!existsSync(treeRoot)) {
-    try {
-      const raw = readFileSync(join(dir, ".rex", "prd.json"), "utf-8");
-      const doc = JSON.parse(raw) as PRDDocument;
-      return { ...doc, title: doc.title ?? title };
-    } catch {
-      return { schema: "rex/v1", title, items: [] };
-    }
+  const treeItems = existsSync(treeRoot) ? readFolderTreeSync(treeRoot) : [];
+  if (treeItems.length > 0) {
+    return { schema: "rex/v1", title, items: treeItems };
   }
 
-  const items = readFolderTreeSync(treeRoot);
-  return {
-    schema: "rex/v1",
-    title,
-    items,
-  };
+  // Empty (or missing) tree: fall back to the legacy `prd.json`. This keeps
+  // tests that exercise FileStore-only flows (push/pull/sync) working —
+  // FileStore writes prd.json/prd.md but leaves the tree untouched, and
+  // there is no canonical tree to read from until the next FolderTreeStore
+  // save.
+  try {
+    const raw = readFileSync(join(dir, ".rex", "prd.json"), "utf-8");
+    const doc = JSON.parse(raw) as PRDDocument;
+    return { ...doc, title: doc.title ?? title };
+  } catch {
+    return { schema: "rex/v1", title, items: [] };
+  }
 }
 
 /**
@@ -214,6 +215,35 @@ function readFolderTreeSync(treeRoot: string): PRDItem[] {
     const item = parseDirRecursiveSync(join(treeRoot, childDirName));
     if (item) items.push(item);
   }
+
+  // Also pick up bare `<slug>.md` files at the tree root. Under the
+  // unified leaf rule, leaf items at any level — including root-level
+  // leaf epics — are stored as bare `.md` files rather than folders.
+  const seen = new Set(items.map((i) => i.id));
+  let entries: string[];
+  try {
+    entries = readdirSync(treeRoot);
+  } catch {
+    entries = [];
+  }
+  for (const entry of entries) {
+    if (!entry.endsWith(".md") || entry === "index.md") continue;
+    const path = join(treeRoot, entry);
+    let isFile = false;
+    try {
+      isFile = statSync(path).isFile();
+    } catch {
+      // skip unreadable entries
+    }
+    if (!isFile) continue;
+    const parsed = parseItemFromMarkdown(readFileSync(path, "utf-8")) as PRDItem | null;
+    if (!parsed || !parsed.id) continue;
+    if ((parsed as Record<string, unknown>).__parentId !== undefined) continue;
+    if (seen.has(parsed.id)) continue;
+    items.push(parsed);
+    seen.add(parsed.id);
+  }
+
   return items;
 }
 

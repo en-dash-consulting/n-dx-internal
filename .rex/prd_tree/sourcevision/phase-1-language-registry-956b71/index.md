@@ -14,7 +14,7 @@ description: "Establish a language registry abstraction in SourceVision so that 
 
 | Title | Status |
 |-------|--------|
-| [Add language field to .n-dx.json schema and wire config support](./add-language-field-to-n-dx-json-a070e7/index.md) | completed |
-| [Create Go fixture project and language registry test suite](./create-go-fixture-project-and-fa93b5/index.md) | completed |
-| [Implement language registry module in sourcevision](./implement-language-registry-67760e/index.md) | completed |
-| [Refactor inventory.ts to consume language registry](./refactor-inventory-ts-to-e27102/index.md) | completed |
+| [Add language field to .n-dx.json schema and wire config support](./add-language-field-to-n-dx-json-a070e7.md) | completed |
+| [Create Go fixture project and language registry test suite](./create-go-fixture-project-and-fa93b5.md) | completed |
+| [Implement language registry module in sourcevision](./implement-language-registry-67760e.md) | completed |
+| [Refactor inventory.ts to consume language registry](./refactor-inventory-ts-to-e27102.md) | completed |

@@ -14,6 +14,6 @@ description: "Create a local Docker-based testing infrastructure that allows dev
 
 | Title | Status |
 |-------|--------|
-| [Build Windows Docker container with ndx dependencies](./build-windows-docker-container-012cf7/index.md) | completed |
-| [Create .local_testing directory structure and gitignore entry](./create-local-testing-directory-be4a2c/index.md) | completed |
-| [Implement local gauntlet test runner script](./implement-local-gauntlet-test-3321bd/index.md) | completed |
+| [Build Windows Docker container with ndx dependencies](./build-windows-docker-container-012cf7.md) | completed |
+| [Create .local_testing directory structure and gitignore entry](./create-local-testing-directory-be4a2c.md) | completed |
+| [Implement local gauntlet test runner script](./implement-local-gauntlet-test-3321bd.md) | completed |

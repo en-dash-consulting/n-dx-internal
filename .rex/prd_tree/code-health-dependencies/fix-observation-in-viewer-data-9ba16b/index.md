@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in viewer-data-loader: High coupling (0.6) — 9 imports target "web-viewer"](./fix-observation-in-viewer-data-b97918/index.md) | completed |
+| [Fix observation in viewer-data-loader: High coupling (0.6) — 9 imports target "web-viewer"](./fix-observation-in-viewer-data-b97918.md) | completed |

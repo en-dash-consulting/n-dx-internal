@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix documentation in sourcevision-view-tests: Zone name 'sourcevision-view-tests' is semantically misleading. These tests cove](./fix-documentation-in-2ef967/index.md) | completed |
+| [Fix documentation in sourcevision-view-tests: Zone name 'sourcevision-view-tests' is semantically misleading. These tests cove](./fix-documentation-in-2ef967.md) | completed |

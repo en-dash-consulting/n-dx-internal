@@ -15,4 +15,4 @@ description: "Provide a first-run migration path from prd.md to the folder-tree 
 
 | Title | Status |
 |-------|--------|
-| [Implement rex migrate-to-folder-tree command and auto-trigger detection](./implement-rex-migrate-to-folder-935177/index.md) | completed |
+| [Implement rex migrate-to-folder-tree command and auto-trigger detection](./implement-rex-migrate-to-folder-935177.md) | completed |

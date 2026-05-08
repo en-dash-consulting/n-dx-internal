@@ -14,8 +14,8 @@ description: "Apply the documentation changes identified in the audit across all
 
 | Title | Status |
 |-------|--------|
-| [Add PRD structure diagram placeholder with 'img_here' label](./add-prd-structure-diagram-2e6f0a/index.md) | completed |
-| [Update CLAUDE.md, AGENTS.md, and assistant-assets for new PRD backend](./update-claude-md-agents-md-and-4c148e/index.md) | completed |
-| [Update rex package README and PACKAGE_GUIDELINES for markdown-first storage](./update-rex-package-readme-and-8894ca/index.md) | completed |
-| [Update root and package READMEs for new PRD structure and recent merges](./update-root-and-package-readmes-113255/index.md) | completed |
-| [Update supporting docs (PACKAGE_GUIDELINES, TESTING, workflow docs) for recent merges](./update-supporting-docs-package-9a7cb6/index.md) | completed |
+| [Add PRD structure diagram placeholder with 'img_here' label](./add-prd-structure-diagram-2e6f0a.md) | completed |
+| [Update CLAUDE.md, AGENTS.md, and assistant-assets for new PRD backend](./update-claude-md-agents-md-and-4c148e.md) | completed |
+| [Update rex package README and PACKAGE_GUIDELINES for markdown-first storage](./update-rex-package-readme-and-8894ca.md) | completed |
+| [Update root and package READMEs for new PRD structure and recent merges](./update-root-and-package-readmes-113255.md) | completed |
+| [Update supporting docs (PACKAGE_GUIDELINES, TESTING, workflow docs) for recent merges](./update-supporting-docs-package-9a7cb6.md) | completed |

@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Actionable UI diagnostics and retry guidance](./actionable-ui-diagnostics-and-20bbdb/index.md) | completed |
-| [Deterministic Semantic Diff Command Execution](./deterministic-semantic-diff-71e5ae/index.md) | completed |
-| [Diff-stage cache safety and API diagnostics](./diff-stage-cache-safety-and-api-8fd7d8/index.md) | completed |
+| [Actionable UI diagnostics and retry guidance](./actionable-ui-diagnostics-and-20bbdb.md) | completed |
+| [Deterministic Semantic Diff Command Execution](./deterministic-semantic-diff-71e5ae.md) | completed |
+| [Diff-stage cache safety and API diagnostics](./diff-stage-cache-safety-and-api-8fd7d8.md) | completed |

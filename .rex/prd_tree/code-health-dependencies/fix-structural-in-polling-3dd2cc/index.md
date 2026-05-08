@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in polling-lifecycle: Duplicate use-polling-suspension.ts exists in both hooks/ and polling/ directori](./fix-structural-in-polling-5e3f14/index.md) | completed |
+| [Fix structural in polling-lifecycle: Duplicate use-polling-suspension.ts exists in both hooks/ and polling/ directori](./fix-structural-in-polling-5e3f14.md) | completed |

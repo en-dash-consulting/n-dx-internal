@@ -74,11 +74,11 @@ export async function serializeFolderTree(
 /**
  * Recursively serialize a list of sibling items into `parentDir`.
  *
- * Each non-leaf-subtask item gets its own directory containing `index.md`
- * (frontmatter + `## Children` table when applicable). Leaf subtasks
- * (level === "subtask" && no children) are written as a single bare
- * `<slug>.md` file inside `parentDir` per Rule 1b — they only ever carry
- * their own frontmatter (no inherited parent metadata).
+ * The schema rule is uniform across levels: an item with children is a
+ * folder containing `index.md` (frontmatter + `## Children` table); an
+ * item with no children is a bare `<slug>.md` file at `parentDir`. A
+ * folder is never created just to hold a single `index.md` — that would
+ * collapse to the bare-file form.
  *
  * Cleans up stale subdirectories and stale `.md` files at `parentDir`
  * before returning. The owner's own `index.md` (when this directory is
@@ -99,10 +99,9 @@ async function writeSiblings(
     const itemSlug = positionalSlugs[i];
     const children = item.children ?? [];
 
-    // Rule 1b: a leaf subtask is stored as a bare `<slug>.md` file at
-    // parentDir. It carries only its own frontmatter — no children listing
-    // and no parent-metadata fields.
-    if (item.level === "subtask" && children.length === 0) {
+    // Leaf item (any level): bare `<slug>.md` at parentDir. It carries
+    // only its own frontmatter — no children listing, no parent metadata.
+    if (children.length === 0) {
       const leafFilename = `${itemSlug}.md`;
       const leafPath = join(parentDir, leafFilename);
       const itemContent = renderItemIndexMd(item, [], new Map());
@@ -111,8 +110,7 @@ async function writeSiblings(
       continue;
     }
 
-    // Folder item (epic, feature, task, or branch subtask): create the
-    // item's own directory and write `index.md`.
+    // Branch item: own folder with `index.md` listing children.
     folderSlugs.add(itemSlug);
     const itemDir = join(parentDir, itemSlug);
     await ensureDir(itemDir, result);
@@ -303,8 +301,10 @@ export function renderItemIndexMd(
     lines.push("|-------|--------|");
     for (const child of children) {
       const slug = requireSlug(childSlugs, child);
-      const isLeafSubtask = child.level === "subtask" && (child.children?.length ?? 0) === 0;
-      const link = isLeafSubtask ? `./${slug}.md` : `./${slug}/index.md`;
+      // Leaf children (no own children, any level) live as bare `<slug>.md`
+      // at this level; branch children get their own folder.
+      const isLeaf = (child.children?.length ?? 0) === 0;
+      const link = isLeaf ? `./${slug}.md` : `./${slug}/index.md`;
       lines.push(`| [${child.title}](${link}) | ${child.status} |`);
     }
     lines.push("");

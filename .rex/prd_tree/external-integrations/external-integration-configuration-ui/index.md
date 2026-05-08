@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Claude API Configuration](./claude-api-configuration/index.md) | completed |
-| [Natural language proposal modification](./natural-language-proposal-modification/index.md) | completed |
-| [Notion Integration Configuration Interface](./notion-integration-d7e6c7/index.md) | completed |
+| [Claude API Configuration](./claude-api-configuration.md) | completed |
+| [Natural language proposal modification](./natural-language-proposal-modification.md) | completed |
+| [Notion Integration Configuration Interface](./notion-integration-d7e6c7.md) | completed |

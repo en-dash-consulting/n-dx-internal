@@ -14,6 +14,6 @@ description: "Branded ASCII art, smart config reuse, clean summary output on ini
 
 | Title | Status |
 |-------|--------|
-| [Branded n-dx ASCII art CLI header for init](./branded-n-dx-ascii-art-cli-768c98/index.md) | completed |
-| [Skip provider prompt when existing config is valid](./skip-provider-prompt-when-224703/index.md) | completed |
-| [Unified init status report instead of mixed sub-init output](./unified-init-status-report-7be07d/index.md) | completed |
+| [Branded n-dx ASCII art CLI header for init](./branded-n-dx-ascii-art-cli-768c98.md) | completed |
+| [Skip provider prompt when existing config is valid](./skip-provider-prompt-when-224703.md) | completed |
+| [Unified init status report instead of mixed sub-init output](./unified-init-status-report-7be07d.md) | completed |

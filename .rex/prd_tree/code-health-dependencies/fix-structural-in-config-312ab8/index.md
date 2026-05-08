@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in config-validation-gauntlet: The gauntlet/ directory sits outside the established e2e/ and integration/ test ](./fix-structural-in-config-d2cc6b/index.md) | completed |
+| [Fix structural in config-validation-gauntlet: The gauntlet/ directory sits outside the established e2e/ and integration/ test ](./fix-structural-in-config-d2cc6b.md) | completed |

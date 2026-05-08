@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Codex Token Accounting Accuracy](./codex-token-accounting-accuracy/index.md) | completed |
-| [Fix Run Count in Sidebar](./fix-run-count-in-sidebar/index.md) | completed |
-| [Hench Codex Output Parsing Hardening](./hench-codex-output-parsing-hardening/index.md) | completed |
-| [Rex and Hench Vendor Behavior Documentation](./rex-and-hench-vendor-behavior-26c7a3/index.md) | completed |
+| [Codex Token Accounting Accuracy](./codex-token-accounting-accuracy.md) | completed |
+| [Fix Run Count in Sidebar](./fix-run-count-in-sidebar.md) | completed |
+| [Hench Codex Output Parsing Hardening](./hench-codex-output-parsing-hardening.md) | completed |
+| [Rex and Hench Vendor Behavior Documentation](./rex-and-hench-vendor-behavior-26c7a3.md) | completed |

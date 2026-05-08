@@ -15,5 +15,5 @@ description: "Audit ndx add, rex add, and the smart-add pipeline to ensure none 
 
 | Title | Status |
 |-------|--------|
-| [Add architecture-policy test enforcing prd.md is not read or written outside migration helper](./add-architecture-policy-test-553655/index.md) | completed |
-| [Audit and remove all prd.md read fallbacks and write paths from ndx add and rex add pipelines](./audit-and-remove-all-prd-md-7b6be4/index.md) | completed |
+| [Add architecture-policy test enforcing prd.md is not read or written outside migration helper](./add-architecture-policy-test-553655.md) | completed |
+| [Audit and remove all prd.md read fallbacks and write paths from ndx add and rex add pipelines](./audit-and-remove-all-prd-md-7b6be4.md) | completed |

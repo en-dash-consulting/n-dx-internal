@@ -14,5 +14,5 @@ description: "Validate the end-to-end SourceVision pipeline for Go projects by r
 
 | Title | Status |
 |-------|--------|
-| [Document Go zone detection behavior, edge semantics, and known limitations](./document-go-zone-detection-81da16/index.md) | completed |
-| [Write end-to-end zone detection integration test for the Go fixture](./write-end-to-end-zone-detection-f2234f/index.md) | completed |
+| [Document Go zone detection behavior, edge semantics, and known limitations](./document-go-zone-detection-81da16.md) | completed |
+| [Write end-to-end zone detection integration test for the Go fixture](./write-end-to-end-zone-detection-f2234f.md) | completed |

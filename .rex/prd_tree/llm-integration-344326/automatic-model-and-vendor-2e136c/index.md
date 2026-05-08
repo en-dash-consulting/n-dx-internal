@@ -15,6 +15,6 @@ description: "Add an opt-in config flag that, when a hench run hits a model fail
 
 | Title | Status |
 |-------|--------|
-| [Add llm.autoFailover config flag with schema, loader, and ndx config surface](./add-llm-autofailover-config-8bf9ba/index.md) | completed |
-| [Define vendor-specific failover chains and selection policy in llm-client](./define-vendor-specific-failover-c39af3/index.md) | completed |
-| [Integrate failover loop into hench run with original-config restore and error parity](./integrate-failover-loop-into-a6c968/index.md) | completed |
+| [Add llm.autoFailover config flag with schema, loader, and ndx config surface](./add-llm-autofailover-config-8bf9ba.md) | completed |
+| [Define vendor-specific failover chains and selection policy in llm-client](./define-vendor-specific-failover-c39af3.md) | completed |
+| [Integrate failover loop into hench run with original-config restore and error parity](./integrate-failover-loop-into-a6c968.md) | completed |

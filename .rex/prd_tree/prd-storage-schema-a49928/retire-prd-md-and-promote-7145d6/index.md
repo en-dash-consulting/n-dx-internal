@@ -15,5 +15,5 @@ description: "Flip the PRDStore read/write layer so the epic → feature → tas
 
 | Title | Status |
 |-------|--------|
-| [Audit all read and write call sites that still reference prd.md as primary storage](./audit-all-read-and-write-call-6fa121/index.md) | completed |
-| [Remove prd.md read fallback from PRDStore and all CLI, MCP, and web consumers](./remove-prd-md-read-fallback-1e7c95/index.md) | completed |
+| [Audit all read and write call sites that still reference prd.md as primary storage](./audit-all-read-and-write-call-6fa121.md) | completed |
+| [Remove prd.md read fallback from PRDStore and all CLI, MCP, and web consumers](./remove-prd-md-read-fallback-1e7c95.md) | completed |

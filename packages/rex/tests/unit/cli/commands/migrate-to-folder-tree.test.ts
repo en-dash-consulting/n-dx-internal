@@ -116,25 +116,27 @@ describe("cmdMigrateToFolderTree", () => {
     expect(epicDirs).toHaveLength(1);
     expect(epicDirs[0]).toMatch(/epic-alpha/);
 
-    // Every PRD item gets its own folder under the new schema — no
-    // single-child compaction. Epic → feature → task is a straight chain.
+    // Branch items get folders, leaves get bare `.md` files.
+    // Epic Alpha → Feature One → Task Apple. Task Apple has no children, so
+    // it's a leaf and lives as `<slug>.md` inside the feature folder.
     const epicDir = join(treeDir, epicDirs[0]);
     const featureDirs = subdirs(epicDir);
     expect(featureDirs).toHaveLength(1);
     expect(featureDirs[0]).toMatch(/feature-one/);
 
     const featureDir = join(epicDir, featureDirs[0]);
-    const taskDirs = subdirs(featureDir);
-    expect(taskDirs).toHaveLength(1);
-    expect(taskDirs[0]).toMatch(/task-apple/);
+    const taskFiles = readdirSync(featureDir).filter(
+      (e) => e.endsWith(".md") && e !== "index.md",
+    );
+    expect(taskFiles).toHaveLength(1);
+    expect(taskFiles[0]).toMatch(/task-apple/);
 
     const epicIndex = readFileSync(join(epicDir, "index.md"), "utf-8");
     expect(epicIndex).toContain("Epic Alpha");
     expect(epicIndex).toContain("e1111111");
 
-    // The task lives in its own folder with `index.md` as the canonical
-    // content file — no `__parent*` shims.
-    const taskMd = readFileSync(join(featureDir, taskDirs[0], "index.md"), "utf-8");
+    // The leaf task lives as a bare `.md` next to the feature's `index.md`.
+    const taskMd = readFileSync(join(featureDir, taskFiles[0]), "utf-8");
     expect(taskMd).not.toContain("__parentId");
     expect(taskMd).toContain("Task Apple");
   });

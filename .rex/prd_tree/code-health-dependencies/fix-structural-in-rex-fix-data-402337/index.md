@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in rex-fix-data-model: Zone sits precisely at the dual-fragility boundary (cohesion 0.4, coupling 0.6);](./fix-structural-in-rex-fix-data-811f83/index.md) | completed |
+| [Fix structural in rex-fix-data-model: Zone sits precisely at the dual-fragility boundary (cohesion 0.4, coupling 0.6);](./fix-structural-in-rex-fix-data-811f83.md) | completed |

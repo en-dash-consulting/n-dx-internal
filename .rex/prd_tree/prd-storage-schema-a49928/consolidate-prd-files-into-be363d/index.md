@@ -14,5 +14,5 @@ description: "Unify the branch-scoped multi-file PRD storage back into a single 
 
 | Title | Status |
 |-------|--------|
-| [Merge branch-scoped PRD files into single canonical 'prd' file](./merge-branch-scoped-prd-files-37c43e/index.md) | completed |
-| [Update PRD storage tests for single-file 'prd' location](./update-prd-storage-tests-for-54be14/index.md) | completed |
+| [Merge branch-scoped PRD files into single canonical 'prd' file](./merge-branch-scoped-prd-files-37c43e.md) | completed |
+| [Update PRD storage tests for single-file 'prd' location](./update-prd-storage-tests-for-54be14.md) | completed |

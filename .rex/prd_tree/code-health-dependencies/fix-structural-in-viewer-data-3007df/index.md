@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in viewer-data-hooks: Bidirectional imports between this hook zone and the web platform zone (3 edges ](./fix-structural-in-viewer-data-6a22c9/index.md) | completed |
+| [Fix structural in viewer-data-hooks: Bidirectional imports between this hook zone and the web platform zone (3 edges ](./fix-structural-in-viewer-data-6a22c9.md) | completed |

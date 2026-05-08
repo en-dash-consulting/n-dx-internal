@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Diagnose smoke parity suite failure and capture reproducible error context](./diagnose-smoke-parity-suite-a30648/index.md) | completed |
-| [Implement targeted fix for smoke parity regression](./implement-targeted-fix-for-774bf7/index.md) | completed |
+| [Diagnose smoke parity suite failure and capture reproducible error context](./diagnose-smoke-parity-suite-a30648.md) | completed |
+| [Implement targeted fix for smoke parity regression](./implement-targeted-fix-for-774bf7.md) | completed |

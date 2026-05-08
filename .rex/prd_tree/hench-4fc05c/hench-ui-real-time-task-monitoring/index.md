@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Active Task Display](./active-task-display/index.md) | completed |
-| [Task Audit and Control Interface](./task-audit-and-control-interface/index.md) | completed |
+| [Active Task Display](./active-task-display.md) | completed |
+| [Task Audit and Control Interface](./task-audit-and-control-interface.md) | completed |

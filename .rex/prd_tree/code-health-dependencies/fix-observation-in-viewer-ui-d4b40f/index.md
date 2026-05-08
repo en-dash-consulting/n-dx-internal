@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in viewer-ui-hub: High coupling (0.63) — 5 imports target "web-viewer" (+1 more)](./fix-observation-in-viewer-ui-6291b7/index.md) | completed |
+| [Fix observation in viewer-ui-hub: High coupling (0.63) — 5 imports target "web-viewer" (+1 more)](./fix-observation-in-viewer-ui-6291b7.md) | completed |

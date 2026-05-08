@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Memory and DOM Optimization for Inactive Tabs](./memory-and-dom-optimization-for-b7889f/index.md) | completed |
-| [Polling Suspension for Background Tabs](./polling-suspension-for-background-tabs/index.md) | completed |
-| [Tab Activation Recovery and Synchronization](./tab-activation-recovery-and-0b6a0e/index.md) | completed |
-| [Tab Visibility Detection and Control](./tab-visibility-detection-and-control/index.md) | completed |
+| [Memory and DOM Optimization for Inactive Tabs](./memory-and-dom-optimization-for-b7889f.md) | completed |
+| [Polling Suspension for Background Tabs](./polling-suspension-for-background-tabs.md) | completed |
+| [Tab Activation Recovery and Synchronization](./tab-activation-recovery-and-0b6a0e.md) | completed |
+| [Tab Visibility Detection and Control](./tab-visibility-detection-and-control.md) | completed |

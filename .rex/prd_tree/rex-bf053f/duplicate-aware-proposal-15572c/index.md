@@ -13,8 +13,8 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Documentation and Test Coverage for Duplicate Overrides](./documentation-and-test-coverage-4355a9/index.md) | completed |
-| [Duplicate Detection and Reason Classification](./duplicate-detection-and-reason-3fdee1/index.md) | completed |
-| [Force-create Auditability and Visibility](./force-create-auditability-and-visibility/index.md) | completed |
-| [Interactive Duplicate Override Decision Flow](./interactive-duplicate-override-e28b45/index.md) | completed |
-| [Orphaned Parent Cleanup After Smart-Add Merge](./orphaned-parent-cleanup-after-8e04e6/index.md) | completed |
+| [Documentation and Test Coverage for Duplicate Overrides](./documentation-and-test-coverage-4355a9.md) | completed |
+| [Duplicate Detection and Reason Classification](./duplicate-detection-and-reason-3fdee1.md) | completed |
+| [Force-create Auditability and Visibility](./force-create-auditability-and-visibility.md) | completed |
+| [Interactive Duplicate Override Decision Flow](./interactive-duplicate-override-e28b45.md) | completed |
+| [Orphaned Parent Cleanup After Smart-Add Merge](./orphaned-parent-cleanup-after-8e04e6.md) | completed |

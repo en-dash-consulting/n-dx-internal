@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in domain-gateway-routes-mcp: High coupling (0.6) — 4 imports target "web-server"](./fix-observation-in-domain-530da8/index.md) | completed |
+| [Fix observation in domain-gateway-routes-mcp: High coupling (0.6) — 4 imports target "web-server"](./fix-observation-in-domain-530da8.md) | completed |

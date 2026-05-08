@@ -14,5 +14,5 @@ description: "Hidden easter egg activated by clicking the rex icon three times w
 
 | Title | Status |
 |-------|--------|
-| [Build full-page N-eolithic dino animation overlay with dismiss interaction](./build-full-page-n-eolithic-dino-090749/index.md) | completed |
-| [Implement triple-click gesture detector with probabilistic trigger gate on the rex icon](./implement-triple-click-gesture-d16759/index.md) | completed |
+| [Build full-page N-eolithic dino animation overlay with dismiss interaction](./build-full-page-n-eolithic-dino-090749.md) | completed |
+| [Implement triple-click gesture detector with probabilistic trigger gate on the rex icon](./implement-triple-click-gesture-d16759.md) | completed |

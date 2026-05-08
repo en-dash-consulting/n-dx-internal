@@ -14,5 +14,5 @@ description: "The CLI emits a noisy Node.js deprecation warning (DEP0040) about 
 
 | Title | Status |
 |-------|--------|
-| [Add CLI startup deprecation filter as a belt-and-suspenders guard](./add-cli-startup-deprecation-81c349/index.md) | completed |
-| [Trace and eliminate the DEP0040 punycode deprecation source](./trace-and-eliminate-the-dep0040-1a926c/index.md) | completed |
+| [Add CLI startup deprecation filter as a belt-and-suspenders guard](./add-cli-startup-deprecation-81c349.md) | completed |
+| [Trace and eliminate the DEP0040 punycode deprecation source](./trace-and-eliminate-the-dep0040-1a926c.md) | completed |

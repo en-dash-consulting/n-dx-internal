@@ -14,4 +14,4 @@ description: "Allow ndx work invocations running in non-interactive autonomous m
 
 | Title | Status |
 |-------|--------|
-| [Bypass commit message approval when ndx work runs with --auto or --loop](./bypass-commit-message-approval-eee224/index.md) | completed |
+| [Bypass commit message approval when ndx work runs with --auto or --loop](./bypass-commit-message-approval-eee224.md) | completed |

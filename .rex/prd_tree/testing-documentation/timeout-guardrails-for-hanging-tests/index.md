@@ -15,14 +15,14 @@ parentId: "61746a37-64cd-4291-802e-aa54e969ec4e"
 
 | Title | Status |
 |-------|--------|
-| [Catalog reusable helper-function patterns in unit tests](./catalog-reusable-helper-40d16b/index.md) | completed |
-| [Configure explicit timeouts on identified hanging-test candidates](./configure-explicit-timeouts-on-55d828/index.md) | completed |
-| [Create shared test-only utility modules for duplicated setup code](./create-shared-test-only-utility-71e079/index.md) | completed |
-| [Define a test-only consolidation baseline and scope](./define-a-test-only-794b70/index.md) | completed |
-| [Document timeout strategies for at-risk suites](./document-timeout-strategies-for-105272/index.md) | completed |
-| [Group failing suites by shared production-side root cause](./group-failing-suites-by-shared-cf78aa/index.md) | completed |
-| [Implement default long timeout with per-command override support](./implement-default-long-timeout-d8f5d4/index.md) | completed |
-| [Implement root-cause fixes in production or configuration code](./implement-root-cause-fixes-in-7a0ed2/index.md) | completed |
-| [Review test suites for observable hang-risk patterns](./review-test-suites-for-1f2d20/index.md) | completed |
-| [Separate legitimate timeout work from red-to-green defect fixes](./separate-legitimate-timeout-c097f9/index.md) | completed |
-| [Verify timeout failures surface as standard Vitest errors](./verify-timeout-failures-surface-f792fb/index.md) | completed |
+| [Catalog reusable helper-function patterns in unit tests](./catalog-reusable-helper-40d16b.md) | completed |
+| [Configure explicit timeouts on identified hanging-test candidates](./configure-explicit-timeouts-on-55d828.md) | completed |
+| [Create shared test-only utility modules for duplicated setup code](./create-shared-test-only-utility-71e079.md) | completed |
+| [Define a test-only consolidation baseline and scope](./define-a-test-only-794b70.md) | completed |
+| [Document timeout strategies for at-risk suites](./document-timeout-strategies-for-105272.md) | completed |
+| [Group failing suites by shared production-side root cause](./group-failing-suites-by-shared-cf78aa.md) | completed |
+| [Implement default long timeout with per-command override support](./implement-default-long-timeout-d8f5d4.md) | completed |
+| [Implement root-cause fixes in production or configuration code](./implement-root-cause-fixes-in-7a0ed2.md) | completed |
+| [Review test suites for observable hang-risk patterns](./review-test-suites-for-1f2d20.md) | completed |
+| [Separate legitimate timeout work from red-to-green defect fixes](./separate-legitimate-timeout-c097f9.md) | completed |
+| [Verify timeout failures surface as standard Vitest errors](./verify-timeout-failures-surface-f792fb.md) | completed |

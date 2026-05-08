@@ -14,5 +14,5 @@ description: "Tool output lines using blue (and potentially other) ANSI colors d
 
 | Title | Status |
 |-------|--------|
-| [Add regression tests for ANSI color reset and line-boundary consistency](./add-regression-tests-for-ansi-dbb2f5/index.md) | completed |
-| [Audit and fix missing ANSI reset codes in tool and CLI output lines](./audit-and-fix-missing-ansi-5f17b7/index.md) | completed |
+| [Add regression tests for ANSI color reset and line-boundary consistency](./add-regression-tests-for-ansi-dbb2f5.md) | completed |
+| [Audit and fix missing ANSI reset codes in tool and CLI output lines](./audit-and-fix-missing-ansi-5f17b7.md) | completed |

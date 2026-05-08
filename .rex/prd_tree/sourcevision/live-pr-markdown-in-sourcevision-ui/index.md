@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Live Refresh and Graceful Degradation](./live-refresh-and-graceful-degradation/index.md) | completed |
-| [PR Summary Generation Pipeline](./pr-summary-generation-pipeline/index.md) | completed |
-| [SourceVision PR Markdown Tab Experience](./sourcevision-pr-markdown-tab-experience/index.md) | completed |
+| [Live Refresh and Graceful Degradation](./live-refresh-and-graceful-degradation.md) | completed |
+| [PR Summary Generation Pipeline](./pr-summary-generation-pipeline.md) | completed |
+| [SourceVision PR Markdown Tab Experience](./sourcevision-pr-markdown-tab-experience.md) | completed |

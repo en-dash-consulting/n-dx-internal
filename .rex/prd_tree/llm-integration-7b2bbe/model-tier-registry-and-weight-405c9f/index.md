@@ -14,5 +14,5 @@ description: "Extend the centralized model resolver in llm-client to support tas
 
 | Title | Status |
 |-------|--------|
-| [Add per-tier model override fields to LLMConfig schema and config loader](./add-per-tier-model-override-2e1d7e/index.md) | completed |
-| [Define TaskWeight type and per-vendor tier model constants in llm-client](./define-taskweight-type-and-per-084b25/index.md) | completed |
+| [Add per-tier model override fields to LLMConfig schema and config loader](./add-per-tier-model-override-2e1d7e.md) | completed |
+| [Define TaskWeight type and per-vendor tier model constants in llm-client](./define-taskweight-type-and-per-084b25.md) | completed |

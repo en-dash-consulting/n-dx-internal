@@ -14,5 +14,5 @@ description: "Add a codebase cleanup phase to self-heal that identifies and remo
 
 | Title | Status |
 |-------|--------|
-| [Apply production-scoped cleanup transformations with test-exclusion hard guard](./apply-production-scoped-cleanup-dd4783/index.md) | completed |
-| [Implement scoped dead-code and duplication analyzer for production files](./implement-scoped-dead-code-and-be4d8d/index.md) | completed |
+| [Apply production-scoped cleanup transformations with test-exclusion hard guard](./apply-production-scoped-cleanup-dd4783.md) | completed |
+| [Implement scoped dead-code and duplication analyzer for production files](./implement-scoped-dead-code-and-be4d8d.md) | completed |

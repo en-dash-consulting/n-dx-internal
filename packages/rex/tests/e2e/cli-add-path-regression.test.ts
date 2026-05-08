@@ -72,15 +72,15 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(output);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist on disk
+    // A leaf epic (no children) is a bare `<slug>.md` file at the root.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
   });
 
   it("prints workspace-relative path for feature creation under epic", async () => {
@@ -96,17 +96,15 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(featureOutput);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // A leaf feature is a bare `<slug>.md` inside the epic's folder.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
-
-    // Path should indicate nesting under epic
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
     expect(addedToPath).toContain("platform");
     expect(addedToPath).toContain("authentication");
   });
@@ -132,20 +130,18 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(taskOutput);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // A leaf task is `<slug>.md` inside the feature folder; full ancestor
+    // chain (platform/authentication/<task>.md) is preserved on disk.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
-
-    // Path nests under the epic. The feature has a single child (the task)
-    // so it is single-child-compacted: the task lives in the epic's
-    // directory, not under a "authentication" subdirectory.
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
     expect(addedToPath).toContain("platform");
+    expect(addedToPath).toContain("authentication");
     expect(addedToPath).toContain("login");
   });
 
@@ -227,10 +223,11 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).toContain("docker");
 
-    // Path must exist
+    // The leaf task is a bare `<slug>.md` file.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
   });
 
   it("keeps consistent path format across all item levels", async () => {

@@ -10,11 +10,10 @@ import { slugify, PRD_TREE_DIRNAME } from "../store/index.js";
  * Compute the folder-tree path for a given item, mirroring the on-disk
  * layout the serializer produces.
  *
- * Every PRD item — epic, feature, task, or branch subtask — gets its own
- * folder named with its slug containing `index.md`. Leaf subtasks (Rule 1b)
- * are written as a bare `<slug>.md` file inside the parent task's folder
- * with no intermediate directory; for those we return the path to the `.md`
- * file rather than to a non-existent folder.
+ * An item with children gets its own slug-named folder containing
+ * `index.md`; an item with no children (any level) is stored as a bare
+ * `<slug>.md` file inside its parent's folder. For leaves we therefore
+ * return the path to the `.md` file rather than a non-existent folder.
  */
 export function getFolderTreePath(items: PRDItem[], itemId: string): string | undefined {
   const entry = findItem(items, itemId);
@@ -27,9 +26,9 @@ export function getFolderTreePath(items: PRDItem[], itemId: string): string | un
     pathSegments.push(slugify(ancestor.title, ancestor.id));
   }
 
-  const isLeafSubtask = item.level === "subtask" && (item.children?.length ?? 0) === 0;
+  const isLeaf = (item.children?.length ?? 0) === 0;
   const itemSlug = slugify(item.title, item.id);
-  pathSegments.push(isLeafSubtask ? `${itemSlug}.md` : itemSlug);
+  pathSegments.push(isLeaf ? `${itemSlug}.md` : itemSlug);
 
   return pathSegments.join("/");
 }

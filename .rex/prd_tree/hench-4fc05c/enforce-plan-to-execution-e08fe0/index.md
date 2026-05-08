@@ -15,5 +15,5 @@ description: "When the agent produces a plan during a task, hench must execute t
 
 | Title | Status |
 |-------|--------|
-| [Detect plan-only completions and re-prompt the agent to execute before allowing run completion](./detect-plan-only-completions-8d4933/index.md) | completed |
-| [Strengthen task-completion criteria to require evidence of code changes for code-classified tasks](./strengthen-task-completion-bad1ef/index.md) | completed |
+| [Detect plan-only completions and re-prompt the agent to execute before allowing run completion](./detect-plan-only-completions-8d4933.md) | completed |
+| [Strengthen task-completion criteria to require evidence of code changes for code-classified tasks](./strengthen-task-completion-bad1ef.md) | completed |

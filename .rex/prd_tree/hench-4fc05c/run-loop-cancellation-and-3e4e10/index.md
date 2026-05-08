@@ -15,5 +15,5 @@ description: "Two coordinated UX improvements for hench's iterative run loop: (1
 
 | Title | Status |
 |-------|--------|
-| [Hold first Ctrl+C during rollback prompt and require second Ctrl+C to exit](./hold-first-ctrl-c-during-4e347d/index.md) | completed |
-| [Print '=== Iteration n/total ===' banner between hench run loop iterations](./print-iteration-n-total-banner-7b4ff5/index.md) | completed |
+| [Hold first Ctrl+C during rollback prompt and require second Ctrl+C to exit](./hold-first-ctrl-c-during-4e347d.md) | completed |
+| [Print '=== Iteration n/total ===' banner between hench run loop iterations](./print-iteration-n-total-banner-7b4ff5.md) | completed |

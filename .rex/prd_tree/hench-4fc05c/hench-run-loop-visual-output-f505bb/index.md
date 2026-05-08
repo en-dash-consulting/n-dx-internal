@@ -13,4 +13,4 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Apply cyan color to agent text and task separator line in hench run output](./apply-cyan-color-to-agent-text-678863/index.md) | completed |
+| [Apply cyan color to agent text and task separator line in hench run output](./apply-cyan-color-to-agent-text-678863.md) | completed |

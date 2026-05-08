@@ -14,5 +14,5 @@ description: "Extend the existing run-failure rollback flow to also trigger when
 
 | Title | Status |
 |-------|--------|
-| [Intercept SIGINT during hench run loop and transition to graceful cancellation state](./intercept-sigint-during-hench-f00023/index.md) | completed |
-| [Show rollback prompt on Ctrl+C cancellation and reset PRD task status](./show-rollback-prompt-on-ctrl-c-6dc861/index.md) | completed |
+| [Intercept SIGINT during hench run loop and transition to graceful cancellation state](./intercept-sigint-during-hench-f00023.md) | completed |
+| [Show rollback prompt on Ctrl+C cancellation and reset PRD task status](./show-rollback-prompt-on-ctrl-c-6dc861.md) | completed |

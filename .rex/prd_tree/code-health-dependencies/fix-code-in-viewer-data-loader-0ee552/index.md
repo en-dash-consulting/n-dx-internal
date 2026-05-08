@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix code in viewer-data-loader: Only one test file (loader-onchange.test.ts) is present for four production file](./fix-code-in-viewer-data-loader-3b22f2/index.md) | completed |
+| [Fix code in viewer-data-loader: Only one test file (loader-onchange.test.ts) is present for four production file](./fix-code-in-viewer-data-loader-3b22f2.md) | completed |

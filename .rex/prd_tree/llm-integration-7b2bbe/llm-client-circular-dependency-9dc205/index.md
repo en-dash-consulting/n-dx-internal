@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Circular Dependency Analysis and Planning](./circular-dependency-analysis-dd8415/index.md) | completed |
-| [Dependency Refactoring Implementation](./dependency-refactoring-implementation/index.md) | completed |
-| [Validation and Testing](./validation-and-testing/index.md) | completed |
+| [Circular Dependency Analysis and Planning](./circular-dependency-analysis-dd8415.md) | completed |
+| [Dependency Refactoring Implementation](./dependency-refactoring-implementation.md) | completed |
+| [Validation and Testing](./validation-and-testing.md) | completed |

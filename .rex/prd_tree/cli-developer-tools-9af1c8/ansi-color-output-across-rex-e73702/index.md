@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Add integration tests validating TTY-aware color emission and NO_COLOR suppression across all CLI tools](./add-integration-tests-83cafd/index.md) | completed |
-| [Standardize semantic color conventions for status and log-level output across all CLI tools](./standardize-semantic-color-50c4d2/index.md) | completed |
+| [Add integration tests validating TTY-aware color emission and NO_COLOR suppression across all CLI tools](./add-integration-tests-83cafd.md) | completed |
+| [Standardize semantic color conventions for status and log-level output across all CLI tools](./standardize-semantic-color-50c4d2.md) | completed |

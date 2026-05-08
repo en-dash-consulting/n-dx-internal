@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Branch-Scoped Work Evidence Pipeline](./branch-scoped-work-evidence-pipeline/index.md) | completed |
-| [PDF Export Functionality](./pdf-export-functionality/index.md) | completed |
-| [Work-History Narrative Synthesis](./work-history-narrative-synthesis/index.md) | completed |
+| [Branch-Scoped Work Evidence Pipeline](./branch-scoped-work-evidence-pipeline.md) | completed |
+| [PDF Export Functionality](./pdf-export-functionality.md) | completed |
+| [Work-History Narrative Synthesis](./work-history-narrative-synthesis.md) | completed |

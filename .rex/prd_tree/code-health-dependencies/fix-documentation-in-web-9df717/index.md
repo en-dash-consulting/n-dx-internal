@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix documentation in web-helpers: Zone name 'web-helpers' is misleading for a single-component zone — it invites s (+1 more)](./fix-documentation-in-web-d262a5/index.md) | completed |
+| [Fix documentation in web-helpers: Zone name 'web-helpers' is misleading for a single-component zone — it invites s (+1 more)](./fix-documentation-in-web-d262a5.md) | completed |

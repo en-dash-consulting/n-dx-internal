@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in local-docker-harness: Zone cohesion is 0 across 5 files — below the 5-file metric-reliability threshol](./fix-structural-in-local-docker-6b4127/index.md) | completed |
+| [Fix structural in local-docker-harness: Zone cohesion is 0 across 5 files — below the 5-file metric-reliability threshol](./fix-structural-in-local-docker-6b4127.md) | completed |

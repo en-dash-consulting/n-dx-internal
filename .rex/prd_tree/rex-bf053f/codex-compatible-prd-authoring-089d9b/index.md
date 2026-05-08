@@ -14,4 +14,4 @@ description: "Fix Codex compatibility failures in the rex add and related PRD au
 
 | Title | Status |
 |-------|--------|
-| [Implement Codex rate limiting detection and retry in rex LLM call paths](./implement-codex-rate-limiting-7ad242/index.md) | completed |
+| [Implement Codex rate limiting detection and retry in rex LLM call paths](./implement-codex-rate-limiting-7ad242.md) | completed |

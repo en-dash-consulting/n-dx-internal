@@ -16,7 +16,6 @@ description: "Unified web dashboard and MCP HTTP server. Preact-based UI with So
 | [CLI Command Aliases and Shortcuts](./cli-command-aliases-and-shortcuts/index.md) | completed |
 | [CLI Command Coverage Audit and Dashboard Trigger Controls](./cli-command-coverage-audit-and-749cec/index.md) | completed |
 | [Dashboard Route Ownership Decoupling](./dashboard-route-ownership-decoupling/index.md) | completed |
-| [Hot-reload MCP tool schemas on HTTP transport without server restart](./hot-reload-mcp-tool-schemas-on-5dd63e/index.md) | completed |
 | [Item completion timeline view](./item-completion-timeline-view/index.md) | completed |
 | [N-Rex Easter Egg — Triple-Click Dino Takeover](./n-rex-easter-egg-triple-click-331928/index.md) | completed |
 | [ndx as the single CLI interface](./ndx-as-the-single-cli-interface/index.md) | completed |
@@ -26,3 +25,4 @@ description: "Unified web dashboard and MCP HTTP server. Preact-based UI with So
 | [Runtime Process and Thread Lifecycle Enforcement](./runtime-process-and-thread-8abe3c/index.md) | completed |
 | [Settings Page Completeness and Command-Based Reorganization](./settings-page-completeness-and-dc5e66/index.md) | completed |
 | [Transparent task selection and completion reasoning](./transparent-task-selection-and-cb54ce/index.md) | completed |
+| [Hot-reload MCP tool schemas on HTTP transport without server restart](./hot-reload-mcp-tool-schemas-on-5dd63e.md) | completed |

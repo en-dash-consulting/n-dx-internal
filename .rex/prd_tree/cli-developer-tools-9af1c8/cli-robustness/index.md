@@ -14,9 +14,9 @@ parentId: "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6"
 
 | Title | Status |
 |-------|--------|
-| [CI Command Enhancement](./ci-command-enhancement/index.md) | completed |
-| [Command Validation](./command-validation/index.md) | completed |
-| [Configuration Management](./configuration-management/index.md) | completed |
-| [Error Handling Improvements](./error-handling-improvements/index.md) | completed |
-| [Refactor rex package to expose proper public API](./refactor-rex-package-to-expose-fdd4fe/index.md) | completed |
-| [Smart Add Interface](./smart-add-interface/index.md) | completed |
+| [CI Command Enhancement](./ci-command-enhancement.md) | completed |
+| [Command Validation](./command-validation.md) | completed |
+| [Configuration Management](./configuration-management.md) | completed |
+| [Error Handling Improvements](./error-handling-improvements.md) | completed |
+| [Refactor rex package to expose proper public API](./refactor-rex-package-to-expose-fdd4fe.md) | completed |
+| [Smart Add Interface](./smart-add-interface.md) | completed |

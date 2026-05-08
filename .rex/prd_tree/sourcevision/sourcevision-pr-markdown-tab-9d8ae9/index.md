@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Endpoint Integration and Diagnostic States](./endpoint-integration-and-db4a5c/index.md) | completed |
-| [Navigation and Routing Parity](./navigation-and-routing-parity/index.md) | completed |
+| [Endpoint Integration and Diagnostic States](./endpoint-integration-and-db4a5c.md) | completed |
+| [Navigation and Routing Parity](./navigation-and-routing-parity.md) | completed |

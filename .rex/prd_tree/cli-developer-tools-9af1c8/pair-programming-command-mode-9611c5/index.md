@@ -14,5 +14,5 @@ description: "Rename the ndx single-command/sc CLI entrypoints to ndx pair-progr
 
 | Title | Status |
 |-------|--------|
-| [Implement cross-vendor validation pass in pair-programming mode](./implement-cross-vendor-661f8e/index.md) | completed |
-| [Rename single-command and sc CLI entrypoints to pair-programming and bicker](./rename-single-command-and-sc-0150c6/index.md) | completed |
+| [Implement cross-vendor validation pass in pair-programming mode](./implement-cross-vendor-661f8e.md) | completed |
+| [Rename single-command and sc CLI entrypoints to pair-programming and bicker](./rename-single-command-and-sc-0150c6.md) | completed |

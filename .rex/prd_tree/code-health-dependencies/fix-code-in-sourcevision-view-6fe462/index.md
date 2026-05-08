@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix code in sourcevision-view-tests: Coupling score 0.75 is produced entirely by false-positive string-literal edges,](./fix-code-in-sourcevision-view-b180b9/index.md) | completed |
+| [Fix code in sourcevision-view-tests: Coupling score 0.75 is produced entirely by false-positive string-literal edges,](./fix-code-in-sourcevision-view-b180b9.md) | completed |

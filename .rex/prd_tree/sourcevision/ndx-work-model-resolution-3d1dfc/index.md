@@ -16,5 +16,5 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in global: Bidirectional coupling: "web" ↔ "web-server" (85+5 crossings) — consider extract](./fix-observation-in-global-de5ca6/index.md) | completed |
-| [Implement vendor-change model reset to prevent cross-vendor stale config](./implement-vendor-change-model-cc8616/index.md) | completed |
+| [Fix observation in global: Bidirectional coupling: "web" ↔ "web-server" (85+5 crossings) — consider extract](./fix-observation-in-global-de5ca6.md) | completed |
+| [Implement vendor-change model reset to prevent cross-vendor stale config](./implement-vendor-change-model-cc8616.md) | completed |

@@ -21,6 +21,6 @@ description: "Add a timeline view to the Rex dashboard showing item completions 
 
 | Title | Status |
 |-------|--------|
-| [Add date range filter to completion timeline](./add-date-range-filter-to-99456e/index.md) | completed |
-| [Build completion timeline data source from PRD items](./build-completion-timeline-data-8fd96b/index.md) | completed |
-| [Render completion timeline view in Rex dashboard](./render-completion-timeline-view-380ea7/index.md) | completed |
+| [Add date range filter to completion timeline](./add-date-range-filter-to-99456e.md) | completed |
+| [Build completion timeline data source from PRD items](./build-completion-timeline-data-8fd96b.md) | completed |
+| [Render completion timeline view in Rex dashboard](./render-completion-timeline-view-380ea7.md) | completed |

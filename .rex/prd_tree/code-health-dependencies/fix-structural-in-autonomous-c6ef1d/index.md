@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in autonomous-agent-engine: No automated intra-zone boundary assertions exist yet; at 208 files the zone is ](./fix-structural-in-autonomous-593877/index.md) | completed |
+| [Fix structural in autonomous-agent-engine: No automated intra-zone boundary assertions exist yet; at 208 files the zone is ](./fix-structural-in-autonomous-593877.md) | completed |

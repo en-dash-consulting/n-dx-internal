@@ -14,5 +14,5 @@ description: "Refactor the PRDStore to aggregate items from all PRD files for re
 
 | Title | Status |
 |-------|--------|
-| [Refactor PRDStore read operations to aggregate items across all PRD files](./refactor-prdstore-read-0d771f/index.md) | completed |
-| [Refactor PRDStore write operations to route modifications to the owning PRD file](./refactor-prdstore-write-88f3b4/index.md) | completed |
+| [Refactor PRDStore read operations to aggregate items across all PRD files](./refactor-prdstore-read-0d771f.md) | completed |
+| [Refactor PRDStore write operations to route modifications to the owning PRD file](./refactor-prdstore-write-88f3b4.md) | completed |

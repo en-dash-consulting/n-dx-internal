@@ -14,4 +14,4 @@ description: "Surface which PRD file (canonical or branch-scoped) receives newly
 
 | Title | Status |
 |-------|--------|
-| [Display target PRD path in ndx add command output](./display-target-prd-path-in-ndx-efc7df/index.md) | completed |
+| [Display target PRD path in ndx add command output](./display-target-prd-path-in-ndx-efc7df.md) | completed |

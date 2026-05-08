@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Notion adapter implementation](./notion-adapter-implementation/index.md) | completed |
-| [Store adapter architecture](./store-adapter-architecture/index.md) | completed |
+| [Notion adapter implementation](./notion-adapter-implementation.md) | completed |
+| [Store adapter architecture](./store-adapter-architecture.md) | completed |

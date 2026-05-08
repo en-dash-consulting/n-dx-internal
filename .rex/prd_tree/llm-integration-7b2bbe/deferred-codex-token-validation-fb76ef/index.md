@@ -14,5 +14,5 @@ description: "Currently Codex token counts are validated (e.g. against budget th
 
 | Title | Status |
 |-------|--------|
-| [Audit Codex token validation and budget-check call sites within the hench work run loop](./audit-codex-token-validation-4ac54c/index.md) | completed |
-| [Refactor Codex token accumulation to defer validation and reporting until run completion](./refactor-codex-token-70b824/index.md) | completed |
+| [Audit Codex token validation and budget-check call sites within the hench work run loop](./audit-codex-token-validation-4ac54c.md) | completed |
+| [Refactor Codex token accumulation to defer validation and reporting until run completion](./refactor-codex-token-70b824.md) | completed |

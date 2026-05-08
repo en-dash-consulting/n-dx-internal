@@ -15,5 +15,5 @@ description: "When hench finishes a task and commits, the commit message must en
 
 | Title | Status |
 |-------|--------|
-| [Add structured PRD status transition trailer to commit messages](./add-structured-prd-status-1e6528/index.md) | completed |
-| [Stage PRD status transition write into the same commit that completes the task](./stage-prd-status-transition-d1e0b4/index.md) | completed |
+| [Add structured PRD status transition trailer to commit messages](./add-structured-prd-status-1e6528.md) | completed |
+| [Stage PRD status transition write into the same commit that completes the task](./stage-prd-status-transition-d1e0b4.md) | completed |

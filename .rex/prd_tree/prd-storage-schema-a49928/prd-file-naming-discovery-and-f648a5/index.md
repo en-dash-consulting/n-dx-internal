@@ -14,5 +14,5 @@ description: "Introduce a branch-aware PRD file naming convention (prd_{branch}_
 
 | Title | Status |
 |-------|--------|
-| [Implement branch-aware PRD file naming convention and git branch/commit resolution](./implement-branch-aware-prd-file-e7e014/index.md) | completed |
-| [Implement PRD file discovery and selection logic within the .rex directory](./implement-prd-file-discovery-8be8d4/index.md) | completed |
+| [Implement branch-aware PRD file naming convention and git branch/commit resolution](./implement-branch-aware-prd-file-e7e014.md) | completed |
+| [Implement PRD file discovery and selection logic within the .rex directory](./implement-prd-file-discovery-8be8d4.md) | completed |

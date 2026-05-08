@@ -14,4 +14,4 @@ description: "Identify and replace deprecated or end-of-life npm packages across
 
 | Title | Status |
 |-------|--------|
-| [Audit and remediate deprecated npm dependencies across all monorepo packages](./audit-and-remediate-deprecated-cd67df/index.md) | completed |
+| [Audit and remediate deprecated npm dependencies across all monorepo packages](./audit-and-remediate-deprecated-cd67df.md) | completed |

@@ -14,5 +14,5 @@ description: "The web dashboard currently focuses on status views and configurat
 
 | Title | Status |
 |-------|--------|
-| [Audit all ndx CLI commands against web dashboard feature coverage and document gaps](./audit-all-ndx-cli-commands-400f7e/index.md) | completed |
-| [Implement dashboard trigger controls for CLI commands lacking UI representation](./implement-dashboard-trigger-5320dc/index.md) | completed |
+| [Audit all ndx CLI commands against web dashboard feature coverage and document gaps](./audit-all-ndx-cli-commands-400f7e.md) | completed |
+| [Implement dashboard trigger controls for CLI commands lacking UI representation](./implement-dashboard-trigger-5320dc.md) | completed |

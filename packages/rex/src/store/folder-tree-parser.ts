@@ -74,14 +74,11 @@ export async function parseFolderTree(treeRoot: string): Promise<FolderParseResu
   // Discover bare-leaf `.md` files at treeRoot. The canonical schema places
   // leaf subtasks (Rule 1b) under their parent task, so these are unusual,
   // but a malformed PRD that puts a non-epic item at root must still
-  // round-trip — `validate` is designed to detect that misplacement.
-  const seen = new Set(items.map((i) => i.id));
+  // round-trip — `validate` is designed to detect that misplacement and to
+  // surface duplicate ids, so we do not deduplicate here.
   const rootLeaves = await discoverLeafChildMarkdownFiles(treeRoot, "", 1, warnings);
   for (const leaf of rootLeaves) {
-    if (!seen.has(leaf.id)) {
-      items.push(leaf);
-      seen.add(leaf.id);
-    }
+    items.push(leaf);
   }
 
   return { items, warnings };

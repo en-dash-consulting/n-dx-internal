@@ -14,5 +14,5 @@ description: "Surface branch and file attribution visually in the dashboard PRD 
 
 | Title | Status |
 |-------|--------|
-| [Include branch and file attribution in rex API and MCP status responses](./include-branch-and-file-d355da/index.md) | completed |
-| [Render branch badges on PRD tree rows and add branch filter to toolbar](./render-branch-badges-on-prd-982777/index.md) | completed |
+| [Include branch and file attribution in rex API and MCP status responses](./include-branch-and-file-d355da.md) | completed |
+| [Render branch badges on PRD tree rows and add branch filter to toolbar](./render-branch-badges-on-prd-982777.md) | completed |

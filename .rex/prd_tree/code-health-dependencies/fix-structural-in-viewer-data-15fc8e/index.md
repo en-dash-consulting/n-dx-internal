@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in viewer-data-loader: Cohesion (0.4) and coupling (0.6) both sit at warning thresholds; the zone mixes](./fix-structural-in-viewer-data-506ef7/index.md) | completed |
+| [Fix structural in viewer-data-loader: Cohesion (0.4) and coupling (0.6) both sit at warning thresholds; the zone mixes](./fix-structural-in-viewer-data-506ef7.md) | completed |

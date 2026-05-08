@@ -23,7 +23,6 @@ import {
   slugifyTitle,
 } from "../../../src/store/folder-tree-serializer.js";
 import { parseFolderTree } from "../../../src/store/folder-tree-parser.js";
-import { titleToFilename } from "../../../src/store/title-to-filename.js";
 import { PRD_TREE_DIRNAME } from "../../../src/store/index.js";
 import type { PRDItem } from "../../../src/schema/index.js";
 
@@ -143,16 +142,33 @@ describe("serializeFolderTree: directory structure", () => {
     expect(s.isDirectory()).toBe(true);
   });
 
-  it("creates epic directory at depth 1", async () => {
-    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "My Epic");
+  it("creates epic directory at depth 1 when the epic has children", async () => {
+    // A leaf epic is a bare `<slug>.md`; only branch epics get a folder.
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "F");
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "My Epic", {
+      children: [feature],
+    });
     await serializeFolderTree([epic], testDir);
     const epicDir = join(testDir, slugify(epic.title, epic.id));
     const s = await stat(epicDir);
     expect(s.isDirectory()).toBe(true);
   });
 
-  it("creates feature directory at depth 2 inside epic", async () => {
-    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "My Feature");
+  it("writes a leaf epic as a bare `<slug>.md` at the tree root", async () => {
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Solo Epic");
+    await serializeFolderTree([epic], testDir);
+    const leafFile = join(testDir, `${slugify(epic.title, epic.id)}.md`);
+    const s = await stat(leafFile);
+    expect(s.isFile()).toBe(true);
+    // No companion folder.
+    await expect(stat(join(testDir, slugify(epic.title, epic.id)))).rejects.toThrow();
+  });
+
+  it("creates feature directory at depth 2 when the feature has children", async () => {
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "T");
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "My Feature", {
+      children: [task],
+    });
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "My Epic", {
       children: [feature],
     });
@@ -166,10 +182,15 @@ describe("serializeFolderTree: directory structure", () => {
     expect(s.isDirectory()).toBe(true);
   });
 
-  it("creates task directory at depth 3 inside feature", async () => {
-    // Create two tasks to avoid single-child optimization of the feature
-    const task1 = makeTask("33333333-0000-0000-0000-000000000000", "My Task 1");
-    const task2 = makeTask("44444444-0000-0000-0000-000000000000", "My Task 2");
+  it("creates task directory at depth 3 when the task has subtasks", async () => {
+    const sub1 = makeSubtask("44440000-0000-0000-0000-000000000000", "Sub 1");
+    const sub2 = makeSubtask("44441111-0000-0000-0000-000000000000", "Sub 2");
+    const task1 = makeTask("33333333-0000-0000-0000-000000000000", "My Task 1", {
+      children: [sub1, sub2],
+    });
+    const task2 = makeTask("44444444-0000-0000-0000-000000000000", "My Task 2", {
+      children: [makeSubtask("44442222-0000-0000-0000-000000000000", "Other")],
+    });
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "My Feature", {
       children: [task1, task2],
     });
@@ -221,17 +242,19 @@ describe("serializeFolderTree: directory structure", () => {
 
 // ── index.md content: epic ────────────────────────────────────────────────────
 
-describe("serializeFolderTree: epic index.md", () => {
+describe("serializeFolderTree: epic content file", () => {
+  // Helper: read a leaf item's bare `<slug>.md` at the tree root.
+  function leafEpicPath(epic: PRDItem): string {
+    return join(testDir, `${slugify(epic.title, epic.id)}.md`);
+  }
+
   it("writes required frontmatter fields", async () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Auth Epic", {
       status: "in_progress",
       description: "Auth system.",
     });
     await serializeFolderTree([epic], testDir);
-    const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
-      "utf8",
-    );
+    const content = await readFile(leafEpicPath(epic), "utf8");
     expect(content).toContain('id: "11111111-0000-0000-0000-000000000000"');
     expect(content).toContain("level: \"epic\"");
     expect(content).toContain('title: "Auth Epic"');
@@ -252,10 +275,7 @@ describe("serializeFolderTree: epic index.md", () => {
       resolutionDetail: "Did the work.",
     });
     await serializeFolderTree([epic], testDir);
-    const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
-      "utf8",
-    );
+    const content = await readFile(leafEpicPath(epic), "utf8");
     expect(content).toContain("priority: \"high\"");
     expect(content).toContain("tags:");
     expect(content).toContain('"auth"');
@@ -271,10 +291,7 @@ describe("serializeFolderTree: epic index.md", () => {
   it("omits optional fields that are absent", async () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Bare Epic");
     await serializeFolderTree([epic], testDir);
-    const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
-      "utf8",
-    );
+    const content = await readFile(leafEpicPath(epic), "utf8");
     expect(content).not.toContain("priority:");
     expect(content).not.toContain("tags:");
     expect(content).not.toContain("startedAt:");
@@ -288,6 +305,7 @@ describe("serializeFolderTree: epic index.md", () => {
       children: [f1, f2],
     });
     await serializeFolderTree([epic], testDir);
+    // With children, the epic is a folder containing index.md.
     const content = await readFile(
       join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
@@ -295,25 +313,22 @@ describe("serializeFolderTree: epic index.md", () => {
     expect(content).toContain("## Children");
     expect(content).toContain("Feature Alpha");
     expect(content).toContain("Feature Beta");
-    // Links use relative paths
+    // Both features are leaves → linked as `<slug>.md`.
     expect(content).toMatch(/\.\//);
-    expect(content).toContain("/index.md");
+    expect(content).toContain(".md");
   });
 
-  it("omits ## Children section when epic has no features", async () => {
+  it("emits no ## Children section when epic has no features", async () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Empty Epic");
     await serializeFolderTree([epic], testDir);
-    const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
-      "utf8",
-    );
+    const content = await readFile(leafEpicPath(epic), "utf8");
     expect(content).not.toContain("## Children");
   });
 });
 
 // ── index.md content: feature ─────────────────────────────────────────────────
 
-describe("serializeFolderTree: feature index.md", () => {
+describe("serializeFolderTree: feature content file", () => {
   it("writes acceptanceCriteria and loe fields", async () => {
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Auth Feature", {
       acceptanceCriteria: ["Users can log in", "Session expires after 24h"],
@@ -323,12 +338,13 @@ describe("serializeFolderTree: feature index.md", () => {
       children: [feature],
     });
     await serializeFolderTree([epic], testDir);
+    // Feature is a leaf (no tasks) so it lives as a bare `<slug>.md` file
+    // inside the epic's folder (per the unified leaf rule).
     const content = await readFile(
       join(
         testDir,
         slugify(epic.title, epic.id),
-        slugify(feature.title, feature.id),
-        "index.md",
+        `${slugify(feature.title, feature.id)}.md`,
       ),
       "utf8",
     );
@@ -342,12 +358,13 @@ describe("serializeFolderTree: feature index.md", () => {
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature");
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", { children: [feature] });
     await serializeFolderTree([epic], testDir);
+    // Feature is a leaf (no tasks) so it lives as a bare `<slug>.md` file
+    // inside the epic's folder (per the unified leaf rule).
     const content = await readFile(
       join(
         testDir,
         slugify(epic.title, epic.id),
-        slugify(feature.title, feature.id),
-        "index.md",
+        `${slugify(feature.title, feature.id)}.md`,
       ),
       "utf8",
     );
@@ -357,25 +374,15 @@ describe("serializeFolderTree: feature index.md", () => {
 
 // ── index.md content: task ────────────────────────────────────────────────────
 
-describe("serializeFolderTree: task index.md", () => {
+describe("serializeFolderTree: task content file", () => {
   async function readTaskContent(epic: PRDItem, feature: PRDItem, task: PRDItem): Promise<string> {
-    // With single-child optimization, if feature has one task, the task is placed
-    // directly in the epic's directory. So we check if feature dir exists first.
+    // A leaf task lives as `<slug>.md` inside the feature folder; a task
+    // with subtasks gets its own folder containing `index.md`.
     const featureDir = join(testDir, slugify(epic.title, epic.id), slugify(feature.title, feature.id));
-    let taskPath: string;
-    try {
-      await stat(featureDir);
-      // Feature directory exists, task is inside feature
-      taskPath = join(featureDir, slugify(task.title, task.id), "index.md");
-    } catch {
-      // Feature directory doesn't exist (single-child optimization), task is in epic
-      taskPath = join(
-        testDir,
-        slugify(epic.title, epic.id),
-        slugify(task.title, task.id),
-        "index.md",
-      );
-    }
+    const isLeaf = (task.children?.length ?? 0) === 0;
+    const taskPath = isLeaf
+      ? join(featureDir, `${slugify(task.title, task.id)}.md`)
+      : join(featureDir, slugify(task.title, task.id), "index.md");
     return readFile(taskPath, "utf8");
   }
 
@@ -555,9 +562,9 @@ describe("serializeFolderTree: idempotency", () => {
     const updated = { ...epic, description: "After." };
     const r2 = await serializeFolderTree([updated], testDir);
 
-    expect(r2.filesWritten).toBe(1);  // Only title-named file (leaf item, no index.md)
+    expect(r2.filesWritten).toBe(1);  // Only the leaf `<slug>.md` (no children, no folder).
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
+      join(testDir, `${slugify(epic.title, epic.id)}.md`),
       "utf8",
     );
     expect(content).toContain('"After."');
@@ -566,43 +573,20 @@ describe("serializeFolderTree: idempotency", () => {
 
 // ── Stale directory cleanup ───────────────────────────────────────────────────
 
-describe("serializeFolderTree: stale directory removal", () => {
-  it("removes epic directory when epic is removed from the tree", async () => {
+describe("serializeFolderTree: stale entry removal", () => {
+  it("removes leaf epic file when epic is removed from the tree", async () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Removed Epic");
     await serializeFolderTree([epic], testDir);
-    const epicDir = join(testDir, slugify(epic.title, epic.id));
+    const epicFile = join(testDir, `${slugify(epic.title, epic.id)}.md`);
 
-    // Confirm it exists
-    await stat(epicDir);
+    await stat(epicFile);
 
-    // Remove from PRD
-    const r2 = await serializeFolderTree([], testDir);
-    expect(r2.directoriesRemoved).toBe(1);
-    await expect(stat(epicDir)).rejects.toThrow();
+    await serializeFolderTree([], testDir);
+    await expect(stat(epicFile)).rejects.toThrow();
   });
 
-  it("removes stale feature directory when feature is removed", async () => {
-    const f1 = makeFeature("22222222-0000-0000-0000-000000000000", "Feature A");
-    const f2 = makeFeature("33333333-0000-0000-0000-000000000000", "Feature B");
-    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
-      children: [f1, f2],
-    });
-    await serializeFolderTree([epic], testDir);
-
-    // Remove f2
-    const updated = { ...epic, children: [f1] };
-    const r2 = await serializeFolderTree([updated], testDir);
-    expect(r2.directoriesRemoved).toBe(1);
-
-    const f2Dir = join(
-      testDir,
-      slugify(epic.title, epic.id),
-      slugify(f2.title, f2.id),
-    );
-    await expect(stat(f2Dir)).rejects.toThrow();
-  });
-
-  it("preserves sibling directories when only one is removed", async () => {
+  it("removes stale leaf feature file when feature is removed", async () => {
+    // Two leaf features (both bare `.md` siblings inside the epic folder).
     const f1 = makeFeature("22222222-0000-0000-0000-000000000000", "Feature A");
     const f2 = makeFeature("33333333-0000-0000-0000-000000000000", "Feature B");
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
@@ -613,9 +597,32 @@ describe("serializeFolderTree: stale directory removal", () => {
     const updated = { ...epic, children: [f1] };
     await serializeFolderTree([updated], testDir);
 
-    const f1Dir = join(testDir, slugify(epic.title, epic.id), slugify(f1.title, f1.id));
-    const s = await stat(f1Dir);
-    expect(s.isDirectory()).toBe(true);
+    const f2File = join(
+      testDir,
+      slugify(epic.title, epic.id),
+      `${slugify(f2.title, f2.id)}.md`,
+    );
+    await expect(stat(f2File)).rejects.toThrow();
+  });
+
+  it("preserves sibling leaf files when only one is removed", async () => {
+    const f1 = makeFeature("22222222-0000-0000-0000-000000000000", "Feature A");
+    const f2 = makeFeature("33333333-0000-0000-0000-000000000000", "Feature B");
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
+      children: [f1, f2],
+    });
+    await serializeFolderTree([epic], testDir);
+
+    const updated = { ...epic, children: [f1] };
+    await serializeFolderTree([updated], testDir);
+
+    const f1File = join(
+      testDir,
+      slugify(epic.title, epic.id),
+      `${slugify(f1.title, f1.id)}.md`,
+    );
+    const s = await stat(f1File);
+    expect(s.isFile()).toBe(true);
   });
 });
 
@@ -738,8 +745,9 @@ describe("serializeFolderTree: round-trip with parseFolderTree", () => {
     (epic as Record<string, unknown>)["myCustomField"] = "custom-value";
 
     await serializeFolderTree([epic], testDir);
+    // Leaf epic — bare `<slug>.md` at the root.
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), "index.md"),
+      join(testDir, `${slugify(epic.title, epic.id)}.md`),
       "utf8",
     );
     expect(content).toContain("myCustomField");
@@ -757,16 +765,16 @@ describe("serializeFolderTree: result stats", () => {
     });
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", { children: [feature] });
     const result = await serializeFolderTree([epic], testDir);
-    // 1 epic (has children) + index.md + 1 feature (has children) + index.md + 1 task (leaf) = 4 files
-    // (task is a leaf, so no index.md; feature has 1 child so single-child optimization applies)
-    // Actually: single-child feature skips directory, so: epic.md + epic/index.md + epic/task.md = 3 files
+    // epic/index.md + epic/feature/index.md + epic/feature/task.md (leaf) = 3 files
     expect(result.filesWritten).toBe(3);
     expect(result.filesSkipped).toBe(0);
   });
 
   it("reports directoriesCreated for a new tree", async () => {
-    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic");
-    // testDir already exists; epic dir is new
+    // A branch epic gets a folder; the test directory pre-exists, so only
+    // the epic's slug folder is newly created.
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "F");
+    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", { children: [feature] });
     const result = await serializeFolderTree([epic], testDir);
     expect(result.directoriesCreated).toBeGreaterThanOrEqual(1);
   });
@@ -775,7 +783,7 @@ describe("serializeFolderTree: result stats", () => {
 // ── Parent summary (## Children table) updates ────────────────────────────────
 
 describe("serializeFolderTree: parent ## Children table updates", () => {
-  it("create item → correct folder, index.md, and parent summary", async () => {
+  it("create leaf feature → bare `<slug>.md` plus parent summary entry", async () => {
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature Alpha", {
       acceptanceCriteria: ["Feature works"],
     });
@@ -787,16 +795,16 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
 
     const epicDir = join(testDir, slugify(epic.title, epic.id));
     const featureSlug = slugify(feature.title, feature.id);
-    const featureDir = join(epicDir, featureSlug);
-    await stat(featureDir);
-
-    const featureIndex = await readFile(join(featureDir, "index.md"), "utf8");
-    expect(featureIndex).toContain('id: "22222222-0000-0000-0000-000000000000"');
-    expect(featureIndex).toContain('title: "Feature Alpha"');
-    expect(featureIndex).toContain('"Feature works"');
+    // Leaf feature → bare `<slug>.md`, no nested folder.
+    await expect(stat(join(epicDir, featureSlug))).rejects.toThrow();
+    const featureFile = join(epicDir, `${featureSlug}.md`);
+    const featureContent = await readFile(featureFile, "utf8");
+    expect(featureContent).toContain('id: "22222222-0000-0000-0000-000000000000"');
+    expect(featureContent).toContain('title: "Feature Alpha"');
+    expect(featureContent).toContain('"Feature works"');
 
     const epicIndex = await readFile(join(epicDir, "index.md"), "utf8");
-    expect(epicIndex).toContain(`| [Feature Alpha](./${featureSlug}/index.md) | pending |`);
+    expect(epicIndex).toContain(`| [Feature Alpha](./${featureSlug}.md) | pending |`);
   });
 
   it("edit item → updated parent ## Children status column", async () => {
@@ -855,13 +863,19 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     await expect(stat(f2Dir)).rejects.toThrow();
   });
 
-  it("move item → folder relocated and both parents updated", async () => {
-    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Moved Feature");
+  it("move item → leaf file relocated and both parents updated", async () => {
+    // Use a branch feature (with a leaf task) so the feature itself is a
+    // folder, not a bare leaf — that makes the relocation observable as a
+    // directory rename rather than a single-file move.
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "T");
+    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Moved Feature", {
+      children: [task],
+    });
     const epicA = makeEpic("aaaaaaaa-0000-0000-0000-000000000000", "Epic A", {
       children: [feature],
     });
     const epicB = makeEpic("bbbbbbbb-0000-0000-0000-000000000000", "Epic B", {
-      children: [],
+      children: [makeFeature("ffffffff-0000-0000-0000-000000000000", "Anchor")],
     });
 
     // Initial: feature under epicA
@@ -875,19 +889,20 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     await stat(join(epicADir, featureSlug));  // feature is under epicA
     await expect(stat(join(epicBDir, featureSlug))).rejects.toThrow(); // not under epicB
 
-    // Move: feature now under epicB
+    // Move: feature now under epicB (alongside the existing anchor child)
     const updatedA = { ...epicA, children: [] };
-    const updatedB = { ...epicB, children: [feature] };
+    const updatedB = { ...epicB, children: [...epicB.children!, feature] };
     await serializeFolderTree([updatedA, updatedB], testDir);
 
     // Feature directory moved from epicA to epicB
     await expect(stat(join(epicADir, featureSlug))).rejects.toThrow();
     await stat(join(epicBDir, featureSlug));  // now under epicB
 
-    // epicA's Children table no longer contains "Moved Feature"
-    const epicAIndex = await readFile(join(epicADir, "index.md"), "utf8");
-    expect(epicAIndex).not.toContain("Moved Feature");
-    expect(epicAIndex).not.toContain("## Children");
+    // epicA is now a leaf and lives as `<slug>.md` at the root.
+    const epicAFile = join(testDir, `${slugify(epicA.title, epicA.id)}.md`);
+    const epicAContent = await readFile(epicAFile, "utf8");
+    expect(epicAContent).not.toContain("Moved Feature");
+    expect(epicAContent).not.toContain("## Children");
 
     // epicB's Children table now contains "Moved Feature"
     const epicBIndex = await readFile(join(epicBDir, "index.md"), "utf8");
@@ -896,17 +911,20 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
   });
 });
 
-// ── Single-child filesystem optimization (REMOVED) ───────────────────────────
+// ── Folder-per-item layout (replaces single-child compaction tests) ──────────
 //
-// The previous schema embedded `__parent*` metadata in a single child to elide
-// its parent's directory. The current schema (see
-// docs/architecture/prd-folder-tree-schema.md) gives every PRD item its own
-// folder, so these tests no longer apply. Tree round-trip with `__parent*`
-// shims is exercised by the migration integration tests instead.
+// The old serializer used `__parent*` shims to elide single-child parent
+// folders. The current contract (see docs/architecture/prd-folder-tree-schema.md)
+// gives every item its own folder. These tests pin that invariant.
 
-describe.skip("serializeFolderTree: single-child filesystem optimization", () => {
-  it("single-child feature skips directory creation, places task directly in epic", async () => {
-    const task = makeTask("33333333-0000-0000-0000-000000000000", "Task");
+describe("serializeFolderTree: folder-per-item layout", () => {
+  it("single-child feature still gets its own folder", async () => {
+    // The task here has its own subtask, so the task is a folder and the
+    // feature is a folder — no single-child compaction.
+    const subtask = makeSubtask("44444444-0000-0000-0000-000000000000", "Sub");
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "Task", {
+      children: [subtask],
+    });
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
       children: [task],
     });
@@ -920,27 +938,22 @@ describe.skip("serializeFolderTree: single-child filesystem optimization", () =>
     const featureSlug = slugify(feature.title, feature.id);
     const taskSlug = slugify(task.title, task.id);
 
-    // Feature directory should NOT exist (single-child optimization)
-    const epicContents = await readdir(epicDir);
-    expect(epicContents).not.toContain(featureSlug);
+    expect(await readdir(epicDir)).toContain(featureSlug);
+    const featureDir = join(epicDir, featureSlug);
+    expect(await readdir(featureDir)).toContain("index.md");
+    expect(await readdir(featureDir)).toContain(taskSlug);
 
-    // Task directory should exist directly under epic
-    expect(epicContents).toContain(taskSlug);
-
-    // Task files should have embedded parent metadata
-    const taskIndexPath = join(epicDir, taskSlug, titleToFilename(task.title));
-    const taskContent = await readFile(taskIndexPath, "utf8");
-    expect(taskContent).toContain("__parentId");
-    expect(taskContent).toContain("__parentTitle");
-    expect(taskContent).toContain(feature.id);
-    expect(taskContent).toContain("Feature");
+    // No `__parent*` shim ever appears on disk under the new schema.
+    const taskContent = await readFile(join(featureDir, taskSlug, "index.md"), "utf8");
+    expect(taskContent).not.toContain("__parent");
   });
 
-  it("multi-child feature creates directory as usual, tasks inside", async () => {
-    const task1 = makeTask("t1111111-0000-0000-0000-000000000000", "Task 1");
-    const task2 = makeTask("t2222222-0000-0000-0000-000000000000", "Task 2");
+  it("leaf at the end of a single-child chain is a bare `<slug>.md`", async () => {
+    // Per the unified leaf rule: an item with no children is a `<slug>.md`
+    // file at the parent level, not a folder containing only `index.md`.
+    const task = makeTask("33333333-0000-0000-0000-000000000000", "Leaf Task");
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
-      children: [task1, task2],
+      children: [task],
     });
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
       children: [feature],
@@ -950,98 +963,14 @@ describe.skip("serializeFolderTree: single-child filesystem optimization", () =>
 
     const epicDir = join(testDir, slugify(epic.title, epic.id));
     const featureDir = join(epicDir, slugify(feature.title, feature.id));
-    const featureContents = await readdir(featureDir);
+    const taskFile = join(featureDir, `${slugify(task.title, task.id)}.md`);
 
-    // Feature directory MUST exist
-    await expect(stat(featureDir)).resolves.toBeTruthy();
-
-    // Task directories must be inside feature
-    expect(featureContents).toContain(slugify(task1.title, task1.id));
-    expect(featureContents).toContain(slugify(task2.title, task2.id));
-
-    // Tasks should NOT have __parentId (not collapsed)
-    const task1Content = await readFile(
-      join(featureDir, slugify(task1.title, task1.id), titleToFilename(task1.title)),
-      "utf8",
-    );
-    expect(task1Content).not.toContain("__parentId");
-  });
-
-  it("nested single-child at two levels (feature→task) places task directly in epic", async () => {
-    const task = makeTask("33333333-0000-0000-0000-000000000000", "Nested Task", {
-      status: "in_progress",
-      priority: "high",
-    });
-    const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
-      children: [task],
-    });
-    const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Epic", {
-      children: [feature],
-    });
-
-    await serializeFolderTree([epic], testDir);
-
-    const epicDir = join(testDir, slugify(epic.title, epic.id));
-    const epicContents = await readdir(epicDir);
-
-    // Neither feature nor independent task dir exists at this level
-    expect(epicContents).not.toContain(slugify(feature.title, feature.id));
-
-    // Only task directory exists directly under epic
-    expect(epicContents).toContain(slugify(task.title, task.id));
-
-    // Verify task has multiple levels of parent metadata
-    const taskIndexPath = join(
-      epicDir,
-      slugify(task.title, task.id),
-      "index.md",
-    );
-    const taskContent = await readFile(taskIndexPath, "utf8");
-
-    // Should have direct parent (feature) metadata
-    expect(taskContent).toContain("__parentId:");
-    expect(taskContent).toContain(`"${feature.id}"`);
-    expect(taskContent).toContain("__parentTitle:");
-    expect(taskContent).toContain("Feature");
-    expect(taskContent).toContain("__parentLevel:");
-    expect(taskContent).toContain("feature");
-
-    // Task metadata preserved
-    expect(taskContent).toContain("in_progress");
-    expect(taskContent).toContain("high");
-  });
-
-  it("single-child in isolation produces no parent directory, with metadata embedded", async () => {
-    // Verify that when a feature has one task, the feature directory is skipped
-    // and the task appears directly in the epic with embedded parent metadata
-    const task = makeTask("t1111111-0000-0000-0000-000000000000", "Lone Task");
-    const feature = makeFeature("f1111111-0000-0000-0000-000000000000", "Lone Feature", {
-      children: [task],
-    });
-    const epic = makeEpic("e1111111-0000-0000-0000-000000000000", "Test Epic", {
-      children: [feature],
-    });
-
-    await serializeFolderTree([epic], testDir);
-
-    const epicDir = join(testDir, slugify(epic.title, epic.id));
-    const featureSlug = slugify(feature.title, feature.id);
-    const taskSlug = slugify(task.title, task.id);
-
-    // Feature directory should NOT exist
-    const featureDir = join(epicDir, featureSlug);
-    await expect(stat(featureDir)).rejects.toThrow();
-
-    // Task directory should exist directly under epic
-    const taskDir = join(epicDir, taskSlug);
-    await expect(stat(taskDir)).resolves.toBeTruthy();
-
-    // Task files should contain embedded parent metadata
-    const taskIndex = await readFile(join(taskDir, titleToFilename(task.title)), "utf8");
-    expect(taskIndex).toContain("__parentId");
-    expect(taskIndex).toContain(feature.id);
-    expect(taskIndex).toContain("__parentTitle");
-    expect(taskIndex).toContain("Feature");
+    await expect(stat(taskFile)).resolves.toBeTruthy();
+    // No nested task folder exists.
+    await expect(stat(join(featureDir, slugify(task.title, task.id)))).rejects.toThrow();
+    const taskContent = await readFile(taskFile, "utf8");
+    expect(taskContent).not.toContain("__parent");
+    expect(taskContent).toContain('level: "task"');
   });
 });
 

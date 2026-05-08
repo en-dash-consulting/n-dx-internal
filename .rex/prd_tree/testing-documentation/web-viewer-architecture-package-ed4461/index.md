@@ -18,5 +18,5 @@ description: "The web viewer currently lives entirely in `packages/sourcevision/
 
 | Title | Status |
 |-------|--------|
-| [Extract viewer from sourcevision into shared web package](./extract-viewer-from-e49a18/index.md) | completed |
-| [Independent package viewers](./independent-package-viewers/index.md) | completed |
+| [Extract viewer from sourcevision into shared web package](./extract-viewer-from-e49a18.md) | completed |
+| [Independent package viewers](./independent-package-viewers.md) | completed |

@@ -14,4 +14,4 @@ description: "Add a --show-individual flag to ndx status so users can see status
 
 | Title | Status |
 |-------|--------|
-| [Implement --show-individual flag for ndx status with per-PRD breakdown](./implement-show-individual-flag-df292b/index.md) | completed |
+| [Implement --show-individual flag for ndx status with per-PRD breakdown](./implement-show-individual-flag-df292b.md) | completed |

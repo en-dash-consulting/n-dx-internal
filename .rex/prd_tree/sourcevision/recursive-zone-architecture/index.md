@@ -17,6 +17,6 @@ description: "Make subdivision use the same full pipeline as root analysis. Same
 
 | Title | Status |
 |-------|--------|
-| [Full-pipeline zone subdivision](./full-pipeline-zone-subdivision/index.md) | completed |
-| [Multi-repo workspace aggregation](./multi-repo-workspace-aggregation/index.md) | completed |
-| [Web viewer zone drill-down](./web-viewer-zone-drill-down/index.md) | completed |
+| [Full-pipeline zone subdivision](./full-pipeline-zone-subdivision.md) | completed |
+| [Multi-repo workspace aggregation](./multi-repo-workspace-aggregation.md) | completed |
+| [Web viewer zone drill-down](./web-viewer-zone-drill-down.md) | completed |

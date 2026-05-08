@@ -14,4 +14,4 @@ description: "Review merges from the past week to identify all user-facing behav
 
 | Title | Status |
 |-------|--------|
-| [Audit past-week merges and produce a documentation delta report](./audit-past-week-merges-and-292dff/index.md) | completed |
+| [Audit past-week merges and produce a documentation delta report](./audit-past-week-merges-and-292dff.md) | completed |

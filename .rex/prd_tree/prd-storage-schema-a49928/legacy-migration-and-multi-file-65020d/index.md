@@ -14,5 +14,5 @@ description: "Provide a seamless migration path from the existing single prd.jso
 
 | Title | Status |
 |-------|--------|
-| [Implement automatic migration from single prd.json to branch-scoped multi-file format](./implement-automatic-migration-e174fb/index.md) | completed |
-| [Validate all CLI commands, MCP tools, and web dashboard against multi-file PRD backend](./validate-all-cli-commands-mcp-c9867c/index.md) | completed |
+| [Implement automatic migration from single prd.json to branch-scoped multi-file format](./implement-automatic-migration-e174fb.md) | completed |
+| [Validate all CLI commands, MCP tools, and web dashboard against multi-file PRD backend](./validate-all-cli-commands-mcp-c9867c.md) | completed |

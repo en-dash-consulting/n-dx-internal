@@ -14,6 +14,6 @@ description: "Extend the existing PR validation pipeline with additive cross-pla
 
 | Title | Status |
 |-------|--------|
-| [Add MacOS pipeline stage for ndx install-and-run smoke validation](./add-macos-pipeline-stage-for-d10a17/index.md) | completed |
-| [Add Windows pipeline stage for ndx install-and-run smoke validation](./add-windows-pipeline-stage-for-1a72b5/index.md) | completed |
-| [Implement cross-platform parity assertions for deterministic CLI responses](./implement-cross-platform-parity-e1319d/index.md) | completed |
+| [Add MacOS pipeline stage for ndx install-and-run smoke validation](./add-macos-pipeline-stage-for-d10a17.md) | completed |
+| [Add Windows pipeline stage for ndx install-and-run smoke validation](./add-windows-pipeline-stage-for-1a72b5.md) | completed |
+| [Implement cross-platform parity assertions for deterministic CLI responses](./implement-cross-platform-parity-e1319d.md) | completed |

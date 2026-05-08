@@ -14,5 +14,5 @@ description: "Define a human-readable markdown format that encodes all PRD field
 
 | Title | Status |
 |-------|--------|
-| [Design and document the markdown schema for full-fidelity PRD tree representation](./design-and-document-the-52811e/index.md) | completed |
-| [Implement bidirectional markdown serializer and parser with round-trip fidelity tests](./implement-bidirectional-35ccf9/index.md) | completed |
+| [Design and document the markdown schema for full-fidelity PRD tree representation](./design-and-document-the-52811e.md) | completed |
+| [Implement bidirectional markdown serializer and parser with round-trip fidelity tests](./implement-bidirectional-35ccf9.md) | completed |

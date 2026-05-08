@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Bitbucket Pipeline Integration](./bitbucket-pipeline-integration/index.md) | completed |
-| [Package.json PR Build Script](./package-json-pr-build-script/index.md) | completed |
+| [Bitbucket Pipeline Integration](./bitbucket-pipeline-integration.md) | completed |
+| [Package.json PR Build Script](./package-json-pr-build-script.md) | completed |

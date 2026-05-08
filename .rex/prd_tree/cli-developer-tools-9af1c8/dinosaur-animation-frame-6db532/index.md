@@ -14,6 +14,6 @@ description: "The ndx init dinosaur animation sequence is incorrect. Rex-F.png m
 
 | Title | Status |
 |-------|--------|
-| [Audit current animation frames against Rex-F.png and identify divergences](./audit-current-animation-frames-536c72/index.md) | completed |
-| [Establish Rex-F.png as the canonical first animation frame](./establish-rex-f-png-as-the-42b353/index.md) | completed |
-| [Source subsequent animation frames from nearest reference images and update sequence](./source-subsequent-animation-3788d2/index.md) | completed |
+| [Audit current animation frames against Rex-F.png and identify divergences](./audit-current-animation-frames-536c72.md) | completed |
+| [Establish Rex-F.png as the canonical first animation frame](./establish-rex-f-png-as-the-42b353.md) | completed |
+| [Source subsequent animation frames from nearest reference images and update sequence](./source-subsequent-animation-3788d2.md) | completed |

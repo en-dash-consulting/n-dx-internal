@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in e2e-test-infrastructure: Production entry points (assistant-assets/index.js, packages/core/assistant-inte](./fix-structural-in-e2e-test-99760d/index.md) | completed |
+| [Fix structural in e2e-test-infrastructure: Production entry points (assistant-assets/index.js, packages/core/assistant-inte](./fix-structural-in-e2e-test-99760d.md) | completed |

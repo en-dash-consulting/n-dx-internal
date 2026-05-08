@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix documentation in integration: Codify a co-evolution rule in TESTING.md: each new entry in CLAUDE.md's injectio](./fix-documentation-in-3817e4/index.md) | completed |
+| [Fix documentation in integration: Codify a co-evolution rule in TESTING.md: each new entry in CLAUDE.md's injectio](./fix-documentation-in-3817e4.md) | completed |

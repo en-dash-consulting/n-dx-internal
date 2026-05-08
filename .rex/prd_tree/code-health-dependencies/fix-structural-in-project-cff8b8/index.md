@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in project-scaffold: Zone cohesion is 0 — files share no import relationships, confirming this is an ](./fix-structural-in-project-ff8800/index.md) | completed |
+| [Fix structural in project-scaffold: Zone cohesion is 0 — files share no import relationships, confirming this is an ](./fix-structural-in-project-ff8800.md) | completed |

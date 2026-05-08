@@ -15,4 +15,4 @@ description: "The single-child compaction landed in the prior cycle but did not 
 
 | Title | Status |
 |-------|--------|
-| [Fix folder-tree serializer to suppress index.md when fewer than two named child files exist](./fix-folder-tree-serializer-to-df5fc9/index.md) | completed |
+| [Fix folder-tree serializer to suppress index.md when fewer than two named child files exist](./fix-folder-tree-serializer-to-df5fc9.md) | completed |

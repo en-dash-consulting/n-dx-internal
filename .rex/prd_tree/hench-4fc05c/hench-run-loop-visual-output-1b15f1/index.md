@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Apply yellow coloring to help notes and warning messages in hench CLI output](./apply-yellow-coloring-to-help-418753/index.md) | completed |
-| [Color-code [Tool], [Agent], and vendor prefix labels in hench run output](./color-code-tool-agent-and-48ee8d/index.md) | completed |
+| [Apply yellow coloring to help notes and warning messages in hench CLI output](./apply-yellow-coloring-to-help-418753.md) | completed |
+| [Color-code [Tool], [Agent], and vendor prefix labels in hench run output](./color-code-tool-agent-and-48ee8d.md) | completed |

@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Harden CLI smoke parity JSON collection for macOS and Windows runners](./harden-cli-smoke-parity-json-d050ac/index.md) | completed |
-| [Stabilize repeatable parity verification across original macOS and Windows CI steps](./stabilize-repeatable-parity-d01f76/index.md) | completed |
+| [Harden CLI smoke parity JSON collection for macOS and Windows runners](./harden-cli-smoke-parity-json-d050ac.md) | completed |
+| [Stabilize repeatable parity verification across original macOS and Windows CI steps](./stabilize-repeatable-parity-d01f76.md) | completed |

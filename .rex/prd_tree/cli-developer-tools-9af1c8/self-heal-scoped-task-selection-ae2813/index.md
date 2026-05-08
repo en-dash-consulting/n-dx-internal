@@ -14,5 +14,5 @@ description: "Restrict hench task selection during self-heal runs to only pick u
 
 | Title | Status |
 |-------|--------|
-| [Filter hench task selection to self-heal tagged items when running in self-heal mode](./filter-hench-task-selection-to-4fc2aa/index.md) | completed |
-| [Implement self-heal loop auto-termination when all self-heal items are completed](./implement-self-heal-loop-auto-ed9b71/index.md) | completed |
+| [Filter hench task selection to self-heal tagged items when running in self-heal mode](./filter-hench-task-selection-to-4fc2aa.md) | completed |
+| [Implement self-heal loop auto-termination when all self-heal items are completed](./implement-self-heal-loop-auto-ed9b71.md) | completed |

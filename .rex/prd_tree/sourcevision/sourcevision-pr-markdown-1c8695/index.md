@@ -13,6 +13,6 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Human-scoped PR Markdown Output](./human-scoped-pr-markdown-output/index.md) | completed |
-| [Manual Refresh-Only Generation Flow](./manual-refresh-only-generation-flow/index.md) | completed |
-| [PR Tab Cached Display and Refresh UX](./pr-tab-cached-display-and-refresh-ux/index.md) | completed |
+| [Human-scoped PR Markdown Output](./human-scoped-pr-markdown-output.md) | completed |
+| [Manual Refresh-Only Generation Flow](./manual-refresh-only-generation-flow.md) | completed |
+| [PR Tab Cached Display and Refresh UX](./pr-tab-cached-display-and-refresh-ux.md) | completed |

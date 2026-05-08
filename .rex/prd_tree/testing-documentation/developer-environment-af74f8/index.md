@@ -14,4 +14,4 @@ description: "Document what contributors need beyond the end-user prerequisites 
 
 | Title | Status |
 |-------|--------|
-| [Write contributor prerequisites and platform-specific setup guide](./write-contributor-prerequisites-506bf2/index.md) | completed |
+| [Write contributor prerequisites and platform-specific setup guide](./write-contributor-prerequisites-506bf2.md) | completed |

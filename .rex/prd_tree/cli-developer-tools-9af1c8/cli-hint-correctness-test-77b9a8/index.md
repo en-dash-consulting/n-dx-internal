@@ -13,4 +13,4 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Update cli-brand.test.js snapshot to match redesigned ndx init dinosaur](./update-cli-brand-test-js-bb5f06/index.md) | completed |
+| [Update cli-brand.test.js snapshot to match redesigned ndx init dinosaur](./update-cli-brand-test-js-bb5f06.md) | completed |

@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Add regression tests for multi-line scroll window behavior](./add-regression-tests-for-multi-cd39ee/index.md) | completed |
-| [Fix rolling window to count visual lines instead of message entries](./fix-rolling-window-to-count-0b9042/index.md) | completed |
+| [Add regression tests for multi-line scroll window behavior](./add-regression-tests-for-multi-cd39ee.md) | completed |
+| [Fix rolling window to count visual lines instead of message entries](./fix-rolling-window-to-count-0b9042.md) | completed |

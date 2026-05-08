@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in viewer-ui-hub: Bidirectional 74-edge coupling with Web Dashboard Platform is the largest cross- (+1 more)](./fix-structural-in-viewer-ui-hub-169b6a/index.md) | completed |
+| [Fix structural in viewer-ui-hub: Bidirectional 74-edge coupling with Web Dashboard Platform is the largest cross- (+1 more)](./fix-structural-in-viewer-ui-hub-169b6a.md) | completed |

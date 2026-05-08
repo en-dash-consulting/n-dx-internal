@@ -247,17 +247,20 @@ describe("cmdMove", () => {
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       const featureSlug = slugify("Feature 1", "f1");
 
-      // e1's item markdown should NOT reference the moved feature.
-      const e1Dir = join(treeRoot, slugify("Epic 1", "e1"));
-      const e1Md = readdirSync(e1Dir).find((f) => f.endsWith(".md"))!;
-      const e1Content = readFileSync(join(e1Dir, e1Md), "utf-8");
-      expect(e1Content).not.toContain(featureSlug);
+      // After the move, e1 still has f2, e2 has [f3, f1] — both stay
+      // folders containing `index.md`. Read those directly so the test is
+      // deterministic and not dependent on filename iteration order.
+      const e1Index = readFileSync(
+        join(treeRoot, slugify("Epic 1", "e1"), "index.md"),
+        "utf-8",
+      );
+      expect(e1Index).not.toContain(featureSlug);
 
-      // e2's item markdown SHOULD reference the moved feature.
-      const e2Dir = join(treeRoot, slugify("Epic 2", "e2"));
-      const e2Md = readdirSync(e2Dir).find((f) => f.endsWith(".md"))!;
-      const e2Content = readFileSync(join(e2Dir, e2Md), "utf-8");
-      expect(e2Content).toContain(featureSlug);
+      const e2Index = readFileSync(
+        join(treeRoot, slugify("Epic 2", "e2"), "index.md"),
+        "utf-8",
+      );
+      expect(e2Index).toContain(featureSlug);
     });
   });
 });

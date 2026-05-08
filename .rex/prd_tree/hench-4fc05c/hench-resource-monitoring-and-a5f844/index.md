@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Process Resource Tracking](./process-resource-tracking/index.md) | completed |
-| [UI Resource Visibility and Controls](./ui-resource-visibility-and-controls/index.md) | completed |
+| [Process Resource Tracking](./process-resource-tracking.md) | completed |
+| [UI Resource Visibility and Controls](./ui-resource-visibility-and-controls.md) | completed |

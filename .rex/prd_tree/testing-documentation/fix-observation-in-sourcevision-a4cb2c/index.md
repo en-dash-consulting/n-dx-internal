@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in sourcevision-4: Generic zone name "Sourcevision 4" — enrichment did not assign a meaningful name](./fix-observation-in-sourcevision-24735c/index.md) | completed |
+| [Fix observation in sourcevision-4: Generic zone name "Sourcevision 4" — enrichment did not assign a meaningful name](./fix-observation-in-sourcevision-24735c.md) | completed |

@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Pre-refresh Git Environment Validation](./pre-refresh-git-environment-validation/index.md) | completed |
-| [Targeted Remediation Contract for Preflight Failures](./targeted-remediation-contract-acefbd/index.md) | completed |
+| [Pre-refresh Git Environment Validation](./pre-refresh-git-environment-validation.md) | completed |
+| [Targeted Remediation Contract for Preflight Failures](./targeted-remediation-contract-acefbd.md) | completed |

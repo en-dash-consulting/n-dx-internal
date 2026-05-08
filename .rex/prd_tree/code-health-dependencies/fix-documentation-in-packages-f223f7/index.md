@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix documentation in packages-web:unit-server: packages-web:unit-server meets the dual-fragility criteria (cohesion 0.45, coupl](./fix-documentation-in-packages-1056a6/index.md) | completed |
+| [Fix documentation in packages-web:unit-server: packages-web:unit-server meets the dual-fragility criteria (cohesion 0.45, coupl](./fix-documentation-in-packages-1056a6.md) | completed |

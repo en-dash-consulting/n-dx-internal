@@ -392,34 +392,41 @@ async function migrateDirRecursive(
       // If no children, fall through to the next check
     }
 
-    // Check if this is a bare task/subtask file in a container (not an item folder)
-    // This handles the case where a task .md is directly in a feature directory, not in its own folder
+    // Bare task/subtask file in a container that is NOT an item folder.
+    // Under the unified leaf rule a bare `<slug>.md` at the parent level is
+    // the correct shape for a leaf, so we only wrap it into a folder when it
+    // has child siblings (sibling subdirs whose names extend the leaf's
+    // base name) — that combination is the ambiguous legacy shape.
     if (!dirIsItemFolder && itemLevel === currentLevel && (itemLevel === "task" || itemLevel === "subtask")) {
-      // This is a bare task/subtask file in a container (not an item folder)
-      // It should be in its own folder
-      try {
-        await migrateBareFileToFolder(dir, mdFile, result);
-        result.migratedCount++;
-      } catch (err) {
-        result.errors.push({
-          path: join(dir, mdFile),
-          error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
-        });
+      const hasChildren = await hasChildrenSiblings(dir, mdFile);
+      if (hasChildren) {
+        try {
+          await migrateBareFileToFolder(dir, mdFile, result);
+          result.migratedCount++;
+        } catch (err) {
+          result.errors.push({
+            path: join(dir, mdFile),
+            error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
+          });
+        }
+        continue;
       }
-      continue;
     }
 
-    // Also check if this file is a child-level item (should be in a folder, not bare)
-    // This handles cases where an item at childLevel appears as a bare file
+    // A file at child-level (e.g. a feature .md at epic-dir level) is a
+    // leaf under the new schema and must stay bare unless it has children.
     if (itemLevel === childLevel && currentLevel !== childLevel) {
-      try {
-        await migrateBareFileToFolder(dir, mdFile, result);
-        result.migratedCount++;
-      } catch (err) {
-        result.errors.push({
-          path: join(dir, mdFile),
-          error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
-        });
+      const hasChildren = await hasChildrenSiblings(dir, mdFile);
+      if (hasChildren) {
+        try {
+          await migrateBareFileToFolder(dir, mdFile, result);
+          result.migratedCount++;
+        } catch (err) {
+          result.errors.push({
+            path: join(dir, mdFile),
+            error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
+          });
+        }
       }
     }
   }

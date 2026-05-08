@@ -423,7 +423,7 @@ describe("cmdAdd – blockedBy support", () => {
   // ── Folder tree persistence ──────────────────────────────────────────
 
   describe("folder tree persistence", () => {
-    it("creates folder tree entry after adding an epic", async () => {
+    it("creates a leaf `<slug>.md` after adding an epic with no children", async () => {
       writePRD(tmp, makePrd());
 
       await cmdAdd(tmp, "epic", { title: "My Epic", format: "json" });
@@ -431,15 +431,14 @@ describe("cmdAdd – blockedBy support", () => {
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       expect(existsSync(treeRoot)).toBe(true);
 
-      // Exactly one directory under the tree root
-      const entries = readdirSync(treeRoot);
-      expect(entries.length).toBe(1);
+      // The leaf epic is a bare `<slug>.md` directly inside the tree root.
+      const entries = readdirSync(treeRoot).filter((e) => e !== "index.md");
+      expect(entries).toHaveLength(1);
+      const leafFile = join(treeRoot, entries[0]);
+      expect(statSync(leafFile).isFile()).toBe(true);
+      expect(entries[0].endsWith(".md")).toBe(true);
 
-      // The epic directory contains a title-named markdown (or index.md).
-      const epicDir = join(treeRoot, entries[0]);
-      const mdFiles = readdirSync(epicDir).filter((f) => f.endsWith(".md"));
-      expect(mdFiles.length).toBeGreaterThan(0);
-      const content = readFileSync(join(epicDir, mdFiles[0]), "utf-8");
+      const content = readFileSync(leafFile, "utf-8");
       expect(content).toContain("My Epic");
       expect(content).toContain("level: \"epic\"");
     });
@@ -453,24 +452,20 @@ describe("cmdAdd – blockedBy support", () => {
       await cmdAdd(tmp, "feature", { title: "Child Feature", parent: "epic-aa", format: "json" });
 
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
-      // Find the epic directory by enumerating tree entries; the slug shape
-      // is now "parent-epic" with no id suffix when there's no collision.
+      // The epic now has a child feature, so it gets its own folder.
       const epicEntries = readdirSync(treeRoot).filter((e) =>
         statSync(join(treeRoot, e)).isDirectory(),
       );
       expect(epicEntries.length).toBe(1);
       const epicDir = join(treeRoot, epicEntries[0]);
 
-      // The feature should be nested under the epic; ignore .md files.
-      const featureEntries = readdirSync(epicDir).filter((e) =>
-        statSync(join(epicDir, e)).isDirectory(),
+      // Child feature is a leaf — bare `<slug>.md` inside the epic's folder.
+      const featureFiles = readdirSync(epicDir).filter(
+        (e) => e.endsWith(".md") && e !== "index.md",
       );
-      expect(featureEntries.length).toBe(1);
+      expect(featureFiles.length).toBe(1);
 
-      const featureDir = join(epicDir, featureEntries[0]);
-      const mdFiles = readdirSync(featureDir).filter((f) => f.endsWith(".md"));
-      expect(mdFiles.length).toBeGreaterThan(0);
-      const content = readFileSync(join(featureDir, mdFiles[0]), "utf-8");
+      const content = readFileSync(join(epicDir, featureFiles[0]), "utf-8");
       expect(content).toContain("Child Feature");
       expect(content).toContain("level: \"feature\"");
     });

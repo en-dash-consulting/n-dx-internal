@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Centralized Timer Management](./centralized-timer-management/index.md) | completed |
-| [Re-render Optimization](./re-render-optimization/index.md) | completed |
+| [Centralized Timer Management](./centralized-timer-management.md) | completed |
+| [Re-render Optimization](./re-render-optimization.md) | completed |

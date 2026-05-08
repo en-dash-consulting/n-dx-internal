@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix suggestion in viewer-ui-hub: Zone "Viewer UI Hub" (viewer-ui-hub) has critical risk (score: 0.63, cohesion: 0](./fix-suggestion-in-viewer-ui-hub-620bd7/index.md) | completed |
+| [Fix suggestion in viewer-ui-hub: Zone "Viewer UI Hub" (viewer-ui-hub) has critical risk (score: 0.63, cohesion: 0](./fix-suggestion-in-viewer-ui-hub-620bd7.md) | completed |

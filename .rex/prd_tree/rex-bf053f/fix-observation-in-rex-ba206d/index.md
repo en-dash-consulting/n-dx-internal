@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in rex-recommend: High coupling (0.78) — 5 imports target "web"](./fix-observation-in-rex-b97a44/index.md) | completed |
+| [Fix observation in rex-recommend: High coupling (0.78) — 5 imports target "web"](./fix-observation-in-rex-b97a44.md) | completed |

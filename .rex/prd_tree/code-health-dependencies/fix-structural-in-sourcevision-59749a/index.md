@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in sourcevision-view-layer: Cohesion 0.33 and coupling 0.67 qualify this as a dual-fragility zone requiring  (+1 more)](./fix-structural-in-sourcevision-e31055/index.md) | completed |
+| [Fix structural in sourcevision-view-layer: Cohesion 0.33 and coupling 0.67 qualify this as a dual-fragility zone requiring  (+1 more)](./fix-structural-in-sourcevision-e31055.md) | completed |

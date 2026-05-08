@@ -14,6 +14,6 @@ description: "Audit the current state of CLI command hints and recommendations a
 
 | Title | Status |
 |-------|--------|
-| [Add regression tests that verify hint surfacing and follow-through correctness](./add-regression-tests-that-2fc455/index.md) | completed |
-| [Audit and repair CLI hint text across all commands](./audit-and-repair-cli-hint-text-e2ddb0/index.md) | completed |
-| [Synchronize project documentation with current CLI command surface](./synchronize-project-f2bfa3/index.md) | completed |
+| [Add regression tests that verify hint surfacing and follow-through correctness](./add-regression-tests-that-2fc455.md) | completed |
+| [Audit and repair CLI hint text across all commands](./audit-and-repair-cli-hint-text-e2ddb0.md) | completed |
+| [Synchronize project documentation with current CLI command surface](./synchronize-project-f2bfa3.md) | completed |

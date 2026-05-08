@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix observation in sourcevision-cli: High coupling (0.85) — 6 imports target "sourcevision"](./fix-observation-in-sourcevision-f015f1/index.md) | completed |
+| [Fix observation in sourcevision-cli: High coupling (0.85) — 6 imports target "sourcevision"](./fix-observation-in-sourcevision-f015f1.md) | completed |

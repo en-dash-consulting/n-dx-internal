@@ -14,4 +14,4 @@ description: "Ensure that every PRD item created or added during a self-heal run
 
 | Title | Status |
 |-------|--------|
-| [Auto-tag PRD items created during self-heal runs with 'self-heal' marker](./auto-tag-prd-items-created-a699a4/index.md) | completed |
+| [Auto-tag PRD items created during self-heal runs with 'self-heal' marker](./auto-tag-prd-items-created-a699a4.md) | completed |

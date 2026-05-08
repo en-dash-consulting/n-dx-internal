@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix structural in theme-toggle: Single-file micro-zone with cohesion 0 and coupling 1 — an algorithmic artifact.](./fix-structural-in-theme-toggle-319b1c/index.md) | completed |
+| [Fix structural in theme-toggle: Single-file micro-zone with cohesion 0 and coupling 1 — an algorithmic artifact.](./fix-structural-in-theme-toggle-319b1c.md) | completed |

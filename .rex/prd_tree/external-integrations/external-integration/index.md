@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Notion Database Integration](./notion-database-integration/index.md) | completed |
-| [Store Adapter Architecture](./store-adapter-architecture/index.md) | completed |
-| [Store Architecture Enhancement](./store-architecture-enhancement/index.md) | completed |
-| [Store Contract Compliance](./store-contract-compliance/index.md) | completed |
+| [Notion Database Integration](./notion-database-integration.md) | completed |
+| [Store Adapter Architecture](./store-adapter-architecture.md) | completed |
+| [Store Architecture Enhancement](./store-architecture-enhancement.md) | completed |
+| [Store Contract Compliance](./store-contract-compliance.md) | completed |

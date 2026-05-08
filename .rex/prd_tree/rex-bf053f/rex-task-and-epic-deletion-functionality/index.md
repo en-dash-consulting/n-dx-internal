@@ -13,7 +13,7 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [Backend Deletion API Implementation](./backend-deletion-api-implementation/index.md) | completed |
-| [Documentation and Help Updates](./documentation-and-help-updates/index.md) | completed |
-| [Request deduplication infrastructure](./request-deduplication-infrastructure/index.md) | completed |
-| [Rex UI Deletion Interface](./rex-ui-deletion-interface/index.md) | completed |
+| [Backend Deletion API Implementation](./backend-deletion-api-implementation.md) | completed |
+| [Documentation and Help Updates](./documentation-and-help-updates.md) | completed |
+| [Request deduplication infrastructure](./request-deduplication-infrastructure.md) | completed |
+| [Rex UI Deletion Interface](./rex-ui-deletion-interface.md) | completed |

@@ -14,5 +14,5 @@ description: "When the user interrupts the work loop with Ctrl-C, the existing S
 
 | Title | Status |
 |-------|--------|
-| [Add integration tests for Ctrl-C interrupt and rollback prompt interaction](./add-integration-tests-for-ctrl-20bbb6/index.md) | completed |
-| [Suspend custom SIGINT handler during rollback confirmation prompt](./suspend-custom-sigint-handler-5cfeee/index.md) | completed |
+| [Add integration tests for Ctrl-C interrupt and rollback prompt interaction](./add-integration-tests-for-ctrl-20bbb6.md) | completed |
+| [Suspend custom SIGINT handler during rollback confirmation prompt](./suspend-custom-sigint-handler-5cfeee.md) | completed |

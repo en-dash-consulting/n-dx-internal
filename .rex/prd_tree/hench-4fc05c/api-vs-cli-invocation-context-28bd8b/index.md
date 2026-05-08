@@ -14,5 +14,5 @@ description: "Detect whether hench is being invoked through the CLI (ndx work co
 
 | Title | Status |
 |-------|--------|
-| [Detect and expose invocation context in hench runner](./detect-and-expose-invocation-8f811d/index.md) | completed |
-| [Display execution context indicator to users in CLI and dashboard](./display-execution-context-eab929/index.md) | completed |
+| [Detect and expose invocation context in hench runner](./detect-and-expose-invocation-8f811d.md) | completed |
+| [Display execution context indicator to users in CLI and dashboard](./display-execution-context-eab929.md) | completed |

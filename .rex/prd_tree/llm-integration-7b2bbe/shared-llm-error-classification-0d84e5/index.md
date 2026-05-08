@@ -14,6 +14,6 @@ description: "Only smart-add.ts has sophisticated LLM error classification (clas
 
 | Title | Status |
 |-------|--------|
-| [Add rate-limit cooldown detection with retry-after countdown and timeout state messaging](./add-rate-limit-cooldown-f61ca6/index.md) | completed |
-| [Extract smart-add error classifier into shared LLM error utility and extend ERROR_HINTS](./extract-smart-add-error-d8036b/index.md) | completed |
-| [Wire shared error classifier and budget preflight into reshape, reorganize, prune, and sourcevision analyze](./wire-shared-error-classifier-0454e5/index.md) | completed |
+| [Add rate-limit cooldown detection with retry-after countdown and timeout state messaging](./add-rate-limit-cooldown-f61ca6.md) | completed |
+| [Extract smart-add error classifier into shared LLM error utility and extend ERROR_HINTS](./extract-smart-add-error-d8036b.md) | completed |
+| [Wire shared error classifier and budget preflight into reshape, reorganize, prune, and sourcevision analyze](./wire-shared-error-classifier-0454e5.md) | completed |

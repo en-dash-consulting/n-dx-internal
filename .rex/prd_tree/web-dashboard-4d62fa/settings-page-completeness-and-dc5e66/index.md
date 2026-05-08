@@ -14,6 +14,6 @@ description: "The settings page currently covers hench execution config and inte
 
 | Title | Status |
 |-------|--------|
-| [Audit .n-dx.json config schema fields against settings page UI controls and document gaps](./audit-n-dx-json-config-schema-0b6e8b/index.md) | completed |
-| [Implement missing config fields in the settings page UI](./implement-missing-config-fields-49f253/index.md) | completed |
-| [Reorganize settings page layout to group settings by associated CLI command](./reorganize-settings-page-layout-26f049/index.md) | completed |
+| [Audit .n-dx.json config schema fields against settings page UI controls and document gaps](./audit-n-dx-json-config-schema-0b6e8b.md) | completed |
+| [Implement missing config fields in the settings page UI](./implement-missing-config-fields-49f253.md) | completed |
+| [Reorganize settings page layout to group settings by associated CLI command](./reorganize-settings-page-layout-26f049.md) | completed |

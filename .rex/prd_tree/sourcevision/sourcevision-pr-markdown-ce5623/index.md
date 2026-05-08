@@ -13,5 +13,5 @@ acceptanceCriteria: []
 
 | Title | Status |
 |-------|--------|
-| [PR Markdown UI messaging and regression coverage](./pr-markdown-ui-messaging-and-39cfec/index.md) | completed |
-| [Refresh endpoint degraded response parity](./refresh-endpoint-degraded-e228c8/index.md) | completed |
+| [PR Markdown UI messaging and regression coverage](./pr-markdown-ui-messaging-and-39cfec.md) | completed |
+| [Refresh endpoint degraded response parity](./refresh-endpoint-degraded-e228c8.md) | completed |

@@ -15,4 +15,4 @@ description: "Define and implement a deterministic slug-based naming convention 
 
 | Title | Status |
 |-------|--------|
-| [Define and implement slug generation rules for PRD folder names at all hierarchy levels](./define-and-implement-slug-c9c4ea/index.md) | completed |
+| [Define and implement slug generation rules for PRD folder names at all hierarchy levels](./define-and-implement-slug-c9c4ea.md) | completed |

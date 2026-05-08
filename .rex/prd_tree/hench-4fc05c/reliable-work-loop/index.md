@@ -14,6 +14,6 @@ description: "Ensure robust and reliable autonomous execution with proper task s
 
 | Title | Status |
 |-------|--------|
-| [Loop continuity](./loop-continuity/index.md) | completed |
-| [Run quality and guardrails](./run-quality-and-guardrails/index.md) | completed |
-| [Task selection and state transitions](./task-selection-and-state-transitions/index.md) | completed |
+| [Loop continuity](./loop-continuity.md) | completed |
+| [Run quality and guardrails](./run-quality-and-guardrails.md) | completed |
+| [Task selection and state transitions](./task-selection-and-state-transitions.md) | completed |

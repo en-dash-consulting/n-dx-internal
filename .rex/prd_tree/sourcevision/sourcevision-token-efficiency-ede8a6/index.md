@@ -14,6 +14,6 @@ description: "Reduce the number of tokens consumed during sourcevision LLM calls
 
 | Title | Status |
 |-------|--------|
-| [Audit and compact sourcevision LLM prompt templates](./audit-and-compact-sourcevision-c6bca1/index.md) | completed |
-| [Simplify and compact sourcevision analysis code for readability and reduced context size](./simplify-and-compact-caa578/index.md) | completed |
-| [Trim and deduplicate LLM data payloads in sourcevision analysis](./trim-and-deduplicate-llm-data-8474f7/index.md) | completed |
+| [Audit and compact sourcevision LLM prompt templates](./audit-and-compact-sourcevision-c6bca1.md) | completed |
+| [Simplify and compact sourcevision analysis code for readability and reduced context size](./simplify-and-compact-caa578.md) | completed |
+| [Trim and deduplicate LLM data payloads in sourcevision analysis](./trim-and-deduplicate-llm-data-8474f7.md) | completed |

@@ -16,4 +16,4 @@ recommendationMeta: "[object Object]"
 
 | Title | Status |
 |-------|--------|
-| [Fix code in sourcevision-analyzers: The sourcevision-analyzers zone is a degenerate 2-file zone containing only dead (+1 more)](./fix-code-in-sourcevision-e15d32/index.md) | completed |
+| [Fix code in sourcevision-analyzers: The sourcevision-analyzers zone is a degenerate 2-file zone containing only dead (+1 more)](./fix-code-in-sourcevision-e15d32.md) | completed |
