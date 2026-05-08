@@ -15,7 +15,7 @@ description: "Command-line interface: error handling, validation, formatting, he
 | [ANSI Color Output Across Rex, SourceVision, and Hench](./ansi-color-output-across-rex-c513f2/index.md) | completed |
 | [ANSI Color Output Across Rex, SourceVision, and Hench](./ansi-color-output-across-rex-e73702/index.md) | completed |
 | [ANSI Color Reset Consistency in Tool Output](./ansi-color-reset-consistency-in-eb21a9/index.md) | completed |
-| [Self-Heal Tag Attribution on Created PRD Items](./self-heal-tag-attribution-on-2e184c/index.md) | completed |
+| [Auto-tag PRD items created during self-heal runs with 'self-heal' marker](./auto-tag-prd-items-created-a699a4/index.md) | completed |
 | [Child Process Cleanup and Exit Hygiene](./child-process-cleanup-and-exit-hygiene/index.md) | completed |
 | [CLI Hint Correctness, Test Coverage, and Documentation Sync](./cli-hint-correctness-test-6ba404/index.md) | completed |
 | [CLI Robustness](./cli-robustness/index.md) | completed |
@@ -31,12 +31,12 @@ description: "Command-line interface: error handling, validation, formatting, he
 | [Non-Test Codebase Cleanup and Condensation Pass](./non-test-codebase-cleanup-and-b7327b/index.md) | completed |
 | [Pair-Programming Command Mode](./pair-programming-command-mode/index.md) | completed |
 | [Pair-Programming Command Mode (rename from single-command)](./pair-programming-command-mode-9611c5/index.md) | completed |
-| [Full-Suite Red-to-Green Verification](./full-suite-red-to-green-verification/index.md) | completed |
+| [Run project-wide test commands and compare against baseline coverage](./run-project-wide-test-commands-ece5c7/index.md) | completed |
 | [Self-Heal Scoped Task Selection and Auto-Termination](./self-heal-scoped-task-selection-ae2813/index.md) | completed |
 | [Shared Unit Test Utilities](./shared-unit-test-utilities/index.md) | completed |
 | [Suppress DEP0040 punycode Deprecation Warning in CLI Output](./suppress-dep0040-punycode-9aaa6f/index.md) | completed |
 | [Test Suite Validation Gate and Remediation Loop](./test-suite-validation-gate-and-0cae57/index.md) | completed |
-| [CLI Hint Correctness, Test Coverage, and Documentation Sync](./cli-hint-correctness-test-77b9a8/index.md) | completed |
+| [Update cli-brand.test.js snapshot to match redesigned ndx init dinosaur](./update-cli-brand-test-js-bb5f06/index.md) | completed |
 | [Vendor-Agnostic Batch Execution in Self-Heal Loop](./vendor-agnostic-batch-execution-e0d222/index.md) | completed |
 | [Web UI Design and User Experience Enhancement](./web-ui-design-and-user-b1e130/index.md) | completed |
 | [Workflow Use Case Guides](./workflow-use-case-guides/index.md) | completed |

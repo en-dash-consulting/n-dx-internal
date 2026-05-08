@@ -10,5 +10,5 @@ source: "smart-add"
 
 | Title | Status |
 |-------|--------|
-| [Auto-Migration to Folder-Per-Task Schema with Backup](./auto-migration-to-folder-per-6c60e8/index.md) | pending |
+| [Auto-Migration to Folder-Per-Task Schema with Backup](./auto-migration-to-folder-per-6c60e8/index.md) | completed |
 | [Folder-Per-Task Hierarchy Enforcement](./folder-per-task-hierarchy-enforcement/index.md) | pending |

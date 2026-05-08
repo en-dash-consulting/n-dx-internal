@@ -18,9 +18,9 @@ description: "Static analysis engine: file inventory, import graph, zone detecti
 | [Background Tab Resource Optimization](./background-tab-resource-optimization/index.md) | completed |
 | [Fix 1: Go Zone Edge Resolution](./fix-1-go-zone-edge-resolution/index.md) | completed |
 | [Fix 2: Mixed-Language Support](./fix-2-mixed-language-support/index.md) | completed |
-| [Fix observation in sourcevision-cli (1 finding)](./fix-observation-in-sourcevision-6c79b3/index.md) | completed |
-| [Fix observation in sourcevision-2 (1 finding)](./fix-observation-in-sourcevision-3f7352/index.md) | completed |
-| [Fix suggestion in polling (1 finding)](./fix-suggestion-in-polling-1-finding/index.md) | completed |
+| [Fix observation in sourcevision-cli: High coupling (0.85) — 6 imports target "sourcevision"](./fix-observation-in-sourcevision-f015f1/index.md) | completed |
+| [Fix observation in sourcevision-2: Generic zone name "Sourcevision 2" — enrichment did not assign a meaningful name](./fix-observation-in-sourcevision-f7cb62/index.md) | completed |
+| [Fix suggestion in polling: Zone "Polling" (polling) has catastrophic risk (score: 0.75, cohesion: 0.25, cou](./fix-suggestion-in-polling-zone-952af9/index.md) | completed |
 | [Git Credential Helper Opt-In Recovery](./git-credential-helper-opt-in-recovery/index.md) | completed |
 | [Git-Independent PR Markdown Generation](./git-independent-pr-markdown-generation/index.md) | completed |
 | [Go Fixture Enhancement](./go-fixture-enhancement/index.md) | completed |

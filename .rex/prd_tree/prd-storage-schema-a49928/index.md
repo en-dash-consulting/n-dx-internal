@@ -28,13 +28,13 @@ PRD persistence model: folder-tree storage, markdown serialization, schema evolu
 | Commit Hash and Author Metadata on PRD Items | feature | completed | 2026-04-30 |
 | Consolidate PRD Files into Single 'prd' File | feature | completed | 2026-04-23 |
 | Cross-PRD Duplicate Detection and Merge-Into-Older Semantics | feature | completed | 2026-04-22 |
-| Epic-Scoped Slug Naming Convention for Folder-Tree Directories | feature | completed | 2026-04-29 |
-| Show Target PRD in ndx add Output | feature | completed | 2026-04-27 |
+| Define and implement slug generation rules for PRD folder names at all hierarchy levels | task | completed | 2026-04-29 |
+| Display target PRD path in ndx add command output | task | completed | 2026-04-27 |
 | Eliminate prd.md from Read and Write Paths in ndx add and Related Commands | feature | completed | 2026-05-06 |
 | Folder-Based PRD Schema Design and Serialization | feature | completed | 2026-04-27 |
 | Folder-Level index.md Summary Aggregation | feature | completed | 2026-04-30 |
-| Folder Tree Migration, Initialization, and Auto-Trigger | feature | completed | 2026-04-28 |
-| Per-PRD Status Breakdown via --show-individual | feature | completed | 2026-04-27 |
+| Implement rex migrate-to-folder-tree command and auto-trigger detection | task | completed | 2026-04-28 |
+| Implement --show-individual flag for ndx status with per-PRD breakdown | task | completed | 2026-04-27 |
 | JSON Write Path Removal and Markdown-Only Enforcement | feature | completed | 2026-04-29 |
 | Legacy Migration and Multi-File Integration Validation | feature | completed | 2026-04-22 |
 | Markdown Schema Design and Bidirectional Serialization | feature | completed | 2026-04-24 |

@@ -12,11 +12,11 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 
 | Title | Status |
 |-------|--------|
-| [Feature 3: Rex Scanner Go Support](./feature-3-rex-scanner-go-support/index.md) | completed |
+| [Add go.mod scanner, Go skip patterns, and test coverage to Rex](./add-go-mod-scanner-go-skip-2ba0de/index.md) | completed |
 | [API vs CLI Invocation Context Detection and Display](./api-vs-cli-invocation-context-28bd8b/index.md) | completed |
-| [Hench Run-Loop Visual Output Refinements](./hench-run-loop-visual-output-f505bb/index.md) | completed |
+| [Apply cyan color to agent text and task separator line in hench run output](./apply-cyan-color-to-agent-text-678863/index.md) | completed |
 | [Branch Work System of Record](./branch-work-system-of-record/index.md) | completed |
-| [Commit Approval Bypass for Autonomous Runs](./commit-approval-bypass-for-3ca4d0/index.md) | completed |
+| [Bypass commit message approval when ndx work runs with --auto or --loop](./bypass-commit-message-approval-eee224/index.md) | completed |
 | [Ctrl-C Interrupt Rollback Prompt Coordination](./ctrl-c-interrupt-rollback-469c79/index.md) | completed |
 | [Enforce Plan-to-Execution Continuity in Hench Runs](./enforce-plan-to-execution-e08fe0/index.md) | completed |
 | [Feature 1: Go-Aware Archetype System](./feature-1-go-aware-archetype-system/index.md) | completed |

@@ -21,7 +21,7 @@ No summary provided.
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Strict Self-Heal Tag Scoping Enforcement | feature | completed | 2026-05-06 |
+| Standardize self-heal tag to 'self-heal-items' across creation and selection paths | task | completed | 2026-05-06 |
 
 ## Info
 

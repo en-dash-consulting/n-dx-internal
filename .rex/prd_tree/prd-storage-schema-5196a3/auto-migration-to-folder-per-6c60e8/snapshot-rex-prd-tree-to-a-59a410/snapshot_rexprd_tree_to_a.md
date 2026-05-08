@@ -2,7 +2,7 @@
 id: "59a410eb-d550-431f-97aa-66adab334494"
 level: "task"
 title: "Snapshot .rex/prd_tree to a timestamped backup before structural migration"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "prd-storage"
@@ -11,6 +11,10 @@ tags:
   - "safety"
 source: "smart-add"
 startedAt: "2026-05-07T22:15:10.681Z"
+completedAt: "2026-05-08T00:47:49.780Z"
+endedAt: "2026-05-08T00:47:49.780Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented timestamped backup snapshots for PRD tree before structural migrations. Created backup-snapshots module with snapshot, prune, list, and restore functions. Integrated into both add.ts and reshape.ts commands with error handling that surfaces backup paths. Added .rex/.backups/ to .gitignore. 9 integration tests all passing."
 acceptanceCriteria:
   - "A timestamped copy of .rex/prd_tree is written to .rex/.backups/prd_tree_<ISO-timestamp>/ before any structural migration mutation"
   - "Backup creation is skipped when the structural migration pass would be a no-op"

@@ -20,11 +20,11 @@ Autonomous agent: picks rex tasks, builds briefs with codebase context, runs an 
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Feature 3: Rex Scanner Go Support | feature | completed | 2026-03-26 |
+| Add go.mod scanner, Go skip patterns, and test coverage to Rex | task | completed | 2026-03-26 |
 | API vs CLI Invocation Context Detection and Display | feature | completed | 2026-04-20 |
-| Hench Run-Loop Visual Output Refinements | feature | completed | 2026-04-09 |
+| Apply cyan color to agent text and task separator line in hench run output | task | completed | 2026-04-09 |
 | Branch Work System of Record | feature | completed | 2026-02-25 |
-| Commit Approval Bypass for Autonomous Runs | feature | completed | 2026-04-23 |
+| Bypass commit message approval when ndx work runs with --auto or --loop | task | completed | 2026-04-23 |
 | Ctrl-C Interrupt Rollback Prompt Coordination | feature | completed | 2026-04-24 |
 | Enforce Plan-to-Execution Continuity in Hench Runs | feature | completed | 2026-04-30 |
 | Feature 1: Go-Aware Archetype System | feature | completed | 2026-03-26 |

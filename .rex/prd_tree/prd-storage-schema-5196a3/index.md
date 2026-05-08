@@ -18,7 +18,7 @@ No summary provided.
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Auto-Migration to Folder-Per-Task Schema with Backup | feature | pending | 1970-01-01 |
+| Auto-Migration to Folder-Per-Task Schema with Backup | feature | completed | 2026-05-08 |
 | Folder-Per-Task Hierarchy Enforcement | feature | pending | 1970-01-01 |
 
 ## Info

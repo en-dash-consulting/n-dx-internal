@@ -21,7 +21,7 @@ No summary provided.
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Single-Child Index Suppression and Front-Matter Deduplication Fix | feature | completed | 2026-05-07 |
+| Fix folder-tree serializer to suppress index.md when fewer than two named child files exist | task | completed | 2026-05-07 |
 
 ## Info
 

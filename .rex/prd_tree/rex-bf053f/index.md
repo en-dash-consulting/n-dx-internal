@@ -24,11 +24,11 @@ PRD management: hierarchical epics/features/tasks/subtasks, smart add from natur
 | Duplicate-aware Proposal Override for rex add | feature | completed | 2026-02-22 |
 | Enhanced Rex Recommend Selective PRD Creation | feature | completed | 2026-02-25 |
 | Fix --mode=fast being ignored when --accept is passed to reorganize | feature | completed | 2026-03-24 |
-| Fix observation in rex-recommend (1 finding) | feature | completed | 2026-04-13 |
-| Fix observation in rex-core (1 finding) | feature | completed | 2026-04-13 |
-| Fix observation in rex (2 findings) | feature | completed | 2026-04-13 |
-| Fix suggestion in rex (1 finding) | feature | completed | 2026-04-13 |
-| Codex-Compatible PRD Authoring and Proposal Generation | feature | completed | 2026-04-16 |
+| Fix observation in rex-recommend: High coupling (0.78) — 5 imports target "web" | task | completed | 2026-04-13 |
+| Fix observation in rex-core: High coupling (0.82) — 5 imports target "web" | task | completed | 2026-04-13 |
+| Fix observation in rex: High coupling (0.79) — 9 imports target "web" (+1 more) | task | completed | 2026-04-13 |
+| Fix suggestion in rex: Zone "Rex" (rex) has catastrophic risk (score: 0.79, cohesion: 0.21, coupling: 0 | task | completed | 2026-04-13 |
+| Implement Codex rate limiting detection and retry in rex LLM call paths | task | completed | 2026-04-16 |
 | Interactive Workflow Shaping and Requirements Integration | feature | completed | 2026-02-11 |
 | LoE-Calibrated Proposal Generation in rex add | feature | completed | 2026-03-03 |
 | Move file lock to saveDocument for complete write safety | feature | completed | 2026-03-24 |

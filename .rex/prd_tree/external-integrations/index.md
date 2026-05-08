@@ -24,7 +24,7 @@ Store adapters, bidirectional sync (Notion, future backends), CI/CD pipeline aut
 | External Integration | feature | completed | 2026-02-09 |
 | External Integration Configuration UI | feature | completed | 2026-02-18 |
 | External sync and Notion integration | feature | completed | 2026-02-24 |
-| Fix observation in panel (1 finding) | feature | completed | 2026-04-13 |
+| Fix observation in panel: High coupling (0.71) — 9 imports target "web" | task | completed | 2026-04-13 |
 | PR Build Pipeline and Code Quality Automation | feature | completed | 2026-02-24 |
 | PR Build Pipeline and Cross-Platform CLI Validation | feature | completed | 2026-04-07 |
 | PR Build Pipeline and Cross-Platform CLI Validation Hardening | feature | completed | 2026-04-07 |
