@@ -618,6 +618,154 @@ function DetailPanelContent({ selection, prdData, onClose }: {
   });
 }
 
+// ── Merge metadata panel ──────────────────────────────────────────────────────
+
+/**
+ * Format an ISO timestamp for display in the metadata panel.
+ *
+ * Falls back to the raw string if the date is unparseable so the panel still
+ * surfaces something useful for diagnostics rather than rendering "Invalid Date".
+ */
+function formatMergeTimestamp(iso: string): string {
+  if (!iso) return EMPTY_FIELD;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString();
+}
+
+/**
+ * Resolve the merge nodes whose metadata should appear in the metadata panel
+ * for the current selection. PRD selections fan out to every linked merge
+ * (most-recent-first); merge selections show a single row.
+ *
+ * Pulls exclusively from `graph.nodes` — the same merge-history pipeline that
+ * powers the graph itself. No additional fetches are introduced.
+ */
+export function resolveMergeMetaForSelection(
+  graph: MergeGraph | null,
+  selection: SelectedNode | null,
+): MergeNode[] {
+  if (!graph || !selection) return [];
+  if (selection.kind === "merge") return [selection.node];
+  if (selection.linkedMergeIds.length === 0) return [];
+  const wanted = new Set(selection.linkedMergeIds);
+  return graph.nodes
+    .filter((n): n is MergeNode => n.kind === "merge" && wanted.has(n.id))
+    .sort((a, b) => b.mergedAt.localeCompare(a.mergedAt));
+}
+
+/**
+ * One row of merge metadata: timestamp, short SHA with copy affordance, author.
+ *
+ * The copy button writes the *full* SHA to the clipboard while the rendered
+ * label stays in short form. Failure (no clipboard API, permission denied) is
+ * logged and ignored — the panel itself stays usable.
+ */
+function MergeMetaRow({ merge }: { merge: MergeNode }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    const clip = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
+    if (!clip || typeof clip.writeText !== "function") {
+      console.warn("Clipboard API unavailable; cannot copy commit hash.");
+      return;
+    }
+    try {
+      await clip.writeText(merge.sha);
+      setCopied(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.warn("Failed to copy commit hash:", err);
+    }
+  }, [merge.sha]);
+
+  return h("div", { class: "mg-meta-row" },
+    h("time", {
+      class: "mg-meta-time",
+      dateTime: merge.mergedAt,
+      title: merge.mergedAt,
+    }, formatMergeTimestamp(merge.mergedAt)),
+    h("span", { class: "mg-meta-sha" },
+      h("code", { class: "mg-meta-sha-text", title: merge.sha }, merge.shortSha),
+      h("button", {
+        type: "button",
+        class: `mg-meta-copy${copied ? " copied" : ""}`,
+        title: copied ? "Copied!" : "Copy full commit hash",
+        "aria-label": "Copy full commit hash",
+        "data-full-sha": merge.sha,
+        onClick: handleCopy,
+      }, copied ? "✓" : "⧉"),
+    ),
+    h("span", { class: "mg-meta-author", title: merge.author || EMPTY_FIELD },
+      merge.author || EMPTY_FIELD),
+  );
+}
+
+/**
+ * Panel above the graph surfacing git merge metadata for the current selection.
+ *
+ * States:
+ *   • no selection           → instructional empty state
+ *   • PRD with no merges     → "No merge recorded" state
+ *   • PRD with linked merges → one row per merge (most recent first)
+ *   • merge node selected    → single row for that merge
+ */
+function MergeMetaPanel({ graph, selection }: {
+  graph: MergeGraph | null;
+  selection: SelectedNode | null;
+}) {
+  const merges = resolveMergeMetaForSelection(graph, selection);
+
+  if (!selection) {
+    return h("div", {
+      class: "mg-meta-panel mg-meta-empty",
+      role: "status",
+      "aria-live": "polite",
+    },
+      h("span", { class: "mg-meta-label" }, "Merge metadata"),
+      h("span", { class: "mg-meta-instruction" },
+        "Select a node to view its merge timestamp, commit hash, and author.",
+      ),
+    );
+  }
+
+  if (merges.length === 0) {
+    const ctx = selection.kind === "prd"
+      ? `${selection.node.level}: ${selection.node.title}`
+      : "";
+    return h("div", {
+      class: "mg-meta-panel mg-meta-no-merge",
+      role: "status",
+      "aria-live": "polite",
+    },
+      h("span", { class: "mg-meta-label" }, "Merge metadata"),
+      h("span", { class: "mg-meta-status" }, "No merge recorded"),
+      ctx ? h("span", { class: "mg-meta-context", title: ctx }, ctx) : null,
+    );
+  }
+
+  return h("div", {
+    class: "mg-meta-panel",
+    role: "region",
+    "aria-label": "Git merge metadata for selected node",
+  },
+    h("span", { class: "mg-meta-label" },
+      merges.length > 1 ? `Merge metadata (${merges.length})` : "Merge metadata",
+    ),
+    h("div", { class: "mg-meta-rows" },
+      merges.map((m) => h(MergeMetaRow, { key: m.id, merge: m })),
+    ),
+  );
+}
+
 // ── Filters ───────────────────────────────────────────────────────────────────
 
 const ALL_PRD_STATUSES = ["pending", "in_progress", "completed", "failing", "blocked", "deferred"];
@@ -975,6 +1123,9 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
       : noLinks
         ? h("div", { class: "mg-notice" }, "No merge commits could be linked to PRD items yet. Merges are shown separately on the right.")
         : null,
+
+    // ── Merge metadata panel (above the graph) ───────────────────────────────
+    h(MergeMetaPanel, { graph, selection: selected }),
 
     // ── Main canvas ──────────────────────────────────────────────────────────
     h("div", { class: "mg-canvas" },

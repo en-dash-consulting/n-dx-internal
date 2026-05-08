@@ -2,7 +2,7 @@
 id: "7da4ce50-0614-47db-8e6d-3fd142d41028"
 level: "task"
 title: "Render git merge metadata panel above the graph for the selected node"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "web"
@@ -11,6 +11,11 @@ tags:
   - "graph"
   - "git"
 source: "smart-add"
+startedAt: "2026-05-08T16:10:10.819Z"
+completedAt: "2026-05-08T16:18:25.142Z"
+endedAt: "2026-05-08T16:18:25.142Z"
+resolutionType: "code-change"
+resolutionDetail: "Added MergeMetaPanel above the graph rendering timestamp, short SHA with copy-full-hash affordance, and author. Sources data from existing graph fetch (no duplicate fetching). Empty, no-merge, and multi-merge states all covered. 17 unit tests including clipboard, sync update, and refetch verification."
 acceptanceCriteria:
   - "Merge metadata panel renders above the graph and shows timestamp, commit hash, and merge author for the selected node"
   - "Commit hash is presented in short form with a copy-to-clipboard affordance that copies the full hash"

@@ -13,5 +13,5 @@ description: "Restructure the existing PRD Merge Context Graph view from its cur
 | Title | Status |
 |-------|--------|
 | [Highlight selected node's children and show inline PRD front-matter summary](./highlight-selected-node-s-8d85a3.md) | completed |
-| [Render git merge metadata panel above the graph for the selected node](./render-git-merge-metadata-panel-7da4ce.md) | pending |
+| [Render git merge metadata panel above the graph for the selected node](./render-git-merge-metadata-panel-7da4ce.md) | completed |
 | [Reorient PRD merge graph to top-down layout with collapsed children by default](./reorient-prd-merge-graph-to-top-68b54c.md) | pending |
