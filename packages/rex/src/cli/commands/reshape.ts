@@ -10,6 +10,7 @@ import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../ana
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
 import { compactSingleChildren } from "../../core/compact-single-children.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
+import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
@@ -35,10 +36,32 @@ export async function cmdReshape(
     );
   }
 
-  // Run single-child compaction migration pass
+  // Snapshot PRD tree before structural migrations (backup for recovery on failure)
   const treeRoot = join(rexDir, "prd_tree");
+  let backupSnapshot = null;
+  try {
+    backupSnapshot = await snapshotPRDTree(rexDir);
+  } catch (err) {
+    // Best-effort: don't fail the command if backup creation fails
+    warn(`Warning: Failed to create backup snapshot: ${String(err)}`);
+  }
+
+  // Run single-child compaction migration pass
   info("Compacting single-child directories...");
-  const compactionResult = await compactSingleChildren(treeRoot);
+  let compactionResult;
+  try {
+    compactionResult = await compactSingleChildren(treeRoot);
+  } catch (err) {
+    // Surface backup path in error message for recovery
+    const backupMsg = backupSnapshot
+      ? `\n\nBackup saved to: ${backupSnapshot.backupPath}\nRestore with: cp -r ${backupSnapshot.backupPath} ${treeRoot}`
+      : "";
+    throw new CLIError(
+      `Compaction failed: ${String(err)}${backupMsg}`,
+      "Check the backup path above to restore the PRD tree.",
+    );
+  }
+
   if (compactionResult.errors.length > 0) {
     for (const err of compactionResult.errors) {
       warn(`  Warning: ${err.error} (${err.path})`);
@@ -50,7 +73,20 @@ export async function cmdReshape(
 
   // Run folder-per-task structural migration pass
   info("Migrating non-conforming task structures to folder-per-task form...");
-  const migrationResult = await migrateToFolderPerTask(treeRoot);
+  let migrationResult;
+  try {
+    migrationResult = await migrateToFolderPerTask(treeRoot);
+  } catch (err) {
+    // Surface backup path in error message for recovery
+    const backupMsg = backupSnapshot
+      ? `\n\nBackup saved to: ${backupSnapshot.backupPath}\nRestore with: cp -r ${backupSnapshot.backupPath} ${treeRoot}`
+      : "";
+    throw new CLIError(
+      `Migration failed: ${String(err)}${backupMsg}`,
+      "Check the backup path above to restore the PRD tree.",
+    );
+  }
+
   if (migrationResult.errors.length > 0) {
     for (const err of migrationResult.errors) {
       warn(`  Warning: ${err.error} (${err.path})`);
@@ -58,6 +94,15 @@ export async function cmdReshape(
   }
   if (migrationResult.migratedCount > 0) {
     info(`Migrated ${migrationResult.migratedCount} item${migrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
+  }
+
+  // Prune old backups if migrations were applied
+  if (compactionResult.compactedCount > 0 || migrationResult.migratedCount > 0) {
+    try {
+      await pruneBackups(rexDir, 10);
+    } catch {
+      // Best-effort: don't fail the command if pruning fails
+    }
   }
 
   // Reload document after migrations

@@ -11,6 +11,7 @@ import { LEVEL_HIERARCHY, CHILD_LEVEL, isItemLevel } from "../../schema/index.js
 import { findItem } from "../../core/tree.js";
 import { validateDAG } from "../../core/dag.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
+import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
 import { REX_DIR } from "./constants.js";
 import { syncFolderTree } from "./folder-tree-sync.js";
 import { cascadeParentReset } from "../../core/parent-reset.js";
@@ -42,12 +43,34 @@ export async function cmdAdd(
   // Emit migration notification to CLI and execution log
   await emitMigrationNotification(migrationResult, flags, (entry) => store.appendLog(entry));
 
+  // Snapshot PRD tree before structural migration (backup for recovery on failure)
+  let backupSnapshot = null;
+  try {
+    backupSnapshot = await snapshotPRDTree(rexDir);
+  } catch (err) {
+    // Best-effort: don't fail the command if backup creation fails
+    warn(`Warning: Failed to create backup snapshot: ${String(err)}`);
+  }
+
   // Run folder-per-task structural migration pass (pre-write check)
   const treeRoot = join(rexDir, "prd_tree");
   if (flags.format !== "json") {
     info("Checking PRD tree conformance...");
   }
-  const folderPerTaskMigrationResult = await migrateToFolderPerTask(treeRoot);
+  let folderPerTaskMigrationResult;
+  try {
+    folderPerTaskMigrationResult = await migrateToFolderPerTask(treeRoot);
+  } catch (err) {
+    // Surface backup path in error message for recovery
+    const backupMsg = backupSnapshot
+      ? `\n\nBackup saved to: ${backupSnapshot.backupPath}\nRestore with: cp -r ${backupSnapshot.backupPath} ${treeRoot}`
+      : "";
+    throw new CLIError(
+      `Migration failed: ${String(err)}${backupMsg}`,
+      "Check the backup path above to restore the PRD tree.",
+    );
+  }
+
   if (folderPerTaskMigrationResult.errors.length > 0) {
     for (const err of folderPerTaskMigrationResult.errors) {
       warn(`  Warning: ${err.error} (${err.path})`);
@@ -55,6 +78,15 @@ export async function cmdAdd(
   }
   if (folderPerTaskMigrationResult.migratedCount > 0 && flags.format !== "json") {
     info(`Migrated ${folderPerTaskMigrationResult.migratedCount} item${folderPerTaskMigrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
+  }
+
+  // Prune old backups if migrations were applied
+  if (folderPerTaskMigrationResult.migratedCount > 0) {
+    try {
+      await pruneBackups(rexDir, 10);
+    } catch {
+      // Best-effort: don't fail the command if pruning fails
+    }
   }
 
   // Ensure the current branch's PRD file exists and is the write target.
