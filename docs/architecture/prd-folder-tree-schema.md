@@ -652,27 +652,30 @@ Subtasks use **dual-mode serialization** depending on whether they have children
 
 ### Leaf Subtasks (No Children)
 
-Leaf subtasks are serialized as `.md` files in the parent task's directory:
+Leaf subtasks are serialized as `.md` files inside the parent task's
+directory:
 
 ```
 {task-slug}/
-├── {task_title}.md
-└── {subtask-slug}.md    ← leaf subtask file
+├── index.md             ← task content + ## Children table
+└── {subtask-slug}.md    ← leaf subtask file (Rule 1b)
 ```
 
 The leaf subtask `.md` file contains YAML frontmatter (like task-level files) followed by a Markdown body. The schema is identical to the per-item file schema at task level (see [`## Per-Item Markdown File Schema`](#per-item-markdown-file-schema)).
 
 ### Branch Subtasks (With Children)
 
-Subtasks with children are serialized as directories containing a title-named `.md` file, following the same folder-per-task rule recursively:
+A subtask with children is serialized as a slug-named directory containing
+its own `index.md`, following the same folder-per-branch rule recursively:
 
 ```
 {task-slug}/
+├── index.md
 └── {subtask-slug}/
-    ├── {subtask_title}.md      ← subtask file (required)
-    ├── {grandchild-slug}.md    ← leaf grandchild
+    ├── index.md                  ← subtask content + ## Children
+    ├── {grandchild-slug}.md      ← leaf grandchild
     └── {grandchild2-slug}/
-        ├── {grandchild2_title}.md
+        ├── index.md
         └── {great-grandchild-slug}.md
 ```
 
@@ -680,15 +683,34 @@ Branch subtasks follow the exact same directory structure, naming, and file sche
 
 ### Promotion Rule
 
-When a leaf subtask gains its first child:
+The leaf-to-folder transition (Rule 2) is implemented as a side effect of
+the parser+serializer round-trip rather than as a dedicated mutation:
 
-1. The serializer detects that the subtask now has children
-2. It creates a new directory with the same slug as the leaf `.md` file
-3. The leaf `.md` file is moved into the new directory and renamed to `<titleToFilename(title)>.md`
-4. The first child is written into this new directory
-5. Future reads recognize the directory structure and load the subtask as a branch node
+1. The caller adds a child to the leaf via `store.addItem(child, leafId)`
+   (or any equivalent path: MCP `add_item`, `cmdAdd`, etc.).
+2. `addItem` runs `loadDocument` → the parser sees the leaf `<slug>.md`
+   and produces an in-memory `PRDItem` with `children: []`. It mutates
+   the in-memory tree to attach the new child.
+3. `addItem` then runs `saveDocument` → the serializer's `writeSiblings`
+   sees `children.length > 0` and switches to the branch shape: it
+   `mkdir`s `<slug>/`, writes `<slug>/index.md` from the in-memory item's
+   frontmatter (preserving every field), and recurses to write the new
+   child as another leaf `<child-slug>.md` (or nested folder).
+4. The serializer's `removeStaleEntries` sweep at the parent level
+   removes the original `<slug>.md` file: it is no longer in the
+   expected-leaf set (the item is now a folder, not a leaf).
 
-This promotion is **atomic** — the old leaf file is removed only after the directory structure is fully written.
+The transition is therefore a pure shape change driven by the in-memory
+children list — frontmatter is preserved exactly, no `__parent*` shims
+are introduced, and the inverse direction (removing the last child of a
+branch) collapses the folder back to a bare `<slug>.md` by the same
+mechanism. End-to-end behavior is pinned by
+`packages/rex/tests/integration/leaf-to-folder-promotion.test.ts`.
+
+There is no standalone "atomic promotion" code path; the whole
+transition lands as part of one `saveDocument` call. If the save is
+interrupted, recovery uses the snapshot from `.rex/.backups/prd_tree_<ISO>/`
+written by `ndx reshape` / `ndx add` (Rule 3).
 
 ### Mixed-Mode Containers
 
@@ -696,14 +718,14 @@ A parent task or subtask directory may contain a mix of leaf `.md` files (childl
 
 ```
 {task-slug}/
-├── {task_title}.md
+├── index.md                 ← task content + ## Children table
 ├── {leaf-sub1}.md           ← childless subtask
 ├── {leaf-sub2}.md           ← childless subtask
 ├── {branch-sub1}/
-│   ├── {branch_sub1_title}.md
+│   ├── index.md
 │   ├── {grandchild}.md
 │   └── {branch-sub2}/
-│       └── {branch_sub2_title}.md
+│       └── index.md
 └── {leaf-sub3}.md           ← childless subtask
 ```
 
@@ -846,8 +868,8 @@ The parser (folder tree → PRD) must:
 | `resolutionType` | optional | optional | optional | — | — |
 | `resolutionDetail` | optional | optional | optional | — | — |
 | `failureReason` | optional | optional | optional | — | — |
-| Storage format | directory | directory | directory | .md file | directory |
-| Inline children | — | yes (folders) | mixed (files + folders) | N/A | mixed (files + folders) |
+| Storage format | folder when has children, else `.md` | same | same | `.md` file | folder containing `index.md` |
+| Inline children | mixed (files + folders) | mixed (files + folders) | mixed (files + folders) | N/A | mixed (files + folders) |
 | `## Children` body block | when children exist | when children exist | when children exist | — | when children exist |
 
 ---
@@ -860,26 +882,28 @@ This schema is the normative storage contract for the PRD folder-tree format. Fo
 - **AGENTS.md** (Public guidance): Links to this schema for agents implementing PRD operations.
 - **Implementation**: The `rex` package implements serialization and parsing according to this schema:
   - `packages/rex/src/store/folder-tree-serializer.ts` — writes files to disk:
-    - Task-level items: always as folders containing `<titleToFilename(title)>.md`
-    - Leaf subtasks: as title-named `.md` files in the parent task directory
-    - Branch subtasks: as folders containing `<titleToFilename(title)>.md` (recursive)
-    - Orphan cleanup: removes old `.md` files left over from title renames or subtask promotion
+    - Branch items (any level with children): folder containing one `index.md` (frontmatter + `## Children` table)
+    - Leaf items (any level with no children): bare `<slug>.md` next to the parent's `index.md`
+    - Stale-entry cleanup: `removeStaleEntries` removes any folder or `.md` file at the parent level that is no longer in the in-memory expected set, which is what drives leaf↔branch promotion on the next save
+  - **Promotion test:** `packages/rex/tests/integration/leaf-to-folder-promotion.test.ts` exercises both directions (leaf→folder when first child added; folder→leaf when last child removed) plus byte-level frontmatter preservation.
   - `packages/rex/src/store/folder-tree-parser.ts` — reads files from disk:
-    - Title-named `.md` files preferred, `index.md` legacy fallback
-    - Detects leaf subtasks (`.md` files) vs. branch subtasks (folders) automatically
-    - Discovers subtasks as both files and directories within task/subtask containers
-  - `packages/rex/src/store/title-to-filename.ts` — implements `titleToFilename` (also re-exported from `packages/rex/src/public.ts`)
-  - `packages/rex/src/store/folder-per-task-migration.ts` — migrates bare `.md` task files to folder-with-index.md structure and promotes leaf subtasks to folders when they gain children
+    - `index.md` is the canonical content file inside item folders; legacy `<title>.md` is accepted as a fallback when no `index.md` exists
+    - Discovers leaf children as bare `<slug>.md` files at every level (epic, feature, task, branch subtask)
+    - Reconstructs items from legacy `__parent*` shims, emitting a deprecation warning each time
+  - `packages/rex/src/store/title-to-filename.ts` — implements `titleToFilename` (still exported for legacy migration; the current serializer no longer uses it for content files)
+  - `packages/rex/src/core/folder-per-task-migration.ts` — pre-load migration that renames legacy `<title>.md` files to `index.md`, removes phantom `index-{hash}/` wrappers, and wraps bare files that have child siblings
 
 ## Dual-Mode Applicability Note
 
-The dual-mode subtask serialization rule (leaf `.md` files vs. branch folders) applies recursively at **all nesting levels below tasks**. Any subtask with children is represented as a folder with `<titleToFilename(title)>.md`, and its children (recursive subtasks or further descendants) are discovered the same way as task children: as `.md` files (leaf) or subdirectories (branch).
+The dual-mode rule (folder when has children, bare `<slug>.md` when leaf) applies uniformly at **every level** — epic, feature, task, subtask. Any item with children is represented as a folder containing `index.md`; any item with no children is a bare `<slug>.md` file inside its parent's folder.
 
 This means:
-- Task ← Task has children (features) in subdirectories
-- Subtask level 1 ← Subtask may have children (subtask level 2) as files or folders
-- Subtask level 2 ← Subtask may have children (subtask level 3) as files or folders
-- ... (unlimited nesting depth)
+- A leaf epic at the project root is `<epic-slug>.md` directly under `.rex/prd_tree/`.
+- A leaf feature is `<feature-slug>.md` next to the epic's `index.md`.
+- A leaf task is `<task-slug>.md` next to the feature's `index.md`.
+- A leaf subtask is `<subtask-slug>.md` next to the task's `index.md`, recursively for nested subtasks.
+
+The same item flips between leaf and branch shape automatically as children are added or removed (see [Promotion Rule](#promotion-rule)).
 
 The storage schema and uniqueness constraints apply uniformly at all levels.
 

@@ -66,17 +66,38 @@ from the item's id.
 
 ### Rule 2 — automatic promotion when a leaf gains children
 
-When a leaf `<slug>.md` gets its first child (e.g. you `ndx add subtask --parent <leaf-id>`),
-the item is automatically promoted to the branch shape:
+When a leaf `<slug>.md` gets its first child (e.g. you
+`ndx add subtask --parent <leaf-id>`, an MCP `add_item`, or any code path
+that calls `store.addItem`), the item is automatically promoted to the
+branch shape on the next save:
 
-1. The contents of `<slug>.md` move into a new `<slug>/index.md`.
-2. The new child is written next to it (as another leaf `.md`, or as
-   another branch folder if it itself has children).
-3. The original `<slug>.md` is removed.
+1. The next `saveDocument` sees the in-memory item now has children.
+2. The serializer writes the item in the **branch** shape: it creates
+   `<slug>/` and writes the item's frontmatter into `<slug>/index.md`,
+   exactly preserving every field from the original leaf.
+3. The new child is written next to that `index.md` — as another leaf
+   `<child-slug>.md` if it has no descendants of its own, or as another
+   nested folder if it does.
+4. The serializer's stale-entry sweep removes the original `<slug>.md`
+   file (it is no longer in the expected leaf set at the parent level).
+
+The whole transition is one save — there is no separate "promotion"
+operation that can fail halfway. If the save fails before completion you
+still have the snapshot from `.rex/.backups/prd_tree_<ISO>/` (Rule 3)
+and any not-yet-removed source file is rewritten on the next attempt.
 
 Going the other way — removing the last child of a branch — collapses
-the folder back to a bare `<slug>.md` on the next save. Branches and
-leaves are interchangeable; the structure follows the children.
+the folder back to a bare `<slug>.md` on the next save by the same
+mechanism: the in-memory item now has zero children, the serializer
+emits the leaf shape, and the now-empty folder is swept up. Branches
+and leaves are fully interchangeable; the on-disk shape always follows
+the in-memory children list.
+
+This behavior is pinned by
+[`leaf-to-folder-promotion.test.ts`](https://github.com/endash/n-dx/blob/main/packages/rex/tests/integration/leaf-to-folder-promotion.test.ts)
+which exercises both directions plus full frontmatter preservation
+(id, level, title, status, priority, tags, source, timestamps,
+resolution fields, acceptance criteria, multi-paragraph descriptions).
 
 ### Rule 3 — `ndx reshape` and `ndx add` migrate, with backup
 
