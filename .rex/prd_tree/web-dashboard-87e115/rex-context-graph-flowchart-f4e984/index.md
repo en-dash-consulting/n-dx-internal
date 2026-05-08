@@ -20,8 +20,8 @@ Restructure the Rex context graph into a flowchart-style layout using distinct n
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Implement shape-based node classification and rendering for Rex context graph nodes | task | in_progress | 2026-05-08 |
-| Wire click-through on context graph nodes to open the existing Rex task detail panel | task | pending | 1970-01-01 |
+| Implement shape-based node classification and rendering for Rex context graph nodes | task | completed | 2026-05-08 |
+| Wire click-through on context graph nodes to open the existing Rex task detail panel | task | in_progress | 2026-05-08 |
 
 ## Info
 

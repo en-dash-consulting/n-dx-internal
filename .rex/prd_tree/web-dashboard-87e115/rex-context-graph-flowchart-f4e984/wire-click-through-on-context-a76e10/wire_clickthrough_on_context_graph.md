@@ -2,7 +2,7 @@
 id: "a76e1030-7683-4d1c-97cb-a5b98b7cadc5"
 level: "task"
 title: "Wire click-through on context graph nodes to open the existing Rex task detail panel"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "ui"
@@ -10,6 +10,7 @@ tags:
   - "rex"
   - "accessibility"
 source: "smart-add"
+startedAt: "2026-05-08T11:01:56.564Z"
 acceptanceCriteria:
   - "Clicking any node in the context graph opens the Rex task detail panel with that item's data"
   - "The panel displays the same fields shown for the same item in the Rex tasks view"

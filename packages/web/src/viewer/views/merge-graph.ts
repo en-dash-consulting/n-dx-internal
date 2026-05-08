@@ -20,6 +20,9 @@ import { h, Fragment } from "preact";
 import { useState, useEffect, useMemo, useCallback, useRef } from "preact/hooks";
 import { usePanZoom } from "../hooks/index.js";
 import type { NavigateTo } from "../types.js";
+import { TaskDetail } from "../components/prd-tree/task-detail.js";
+import type { PRDItemData } from "../components/prd-tree/types.js";
+import { findItemById } from "../components/prd-tree/tree-utils.js";
 
 // ── API types (mirrors packages/web/src/server/merge-history.ts) ─────────────
 
@@ -466,8 +469,17 @@ type SelectedNode =
   | { kind: "prd"; node: PrdNode; linkedMergeIds: string[] }
   | { kind: "merge"; node: MergeNode };
 
-function DetailPanel({ selection, onClose }: {
+/**
+ * Custom detail panel for merge graph.
+ * For PRD nodes, renders the full TaskDetail component (from tasks view).
+ * For merge nodes, renders a custom summary.
+ *
+ * TaskDetail callbacks are stubbed to prevent errors when users interact,
+ * but the merge-graph view doesn't support editing features.
+ */
+function DetailPanelContent({ selection, prdData, onClose }: {
   selection: SelectedNode;
+  prdData?: PRDItemData[] | null;
   onClose: () => void;
 }) {
   if (selection.kind === "merge") {
@@ -511,7 +523,30 @@ function DetailPanel({ selection, onClose }: {
     );
   }
 
+  // For PRD nodes, render the full TaskDetail component
   const pn = selection.node;
+  if (prdData) {
+    const item = findItemById(prdData, pn.id);
+    if (item) {
+      // Stub callbacks for TaskDetail (read-only mode in merge-graph context)
+      return h(TaskDetail, {
+        item,
+        allItems: prdData,
+        showTokenBudget: false,
+        // Stub callbacks to allow rendering without errors
+        // (editing is not supported in the merge-graph context)
+        onUpdate: undefined,
+        onNavigateToItem: undefined,
+        onExecuteTask: undefined,
+        onPrdChanged: undefined,
+        onAddChild: undefined,
+        onRemove: undefined,
+        navigateTo: undefined,
+      });
+    }
+  }
+
+  // Fallback: minimal PRD detail
   return h("div", { class: "mg-detail" },
     h("div", { class: "mg-detail-header" },
       h("span", { class: "mg-detail-title" }, pn.level.toUpperCase()),
@@ -568,6 +603,7 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedNode | null>(null);
+  const [prdData, setPrdData] = useState<PRDItemData[] | null>(null);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -597,6 +633,27 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
       });
 
     return () => ctrl.abort();
+  }, []);
+
+  // ── Fetch PRD data (used for detail panel) ─────────────────────────────────
+  useEffect(() => {
+    const abortCtrl = new AbortController();
+
+    fetch("/data/prd.json", { signal: abortCtrl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json() as Promise<{ items: PRDItemData[] }>;
+      })
+      .then((data) => {
+        setPrdData(data.items);
+      })
+      .catch((err: Error) => {
+        if (err.name !== "AbortError") {
+          console.warn("Failed to fetch PRD data for detail panel:", err.message);
+        }
+      });
+
+    return () => abortCtrl.abort();
   }, []);
 
   // ── Compute visible sets based on filters ──────────────────────────────────
@@ -678,6 +735,19 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     if (!graph) return null;
     return computeLayout(graph, visiblePrdIds, visibleMergeIds);
   }, [graph, visiblePrdIds, visibleMergeIds]);
+
+  // ── Escape key to close detail panel ────────────────────────────────────────
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        clearSelection();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [selected, clearSelection]);
 
   // ── usePanZoom ─────────────────────────────────────────────────────────────
   const fitVB = layout?.fitVB ?? { x: -50, y: -50, w: 900, h: 600 };
@@ -1076,7 +1146,7 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
 
       // ── Detail panel ───────────────────────────────────────────────────────
       selected
-        ? h(DetailPanel, { selection: selected, onClose: clearSelection })
+        ? h(DetailPanelContent, { selection: selected, prdData, onClose: clearSelection })
         : null,
     ),
   );

@@ -2,7 +2,7 @@
 id: "b3ffbc17-9c74-4ca9-8583-c74941751291"
 level: "task"
 title: "Implement shape-based node classification and rendering for Rex context graph nodes"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "ui"
@@ -10,6 +10,10 @@ tags:
   - "rex"
 source: "smart-add"
 startedAt: "2026-05-08T05:49:00.682Z"
+completedAt: "2026-05-08T11:01:35.605Z"
+endedAt: "2026-05-08T11:01:35.605Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented shape classification logic for PRD nodes based on folder structure inspection. Added SVG rendering for 5 distinct node shapes (diamond, square, trapezoid, triangle, circle) with comprehensive legend. All acceptance criteria met with 12 unit tests covering all shape categories."
 acceptanceCriteria:
   - "Nodes with index.md plus additional non-index.md siblings render as diamonds"
   - "Nodes with only non-index.md files and no subdirectory children render as squares"

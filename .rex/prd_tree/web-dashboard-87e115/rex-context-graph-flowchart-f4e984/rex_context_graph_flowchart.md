@@ -12,5 +12,5 @@ description: "Restructure the Rex context graph into a flowchart-style layout us
 
 | Title | Status |
 |-------|--------|
-| [Implement shape-based node classification and rendering for Rex context graph nodes](./implement-shape-based-node-b3ffbc/index.md) | in_progress |
-| [Wire click-through on context graph nodes to open the existing Rex task detail panel](./wire-click-through-on-context-a76e10/index.md) | pending |
+| [Implement shape-based node classification and rendering for Rex context graph nodes](./implement-shape-based-node-b3ffbc/index.md) | completed |
+| [Wire click-through on context graph nodes to open the existing Rex task detail panel](./wire-click-through-on-context-a76e10/index.md) | in_progress |
