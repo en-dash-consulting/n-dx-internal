@@ -9,25 +9,9 @@ completedAt: "2026-02-24T18:08:30.754Z"
 acceptanceCriteria: []
 ---
 
-# PR Build Pipeline and Code Quality Automation
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Bitbucket Pipeline Integration | task | completed | 2026-02-24 |
-| Package.json PR Build Script | task | completed | 2026-02-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-24T18:08:30.754Z
-- **Completed:** 2026-02-24T18:08:30.754Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Bitbucket Pipeline Integration](./bitbucket-pipeline-integration/index.md) | completed |
+| [Package.json PR Build Script](./package-json-pr-build-script/index.md) | completed |

@@ -11,26 +11,10 @@ acceptanceCriteria: []
 description: "Update every rex CLI command and MCP tool that modifies PRD state to persist changes through the folder-tree serializer, keeping the folder tree consistent with the in-memory store after every mutation."
 ---
 
-# CLI and MCP Write Command Integration with Folder Tree
+## Children
 
- [completed]
-
-## Summary
-
-Update every rex CLI command and MCP tool that modifies PRD state to persist changes through the folder-tree serializer, keeping the folder tree consistent with the in-memory store after every mutation.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Update ndx plan, ndx recommend, and all MCP write tools to propagate writes to the folder tree | task | completed | 2026-04-27 |
-| Update rex read commands (status, next, validate) to read PRD from folder tree | task | completed | 2026-04-28 |
-| Update rex write commands (add, edit, remove, move) to persist changes to folder tree after every mutation | task | completed | 2026-04-27 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-28T00:06:30.996Z
-- **Completed:** 2026-04-28T00:06:30.996Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Update ndx plan, ndx recommend, and all MCP write tools to propagate writes to the folder tree](./update-ndx-plan-ndx-recommend-f16ab3/index.md) | completed |
+| [Update rex read commands (status, next, validate) to read PRD from folder tree](./update-rex-read-commands-status-1e04af/index.md) | completed |
+| [Update rex write commands (add, edit, remove, move) to persist changes to folder tree after every mutation](./update-rex-write-commands-add-a90cf2/index.md) | completed |

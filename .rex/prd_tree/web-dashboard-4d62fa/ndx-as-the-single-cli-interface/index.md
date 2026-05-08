@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Every user-facing command accessible through ndx. Users never need to know which package owns what."
 ---
 
-# ndx as the single CLI interface
+## Children
 
-🟠 [completed]
-
-## Summary
-
-Every user-facing command accessible through ndx. Users never need to know which package owns what.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Audit and surface all package commands through ndx | task | completed | 2026-03-24 |
-| Helpful error when users run package commands that belong to ndx | task | completed | 2026-03-24 |
-| Rewrite ndx --help to be user-centric | task | completed | 2026-03-24 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-13T18:35:49.604Z
-- **Completed:** 2026-03-24T13:06:25.502Z
+| Title | Status |
+|-------|--------|
+| [Audit and surface all package commands through ndx](./audit-and-surface-all-package-70cd90/index.md) | completed |
+| [Helpful error when users run package commands that belong to ndx](./helpful-error-when-users-run-926c6d/index.md) | completed |
+| [Rewrite ndx --help to be user-centric](./rewrite-ndx-help-to-be-user-centric/index.md) | completed |

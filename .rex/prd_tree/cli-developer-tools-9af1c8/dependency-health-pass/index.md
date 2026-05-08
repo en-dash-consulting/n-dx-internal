@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Extend the self-heal loop with an automated dependency audit and cleanup step that inspects all monorepo package.json files, identifies unused, outdated, or duplicate dependencies, and applies safe remediation before proceeding with the analysis–recommend–execute cycle."
 ---
 
-# Dependency Health Pass
+## Children
 
- [completed]
-
-## Summary
-
-Extend the self-heal loop with an automated dependency audit and cleanup step that inspects all monorepo package.json files, identifies unused, outdated, or duplicate dependencies, and applies safe remediation before proceeding with the analysis–recommend–execute cycle.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement automated dependency cleanup executor | task | completed | 2026-04-14 |
-| Implement dependency audit step in self-heal pipeline | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-14T19:48:08.783Z
-- **Completed:** 2026-04-14T19:48:08.783Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement automated dependency cleanup executor](./implement-automated-dependency-5052d7/index.md) | completed |
+| [Implement dependency audit step in self-heal pipeline](./implement-dependency-audit-step-8af32c/index.md) | completed |

@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Extend the existing run-failure rollback flow to also trigger when the user cancels a hench run via Ctrl+C (SIGINT). Currently Ctrl+C exits abruptly, leaving the PRD task in an in-progress state and any partial file changes uncommitted. This feature brings parity between the failure-path rollback UX and the user-initiated cancellation path."
 ---
 
-# Graceful Cancellation with Rollback Prompt on Ctrl+C
+## Children
 
- [completed]
-
-## Summary
-
-Extend the existing run-failure rollback flow to also trigger when the user cancels a hench run via Ctrl+C (SIGINT). Currently Ctrl+C exits abruptly, leaving the PRD task in an in-progress state and any partial file changes uncommitted. This feature brings parity between the failure-path rollback UX and the user-initiated cancellation path.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Intercept SIGINT during hench run loop and transition to graceful cancellation state | task | completed | 2026-04-20 |
-| Show rollback prompt on Ctrl+C cancellation and reset PRD task status | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-20T19:32:34.057Z
-- **Completed:** 2026-04-20T19:32:34.057Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Intercept SIGINT during hench run loop and transition to graceful cancellation state](./intercept-sigint-during-hench-f00023/index.md) | completed |
+| [Show rollback prompt on Ctrl+C cancellation and reset PRD task status](./show-rollback-prompt-on-ctrl-c-6dc861/index.md) | completed |

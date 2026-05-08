@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Add a codebase cleanup phase to self-heal that identifies and removes dead code, consolidates duplicated utilities, and condenses verbose patterns — strictly scoped to production source files. A hard exclusion guard must prevent any modification to test files (*.test.ts, *.spec.ts, tests/**)."
 ---
 
-# Non-Test Codebase Cleanup and Condensation Pass
+## Children
 
- [completed]
-
-## Summary
-
-Add a codebase cleanup phase to self-heal that identifies and removes dead code, consolidates duplicated utilities, and condenses verbose patterns — strictly scoped to production source files. A hard exclusion guard must prevent any modification to test files (*.test.ts, *.spec.ts, tests/**).
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Apply production-scoped cleanup transformations with test-exclusion hard guard | task | completed | 2026-04-14 |
-| Implement scoped dead-code and duplication analyzer for production files | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-14T20:16:38.754Z
-- **Completed:** 2026-04-14T20:16:38.754Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Apply production-scoped cleanup transformations with test-exclusion hard guard](./apply-production-scoped-cleanup-dd4783/index.md) | completed |
+| [Implement scoped dead-code and duplication analyzer for production files](./implement-scoped-dead-code-and-be4d8d/index.md) | completed |

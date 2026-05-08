@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Record start and end timestamps for work on a task so the system can report either elapsed duration (completed) or running duration (in progress), and roll those durations up to features and epics alongside token usage."
 ---
 
-# Task Duration Tracking
+## Children
 
- [completed]
-
-## Summary
-
-Record start and end timestamps for work on a task so the system can report either elapsed duration (completed) or running duration (in progress), and roll those durations up to features and epics alongside token usage.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Aggregate durations up the PRD tree and expose alongside token usage | task | completed | 2026-04-23 |
-| Record task start and end timestamps from hench runs and status transitions | task | completed | 2026-04-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-23T17:11:13.162Z
-- **Completed:** 2026-04-23T17:11:13.162Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Aggregate durations up the PRD tree and expose alongside token usage](./aggregate-durations-up-the-prd-8f8ab3/index.md) | completed |
+| [Record task start and end timestamps from hench runs and status transitions](./record-task-start-and-end-89bd6c/index.md) | completed |

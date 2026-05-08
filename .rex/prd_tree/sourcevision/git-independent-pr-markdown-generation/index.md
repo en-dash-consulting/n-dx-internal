@@ -9,26 +9,10 @@ completedAt: "2026-02-23T04:50:23.216Z"
 acceptanceCriteria: []
 ---
 
-# Git-Independent PR Markdown Generation
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Branch-Scoped Work Evidence Pipeline | task | completed | 2026-02-23 |
-| PDF Export Functionality | task | completed | 2026-02-10 |
-| Work-History Narrative Synthesis | task | completed | 2026-02-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-23T04:50:23.216Z
-- **Completed:** 2026-02-23T04:50:23.216Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Branch-Scoped Work Evidence Pipeline](./branch-scoped-work-evidence-pipeline/index.md) | completed |
+| [PDF Export Functionality](./pdf-export-functionality/index.md) | completed |
+| [Work-History Narrative Synthesis](./work-history-narrative-synthesis/index.md) | completed |

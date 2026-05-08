@@ -9,24 +9,8 @@ completedAt: "2026-05-08T04:46:14.632Z"
 endedAt: "2026-05-08T04:46:14.632Z"
 ---
 
-# Rex
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| PRD Tree CLI Visualization Command | feature | completed | 2026-05-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** epic
-- **Started:** 2026-05-08T04:46:14.632Z
-- **Completed:** 2026-05-08T04:46:14.632Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [PRD Tree CLI Visualization Command](./prd-tree-cli-visualization-command/index.md) | completed |

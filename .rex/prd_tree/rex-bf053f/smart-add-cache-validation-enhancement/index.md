@@ -9,25 +9,9 @@ completedAt: "2026-03-11T02:24:02.155Z"
 acceptanceCriteria: []
 ---
 
-# Smart Add Cache Validation Enhancement
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Integration tests for smart-add cache staleness detection | task | completed | 2026-03-11 |
-| PRD Hash Validation for Smart Add Cache | task | completed | 2026-03-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-06T06:05:30.434Z
-- **Completed:** 2026-03-11T02:24:02.155Z
-- **Duration:** 4d 20h 18m
+| Title | Status |
+|-------|--------|
+| [Integration tests for smart-add cache staleness detection](./integration-tests-for-smart-add-3ac045/index.md) | completed |
+| [PRD Hash Validation for Smart Add Cache](./prd-hash-validation-for-smart-add-cache/index.md) | completed |

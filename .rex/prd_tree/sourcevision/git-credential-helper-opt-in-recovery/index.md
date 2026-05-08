@@ -9,25 +9,9 @@ completedAt: "2026-02-23T01:20:36.805Z"
 acceptanceCriteria: []
 ---
 
-# Git Credential Helper Opt-In Recovery
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Credential Helper Command Surface | task | completed | 2026-02-23 |
-| Non-Interactive Refresh Compatibility | task | completed | 2026-02-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-23T01:20:36.805Z
-- **Completed:** 2026-02-23T01:20:36.805Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Credential Helper Command Surface](./credential-helper-command-surface/index.md) | completed |
+| [Non-Interactive Refresh Compatibility](./non-interactive-refresh-compatibility/index.md) | completed |

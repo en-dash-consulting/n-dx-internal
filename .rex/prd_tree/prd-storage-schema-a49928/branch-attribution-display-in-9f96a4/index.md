@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Surface branch and file attribution visually in the dashboard PRD tree view so users can immediately see which items are actively being worked on and on which branch, without leaving the dashboard."
 ---
 
-# Branch Attribution Display in PRD Dashboard
+## Children
 
- [completed]
-
-## Summary
-
-Surface branch and file attribution visually in the dashboard PRD tree view so users can immediately see which items are actively being worked on and on which branch, without leaving the dashboard.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Include branch and file attribution in rex API and MCP status responses | task | completed | 2026-04-24 |
-| Render branch badges on PRD tree rows and add branch filter to toolbar | task | completed | 2026-04-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-24T20:41:18.632Z
-- **Completed:** 2026-04-24T20:41:18.632Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Include branch and file attribution in rex API and MCP status responses](./include-branch-and-file-d355da/index.md) | completed |
+| [Render branch badges on PRD tree rows and add branch filter to toolbar](./render-branch-badges-on-prd-982777/index.md) | completed |

@@ -9,24 +9,8 @@ completedAt: "2026-05-06T15:06:46.948Z"
 endedAt: "2026-05-06T15:06:46.948Z"
 ---
 
-# LLM Integration
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Automatic Model and Vendor Failover on Run Errors | feature | completed | 2026-05-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** epic
-- **Started:** 2026-05-06T15:06:46.948Z
-- **Completed:** 2026-05-06T15:06:46.948Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Automatic Model and Vendor Failover on Run Errors](./automatic-model-and-vendor-2e136c/index.md) | completed |

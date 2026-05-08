@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "Audit ndx add, rex add, and the smart-add pipeline to ensure none of them read from or write to .rex/prd.md. All add/edit operations must mutate only the .rex/prd_tree folder structure. Legacy prd.md should be ignored at runtime (no fallback read), with migration handled exclusively by the existing rex migrate-to-folder-tree command."
 ---
 
-# Eliminate prd.md from Read and Write Paths in ndx add and Related Commands
+## Children
 
- [completed]
-
-## Summary
-
-Audit ndx add, rex add, and the smart-add pipeline to ensure none of them read from or write to .rex/prd.md. All add/edit operations must mutate only the .rex/prd_tree folder structure. Legacy prd.md should be ignored at runtime (no fallback read), with migration handled exclusively by the existing rex migrate-to-folder-tree command.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add architecture-policy test enforcing prd.md is not read or written outside migration helper | task | completed | 2026-05-06 |
-| Audit and remove all prd.md read fallbacks and write paths from ndx add and rex add pipelines | task | completed | 2026-05-01 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-05-06T13:08:32.042Z
-- **Completed:** 2026-05-06T13:08:32.042Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add architecture-policy test enforcing prd.md is not read or written outside migration helper](./add-architecture-policy-test-553655/index.md) | completed |
+| [Audit and remove all prd.md read fallbacks and write paths from ndx add and rex add pipelines](./audit-and-remove-all-prd-md-7b6be4/index.md) | completed |

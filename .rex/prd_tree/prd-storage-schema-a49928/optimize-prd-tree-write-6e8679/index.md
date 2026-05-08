@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "Profile and optimize the folder-tree write path so that ndx add, rex add, edit_item, and other prd_tree-mutating commands complete quickly and atomically. Target sub-500ms latency for single-item adds on PRDs with hundreds of items, and ensure writes are crash-safe (no partial writes leaving orphan directories or half-written index.md files)."
 ---
 
-# Optimize prd_tree Write Performance for Add and Edit Commands
+## Children
 
- [completed]
-
-## Summary
-
-Profile and optimize the folder-tree write path so that ndx add, rex add, edit_item, and other prd_tree-mutating commands complete quickly and atomically. Target sub-500ms latency for single-item adds on PRDs with hundreds of items, and ensure writes are crash-safe (no partial writes leaving orphan directories or half-written index.md files).
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement atomic, fast write path for prd_tree mutations with crash-safety guarantees | task | completed | 2026-05-01 |
-| Profile prd_tree write path and identify bottlenecks for single-item add and edit operations | task | completed | 2026-05-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-05-06T02:55:37.870Z
-- **Completed:** 2026-05-06T02:55:37.870Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement atomic, fast write path for prd_tree mutations with crash-safety guarantees](./implement-atomic-fast-write-962cd7/index.md) | completed |
+| [Profile prd_tree write path and identify bottlenecks for single-item add and edit operations](./profile-prd-tree-write-path-and-bbf2dd/index.md) | completed |

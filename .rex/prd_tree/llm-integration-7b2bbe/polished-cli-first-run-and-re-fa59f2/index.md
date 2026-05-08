@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Branded ASCII art, smart config reuse, clean summary output on init."
 ---
 
-# Polished CLI first-run and re-init experience
+## Children
 
-🟡 [completed]
-
-## Summary
-
-Branded ASCII art, smart config reuse, clean summary output on init.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Branded n-dx ASCII art CLI header for init | task | completed | 2026-03-24 |
-| Skip provider prompt when existing config is valid | task | completed | 2026-03-24 |
-| Unified init status report instead of mixed sub-init output | task | completed | 2026-03-24 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** medium
-- **Level:** feature
-- **Started:** 2026-04-13T18:35:49.604Z
-- **Completed:** 2026-03-24T13:06:25.502Z
+| Title | Status |
+|-------|--------|
+| [Branded n-dx ASCII art CLI header for init](./branded-n-dx-ascii-art-cli-768c98/index.md) | completed |
+| [Skip provider prompt when existing config is valid](./skip-provider-prompt-when-224703/index.md) | completed |
+| [Unified init status report instead of mixed sub-init output](./unified-init-status-report-7be07d/index.md) | completed |

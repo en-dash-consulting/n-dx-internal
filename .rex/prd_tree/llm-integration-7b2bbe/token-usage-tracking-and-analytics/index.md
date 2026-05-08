@@ -9,26 +9,10 @@ completedAt: "2026-02-04T23:32:45.695Z"
 acceptanceCriteria: []
 ---
 
-# Token usage tracking and analytics
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Claude API token tracking | task | completed | 2026-02-04 |
-| Implement token usage tracking, reporting, and budget checking | task | completed | 2026-02-09 |
-| Usage reporting and visualization | task | completed | 2026-02-04 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-04T23:32:45.695Z
-- **Completed:** 2026-02-04T23:32:45.695Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Claude API token tracking](./claude-api-token-tracking/index.md) | completed |
+| [Implement token usage tracking, reporting, and budget checking](./implement-token-usage-tracking-1ae1ab/index.md) | completed |
+| [Usage reporting and visualization](./usage-reporting-and-visualization/index.md) | completed |

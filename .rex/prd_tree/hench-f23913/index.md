@@ -9,24 +9,8 @@ completedAt: "2026-05-06T13:01:11.375Z"
 endedAt: "2026-05-06T13:01:11.375Z"
 ---
 
-# Hench
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Strict Self-Heal Tag Scoping Enforcement | feature | completed | 2026-05-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** epic
-- **Started:** 2026-05-06T13:01:11.375Z
-- **Completed:** 2026-05-06T13:01:11.375Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Strict Self-Heal Tag Scoping Enforcement](./strict-self-heal-tag-scoping-enforcement/index.md) | completed |

@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "ndx work --auto should make reasoning transparent at both ends of the run."
 ---
 
-# Transparent task selection and completion reasoning
+## Children
 
-🟡 [completed]
-
-## Summary
-
-ndx work --auto should make reasoning transparent at both ends of the run.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Classify changes in run summary (code/docs/config/metadata-only) | task | completed | 2026-03-24 |
-| Show prior attempt history in task card | task | completed | 2026-03-24 |
-| Surface selection reasoning in auto-select run header | task | completed | 2026-03-24 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** medium
-- **Level:** feature
-- **Started:** 2026-04-13T18:35:49.604Z
-- **Completed:** 2026-03-24T13:06:25.502Z
+| Title | Status |
+|-------|--------|
+| [Classify changes in run summary (code/docs/config/metadata-only)](./classify-changes-in-run-summary-e081ca/index.md) | completed |
+| [Show prior attempt history in task card](./show-prior-attempt-history-in-task-card/index.md) | completed |
+| [Surface selection reasoning in auto-select run header](./surface-selection-reasoning-in-d0c0c6/index.md) | completed |

@@ -9,25 +9,9 @@ completedAt: "2026-03-03T07:50:01.582Z"
 acceptanceCriteria: []
 ---
 
-# LoE-Calibrated Proposal Generation in rex add
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| LoE-Aware Consolidated Proposal Generation | task | completed | 2026-03-03 |
-| LoE Threshold-Driven Proposal Decomposition | task | completed | 2026-03-03 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-03T07:50:01.582Z
-- **Completed:** 2026-03-03T07:50:01.582Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [LoE-Aware Consolidated Proposal Generation](./loe-aware-consolidated-proposal-b4127a/index.md) | completed |
+| [LoE Threshold-Driven Proposal Decomposition](./loe-threshold-driven-proposal-c12a55/index.md) | completed |

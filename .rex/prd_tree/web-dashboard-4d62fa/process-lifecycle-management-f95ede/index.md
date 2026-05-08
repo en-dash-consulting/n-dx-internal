@@ -9,27 +9,11 @@ completedAt: "2026-02-24T07:53:24.088Z"
 acceptanceCriteria: []
 ---
 
-# Process Lifecycle Management and Graceful Shutdown
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Dead Connection Detection and Cleanup | task | completed | 2026-02-27 |
-| Graceful Shutdown Implementation | task | completed | 2026-02-24 |
-| Lingering Process Investigation and Root Cause Analysis | task | completed | 2026-02-24 |
-| Refresh Command Process Management | task | completed | 2026-02-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-24T07:53:24.088Z
-- **Completed:** 2026-02-24T07:53:24.088Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Dead Connection Detection and Cleanup](./dead-connection-detection-and-cleanup/index.md) | completed |
+| [Graceful Shutdown Implementation](./graceful-shutdown-implementation/index.md) | completed |
+| [Lingering Process Investigation and Root Cause Analysis](./lingering-process-investigation-d60d8d/index.md) | completed |
+| [Refresh Command Process Management](./refresh-command-process-management/index.md) | completed |

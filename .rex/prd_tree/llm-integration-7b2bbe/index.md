@@ -8,55 +8,35 @@ completedAt: "2026-04-14T20:10:12.757Z"
 description: "AI client infrastructure: vendor-neutral LLM foundation, token usage tracking and analytics, budget management, vendor support (Claude, Codex), onboarding and authentication.\n\n---\n\nAutomated recommendations from SourceVision analysis. 21 zone+category groups covering 25 total findings."
 ---
 
-# LLM Integration
+## Children
 
- [completed]
-
-## Summary
-
-AI client infrastructure: vendor-neutral LLM foundation, token usage tracking and analytics, budget management, vendor support (Claude, Codex), onboarding and authentication.
-
----
-
-Automated recommendations from SourceVision analysis. 21 zone+category groups covering 25 total findings.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Between-Run API Quota Status Logging | feature | completed | 2026-04-08 |
-| Centralized Model Resolution and Vendor Visibility Across All LLM Commands | feature | completed | 2026-04-21 |
-| Codex Vendor Reliability and Documentation | feature | completed | 2026-02-20 |
-| Consistent Vendor and Model Resolution Across Commands | feature | completed | 2026-04-08 |
-| Deferred Codex Token Validation at End of Work Run | feature | completed | 2026-04-16 |
-| Deterministic Task Utilization Budget Fallback | feature | completed | 2026-02-22 |
-| Codex Multi-line Token Count Parsing Fix | feature | completed | 2026-04-14 |
-| Fix observation in polling (2 findings) | feature | completed | 2026-04-13 |
-| Fix suggestion in token (1 finding) | feature | completed | 2026-04-13 |
-| Fix suggestion in web-2 (1 finding) | feature | completed | 2026-04-13 |
-| Codex CLI Token Usage Extraction from Run Output | feature | completed | 2026-04-14 |
-| Between-Run API Quota Status Logging | feature | completed | 2026-04-08 |
-| Fix move-file in web-server (1 finding) | feature | completed | 2026-04-16 |
-| Init-time LLM Onboarding and Authentication | feature | completed | 2026-02-21 |
-| LLM Client Circular Dependency Resolution | feature | completed | 2026-02-24 |
-| Memory-Aware Polling Loop Management | feature | completed | 2026-02-27 |
-| Model Tier Registry and Weight-Aware Resolution | feature | completed | 2026-04-15 |
-| Per-Command Task Weight Classification and Integration | feature | completed | 2026-04-15 |
-| Polished CLI first-run and re-init experience | feature | completed | 2026-03-24 |
-| Dashboard UI for Usage and Duration | feature | completed | 2026-04-23 |
-| Rex Command Vendor-Model Binding Regression Fix | feature | completed | 2026-04-08 |
-| Robust Claude CLI Discovery for ndx init | feature | completed | 2026-04-10 |
-| Shared LLM Error Classification with Token Exhaustion, Bad Response, and Rate-Limit Diagnostics | feature | completed | 2026-04-21 |
-| Task Duration Tracking | feature | completed | 2026-04-23 |
-| Token Event Attribution Accuracy | feature | completed | 2026-02-21 |
-| Token Usage Attribution per PRD Item | feature | completed | 2026-04-23 |
-| Token usage tracking and analytics | feature | completed | 2026-02-04 |
-| Unified Server Architecture: HTTP MCP and ndx start | feature | completed | 2026-02-10 |
-
-## Info
-
-- **Status:** completed
-- **Level:** epic
-- **Started:** 2026-04-13T18:35:49.604Z
-- **Completed:** 2026-04-14T20:10:12.757Z
-- **Duration:** 1d 1h 34m
+| Title | Status |
+|-------|--------|
+| [Between-Run API Quota Status Logging](./between-run-api-quota-status-642df7/index.md) | completed |
+| [Centralized Model Resolution and Vendor Visibility Across All LLM Commands](./centralized-model-resolution-e34e66/index.md) | completed |
+| [Codex Vendor Reliability and Documentation](./codex-vendor-reliability-and-b3cbf3/index.md) | completed |
+| [Consistent Vendor and Model Resolution Across Commands](./consistent-vendor-and-model-e4b6ed/index.md) | completed |
+| [Deferred Codex Token Validation at End of Work Run](./deferred-codex-token-validation-fb76ef/index.md) | completed |
+| [Deterministic Task Utilization Budget Fallback](./deterministic-task-utilization-7fefed/index.md) | completed |
+| [Codex Multi-line Token Count Parsing Fix](./codex-multi-line-token-count-parsing-fix/index.md) | completed |
+| [Fix observation in polling (2 findings)](./fix-observation-in-polling-2-findings/index.md) | completed |
+| [Fix suggestion in token (1 finding)](./fix-suggestion-in-token-1-finding/index.md) | completed |
+| [Fix suggestion in web-2 (1 finding)](./fix-suggestion-in-web-2-1-finding/index.md) | completed |
+| [Codex CLI Token Usage Extraction from Run Output](./codex-cli-token-usage-508bf0/index.md) | completed |
+| [Between-Run API Quota Status Logging](./between-run-api-quota-status-adf5e5/index.md) | completed |
+| [Fix move-file in web-server (1 finding)](./fix-move-file-in-web-server-1-finding/index.md) | completed |
+| [Init-time LLM Onboarding and Authentication](./init-time-llm-onboarding-and-8eaa2e/index.md) | completed |
+| [LLM Client Circular Dependency Resolution](./llm-client-circular-dependency-9dc205/index.md) | completed |
+| [Memory-Aware Polling Loop Management](./memory-aware-polling-loop-management/index.md) | completed |
+| [Model Tier Registry and Weight-Aware Resolution](./model-tier-registry-and-weight-405c9f/index.md) | completed |
+| [Per-Command Task Weight Classification and Integration](./per-command-task-weight-effae9/index.md) | completed |
+| [Polished CLI first-run and re-init experience](./polished-cli-first-run-and-re-fa59f2/index.md) | completed |
+| [Dashboard UI for Usage and Duration](./dashboard-ui-for-usage-and-duration/index.md) | completed |
+| [Rex Command Vendor-Model Binding Regression Fix](./rex-command-vendor-model-d1438d/index.md) | completed |
+| [Robust Claude CLI Discovery for ndx init](./robust-claude-cli-discovery-for-ndx-init/index.md) | completed |
+| [Shared LLM Error Classification with Token Exhaustion, Bad Response, and Rate-Limit Diagnostics](./shared-llm-error-classification-0d84e5/index.md) | completed |
+| [Task Duration Tracking](./task-duration-tracking/index.md) | completed |
+| [Token Event Attribution Accuracy](./token-event-attribution-accuracy/index.md) | completed |
+| [Token Usage Attribution per PRD Item](./token-usage-attribution-per-prd-item/index.md) | completed |
+| [Token usage tracking and analytics](./token-usage-tracking-and-analytics/index.md) | completed |
+| [Unified Server Architecture: HTTP MCP and ndx start](./unified-server-architecture-e96db7/index.md) | completed |

@@ -10,25 +10,9 @@ endedAt: "2026-04-30T21:00:17.624Z"
 acceptanceCriteria: []
 ---
 
-# Show Target PRD in ndx add Output
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests asserting the 'Added to:' path resolves on disk for all PRD item levels | task | completed | 2026-04-30 |
-| Fix ndx add 'Added to:' line to print copy-pasteable folder-tree path of the created item | task | completed | 2026-04-30 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-30T21:00:17.624Z
-- **Completed:** 2026-04-30T21:00:17.624Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests asserting the 'Added to:' path resolves on disk for all PRD item levels](./add-regression-tests-asserting-0e2b33/index.md) | completed |
+| [Fix ndx add 'Added to:' line to print copy-pasteable folder-tree path of the created item](./fix-ndx-add-added-to-line-to-76bc42/index.md) | completed |

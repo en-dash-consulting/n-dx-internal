@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "Make task-level PRD items always materialize as a folder containing an index.md, while allowing their subtasks to be either nested folders (recursing the same rule) or leaf .md files. Promote a leaf subtask .md file to a folder with index.md the moment it gains children, so the storage shape is uniform regardless of how a subtree grows."
 ---
 
-# Folder-Per-Task Hierarchy Enforcement
+## Children
 
- [completed]
-
-## Summary
-
-Make task-level PRD items always materialize as a folder containing an index.md, while allowing their subtasks to be either nested folders (recursing the same rule) or leaf .md files. Promote a leaf subtask .md file to a folder with index.md the moment it gains children, so the storage shape is uniform regardless of how a subtree grows.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Auto-promote leaf subtask .md files to folder-with-index.md when children are added | task | completed | 2026-05-08 |
-| Enforce folder-with-index.md storage for tasks and dual-mode subtask serialization | task | completed | 2026-05-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-05-08T05:46:20.049Z
-- **Completed:** 2026-05-08T05:46:20.049Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Auto-promote leaf subtask .md files to folder-with-index.md when children are added](./auto-promote-leaf-subtask-md-6acff0/index.md) | completed |
+| [Enforce folder-with-index.md storage for tasks and dual-mode subtask serialization](./enforce-folder-with-index-md-23bf71/index.md) | completed |

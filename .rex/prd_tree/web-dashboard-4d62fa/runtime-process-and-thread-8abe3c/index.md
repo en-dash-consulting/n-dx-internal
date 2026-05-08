@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Ensure that no worker threads or child processes are left behind during normal n-dx operation — not just at exit. Covers the full command lifecycle: spawn, execution, and teardown for all CLI entry points."
 ---
 
-# Runtime Process and Thread Lifecycle Enforcement
+## Children
 
- [completed]
-
-## Summary
-
-Ensure that no worker threads or child processes are left behind during normal n-dx operation — not just at exit. Covers the full command lifecycle: spawn, execution, and teardown for all CLI entry points.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Audit and enforce worker thread cleanup across all CLI entry points | task | completed | 2026-04-03 |
-| Implement orphan process detection and cleanup for spawned subcommands | task | completed | 2026-04-03 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-03T18:50:24.588Z
-- **Completed:** 2026-04-03T18:50:24.588Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Audit and enforce worker thread cleanup across all CLI entry points](./audit-and-enforce-worker-thread-b1dc58/index.md) | completed |
+| [Implement orphan process detection and cleanup for spawned subcommands](./implement-orphan-process-4e870c/index.md) | completed |

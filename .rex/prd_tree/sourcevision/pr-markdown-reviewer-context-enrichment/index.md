@@ -9,25 +9,9 @@ completedAt: "2026-02-22T22:20:05.396Z"
 acceptanceCriteria: []
 ---
 
-# PR Markdown Reviewer Context Enrichment
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| PRD Epic Attribution in PR Summaries | task | completed | 2026-02-22 |
-| Significant Change Narrative | task | completed | 2026-02-22 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-22T22:20:05.396Z
-- **Completed:** 2026-02-22T22:20:05.396Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [PRD Epic Attribution in PR Summaries](./prd-epic-attribution-in-pr-summaries/index.md) | completed |
+| [Significant Change Narrative](./significant-change-narrative/index.md) | completed |

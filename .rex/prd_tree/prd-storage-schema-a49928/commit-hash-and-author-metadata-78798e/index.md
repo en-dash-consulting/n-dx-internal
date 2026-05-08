@@ -11,26 +11,10 @@ acceptanceCriteria: []
 description: "Extend each PRD item's markdown frontmatter with structured fields for the full commit hash(es) and author(s) tied to that item. Hench's commit-time status transition (already embedded as a trailer) is the primary write site; the schema must also support manual additions and multi-commit items (an item completed across multiple commits accumulates an array)."
 ---
 
-# Commit Hash and Author Metadata on PRD Items
+## Children
 
- [completed]
-
-## Summary
-
-Extend each PRD item's markdown frontmatter with structured fields for the full commit hash(es) and author(s) tied to that item. Hench's commit-time status transition (already embedded as a trailer) is the primary write site; the schema must also support manual additions and multi-commit items (an item completed across multiple commits accumulates an array).
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Extend PRD item frontmatter schema and parser/serializer for commit attribution | task | completed | 2026-04-30 |
-| Populate commit attribution on hench-driven status transitions and from commit-message trailers | task | completed | 2026-04-30 |
-| Surface commit attribution in dashboard PRD detail view and folder index summaries | task | completed | 2026-04-30 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-30T14:27:57.050Z
-- **Completed:** 2026-04-30T14:27:57.050Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Extend PRD item frontmatter schema and parser/serializer for commit attribution](./extend-prd-item-frontmatter-55f508/index.md) | completed |
+| [Populate commit attribution on hench-driven status transitions and from commit-message trailers](./populate-commit-attribution-on-8956fb/index.md) | completed |
+| [Surface commit attribution in dashboard PRD detail view and folder index summaries](./surface-commit-attribution-in-fa5724/index.md) | completed |

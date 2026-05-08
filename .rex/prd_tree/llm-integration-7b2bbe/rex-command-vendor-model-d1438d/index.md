@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "When `ndx config llm.vendor codex` is set, rex CLI commands (analyze, recommend, add, etc.) should resolve and use GPT-family models rather than falling back to Claude defaults. The centralized resolver exists but rex call sites may not be reading vendor config correctly or may be bypassing the resolver."
 ---
 
-# Rex Command Vendor-Model Binding Regression Fix
+## Children
 
- [completed]
-
-## Summary
-
-When `ndx config llm.vendor codex` is set, rex CLI commands (analyze, recommend, add, etc.) should resolve and use GPT-family models rather than falling back to Claude defaults. The centralized resolver exists but rex call sites may not be reading vendor config correctly or may be bypassing the resolver.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests for vendor-scoped model selection in rex commands | task | completed | 2026-04-08 |
-| Audit rex LLM call sites for vendor/model resolver gaps | task | completed | 2026-04-08 |
-| Fix rex commands to use resolved GPT model when vendor is codex | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T15:52:18.334Z
-- **Completed:** 2026-04-08T15:52:18.334Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests for vendor-scoped model selection in rex commands](./add-regression-tests-for-vendor-0270df/index.md) | completed |
+| [Audit rex LLM call sites for vendor/model resolver gaps](./audit-rex-llm-call-sites-for-633f58/index.md) | completed |
+| [Fix rex commands to use resolved GPT model when vendor is codex](./fix-rex-commands-to-use-f0c313/index.md) | completed |

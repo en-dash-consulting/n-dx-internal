@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Enable natural language input for PRD creation, allowing users to describe features in plain English and have them automatically structured into proper epic/feature/task hierarchies with AI assistance"
 ---
 
-# Natural language PRD authoring
+## Children
 
- [completed]
-
-## Summary
-
-Enable natural language input for PRD creation, allowing users to describe features in plain English and have them automatically structured into proper epic/feature/task hierarchies with AI assistance
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Bulk natural language input | task | completed | 2026-02-24 |
-| Smart add functionality | task | completed | 2026-02-09 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-09T12:56:47.925Z
-- **Completed:** 2026-02-09T12:56:47.925Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Bulk natural language input](./bulk-natural-language-input/index.md) | completed |
+| [Smart add functionality](./smart-add-functionality/index.md) | completed |

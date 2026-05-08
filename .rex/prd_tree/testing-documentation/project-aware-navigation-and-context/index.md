@@ -9,28 +9,12 @@ completedAt: "2026-02-17T23:53:56.209Z"
 acceptanceCriteria: []
 ---
 
-# Project-aware Navigation and Context
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Enhanced Navigation Interface | task | completed | 2026-02-17 |
-| Hench Run Deep-linking | task | completed | 2026-02-18 |
-| Project-centric Page Title and Branding | task | completed | 2026-02-18 |
-| Project Configuration and Switching | task | completed | 2026-02-17 |
-| Top-level Token Usage Navigation | task | completed | 2026-02-22 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-17T23:53:56.209Z
-- **Completed:** 2026-02-17T23:53:56.209Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Enhanced Navigation Interface](./enhanced-navigation-interface/index.md) | completed |
+| [Hench Run Deep-linking](./hench-run-deep-linking/index.md) | completed |
+| [Project-centric Page Title and Branding](./project-centric-page-title-and-branding/index.md) | completed |
+| [Project Configuration and Switching](./project-configuration-and-switching/index.md) | completed |
+| [Top-level Token Usage Navigation](./top-level-token-usage-navigation/index.md) | completed |

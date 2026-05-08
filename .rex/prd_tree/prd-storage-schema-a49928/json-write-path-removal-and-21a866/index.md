@@ -11,26 +11,10 @@ acceptanceCriteria: []
 description: "Remove all code that writes to .rex/prd.json (and any branch-scoped .rex/prd_*.json files) from PRD mutation paths. After the dual-write migration phase, only Markdown files should be written by ndx add, rex CLI commands, and MCP write tools. The only permitted JSON write is the ephemeral .rex/.cache/prd.json produced by ndx start."
 ---
 
-# JSON Write Path Removal and Markdown-Only Enforcement
+## Children
 
- [completed]
-
-## Summary
-
-Remove all code that writes to .rex/prd.json (and any branch-scoped .rex/prd_*.json files) from PRD mutation paths. After the dual-write migration phase, only Markdown files should be written by ndx add, rex CLI commands, and MCP write tools. The only permitted JSON write is the ephemeral .rex/.cache/prd.json produced by ndx start.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests asserting no JSON writes occur outside ndx start | task | completed | 2026-04-29 |
-| Audit and remove residual JSON write calls from rex CLI and MCP handlers | task | completed | 2026-04-29 |
-| Remove JSON dual-write from PRDStore save operations | task | completed | 2026-04-29 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-29T03:45:50.036Z
-- **Completed:** 2026-04-29T03:45:50.036Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests asserting no JSON writes occur outside ndx start](./add-regression-tests-asserting-67246c/index.md) | completed |
+| [Audit and remove residual JSON write calls from rex CLI and MCP handlers](./audit-and-remove-residual-json-eb208a/index.md) | completed |
+| [Remove JSON dual-write from PRDStore save operations](./remove-json-dual-write-from-72581f/index.md) | completed |

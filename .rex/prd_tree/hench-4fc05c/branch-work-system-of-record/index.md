@@ -9,25 +9,9 @@ completedAt: "2026-02-25T04:48:07.956Z"
 acceptanceCriteria: []
 ---
 
-# Branch Work System of Record
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| JSON-based branch work tracking infrastructure | task | completed | 2026-02-25 |
-| Rex completion data integration | task | completed | 2026-02-25 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-25T04:48:07.956Z
-- **Completed:** 2026-02-25T04:48:07.956Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [JSON-based branch work tracking infrastructure](./json-based-branch-work-tracking-98e69d/index.md) | completed |
+| [Rex completion data integration](./rex-completion-data-integration/index.md) | completed |

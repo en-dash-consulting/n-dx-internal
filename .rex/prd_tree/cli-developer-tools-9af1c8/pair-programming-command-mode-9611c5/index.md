@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Rename the ndx single-command/sc CLI entrypoints to ndx pair-programming/bicker, and augment the mode with cross-vendor validation so whichever vendor is not doing the primary work automatically runs tests and reviews the completed command output."
 ---
 
-# Pair-Programming Command Mode (rename from single-command)
+## Children
 
- [completed]
-
-## Summary
-
-Rename the ndx single-command/sc CLI entrypoints to ndx pair-programming/bicker, and augment the mode with cross-vendor validation so whichever vendor is not doing the primary work automatically runs tests and reviews the completed command output.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement cross-vendor validation pass in pair-programming mode | task | completed | 2026-04-16 |
-| Rename single-command and sc CLI entrypoints to pair-programming and bicker | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-16T16:19:56.284Z
-- **Completed:** 2026-04-16T16:19:56.284Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement cross-vendor validation pass in pair-programming mode](./implement-cross-vendor-661f8e/index.md) | completed |
+| [Rename single-command and sc CLI entrypoints to pair-programming and bicker](./rename-single-command-and-sc-0150c6/index.md) | completed |

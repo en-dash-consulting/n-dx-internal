@@ -9,27 +9,11 @@ completedAt: "2026-02-20T23:12:36.086Z"
 acceptanceCriteria: []
 ---
 
-# Codex Vendor Reliability and Documentation
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Codex Token Accounting Accuracy | task | completed | 2026-02-20 |
-| Fix Run Count in Sidebar | task | completed | 2026-02-18 |
-| Hench Codex Output Parsing Hardening | task | completed | 2026-02-20 |
-| Rex and Hench Vendor Behavior Documentation | task | completed | 2026-02-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-20T23:12:36.086Z
-- **Completed:** 2026-02-20T23:12:36.086Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Codex Token Accounting Accuracy](./codex-token-accounting-accuracy/index.md) | completed |
+| [Fix Run Count in Sidebar](./fix-run-count-in-sidebar/index.md) | completed |
+| [Hench Codex Output Parsing Hardening](./hench-codex-output-parsing-hardening/index.md) | completed |
+| [Rex and Hench Vendor Behavior Documentation](./rex-and-hench-vendor-behavior-26c7a3/index.md) | completed |

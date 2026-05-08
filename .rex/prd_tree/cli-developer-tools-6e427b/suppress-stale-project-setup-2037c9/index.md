@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "The 'project setup is stale' notice is currently emitted in CLI contexts where it shouldn't appear, creating noise for users with fully initialized projects. Replace the trigger heuristic with a direct filesystem check for the three tool directories (.sourcevision, .rex, .hench) and only surface the message when one or more is missing."
 ---
 
-# Suppress Stale Project Setup Message When All Tool Directories Exist
+## Children
 
- [completed]
-
-## Summary
-
-The 'project setup is stale' notice is currently emitted in CLI contexts where it shouldn't appear, creating noise for users with fully initialized projects. Replace the trigger heuristic with a direct filesystem check for the three tool directories (.sourcevision, .rex, .hench) and only surface the message when one or more is missing.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests asserting stale-setup notice fires only on missing tool directories | task | completed | 2026-05-06 |
-| Replace stale-setup trigger with direct existence check for .sourcevision, .rex, and .hench folders | task | completed | 2026-05-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-05-06T13:22:10.283Z
-- **Completed:** 2026-05-06T13:22:10.283Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests asserting stale-setup notice fires only on missing tool directories](./add-regression-tests-asserting-4cabb3/index.md) | completed |
+| [Replace stale-setup trigger with direct existence check for .sourcevision, .rex, and .hench folders](./replace-stale-setup-trigger-dffc3d/index.md) | completed |

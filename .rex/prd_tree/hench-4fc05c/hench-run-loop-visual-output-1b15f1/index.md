@@ -9,25 +9,9 @@ completedAt: "2026-04-08T23:29:06.643Z"
 acceptanceCriteria: []
 ---
 
-# Hench Run-Loop Visual Output Refinements
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Apply yellow coloring to help notes and warning messages in hench CLI output | task | completed | 2026-04-08 |
-| Color-code [Tool], [Agent], and vendor prefix labels in hench run output | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T23:29:06.643Z
-- **Completed:** 2026-04-08T23:29:06.643Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Apply yellow coloring to help notes and warning messages in hench CLI output](./apply-yellow-coloring-to-help-418753/index.md) | completed |
+| [Color-code [Tool], [Agent], and vendor prefix labels in hench run output](./color-code-tool-agent-and-48ee8d/index.md) | completed |

@@ -9,28 +9,12 @@ completedAt: "2026-02-18T09:43:24.958Z"
 acceptanceCriteria: []
 ---
 
-# Rex UI Task Management Enhancement
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Detail Panel Task Creation | task | completed | 2026-02-18 |
-| Rex Task Search | task | completed | 2026-03-06 |
-| Smart Add Command Construction and Submission UX Fix | task | completed | 2026-03-06 |
-| Smart Add Command Regression Fix | task | completed | 2026-03-19 |
-| Status-based Tree Filtering | task | completed | 2026-02-09 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-18T09:43:24.958Z
-- **Completed:** 2026-02-18T09:43:24.958Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Detail Panel Task Creation](./detail-panel-task-creation/index.md) | completed |
+| [Rex Task Search](./rex-task-search/index.md) | completed |
+| [Smart Add Command Construction and Submission UX Fix](./smart-add-command-construction-7de88f/index.md) | completed |
+| [Smart Add Command Regression Fix](./smart-add-command-regression-fix/index.md) | completed |
+| [Status-based Tree Filtering](./status-based-tree-filtering/index.md) | completed |

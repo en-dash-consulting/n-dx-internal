@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Define a human-readable markdown format that encodes all PRD fields with full fidelity, and implement serializers/parsers for converting between the in-memory PRD tree and markdown representations."
 ---
 
-# Markdown Schema Design and Bidirectional Serialization
+## Children
 
- [completed]
-
-## Summary
-
-Define a human-readable markdown format that encodes all PRD fields with full fidelity, and implement serializers/parsers for converting between the in-memory PRD tree and markdown representations.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Design and document the markdown schema for full-fidelity PRD tree representation | task | completed | 2026-04-23 |
-| Implement bidirectional markdown serializer and parser with round-trip fidelity tests | task | completed | 2026-04-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-24T14:24:27.208Z
-- **Completed:** 2026-04-24T14:24:27.208Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Design and document the markdown schema for full-fidelity PRD tree representation](./design-and-document-the-52811e/index.md) | completed |
+| [Implement bidirectional markdown serializer and parser with round-trip fidelity tests](./implement-bidirectional-35ccf9/index.md) | completed |

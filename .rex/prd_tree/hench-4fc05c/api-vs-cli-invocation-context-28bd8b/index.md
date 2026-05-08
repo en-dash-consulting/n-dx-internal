@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Detect whether hench is being invoked through the CLI (ndx work command) or via HTTP API/MCP and surface this context to the user through output messages, flags, and run metadata."
 ---
 
-# API vs CLI Invocation Context Detection and Display
+## Children
 
- [completed]
-
-## Summary
-
-Detect whether hench is being invoked through the CLI (ndx work command) or via HTTP API/MCP and surface this context to the user through output messages, flags, and run metadata.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Detect and expose invocation context in hench runner | task | completed | 2026-04-20 |
-| Display execution context indicator to users in CLI and dashboard | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-20T18:43:09.805Z
-- **Completed:** 2026-04-20T18:43:09.805Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Detect and expose invocation context in hench runner](./detect-and-expose-invocation-8f811d/index.md) | completed |
+| [Display execution context indicator to users in CLI and dashboard](./display-execution-context-eab929/index.md) | completed |

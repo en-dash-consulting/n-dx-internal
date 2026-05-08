@@ -9,25 +9,9 @@ completedAt: "2026-02-18T02:16:16.823Z"
 acceptanceCriteria: []
 ---
 
-# Web Server Port Management
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Chunked proposal acceptance | task | completed | 2026-02-06 |
-| Dynamic port allocation | task | completed | 2026-02-18 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-18T02:16:16.823Z
-- **Completed:** 2026-02-18T02:16:16.823Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Chunked proposal acceptance](./chunked-proposal-acceptance/index.md) | completed |
+| [Dynamic port allocation](./dynamic-port-allocation/index.md) | completed |

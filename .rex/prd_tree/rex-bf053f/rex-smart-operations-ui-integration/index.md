@@ -9,25 +9,9 @@ completedAt: "2026-02-11T02:29:18.230Z"
 acceptanceCriteria: []
 ---
 
-# Rex Smart Operations UI Integration
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Smart Add UI Integration | task | completed | 2026-02-11 |
-| Smart Pruning UI Integration | task | completed | 2026-02-10 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-11T02:16:59.280Z
-- **Completed:** 2026-02-11T02:29:18.230Z
-- **Duration:** 12m
+| Title | Status |
+|-------|--------|
+| [Smart Add UI Integration](./smart-add-ui-integration/index.md) | completed |
+| [Smart Pruning UI Integration](./smart-pruning-ui-integration/index.md) | completed |

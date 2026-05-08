@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Reduce duplication across unit tests by consolidating repeated constants and helper functions into test-only shared utilities without changing production code or altering test coverage."
 ---
 
-# Shared Unit Test Utilities
+## Children
 
- [completed]
-
-## Summary
-
-Reduce duplication across unit tests by consolidating repeated constants and helper functions into test-only shared utilities without changing production code or altering test coverage.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Inventory duplicated unit-test constants across suites | task | completed | 2026-04-20 |
-| Update unit test callers to use shared utilities | task | completed | 2026-04-20 |
-| Validate behavioral equivalence after test utility extraction | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-02T17:55:31.910Z
-- **Completed:** 2026-04-02T17:55:31.910Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Inventory duplicated unit-test constants across suites](./inventory-duplicated-unit-test-7ed4c8/index.md) | completed |
+| [Update unit test callers to use shared utilities](./update-unit-test-callers-to-use-9311f3/index.md) | completed |
+| [Validate behavioral equivalence after test utility extraction](./validate-behavioral-equivalence-4094da/index.md) | completed |

@@ -17,28 +17,10 @@ acceptanceCriteria:
 description: "Add a timeline view to the Rex dashboard showing item completions over time. Users should see which items completed most recently, sorted by completedAt timestamp. This gives visibility into velocity and recent progress without digging through the tree."
 ---
 
-# Item completion timeline view
+## Children
 
-🟡 [completed]
-
-## Summary
-
-Add a timeline view to the Rex dashboard showing item completions over time. Users should see which items completed most recently, sorted by completedAt timestamp. This gives visibility into velocity and recent progress without digging through the tree.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add date range filter to completion timeline | task | completed | 2026-03-24 |
-| Build completion timeline data source from PRD items | task | completed | 2026-03-24 |
-| Render completion timeline view in Rex dashboard | task | completed | 2026-03-24 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** medium
-- **Tags:** web, ux
-- **Level:** feature
-- **Started:** 2026-03-24T20:36:03.902Z
-- **Completed:** 2026-03-24T20:36:03.902Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add date range filter to completion timeline](./add-date-range-filter-to-99456e/index.md) | completed |
+| [Build completion timeline data source from PRD items](./build-completion-timeline-data-8fd96b/index.md) | completed |
+| [Render completion timeline view in Rex dashboard](./render-completion-timeline-view-380ea7/index.md) | completed |

@@ -9,25 +9,9 @@ completedAt: "2026-04-07T20:06:31.825Z"
 acceptanceCriteria: []
 ---
 
-# PR Build Pipeline and Cross-Platform CLI Validation Hardening
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Harden CLI smoke parity JSON collection for macOS and Windows runners | task | completed | 2026-04-07 |
-| Stabilize repeatable parity verification across original macOS and Windows CI steps | task | completed | 2026-04-07 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-07T20:06:31.825Z
-- **Completed:** 2026-04-07T20:06:31.825Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Harden CLI smoke parity JSON collection for macOS and Windows runners](./harden-cli-smoke-parity-json-d050ac/index.md) | completed |
+| [Stabilize repeatable parity verification across original macOS and Windows CI steps](./stabilize-repeatable-parity-d01f76/index.md) | completed |

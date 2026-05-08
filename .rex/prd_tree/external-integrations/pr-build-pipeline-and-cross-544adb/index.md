@@ -9,25 +9,9 @@ completedAt: "2026-04-07T22:50:03.910Z"
 acceptanceCriteria: []
 ---
 
-# PR Build Pipeline and Cross-Platform CLI Validation Hardening
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Define OS-agnostic CLI error code taxonomy | task | completed | 2026-04-07 |
-| Emit structured smoke artifacts with normalized error codes | task | completed | 2026-04-07 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-07T22:50:03.910Z
-- **Completed:** 2026-04-07T22:50:03.910Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Define OS-agnostic CLI error code taxonomy](./define-os-agnostic-cli-error-5392be/index.md) | completed |
+| [Emit structured smoke artifacts with normalized error codes](./emit-structured-smoke-artifacts-b714bd/index.md) | completed |

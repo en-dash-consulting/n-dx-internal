@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "When hench finishes a task and commits, the commit message must encode the PRD status transition (e.g. `pending → completed`) for the affected item so the commit itself is the system of record for the status change. The folder-tree write that flips the status to completed must be staged into the same commit, ensuring that checking out the commit reproduces the completed PRD state."
 ---
 
-# Commit-Time PRD Status Transition Embedding
+## Children
 
- [completed]
-
-## Summary
-
-When hench finishes a task and commits, the commit message must encode the PRD status transition (e.g. `pending → completed`) for the affected item so the commit itself is the system of record for the status change. The folder-tree write that flips the status to completed must be staged into the same commit, ensuring that checking out the commit reproduces the completed PRD state.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add structured PRD status transition trailer to commit messages | task | completed | 2026-04-29 |
-| Stage PRD status transition write into the same commit that completes the task | task | completed | 2026-04-29 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-29T19:02:57.778Z
-- **Completed:** 2026-04-29T19:02:57.778Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add structured PRD status transition trailer to commit messages](./add-structured-prd-status-1e6528/index.md) | completed |
+| [Stage PRD status transition write into the same commit that completes the task](./stage-prd-status-transition-d1e0b4/index.md) | completed |

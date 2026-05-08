@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Modify the SourceVision import analyzer (imports.ts) to dispatch to the Go import parser when processing .go files, reading go.mod once per invocation and producing file-to-package edges for internal imports. Integration tests validate the full import graph against the Go fixture."
 ---
 
-# Import Analyzer Language Dispatch
+## Children
 
- [completed]
-
-## Summary
-
-Modify the SourceVision import analyzer (imports.ts) to dispatch to the Go import parser when processing .go files, reading go.mod once per invocation and producing file-to-package edges for internal imports. Integration tests validate the full import graph against the Go fixture.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Modify imports.ts to route .go files to the Go import parser | task | completed | 2026-03-26 |
-| Write integration tests validating the Go import graph against the fixture project | task | completed | 2026-03-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-26T05:34:37.680Z
-- **Completed:** 2026-03-26T05:34:37.680Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Modify imports.ts to route .go files to the Go import parser](./modify-imports-ts-to-route-go-195091/index.md) | completed |
+| [Write integration tests validating the Go import graph against the fixture project](./write-integration-tests-c42858/index.md) | completed |

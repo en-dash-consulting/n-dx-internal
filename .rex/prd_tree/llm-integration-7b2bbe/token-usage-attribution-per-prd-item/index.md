@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Capture and aggregate LLM token usage (input, output, cached, total) against the PRD item each hench run is working on, then roll those totals up the tree so tasks, features, and epics each expose their own usage."
 ---
 
-# Token Usage Attribution per PRD Item
+## Children
 
- [completed]
-
-## Summary
-
-Capture and aggregate LLM token usage (input, output, cached, total) against the PRD item each hench run is working on, then roll those totals up the tree so tasks, features, and epics each expose their own usage.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Attribute hench run token usage to the active PRD task | task | completed | 2026-04-23 |
-| Roll up token usage from subtasks to tasks, features, and epics | task | completed | 2026-04-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-23T16:02:11.657Z
-- **Completed:** 2026-04-23T16:02:11.657Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Attribute hench run token usage to the active PRD task](./attribute-hench-run-token-usage-34344b/index.md) | completed |
+| [Roll up token usage from subtasks to tasks, features, and epics](./roll-up-token-usage-from-610224/index.md) | completed |

@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Audit the current state of CLI command hints and recommendations across all ndx/rex/hench/sourcevision commands, repair any stale or incorrect hint text, add tests that verify hints are surfaced and actionable, and synchronize all documentation (CLAUDE.md, README, commands.md, help text) with the current CLI command surface."
 ---
 
-# CLI Hint Correctness, Test Coverage, and Documentation Sync
+## Children
 
- [completed]
-
-## Summary
-
-Audit the current state of CLI command hints and recommendations across all ndx/rex/hench/sourcevision commands, repair any stale or incorrect hint text, add tests that verify hints are surfaced and actionable, and synchronize all documentation (CLAUDE.md, README, commands.md, help text) with the current CLI command surface.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests that verify hint surfacing and follow-through correctness | task | completed | 2026-04-13 |
-| Audit and repair CLI hint text across all commands | task | completed | 2026-04-13 |
-| Synchronize project documentation with current CLI command surface | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-13T18:44:45.995Z
-- **Completed:** 2026-04-13T18:44:45.995Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests that verify hint surfacing and follow-through correctness](./add-regression-tests-that-2fc455/index.md) | completed |
+| [Audit and repair CLI hint text across all commands](./audit-and-repair-cli-hint-text-e2ddb0/index.md) | completed |
+| [Synchronize project documentation with current CLI command surface](./synchronize-project-f2bfa3/index.md) | completed |

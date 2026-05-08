@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Add Go-specific signals to the existing archetype definitions in `packages/sourcevision/src/analyzers/archetypes.ts` and add a `languages` field to `ArchetypeSignal` in `packages/sourcevision/src/schema/v1.ts` so signals can be scoped to specific project languages. React-specific archetypes (`route-module`, `component`, `hook`, `page`) should not fire for Go projects."
 ---
 
-# Feature 1: Go-Aware Archetype System
+## Children
 
- [completed]
-
-## Summary
-
-Add Go-specific signals to the existing archetype definitions in `packages/sourcevision/src/analyzers/archetypes.ts` and add a `languages` field to `ArchetypeSignal` in `packages/sourcevision/src/schema/v1.ts` so signals can be scoped to specific project languages. React-specific archetypes (`route-module`, `component`, `hook`, `page`) should not fire for Go projects.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement language-scoped ArchetypeSignal schema and add Go signals to archetypes | task | completed | 2026-03-26 |
-| Write archetype classification tests for Go projects | task | completed | 2026-03-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-26T08:06:08.926Z
-- **Completed:** 2026-03-26T08:06:08.926Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement language-scoped ArchetypeSignal schema and add Go signals to archetypes](./implement-language-scoped-7cbffe/index.md) | completed |
+| [Write archetype classification tests for Go projects](./write-archetype-classification-4cba12/index.md) | completed |

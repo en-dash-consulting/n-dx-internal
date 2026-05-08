@@ -9,25 +9,9 @@ completedAt: "2026-02-27T04:11:56.344Z"
 acceptanceCriteria: []
 ---
 
-# Memory-Aware Polling Loop Management
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Memory-Aware Polling Validation | task | completed | 2026-02-27 |
-| Memory Pressure Polling Suspension | task | completed | 2026-02-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-27T04:11:56.344Z
-- **Completed:** 2026-02-27T04:11:56.344Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Memory-Aware Polling Validation](./memory-aware-polling-validation/index.md) | completed |
+| [Memory Pressure Polling Suspension](./memory-pressure-polling-suspension/index.md) | completed |

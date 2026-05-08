@@ -11,25 +11,9 @@ acceptanceCriteria: []
 description: "Update all existing PRD-related unit, integration, and e2e tests to exercise the folder-tree storage backend, and add new tests covering the serializer, parser, round-trip fidelity, and full CLI pipeline correctness."
 ---
 
-# Test Suite Updates for Folder-Tree PRD Storage
+## Children
 
- [completed]
-
-## Summary
-
-Update all existing PRD-related unit, integration, and e2e tests to exercise the folder-tree storage backend, and add new tests covering the serializer, parser, round-trip fidelity, and full CLI pipeline correctness.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Update CLI integration tests and add e2e pipeline test for folder-tree PRD commands | task | completed | 2026-04-28 |
-| Update PRDStore unit tests and add serializer/parser unit tests with folder-tree fixtures | task | completed | 2026-04-30 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-28T10:43:59.529Z
-- **Completed:** 2026-04-28T10:43:59.529Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Update CLI integration tests and add e2e pipeline test for folder-tree PRD commands](./update-cli-integration-tests-3e7f19/index.md) | completed |
+| [Update PRDStore unit tests and add serializer/parser unit tests with folder-tree fixtures](./update-prdstore-unit-tests-and-3effa1/index.md) | completed |

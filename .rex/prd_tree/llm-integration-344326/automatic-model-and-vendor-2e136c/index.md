@@ -11,26 +11,10 @@ acceptanceCriteria: []
 description: "Add an opt-in config flag that, when a hench run hits a model failure (quota exhausted, rate limit, auth error, etc.), transparently retries the run on a fallback chain of models — first within the active vendor, then crossing to the other vendor — before surfacing the original error. Defaults to off so existing behavior is unchanged."
 ---
 
-# Automatic Model and Vendor Failover on Run Errors
+## Children
 
- [completed]
-
-## Summary
-
-Add an opt-in config flag that, when a hench run hits a model failure (quota exhausted, rate limit, auth error, etc.), transparently retries the run on a fallback chain of models — first within the active vendor, then crossing to the other vendor — before surfacing the original error. Defaults to off so existing behavior is unchanged.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add llm.autoFailover config flag with schema, loader, and ndx config surface | task | completed | 2026-05-06 |
-| Define vendor-specific failover chains and selection policy in llm-client | task | completed | 2026-05-06 |
-| Integrate failover loop into hench run with original-config restore and error parity | task | completed | 2026-05-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-05-06T15:06:45.552Z
-- **Completed:** 2026-05-06T15:06:45.552Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add llm.autoFailover config flag with schema, loader, and ndx config surface](./add-llm-autofailover-config-8bf9ba/index.md) | completed |
+| [Define vendor-specific failover chains and selection policy in llm-client](./define-vendor-specific-failover-c39af3/index.md) | completed |
+| [Integrate failover loop into hench run with original-config restore and error parity](./integrate-failover-loop-into-a6c968/index.md) | completed |

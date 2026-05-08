@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "The main README references .local_testing/ in passing but has no dedicated section explaining how to run the Docker-based local test suite, what prerequisites are needed, or what commands to use. Users need a self-contained guide in README.md so they can find and run local platform tests without digging into .local_testing/README.md."
 ---
 
-# Local Test Suite Documentation in Main README
+## Children
 
- [completed]
-
-## Summary
-
-The main README references .local_testing/ in passing but has no dedicated section explaining how to run the Docker-based local test suite, what prerequisites are needed, or what commands to use. Users need a self-contained guide in README.md so they can find and run local platform tests without digging into .local_testing/README.md.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add Local Platform Testing section to main README with prerequisites and run commands | task | completed | 2026-04-20 |
-| Update .local_testing/README.md to cover macOS suite and unify platform guidance | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-20T19:44:11.364Z
-- **Completed:** 2026-04-20T19:44:11.364Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add Local Platform Testing section to main README with prerequisites and run commands](./add-local-platform-testing-113433/index.md) | completed |
+| [Update .local_testing/README.md to cover macOS suite and unify platform guidance](./update-local-testing-readme-md-5f5144/index.md) | completed |

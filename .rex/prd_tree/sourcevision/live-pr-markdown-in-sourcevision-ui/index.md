@@ -9,26 +9,10 @@ completedAt: "2026-02-21T05:40:54.374Z"
 acceptanceCriteria: []
 ---
 
-# Live PR Markdown in SourceVision UI
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Live Refresh and Graceful Degradation | task | completed | 2026-02-21 |
-| PR Summary Generation Pipeline | task | completed | 2026-02-21 |
-| SourceVision PR Markdown Tab Experience | task | completed | 2026-02-21 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-21T05:40:54.374Z
-- **Completed:** 2026-02-21T05:40:54.374Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Live Refresh and Graceful Degradation](./live-refresh-and-graceful-degradation/index.md) | completed |
+| [PR Summary Generation Pipeline](./pr-summary-generation-pipeline/index.md) | completed |
+| [SourceVision PR Markdown Tab Experience](./sourcevision-pr-markdown-tab-experience/index.md) | completed |

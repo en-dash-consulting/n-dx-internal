@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Close the self-heal loop with a full test suite execution gate. If dependency cleanup or codebase condensation caused test failures, a remediation sub-loop identifies the root cause in production code, applies targeted fixes (never modifying tests), and re-runs until the suite is green or the iteration budget is exhausted."
 ---
 
-# Test Suite Validation Gate and Remediation Loop
+## Children
 
- [completed]
-
-## Summary
-
-Close the self-heal loop with a full test suite execution gate. If dependency cleanup or codebase condensation caused test failures, a remediation sub-loop identifies the root cause in production code, applies targeted fixes (never modifying tests), and re-runs until the suite is green or the iteration budget is exhausted.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement test-failure remediation sub-loop in self-heal | task | completed | 2026-04-14 |
-| Integrate full test suite runner as a mandatory self-heal gate step | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-14T19:35:57.089Z
-- **Completed:** 2026-04-14T19:35:57.089Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement test-failure remediation sub-loop in self-heal](./implement-test-failure-35803d/index.md) | completed |
+| [Integrate full test suite runner as a mandatory self-heal gate step](./integrate-full-test-suite-c18166/index.md) | completed |

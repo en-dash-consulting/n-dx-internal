@@ -9,26 +9,10 @@ completedAt: "2026-02-21T05:23:23.067Z"
 acceptanceCriteria: []
 ---
 
-# Init-time LLM Onboarding and Authentication
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Direct Claude API Integration | task | completed | 2026-02-08 |
-| Interactive init banner and provider selection | task | completed | 2026-02-21 |
-| Provider authentication preflight during init | task | completed | 2026-02-21 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-21T05:23:23.067Z
-- **Completed:** 2026-02-21T05:23:23.067Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Direct Claude API Integration](./direct-claude-api-integration/index.md) | completed |
+| [Interactive init banner and provider selection](./interactive-init-banner-and-cdfde9/index.md) | completed |
+| [Provider authentication preflight during init](./provider-authentication-83e155/index.md) | completed |

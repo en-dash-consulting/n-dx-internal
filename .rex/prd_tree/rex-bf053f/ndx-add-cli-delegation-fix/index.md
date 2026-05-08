@@ -9,25 +9,9 @@ acceptanceCriteria: []
 description: "Fix the ndx add orchestration command which currently throws a missing-.rex error instead of properly delegating to rex add."
 ---
 
-# ndx add CLI Delegation Fix
+## Children
 
- [completed]
-
-## Summary
-
-Fix the ndx add orchestration command which currently throws a missing-.rex error instead of properly delegating to rex add.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression test for ndx add CLI delegation | task | completed | 2026-03-19 |
-| Diagnose and fix ndx add spawn delegation in cli.js | task | completed | 2026-03-19 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-19T18:48:18.396Z
-- **Completed:** 2026-03-19T18:48:18.396Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression test for ndx add CLI delegation](./add-regression-test-for-ndx-add-caf631/index.md) | completed |
+| [Diagnose and fix ndx add spawn delegation in cli.js](./diagnose-and-fix-ndx-add-spawn-ed5194/index.md) | completed |

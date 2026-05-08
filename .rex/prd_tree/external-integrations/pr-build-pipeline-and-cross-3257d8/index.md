@@ -9,25 +9,9 @@ completedAt: "2026-04-07T14:21:27.955Z"
 acceptanceCriteria: []
 ---
 
-# PR Build Pipeline and Cross-Platform CLI Validation
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Diagnose smoke parity suite failure and capture reproducible error context | task | completed | 2026-04-07 |
-| Implement targeted fix for smoke parity regression | task | completed | 2026-04-07 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-07T14:21:27.955Z
-- **Completed:** 2026-04-07T14:21:27.955Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Diagnose smoke parity suite failure and capture reproducible error context](./diagnose-smoke-parity-suite-a30648/index.md) | completed |
+| [Implement targeted fix for smoke parity regression](./implement-targeted-fix-for-774bf7/index.md) | completed |

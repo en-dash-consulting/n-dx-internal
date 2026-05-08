@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "When an ndx work run fails, automatically revert uncommitted file changes and reset the PRD task status back to pending so the user can retry without manual cleanup."
 ---
 
-# Run Failure Recovery and Rollback
+## Children
 
- [completed]
-
-## Summary
-
-When an ndx work run fails, automatically revert uncommitted file changes and reset the PRD task status back to pending so the user can retry without manual cleanup.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests for Codex multi-line 'tokens used' output format | task | completed | 2026-04-16 |
-| Add rollback configuration, confirmation UX, and regression tests | task | completed | 2026-04-20 |
-| Implement git change rollback on failed hench runs | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-16T15:21:00.385Z
-- **Completed:** 2026-04-16T15:21:00.385Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests for Codex multi-line 'tokens used' output format](./add-regression-tests-for-codex-c57e4a/index.md) | completed |
+| [Add rollback configuration, confirmation UX, and regression tests](./add-rollback-configuration-03d9f5/index.md) | completed |
+| [Implement git change rollback on failed hench runs](./implement-git-change-rollback-a6199e/index.md) | completed |

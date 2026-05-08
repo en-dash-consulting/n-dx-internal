@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Limit live console output during rex runs to a rolling 10-line grey window while capturing the full run output to a timestamped file in .run-logs/, which is excluded from git."
 ---
 
-# Rex Run Rolling Log Display and Persistent Log Files
+## Children
 
- [completed]
-
-## Summary
-
-Limit live console output during rex runs to a rolling 10-line grey window while capturing the full run output to a timestamped file in .run-logs/, which is excluded from git.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement rolling 10-line grey output window for rex run console | task | completed | 2026-04-08 |
-| Persist full rex run log to .run-logs/ and add directory to .gitignore | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T23:44:31.021Z
-- **Completed:** 2026-04-08T23:44:31.021Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement rolling 10-line grey output window for rex run console](./implement-rolling-10-line-grey-b86e2a/index.md) | completed |
+| [Persist full rex run log to .run-logs/ and add directory to .gitignore](./persist-full-rex-run-log-to-run-b892e5/index.md) | completed |

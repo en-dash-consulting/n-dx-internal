@@ -9,25 +9,9 @@ completedAt: "2026-04-09T14:32:25.306Z"
 acceptanceCriteria: []
 ---
 
-# Hench Run-Loop Visual Output Refinements
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add regression tests for multi-line scroll window behavior | task | completed | 2026-04-09 |
-| Fix rolling window to count visual lines instead of message entries | task | completed | 2026-04-09 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-09T14:32:25.306Z
-- **Completed:** 2026-04-09T14:32:25.306Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add regression tests for multi-line scroll window behavior](./add-regression-tests-for-multi-cd39ee/index.md) | completed |
+| [Fix rolling window to count visual lines instead of message entries](./fix-rolling-window-to-count-0b9042/index.md) | completed |

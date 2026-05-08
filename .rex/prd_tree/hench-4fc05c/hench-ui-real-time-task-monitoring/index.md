@@ -9,25 +9,9 @@ completedAt: "2026-02-18T09:11:29.123Z"
 acceptanceCriteria: []
 ---
 
-# Hench UI Real-time Task Monitoring
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Active Task Display | task | completed | 2026-02-18 |
-| Task Audit and Control Interface | task | completed | 2026-02-18 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-18T09:11:29.123Z
-- **Completed:** 2026-02-18T09:11:29.123Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Active Task Display](./active-task-display/index.md) | completed |
+| [Task Audit and Control Interface](./task-audit-and-control-interface/index.md) | completed |

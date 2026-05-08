@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Integrate the markdown format as the primary read/write target in the PRD store while keeping prd.json synchronized for backward compatibility, and automate migration from existing JSON files on first use."
 ---
 
-# PRD Store Integration with Dual-Write and First-Run Migration
+## Children
 
- [completed]
-
-## Summary
-
-Integrate the markdown format as the primary read/write target in the PRD store while keeping prd.json synchronized for backward compatibility, and automate migration from existing JSON files on first use.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Build automatic first-run migration and explicit rex migrate-to-md CLI command | task | completed | 2026-04-30 |
-| Integrate markdown as primary read/write format in PRDStore with JSON dual-write | task | completed | 2026-04-28 |
-| Write end-to-end and concurrency tests for markdown-primary PRD storage | task | completed | 2026-04-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-24T16:20:10.156Z
-- **Completed:** 2026-04-24T16:20:10.156Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Build automatic first-run migration and explicit rex migrate-to-md CLI command](./build-automatic-first-run-7143e2/index.md) | completed |
+| [Integrate markdown as primary read/write format in PRDStore with JSON dual-write](./integrate-markdown-as-primary-97b249/index.md) | completed |
+| [Write end-to-end and concurrency tests for markdown-primary PRD storage](./write-end-to-end-and-3b4426/index.md) | completed |

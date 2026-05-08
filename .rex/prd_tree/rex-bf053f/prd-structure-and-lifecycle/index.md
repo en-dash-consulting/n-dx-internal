@@ -9,27 +9,11 @@ completedAt: "2026-02-04T17:19:07.559Z"
 acceptanceCriteria: []
 ---
 
-# PRD structure and lifecycle
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add file-level locking to PRD store to prevent concurrent write corruption | task | completed | 2026-03-24 |
-| Better task lifecycle | task | completed | 2026-02-04 |
-| Flexible hierarchy | task | completed | 2026-02-04 |
-| PRD quality | task | completed | 2026-02-04 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-04T17:19:07.559Z
-- **Completed:** 2026-02-04T17:19:07.559Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add file-level locking to PRD store to prevent concurrent write corruption](./add-file-level-locking-to-prd-8d4e79/index.md) | completed |
+| [Better task lifecycle](./better-task-lifecycle/index.md) | completed |
+| [Flexible hierarchy](./flexible-hierarchy/index.md) | completed |
+| [PRD quality](./prd-quality/index.md) | completed |

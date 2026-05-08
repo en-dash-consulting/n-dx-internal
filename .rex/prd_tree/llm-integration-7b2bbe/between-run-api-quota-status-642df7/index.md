@@ -10,27 +10,11 @@ acceptanceCriteria: []
 description: "After each hench run completes, check remaining API quota or configured budget headroom for Claude and Codex providers and report it to the user in the run log with color-coded warnings at threshold boundaries."
 ---
 
-# Between-Run API Quota Status Logging
+## Children
 
- [completed]
-
-## Summary
-
-After each hench run completes, check remaining API quota or configured budget headroom for Claude and Codex providers and report it to the user in the run log with color-coded warnings at threshold boundaries.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Define typed quota result interface and identify invocation point in hench run loop | task | completed | 2026-04-08 |
-| Implement ANSI color-coded quota log formatter | task | completed | 2026-04-08 |
-| Implement budget-based percent-remaining calculation for active providers | task | completed | 2026-04-08 |
-| Integrate quota log output into hench run console with quiet/JSON suppression | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T20:46:18.155Z
-- **Completed:** 2026-04-08T20:46:18.155Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Define typed quota result interface and identify invocation point in hench run loop](./define-typed-quota-result-af8ede/index.md) | completed |
+| [Implement ANSI color-coded quota log formatter](./implement-ansi-color-coded-4fbde3/index.md) | completed |
+| [Implement budget-based percent-remaining calculation for active providers](./implement-budget-based-percent-411695/index.md) | completed |
+| [Integrate quota log output into hench run console with quiet/JSON suppression](./integrate-quota-log-output-into-ac656b/index.md) | completed |

@@ -9,26 +9,10 @@ completedAt: "2026-02-21T07:42:35.430Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision PR Markdown Quality & Manual Refresh
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Human-scoped PR Markdown Output | task | completed | 2026-02-21 |
-| Manual Refresh-Only Generation Flow | task | completed | 2026-02-21 |
-| PR Tab Cached Display and Refresh UX | task | completed | 2026-02-21 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-21T07:42:35.430Z
-- **Completed:** 2026-02-21T07:42:35.430Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Human-scoped PR Markdown Output](./human-scoped-pr-markdown-output/index.md) | completed |
+| [Manual Refresh-Only Generation Flow](./manual-refresh-only-generation-flow/index.md) | completed |
+| [PR Tab Cached Display and Refresh UX](./pr-tab-cached-display-and-refresh-ux/index.md) | completed |

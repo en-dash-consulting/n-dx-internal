@@ -6,31 +6,30 @@ Normative contract for the serializer (PRD → folder tree) and parser (folder t
 
 ## Directory Layout
 
-Tree root: `.rex/prd_tree/` (configurable). Within it, the PRD hierarchy maps to nested directories:
+Tree root: `.rex/prd_tree/` (configurable). Within it, the PRD hierarchy maps to nested directories. Every PRD item — epic, feature, task, or branch subtask — gets its own slug-named folder containing a single `index.md` content file. Leaf subtasks (Rule 1b) are bare `<slug>.md` files inside their parent task's folder.
 
 ```
 .rex/prd_tree/
 ├── {epic-slug}/
-│   ├── {epic_title}.md
+│   ├── index.md                       ← epic content (required)
 │   └── {feature-slug}/
-│       ├── {feature_title}.md
+│       ├── index.md                   ← feature content (required)
 │       └── {task-slug}/
-│           ├── {task_title}.md          ← task file (required)
-│           ├── {subtask1-slug}.md       ← leaf subtask (no children)
-│           └── {subtask2-slug}/
-│               ├── {subtask2_title}.md  ← subtask folder with children
+│           ├── index.md               ← task content (required)
+│           ├── {leaf-subtask-slug}.md ← leaf subtask (no children, Rule 1b)
+│           └── {branch-subtask-slug}/
+│               ├── index.md           ← branch subtask content
 │               └── {grandchild-slug}.md ← recursive nesting
 └── …
 ```
 
 **Rules:**
-- Each epic, feature, or task **always** maps to exactly one directory containing exactly one **title-named** markdown file (`<titleToFilename(title)>.md`). Legacy fixtures that hand-wrote `index.md` are still accepted by the parser; the serializer always emits the title-named form.
-- A folder-level `index.md` aggregating each directory's contents is reserved for the upcoming summary feature (see [`## index.md Summary Schema`](#indexmd-summary-schema)) and is **not yet emitted** by the serializer.
-- **Subtasks use dual-mode serialization:**
-  - **Leaf subtasks** (no children): serialized as title-named `.md` files in the parent task's directory
-  - **Branch subtasks** (with children): serialized as directories containing a title-named `.md` file, following the same folder-per-task rule recursively
-  - A leaf subtask is automatically promoted to a folder when its first child is added
-- Nesting depth encodes level: epics at depth 1, features at depth 2, tasks at depth 3, subtasks at depth 4+.
+- **Folder items (epic / feature / task / branch subtask):** Each item maps to exactly one slug-named directory containing exactly one `index.md`. The `index.md` holds the item's YAML frontmatter, requirements body, and a `## Children` table linking to direct children. There is no `<title>.md` companion file.
+- **Leaf subtasks (Rule 1b):** A subtask with no children is stored as a single bare `<slug>.md` file inside its parent task's folder. The leaf file carries only its own frontmatter (no `__parent*` fields, no inherited parent metadata).
+- **Atomic promotion (Rule 2):** When a leaf `<slug>.md` subtask gains its first child, the file's content is moved into a new folder taking the leaf's place: `<slug>.md` → `<slug>/index.md`. The new folder follows Rule 1.
+- **Migration with backup (Rule 3):** `ndx reshape` and `ndx add` create a timestamped snapshot of `.rex/prd_tree/` under `.rex/.backups/prd_tree_<ISO>/` before mutating, then run a structural migration that normalizes any legacy shapes (bare `<title>.md` files, `<title>.md` + `index.md` dual-write, single-child compaction shims, phantom `index-{hash}/` wrappers) into the canonical form above. The migration is data-preserving — when it cannot determine intent it leaves the file in place rather than discarding data.
+- **Reads accept legacy shapes:** The parser still reads `<title>.md` (legacy single-content file), `__parent*`-shimmed children (single-child compaction), and `## Subtask:` sections (legacy task body) so existing checkouts load without error. The serializer always emits the canonical shape, so a single load+save cycle re-writes the tree to the current contract.
+- Nesting depth encodes level: epics at depth 1, features at depth 2, tasks at depth 3, subtasks at depth 4+. Skip-level placements (e.g. a task placed directly under an epic with no intermediate feature) are legal and round-trip without re-typing the item.
 
 ---
 
@@ -79,9 +78,15 @@ The `{id6}` suffix is derived from sanitized PRD IDs. It is applied only for lon
 
 ---
 
-## Title-to-Filename Normalization
+## Title-to-Filename Normalization (legacy)
 
-As PRD item storage evolves from directory-based slug indexing to title-based markdown files, a separate normalization function converts item titles to filesystem-safe filenames. This is distinct from the directory slug algorithm: filenames use underscores for word boundaries (not hyphens) and apply idempotent round-trip normalization.
+> **Status:** Deprecated as the storage filename rule. The current schema
+> uses `index.md` for folder items and `<slug>.md` (slug-style, hyphens) for
+> leaf subtasks. `titleToFilename` is retained as a public utility so legacy
+> trees and migration code can still rename historical files; new
+> serialization paths must not depend on it.
+
+A separate normalization function converts item titles to filesystem-safe filenames. Filenames use underscores for word boundaries (not hyphens) and apply idempotent round-trip normalization.
 
 ### Rules
 
@@ -132,7 +137,7 @@ Exported from `rex` package at `rex.titleToFilename()`. Used by the folder-tree 
 
 ## Per-Item Markdown File Schema
 
-Every per-item markdown file (named `<titleToFilename(title)>.md`) begins with a YAML frontmatter block, followed by Markdown body content. **Bold** = required.
+Every per-item markdown file — `index.md` for folder items, `<slug>.md` for leaf subtasks — begins with a YAML frontmatter block, followed by Markdown body content. **Bold** = required.
 
 ### Common Fields (All Levels)
 

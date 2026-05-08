@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Ensure robust and reliable autonomous execution with proper task state management, error handling, quality validation, and continuous operation capabilities"
 ---
 
-# Reliable work loop
+## Children
 
- [completed]
-
-## Summary
-
-Ensure robust and reliable autonomous execution with proper task state management, error handling, quality validation, and continuous operation capabilities
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Loop continuity | task | completed | 2026-02-04 |
-| Run quality and guardrails | task | completed | 2026-02-04 |
-| Task selection and state transitions | task | completed | 2026-02-04 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-04T18:33:18.839Z
-- **Completed:** 2026-02-04T18:33:18.839Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Loop continuity](./loop-continuity/index.md) | completed |
+| [Run quality and guardrails](./run-quality-and-guardrails/index.md) | completed |
+| [Task selection and state transitions](./task-selection-and-state-transitions/index.md) | completed |

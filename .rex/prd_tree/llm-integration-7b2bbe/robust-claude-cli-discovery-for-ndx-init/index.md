@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "ndx init fails to locate the claude CLI on machines where it is installed outside the shell's default PATH — common when users install via npm, Homebrew, or the Claude desktop app, or when ndx is invoked from a non-interactive shell (CI, IDE terminals) that does not source the user's profile. The discovery mechanism must work across macOS, Linux, and Windows regardless of how or where claude was installed."
 ---
 
-# Robust Claude CLI Discovery for ndx init
+## Children
 
- [completed]
-
-## Summary
-
-ndx init fails to locate the claude CLI on machines where it is installed outside the shell's default PATH — common when users install via npm, Homebrew, or the Claude desktop app, or when ndx is invoked from a non-interactive shell (CI, IDE terminals) that does not source the user's profile. The discovery mechanism must work across macOS, Linux, and Windows regardless of how or where claude was installed.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Emit actionable diagnostics when Claude CLI cannot be located | task | completed | 2026-04-10 |
-| Implement multi-location Claude CLI discovery chain with configurable override | task | completed | 2026-04-10 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-10T16:27:02.649Z
-- **Completed:** 2026-04-10T16:27:02.649Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Emit actionable diagnostics when Claude CLI cannot be located](./emit-actionable-diagnostics-caadeb/index.md) | completed |
+| [Implement multi-location Claude CLI discovery chain with configurable override](./implement-multi-location-claude-ac39fe/index.md) | completed |

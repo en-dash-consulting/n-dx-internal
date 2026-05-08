@@ -9,25 +9,9 @@ completedAt: "2026-02-21T21:34:31.573Z"
 acceptanceCriteria: []
 ---
 
-# Token Event Attribution Accuracy
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Event-metadata-driven utilization aggregation | task | completed | 2026-02-21 |
-| Per-event vendor/model metadata capture | task | completed | 2026-02-21 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-21T21:34:31.573Z
-- **Completed:** 2026-02-21T21:34:31.573Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Event-metadata-driven utilization aggregation](./event-metadata-driven-1ed80b/index.md) | completed |
+| [Per-event vendor/model metadata capture](./per-event-vendor-model-metadata-capture/index.md) | completed |

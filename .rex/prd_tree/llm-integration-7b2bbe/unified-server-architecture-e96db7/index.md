@@ -14,31 +14,13 @@ acceptanceCriteria: []
 description: "Replace the current stdio-only MCP setup with HTTP-served MCP endpoints, and introduce a single `ndx start` command that spins up both the web dashboard and MCP servers. Currently MCP requires manual `claude mcp add` per-server (stdio transport), and the web dashboard runs independently via `ndx web`. Goal: one command, one port, everything running — browser dashboard + MCP endpoints for any MCP client."
 ---
 
-# Unified Server Architecture: HTTP MCP and ndx start
+## Children
 
-🟠 [completed]
-
-## Summary
-
-Replace the current stdio-only MCP setup with HTTP-served MCP endpoints, and introduce a single `ndx start` command that spins up both the web dashboard and MCP servers. Currently MCP requires manual `claude mcp add` per-server (stdio transport), and the web dashboard runs independently via `ndx web`. Goal: one command, one port, everything running — browser dashboard + MCP endpoints for any MCP client.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| MCP over HTTP transport | task | completed | 2026-02-10 |
-| `ndx start` orchestration command | task | completed | 2026-02-10 |
-| rex_edit_item MCP tool | task | completed | 2026-03-09 |
-| Rex PRD management UI | task | completed | 2026-02-06 |
-| Unified web viewer architecture | task | completed | 2026-02-06 |
-| Web server and API integration | task | completed | 2026-02-06 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Tags:** dx, mcp, server
-- **Level:** feature
-- **Started:** 2026-02-10T05:31:42.596Z
-- **Completed:** 2026-02-10T05:31:42.596Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [MCP over HTTP transport](./mcp-over-http-transport/index.md) | completed |
+| [`ndx start` orchestration command](./ndx-start-orchestration-command/index.md) | completed |
+| [rex_edit_item MCP tool](./rex-edit-item-mcp-tool/index.md) | completed |
+| [Rex PRD management UI](./rex-prd-management-ui/index.md) | completed |
+| [Unified web viewer architecture](./unified-web-viewer-architecture/index.md) | completed |
+| [Web server and API integration](./web-server-and-api-integration/index.md) | completed |

@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Ensure a single, authoritative vendor/model resolution path is used across all ndx commands — including reasoning/thinking calls and standard API calls — so that no command silently diverges from the configured or defaulted model. Default resolution should produce the newest available model for the active vendor when no explicit model is configured."
 ---
 
-# Consistent Vendor and Model Resolution Across Commands
+## Children
 
- [completed]
-
-## Summary
-
-Ensure a single, authoritative vendor/model resolution path is used across all ndx commands — including reasoning/thinking calls and standard API calls — so that no command silently diverges from the configured or defaulted model. Default resolution should produce the newest available model for the active vendor when no explicit model is configured.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement centralized vendor/model resolver with newest-model default | task | completed | 2026-04-08 |
-| Propagate resolved vendor/model uniformly to all LLM call sites | task | completed | 2026-04-08 |
-| Surface active vendor and model in ndx console output | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T14:47:55.036Z
-- **Completed:** 2026-04-08T14:47:55.036Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement centralized vendor/model resolver with newest-model default](./implement-centralized-vendor-d9eaeb/index.md) | completed |
+| [Propagate resolved vendor/model uniformly to all LLM call sites](./propagate-resolved-vendor-model-abcdda/index.md) | completed |
+| [Surface active vendor and model in ndx console output](./surface-active-vendor-and-model-08f6d0/index.md) | completed |

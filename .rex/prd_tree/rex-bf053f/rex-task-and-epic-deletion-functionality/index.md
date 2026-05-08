@@ -9,27 +9,11 @@ completedAt: "2026-02-24T17:27:43.138Z"
 acceptanceCriteria: []
 ---
 
-# Rex Task and Epic Deletion Functionality
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Backend Deletion API Implementation | task | completed | 2026-02-24 |
-| Documentation and Help Updates | task | completed | 2026-02-24 |
-| Request deduplication infrastructure | task | completed | 2026-02-26 |
-| Rex UI Deletion Interface | task | completed | 2026-02-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-24T17:27:43.138Z
-- **Completed:** 2026-02-24T17:27:43.138Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Backend Deletion API Implementation](./backend-deletion-api-implementation/index.md) | completed |
+| [Documentation and Help Updates](./documentation-and-help-updates/index.md) | completed |
+| [Request deduplication infrastructure](./request-deduplication-infrastructure/index.md) | completed |
+| [Rex UI Deletion Interface](./rex-ui-deletion-interface/index.md) | completed |

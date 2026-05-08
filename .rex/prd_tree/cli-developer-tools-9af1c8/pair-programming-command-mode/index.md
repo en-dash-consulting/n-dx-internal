@@ -9,26 +9,10 @@ completedAt: "2026-04-16T16:56:22.389Z"
 acceptanceCriteria: []
 ---
 
-# Pair-Programming Command Mode
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement structured inter-model handoff so reviewer findings are fed back to the primary | task | completed | 2026-04-20 |
-| Inject ndx project context into pair-programming primary and reviewer executions | task | completed | 2026-04-16 |
-| Invoke the reviewer LLM with a validation-only constraint prompt | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-16T16:56:22.389Z
-- **Completed:** 2026-04-16T16:56:22.389Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement structured inter-model handoff so reviewer findings are fed back to the primary](./implement-structured-inter-75c7df/index.md) | completed |
+| [Inject ndx project context into pair-programming primary and reviewer executions](./inject-ndx-project-context-into-55b88b/index.md) | completed |
+| [Invoke the reviewer LLM with a validation-only constraint prompt](./invoke-the-reviewer-llm-with-a-3a80b8/index.md) | completed |

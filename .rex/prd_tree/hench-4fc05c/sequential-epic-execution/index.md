@@ -9,26 +9,10 @@ completedAt: "2026-02-10T19:29:23.741Z"
 acceptanceCriteria: []
 ---
 
-# Sequential Epic Execution
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Epic Filtering for Work Command | task | completed | 2026-02-05 |
-| Task UI Auto-trigger Integration | task | completed | 2026-02-13 |
-| Web UI Epic-by-Epic Execution | task | completed | 2026-02-10 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-10T19:29:23.741Z
-- **Completed:** 2026-02-10T19:29:23.741Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Epic Filtering for Work Command](./epic-filtering-for-work-command/index.md) | completed |
+| [Task UI Auto-trigger Integration](./task-ui-auto-trigger-integration/index.md) | completed |
+| [Web UI Epic-by-Epic Execution](./web-ui-epic-by-epic-execution/index.md) | completed |
