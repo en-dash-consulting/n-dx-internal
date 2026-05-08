@@ -237,12 +237,12 @@ describe("MCP write tools — folder tree state", () => {
     const task = flat.find((i) => i.id === taskId);
     expect(task?.priority).toBe("critical");
 
-    // The feature has a single child (the task) so single-child compaction
-    // collapses its directory. The task's file is written directly under the
-    // epic's directory with __parent* metadata embedded.
+    // Every PRD item gets its own folder under the new schema, including
+    // single-child features.
     const epicSlug = slug("Prio Epic", epicId);
+    const featSlug = slug("Prio Feature", featId);
     const taskSlug = slug("Prio Task", taskId);
-    const taskIndexMd = await readIndexMd(rexDir, epicSlug, taskSlug);
+    const taskIndexMd = await readIndexMd(rexDir, epicSlug, featSlug, taskSlug);
     expect(taskIndexMd).toContain(`"critical"`);
   });
 
@@ -277,10 +277,11 @@ describe("MCP write tools — folder tree state", () => {
     const task = flat.find((i) => i.id === taskId);
     expect(task?.status).toBe("completed");
 
-    // Feature is single-child-compacted — its directory does not exist on disk.
+    // Every PRD item gets its own folder under the new schema.
     const epicSlug = slug("Status Epic", epicId);
+    const featSlug = slug("Status Feature", featId);
     const taskSlug = slug("Status Task", taskId);
-    const taskIndexMd = await readIndexMd(rexDir, epicSlug, taskSlug);
+    const taskIndexMd = await readIndexMd(rexDir, epicSlug, featSlug, taskSlug);
     expect(taskIndexMd).toContain(`"completed"`);
   });
 

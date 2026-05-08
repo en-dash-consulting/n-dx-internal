@@ -298,6 +298,28 @@ function parseDirRecursiveSync(dir: string): PRDItem | null {
     if (child) childItems.push(child);
   }
 
+  // Discover leaf-subtask `.md` files at this level (Rule 1b). Skip the
+  // owner's own file (`itemPath`), `index.md`, and any compaction-shim files
+  // that already became orphans above.
+  const seenIds = new Set(childItems.map((c) => c.id));
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    entries = [];
+  }
+  for (const entry of entries) {
+    if (!entry.endsWith(".md") || entry === "index.md") continue;
+    const path = join(dir, entry);
+    if (path === itemPath) continue;
+    const parsed = parseItemFromMarkdown(readFileSync(path, "utf-8")) as PRDItem | null;
+    if (!parsed) continue;
+    if ((parsed as Record<string, unknown>).__parentId !== undefined) continue;
+    if (parsed.id && seenIds.has(parsed.id)) continue;
+    childItems.push(parsed);
+    if (parsed.id) seenIds.add(parsed.id);
+  }
+
   if (childItems.length > 0) item.children = childItems;
   return item;
 }
@@ -386,6 +408,11 @@ function listSubdirNames(dir: string): string[] {
  * otherwise fall back to `index.md`. Returns null if neither exists.
  */
 function discoverItemFile(dir: string): string | null {
+  // Mirrors the production parser: prefer `index.md` when present, otherwise
+  // accept a single legacy `<title>.md` file. Multiple non-index .md files
+  // are leaf-subtask siblings (Rule 1b), not the folder's own content.
+  const indexPath = join(dir, "index.md");
+  if (existsSync(indexPath)) return indexPath;
   let entries: string[];
   try {
     entries = readdirSync(dir);
@@ -394,8 +421,6 @@ function discoverItemFile(dir: string): string | null {
   }
   const titleNamed = entries.filter((f) => f.endsWith(".md") && f !== "index.md");
   if (titleNamed.length === 1) return join(dir, titleNamed[0]);
-  const indexPath = join(dir, "index.md");
-  if (existsSync(indexPath)) return indexPath;
   return null;
 }
 

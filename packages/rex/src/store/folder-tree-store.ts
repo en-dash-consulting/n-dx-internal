@@ -17,18 +17,17 @@
  * @module rex/store/folder-tree-store
  */
 
-import { appendFile, mkdir, readFile, writeFile, rm, readdir, stat } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { PRDDocument, PRDItem, RexConfig, LogEntry } from "../schema/index.js";
 import { SCHEMA_VERSION } from "../schema/index.js";
 import { validateDocument, validateConfig, validateLogEntry } from "../schema/validate.js";
-import { findItem, insertChild, updateInTree, removeFromTree, getParentChain } from "../core/tree.js";
-import { serializeFolderTree, resolveSiblingSlugs } from "./folder-tree-serializer.js";
+import { findItem, insertChild, updateInTree, removeFromTree } from "../core/tree.js";
+import { serializeFolderTree } from "./folder-tree-serializer.js";
 import { parseFolderTree } from "./folder-tree-parser.js";
 import { withLock } from "./file-lock.js";
 import { PRD_TREE_DIRNAME } from "./paths.js";
 import type { PRDStore, StoreCapabilities, WriteOptions } from "./contracts.js";
-import { titleToFilename } from "./title-to-filename.js";
 
 // ---------------------------------------------------------------------------
 // FolderTreeStore
@@ -90,31 +89,16 @@ export class FolderTreeStore implements PRDStore {
     const lockPath = this.path("prd.lock");
     await withLock(lockPath, async () => {
       const doc = await this.loadDocument();
-      let parentEntry: { item: PRDItem } | null = null;
-      const hadChildrenBefore = parentId ? doc.items.some((i) => i.id === parentId ? (i.children?.length ?? 0) > 0 : false) : null;
-
       if (parentId) {
-        const entry = findItem(doc.items, parentId);
-        if (!entry) {
-          throw new Error(`Parent "${parentId}" not found`);
-        }
-        parentEntry = entry;
-        // Record if parent is about to transition from leaf to non-leaf
-        const childCountBefore = (parentEntry.item.children?.length ?? 0);
-
         if (!insertChild(doc.items, parentId, item)) {
           throw new Error(`Parent "${parentId}" not found`);
-        }
-
-        // After insertion, check if parent transitioned from leaf to non-leaf
-        // and is a subtask (which might need promotion)
-        if (childCountBefore === 0 && parentEntry.item.level === "subtask") {
-          // Parent just got its first child and is a subtask - promote if needed
-          await this.promoteLeafSubtaskToFolder(doc, parentEntry.item);
         }
       } else {
         doc.items.push(item);
       }
+      // The serializer always writes the canonical shape: a leaf subtask
+      // gaining its first child is naturally promoted from `<slug>.md` to
+      // `<slug>/index.md`, and `removeStaleEntries` cleans the old leaf.
       await this.saveDocument(doc);
     });
   }
@@ -237,132 +221,6 @@ export class FolderTreeStore implements PRDStore {
     };
   }
 
-  // ---- Promotion of leaf subtasks to folders --------------------------------
-
-  /**
-   * Promote a leaf subtask (stored as .md file in parent directory) to a folder
-   * with index.md when it gains its first child. Uses atomic file operations
-   * to ensure crash-safety: either the old .md file or the new folder structure
-   * exists, never both.
-   *
-   * This is called when a subtask transitions from 0 to 1+ children.
-   *
-   * @param doc The full PRD document (used to find parent chain)
-   * @param subtask The subtask item that is being promoted
-   */
-  private async promoteLeafSubtaskToFolder(doc: PRDDocument, subtask: PRDItem): Promise<void> {
-    // Find the parent chain to calculate the path where the leaf .md file is stored
-    const parentChain = getParentChain(doc.items, subtask.id);
-    if (!parentChain || parentChain.length === 0) {
-      // Subtask is at root level (unusual, but not an error - just skip promotion)
-      return;
-    }
-
-    // Calculate the directory where the subtask's .md file should be
-    // For single-child optimization, it's in the parent's directory
-    const parentDir = await this.calculateItemDir(parentChain);
-    if (!parentDir) {
-      return; // Can't determine parent directory - skip promotion
-    }
-
-    // Check if the subtask exists as a leaf .md file in the parent directory
-    const subtaskFilename = titleToFilename(subtask.title);
-    const leafPath = join(parentDir, subtaskFilename);
-
-    const exists = await this.fileExists(leafPath);
-    if (!exists) {
-      // No leaf .md file found - might already be in a folder or never created yet
-      return;
-    }
-
-    // Promote: read the .md file, create the subtask's directory, write the file there
-    try {
-      const content = await readFile(leafPath, "utf-8");
-      const subtaskSlug = this.calculateItemSlug(subtask.title);
-      const subtaskDir = join(parentDir, subtaskSlug);
-
-      // Create the subtask's directory
-      await mkdir(subtaskDir, { recursive: true });
-
-      // Write the file in the new location
-      const newPath = join(subtaskDir, subtaskFilename);
-      await writeFile(newPath, content, "utf-8");
-
-      // Atomically remove the old file (using rename to be extra safe)
-      // If this fails, the old file remains and the tree is still consistent
-      await rm(leafPath, { force: true }).catch(() => {
-        // Silently continue - the old file will be orphaned but won't cause corruption
-      });
-    } catch (err) {
-      // Log but don't throw - promotion failure shouldn't prevent item creation
-      // The serializer will handle creating the directory on next write
-      console.warn(
-        `Failed to promote leaf subtask "${subtask.title}" to folder: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-  }
-
-  /**
-   * Calculate the directory path where an item with the given parent chain
-   * should be located on disk.
-   *
-   * Traverses the ancestor chain and computes slugs to determine the full path.
-   * Returns null if any ancestor directory doesn't exist (item not yet on disk).
-   */
-  private async calculateItemDir(parentChain: PRDItem[]): Promise<string | null> {
-    if (!parentChain || parentChain.length === 0) {
-      return null;
-    }
-
-    let currentDir = this.treeRoot;
-
-    // Traverse from first parent (root ancestor) to last parent (immediate parent)
-    for (const parent of parentChain) {
-      const slug = this.calculateItemSlug(parent.title);
-      currentDir = join(currentDir, slug);
-
-      // Check if this directory exists
-      if (!await this.fileExists(currentDir)) {
-        return null;
-      }
-    }
-
-    return currentDir;
-  }
-
-  /**
-   * Calculate the directory slug for an item based on its title.
-   * This mirrors the logic in serializeFolderTree slug calculation.
-   */
-  private calculateItemSlug(title: string): string {
-    // Simplified slug calculation: normalize and lowercase
-    // This should match the logic in folder-tree-serializer.ts
-    const normalized = title
-      .normalize("NFKD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^\x00-\x7F]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    return normalized || "untitled";
-  }
-
-  /**
-   * Check if a file or directory exists.
-   */
-  private async fileExists(path: string): Promise<boolean> {
-    try {
-      await stat(path);
-      return true;
-    } catch (err) {
-      if (isMissingFileError(err)) {
-        return false;
-      }
-      throw err;
-    }
-  }
 }
 
 // ---------------------------------------------------------------------------

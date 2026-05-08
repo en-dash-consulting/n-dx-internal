@@ -71,6 +71,19 @@ export async function parseFolderTree(treeRoot: string): Promise<FolderParseResu
     if (item) items.push(item);
   }
 
+  // Discover bare-leaf `.md` files at treeRoot. The canonical schema places
+  // leaf subtasks (Rule 1b) under their parent task, so these are unusual,
+  // but a malformed PRD that puts a non-epic item at root must still
+  // round-trip — `validate` is designed to detect that misplacement.
+  const seen = new Set(items.map((i) => i.id));
+  const rootLeaves = await discoverLeafChildMarkdownFiles(treeRoot, "", 1, warnings);
+  for (const leaf of rootLeaves) {
+    if (!seen.has(leaf.id)) {
+      items.push(leaf);
+      seen.add(leaf.id);
+    }
+  }
+
   return { items, warnings };
 }
 
@@ -205,11 +218,23 @@ async function parseDirRecursive(
     }
   }
 
-  // Recursively parse subdirectories as children.
+  // Recursively parse subdirectories as children (branch subtasks and lower).
   const childItems: PRDItem[] = [];
   for (const childDir of await listSubdirs(dir)) {
     const child = await parseDirRecursive(join(dir, childDir), depth + 1, warnings);
     if (child) childItems.push(child);
+  }
+
+  // Discover leaf-subtask `.md` files at this level (Rule 1b).
+  // Skip the item's own file (`index.md` or a legacy `<title>.md`) and any
+  // file we already loaded as an orphaned-child shim above.
+  const seenIds = new Set(childItems.map((c) => c.id));
+  const leafChildren = await discoverLeafChildMarkdownFiles(dir, itemFile, depth + 1, warnings);
+  for (const leaf of leafChildren) {
+    if (!seenIds.has(leaf.id)) {
+      childItems.push(leaf);
+      seenIds.add(leaf.id);
+    }
   }
 
   // Tasks may also carry legacy `## Subtask:` sections in their index.md.
@@ -217,9 +242,11 @@ async function parseDirRecursive(
   if (item.level === "task") {
     const legacySubtasks = await readLegacySubtasksIfTask(itemFile, warnings);
     if (legacySubtasks.length > 0) {
-      const seenIds = new Set(childItems.map((c) => c.id));
       for (const legacy of legacySubtasks) {
-        if (!seenIds.has(legacy.id)) childItems.push(legacy);
+        if (!seenIds.has(legacy.id)) {
+          childItems.push(legacy);
+          seenIds.add(legacy.id);
+        }
       }
     }
   }
@@ -229,13 +256,73 @@ async function parseDirRecursive(
 }
 
 /**
+ * Discover leaf-subtask `.md` files in the current directory and parse each
+ * as a self-contained PRDItem child. Files with `__parentId` (legacy
+ * single-child compaction shims) are skipped — they are handled by the
+ * separate orphaned-child path. The owning item's own file (`itemFile`)
+ * and any nested `index.md` are also skipped.
+ */
+async function discoverLeafChildMarkdownFiles(
+  dir: string,
+  itemFile: string,
+  depth: number,
+  warnings: ParseWarning[],
+): Promise<PRDItem[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return [];
+  }
+
+  const found: PRDItem[] = [];
+  for (const entry of entries) {
+    if (!entry.endsWith(".md")) continue;
+    if (entry === "index.md") continue;
+    const filePath = join(dir, entry);
+    if (filePath === itemFile) continue;
+
+    const text = await readIndexFile(filePath, warnings);
+    if (text === null) continue;
+    const fm = parseFrontmatter(text, filePath, warnings);
+    if (fm === null) continue;
+
+    // Legacy single-child shim — handled elsewhere; do not treat as leaf.
+    if (fm.__parentId !== undefined) continue;
+
+    // Leaf subtask `.md` files are stored directly in the parent's folder
+    // with no folder of their own, so the depth-derived level (which would
+    // be "task" or below for a leaf placed under a feature) does not match
+    // the file's `level: subtask` frontmatter. Skip the depth-mismatch
+    // warning by reusing the reconstructed-parent flag — leaves and
+    // reconstructed children share the same property: the depth-to-level
+    // mapping does not apply to them.
+    const item = await parseItemFileFromFrontmatter(filePath, depth, warnings, true);
+    if (item) found.push(item);
+  }
+
+  return found;
+}
+
+/**
  * Reconstruct a parent PRDItem from a child's embedded parent metadata (__parent* fields).
  * Returns null if required parent fields are missing, emits a warning.
+ *
+ * @deprecated Legacy single-child compaction shim. The current serializer
+ * never emits `__parent*` fields, but trees written by older versions may
+ * still contain them — they are reconstructed at parse time and written
+ * back canonically (without shims) on the next `saveDocument`. Emits a
+ * structured warning each time it fires so we can confirm the shim is no
+ * longer in use before removing this path.
  */
 function reconstructParentFromChildMetadata(
   child: PRDItem,
   warnings: ParseWarning[],
 ): PRDItem | null {
+  warnings.push({
+    path: "",
+    message: `Reconstructing parent from legacy __parent* fields on child "${child.title}" (id=${child.id}). This shim is deprecated; re-saving the PRD will rewrite the tree without it.`,
+  });
   const childRecord = child as Record<string, unknown>;
   const parentId = childRecord.__parentId as string | undefined;
   const parentTitle = childRecord.__parentTitle as string | undefined;
@@ -446,17 +533,18 @@ async function listSubdirs(dir: string): Promise<string[]> {
 }
 
 /**
- * Discover the item file in a directory, using title-named files with fallback
- * to legacy index.md.
+ * Discover the item file in a directory.
  *
- * Discovery algorithm:
- * 1. Scan directory for `.md` files (excluding index.md)
- * 2. If exactly one non-index markdown file exists, return its full path
- * 3. Else if `index.md` exists, return its full path (legacy fallback)
- * 4. Else return null and emit warning
+ * The canonical layout (see `docs/architecture/prd-folder-tree-schema.md`)
+ * places each folder item's content in `index.md`. Sibling `.md` files in
+ * the same directory are leaf subtask children (Rule 1b), not the folder's
+ * own content. We therefore prefer `index.md` when it exists.
  *
- * This supports migration: during transition, both title-named and index.md
- * can coexist. The deterministic discovery rule ensures consistent behavior.
+ * For legacy trees written before this convention — where the folder's
+ * content lived in a `<title>.md` file with no `index.md` — we fall back
+ * to a non-`index.md` `.md` file *only when there is exactly one*. Multiple
+ * non-`index.md` files with no `index.md` is ambiguous and we report a
+ * warning rather than guess.
  */
 async function discoverItemFile(
   dir: string,
@@ -470,29 +558,29 @@ async function discoverItemFile(
     return null;
   }
 
-  // Find all .md files (excluding index.md)
-  const markdownFiles = entries.filter(
-    (f) => f.endsWith(".md") && f !== "index.md",
-  );
-
-  // If exactly one non-index markdown file, use it
-  if (markdownFiles.length === 1) {
-    return join(dir, markdownFiles[0]);
-  }
-
-  // Else fall back to index.md if it exists
+  // Prefer `index.md` if it exists (canonical layout).
   const indexPath = join(dir, "index.md");
   try {
     await stat(indexPath);
     return indexPath;
   } catch {
-    // Neither title-named nor index.md exists
-    warnings.push({
-      path: dir,
-      message: "No item markdown file found (expected index.md or title-named .md file)",
-    });
-    return null;
+    // Fall through to legacy <title>.md fallback.
   }
+
+  const markdownFiles = entries.filter(
+    (f) => f.endsWith(".md") && f !== "index.md",
+  );
+  if (markdownFiles.length === 1) {
+    return join(dir, markdownFiles[0]);
+  }
+
+  warnings.push({
+    path: dir,
+    message: markdownFiles.length === 0
+      ? "No item markdown file found (expected index.md or title-named .md file)"
+      : `Ambiguous item file: ${markdownFiles.length} non-index .md files and no index.md`,
+  });
+  return null;
 }
 
 // ── index.md parsing ──────────────────────────────────────────────────────────

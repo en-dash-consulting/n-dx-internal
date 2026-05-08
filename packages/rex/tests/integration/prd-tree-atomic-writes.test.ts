@@ -129,23 +129,31 @@ describe("prd_tree atomic writes and crash-safety", () => {
     });
 
     it("partial item markdown is replaced atomically on subsequent writes", async () => {
-      // Use an epic with a child so both `index.md` (the human-readable summary
-      // for non-leaf items) and `<title>.md` (frontmatter source of truth) are
-      // written. Corrupting only the human-readable index.md leaves the item
-      // discoverable via title.md fallback so the next save can rewrite both.
+      // Under the new schema each folder item has a single canonical
+      // `index.md` — corrupting it loses the item's frontmatter (no fallback
+      // file). This test instead verifies that a partial child write is
+      // replaced atomically: corrupt a leaf-subtask sibling file (which the
+      // parent's `index.md` references) and confirm a subsequent save
+      // overwrites the corrupted bytes via temp + rename.
       const epic = makeItem("test-1", "Item One", "epic");
       await store.addItem(epic);
       await store.addItem(makeItem("test-1-child", "Child", "task"), "test-1");
+      await store.addItem(makeItem("test-1-grandchild", "Leaf", "subtask"), "test-1-child");
 
       const treeDir = join(rexDir, PRD_TREE_DIRNAME);
       const [epicDirName] = await readdir(treeDir);
-      const indexMdPath = join(treeDir, epicDirName, "index.md");
+      const epicDir = join(treeDir, epicDirName);
+      const [taskDirName] = (await readdir(epicDir)).filter((e) => e !== "index.md");
+      const taskDir = join(epicDir, taskDirName);
+      const leafFile = (await readdir(taskDir)).find((e) => e.endsWith(".md") && e !== "index.md");
+      expect(leafFile).toBeDefined();
+      const leafPath = join(taskDir, leafFile!);
 
-      // Manually corrupt the index.md to simulate partial write
-      await writeFile(indexMdPath, "CORRUPTED");
+      // Manually corrupt the leaf .md to simulate partial write.
+      await writeFile(leafPath, "CORRUPTED");
 
       // Update the item — saveDocument re-serializes the full tree, which
-      // rewrites the corrupted index.md atomically (temp + rename).
+      // rewrites the corrupted leaf atomically (temp + rename).
       await store.updateItem("test-1", { title: "Item One Updated" });
 
       // Verify the item survives the round-trip with the new title.

@@ -172,13 +172,11 @@ describe("Billing", () => {
     }
     const prdNonSubtaskCount = countNonSubtasks(prd.items);
 
-    // Count per-item markdown files in item directories. The serializer writes
-    // a title-named .md file per item (e.g. `epic_alpha.md`); legacy `index.md`
-    // is also accepted by the parser. Skip the tree root's own index.md stub
-    // (depth 0) which `rex init` creates as a human-readable scaffold. Single-
-    // child-compacted parents do not get their own file — their metadata is
-    // embedded in the surviving descendant via `__parent*` frontmatter — so
-    // count those as well to verify no item went missing on disk.
+    // Count folder-item markdown files. Under the new schema each
+    // non-leaf-subtask item (epic / feature / task / branch subtask) lives
+    // in its own folder with exactly one `index.md`. Leaf subtasks are bare
+    // `<slug>.md` files and are excluded from `prdNonSubtaskCount`, so we
+    // skip them here too. Skip the tree root's own `index.md` (depth 0).
     async function countItemFiles(dir: string, depth = 0): Promise<number> {
       let count = 0;
       try {
@@ -188,20 +186,8 @@ describe("Billing", () => {
           const s = await stat(entryPath);
           if (s.isDirectory()) {
             count += await countItemFiles(entryPath, depth + 1);
-          } else if (entry.endsWith(".md") && entry !== "index.md" && depth > 0) {
+          } else if (entry === "index.md" && depth > 0) {
             count++;
-            // A compacted parent's data is folded into this file's frontmatter;
-            // count one extra item per `__parentId` ancestor field present.
-            try {
-              const text = await readFile(entryPath, "utf8");
-              const fm = text.match(/^---\n([\s\S]*?)\n---/);
-              if (fm) {
-                const ancestorIds = fm[1].match(/^__parent(?:__parent)*Id:/gm);
-                if (ancestorIds) count += ancestorIds.length;
-              }
-            } catch {
-              // ignore
-            }
           }
         }
       } catch {

@@ -229,7 +229,7 @@ describe("serializeFolderTree: epic index.md", () => {
     });
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).toContain('id: "11111111-0000-0000-0000-000000000000"');
@@ -253,7 +253,7 @@ describe("serializeFolderTree: epic index.md", () => {
     });
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).toContain("priority: \"high\"");
@@ -272,7 +272,7 @@ describe("serializeFolderTree: epic index.md", () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Bare Epic");
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).not.toContain("priority:");
@@ -289,7 +289,7 @@ describe("serializeFolderTree: epic index.md", () => {
     });
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).toContain("## Children");
@@ -304,7 +304,7 @@ describe("serializeFolderTree: epic index.md", () => {
     const epic = makeEpic("11111111-0000-0000-0000-000000000000", "Empty Epic");
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).not.toContain("## Children");
@@ -328,7 +328,7 @@ describe("serializeFolderTree: feature index.md", () => {
         testDir,
         slugify(epic.title, epic.id),
         slugify(feature.title, feature.id),
-        titleToFilename(feature.title),
+        "index.md",
       ),
       "utf8",
     );
@@ -347,7 +347,7 @@ describe("serializeFolderTree: feature index.md", () => {
         testDir,
         slugify(epic.title, epic.id),
         slugify(feature.title, feature.id),
-        titleToFilename(feature.title),
+        "index.md",
       ),
       "utf8",
     );
@@ -366,14 +366,14 @@ describe("serializeFolderTree: task index.md", () => {
     try {
       await stat(featureDir);
       // Feature directory exists, task is inside feature
-      taskPath = join(featureDir, slugify(task.title, task.id), titleToFilename(task.title));
+      taskPath = join(featureDir, slugify(task.title, task.id), "index.md");
     } catch {
       // Feature directory doesn't exist (single-child optimization), task is in epic
       taskPath = join(
         testDir,
         slugify(epic.title, epic.id),
         slugify(task.title, task.id),
-        titleToFilename(task.title),
+        "index.md",
       );
     }
     return readFile(taskPath, "utf8");
@@ -419,11 +419,12 @@ describe("serializeFolderTree: task index.md", () => {
       slugify(epic.title, epic.id),
       slugify(feature.title, feature.id),
       slugify(task.title, task.id),
-      titleToFilename(task.title),
+      "index.md",
     );
     const content = await readFile(taskPath, "utf8");
     expect(content).toContain("## Children");
-    expect(content).toContain(`| [Subtask](./${slugify(subtask.title, subtask.id)}/index.md) | pending |`);
+    // Leaf subtasks are stored as bare `<slug>.md` at the parent level (Rule 1b).
+    expect(content).toContain(`| [Subtask](./${slugify(subtask.title, subtask.id)}.md) | pending |`);
   });
 });
 
@@ -451,8 +452,7 @@ describe("serializeFolderTree: subtask directories", () => {
       slugify(epic.title, epic.id),
       slugify(feature.title, feature.id),
       slugify(task.title, task.id),
-      slugify(st.title, st.id),
-      titleToFilename(st.title),
+      `${slugify(st.title, st.id)}.md`,
     );
     const content = await readFile(subtaskPath, "utf8");
     expect(content).toContain('id: "44444444-0000-0000-0000-000000000000"');
@@ -482,8 +482,7 @@ describe("serializeFolderTree: subtask directories", () => {
       slugify(epic.title, epic.id),
       slugify(feature.title, feature.id),
       slugify(task.title, task.id),
-      slugify(st.title, st.id),
-      titleToFilename(st.title),
+      `${slugify(st.title, st.id)}.md`,
     );
     const content = await readFile(subtaskPath, "utf8");
     expect(content).toContain("Do the thing.");
@@ -509,8 +508,7 @@ describe("serializeFolderTree: subtask directories", () => {
       slugify(epic.title, epic.id),
       slugify(feature.title, feature.id),
       slugify(task.title, task.id),
-      slugify(st.title, st.id),
-      titleToFilename(st.title),
+      `${slugify(st.title, st.id)}.md`,
     );
     const content = await readFile(subtaskPath, "utf8");
     expect(content).toContain('title: "No-Priority Subtask"');
@@ -559,7 +557,7 @@ describe("serializeFolderTree: idempotency", () => {
 
     expect(r2.filesWritten).toBe(1);  // Only title-named file (leaf item, no index.md)
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).toContain('"After."');
@@ -741,7 +739,7 @@ describe("serializeFolderTree: round-trip with parseFolderTree", () => {
 
     await serializeFolderTree([epic], testDir);
     const content = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(content).toContain("myCustomField");
@@ -792,12 +790,12 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     const featureDir = join(epicDir, featureSlug);
     await stat(featureDir);
 
-    const featureIndex = await readFile(join(featureDir, titleToFilename(feature.title)), "utf8");
+    const featureIndex = await readFile(join(featureDir, "index.md"), "utf8");
     expect(featureIndex).toContain('id: "22222222-0000-0000-0000-000000000000"');
     expect(featureIndex).toContain('title: "Feature Alpha"');
     expect(featureIndex).toContain('"Feature works"');
 
-    const epicIndex = await readFile(join(epicDir, titleToFilename(epic.title)), "utf8");
+    const epicIndex = await readFile(join(epicDir, "index.md"), "utf8");
     expect(epicIndex).toContain(`| [Feature Alpha](./${featureSlug}/index.md) | pending |`);
   });
 
@@ -815,7 +813,7 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     await serializeFolderTree([updated], testDir);
 
     const epicIndex = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     // Children table should reflect the new status.
@@ -835,7 +833,7 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
 
     // Verify both features appear in Children table
     let epicIndex = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     expect(epicIndex).toContain("Feature Keep");
@@ -846,7 +844,7 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     await serializeFolderTree([updated], testDir);
 
     epicIndex = await readFile(
-      join(testDir, slugify(epic.title, epic.id), titleToFilename(epic.title)),
+      join(testDir, slugify(epic.title, epic.id), "index.md"),
       "utf8",
     );
     // f1 remains, f2 is gone from Children table
@@ -887,20 +885,26 @@ describe("serializeFolderTree: parent ## Children table updates", () => {
     await stat(join(epicBDir, featureSlug));  // now under epicB
 
     // epicA's Children table no longer contains "Moved Feature"
-    const epicAIndex = await readFile(join(epicADir, titleToFilename(epicA.title)), "utf8");
+    const epicAIndex = await readFile(join(epicADir, "index.md"), "utf8");
     expect(epicAIndex).not.toContain("Moved Feature");
     expect(epicAIndex).not.toContain("## Children");
 
     // epicB's Children table now contains "Moved Feature"
-    const epicBIndex = await readFile(join(epicBDir, titleToFilename(epicB.title)), "utf8");
+    const epicBIndex = await readFile(join(epicBDir, "index.md"), "utf8");
     expect(epicBIndex).toContain("## Children");
     expect(epicBIndex).toContain("Moved Feature");
   });
 });
 
-// ── Single-child filesystem optimization ──────────────────────────────────────
+// ── Single-child filesystem optimization (REMOVED) ───────────────────────────
+//
+// The previous schema embedded `__parent*` metadata in a single child to elide
+// its parent's directory. The current schema (see
+// docs/architecture/prd-folder-tree-schema.md) gives every PRD item its own
+// folder, so these tests no longer apply. Tree round-trip with `__parent*`
+// shims is exercised by the migration integration tests instead.
 
-describe("serializeFolderTree: single-child filesystem optimization", () => {
+describe.skip("serializeFolderTree: single-child filesystem optimization", () => {
   it("single-child feature skips directory creation, places task directly in epic", async () => {
     const task = makeTask("33333333-0000-0000-0000-000000000000", "Task");
     const feature = makeFeature("22222222-0000-0000-0000-000000000000", "Feature", {
@@ -990,7 +994,7 @@ describe("serializeFolderTree: single-child filesystem optimization", () => {
     const taskIndexPath = join(
       epicDir,
       slugify(task.title, task.id),
-      titleToFilename(task.title),
+      "index.md",
     );
     const taskContent = await readFile(taskIndexPath, "utf8");
 

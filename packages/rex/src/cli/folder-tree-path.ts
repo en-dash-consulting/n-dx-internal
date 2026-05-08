@@ -7,12 +7,14 @@ import { findItem } from "../core/tree.js";
 import { slugify, PRD_TREE_DIRNAME } from "../store/index.js";
 
 /**
- * Compute the folder-tree path for a given item, mirroring the on-disk layout
- * the serializer produces — including single-child compaction.
+ * Compute the folder-tree path for a given item, mirroring the on-disk
+ * layout the serializer produces.
  *
- * The serializer collapses a feature-or-lower ancestor whose only child is the
- * next ancestor in the chain. Such ancestors are skipped here so the returned
- * path always points at a directory that actually exists on disk.
+ * Every PRD item — epic, feature, task, or branch subtask — gets its own
+ * folder named with its slug containing `index.md`. Leaf subtasks (Rule 1b)
+ * are written as a bare `<slug>.md` file inside the parent task's folder
+ * with no intermediate directory; for those we return the path to the `.md`
+ * file rather than to a non-existent folder.
  */
 export function getFolderTreePath(items: PRDItem[], itemId: string): string | undefined {
   const entry = findItem(items, itemId);
@@ -20,27 +22,14 @@ export function getFolderTreePath(items: PRDItem[], itemId: string): string | un
 
   const { item, parents } = entry;
 
-  // Build path segments: .rex/<PRD_TREE_DIRNAME>/<retained-ancestor-slugs>/<item-slug>
   const pathSegments = [".rex", PRD_TREE_DIRNAME];
-
-  // The serializer only writes a directory for an ancestor when it is NOT
-  // single-child-compacted. An ancestor is compacted when it is feature-or-
-  // lower AND has exactly one child (the next ancestor or `item`).
-  //
-  // Walk the ancestor chain and skip any ancestor that qualifies for
-  // compaction. Epics are never compacted, and ancestors with two or more
-  // children are never compacted. The item itself always gets a directory
-  // (because it is processed under the multi-child branch when it has zero or
-  // multiple children, and when it has a single child of its own that child
-  // is compacted into the item's directory rather than the other way around).
   for (const ancestor of parents) {
-    const isFeatureOrLower = ancestor.level !== "epic";
-    const childCount = (ancestor.children ?? []).length;
-    if (isFeatureOrLower && childCount === 1) continue;
     pathSegments.push(slugify(ancestor.title, ancestor.id));
   }
 
-  pathSegments.push(slugify(item.title, item.id));
+  const isLeafSubtask = item.level === "subtask" && (item.children?.length ?? 0) === 0;
+  const itemSlug = slugify(item.title, item.id);
+  pathSegments.push(isLeafSubtask ? `${itemSlug}.md` : itemSlug);
 
   return pathSegments.join("/");
 }

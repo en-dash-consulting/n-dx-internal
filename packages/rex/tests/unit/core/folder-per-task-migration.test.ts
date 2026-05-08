@@ -67,11 +67,12 @@ acceptanceCriteria: []
     // Run migration
     const result = await migrateToFolderPerTask(testDir);
 
-    // Check that migration was detected
-    expect(result.migratedCount).toBe(1);
+    // The migration may apply multiple passes (e.g. rename a legacy
+    // `<title>.md` to `index.md` after wrapping). Assert that at least the
+    // bare-task-to-folder migration ran and no errors were emitted.
+    expect(result.migratedCount).toBeGreaterThanOrEqual(1);
     expect(result.errors).toHaveLength(0);
-    expect(result.migrations).toHaveLength(1);
-    expect(result.migrations[0].type).toBe("bare-task-to-folder");
+    expect(result.migrations.some((m) => m.type === "bare-task-to-folder")).toBe(true);
 
     // Verify the task file was moved
     const entries = await readdir(epicDir);
@@ -141,10 +142,12 @@ description: ""
     // Run migration
     const result = await migrateToFolderPerTask(testDir);
 
-    // Check that migration was detected
-    expect(result.migratedCount).toBe(1);
+    // The migration may apply multiple passes (e.g. rename child .md files
+    // inside the new subtask folder to index.md). Assert that at least the
+    // subtask-with-children-to-folder migration ran.
+    expect(result.migratedCount).toBeGreaterThanOrEqual(1);
     expect(result.errors).toHaveLength(0);
-    expect(result.migrations[0].type).toBe("subtask-with-children-to-folder");
+    expect(result.migrations.some((m) => m.type === "subtask-with-children-to-folder")).toBe(true);
 
     // Verify the subtask file was moved to a folder
     const entries = await readdir(taskDir);
@@ -259,18 +262,33 @@ description: ""
   });
 
   it("skips already-conforming structures", async () => {
-    // Create a conforming structure:
+    // Create a structure that conforms to the new schema (each item folder
+    // contains a single `index.md`):
     // testDir/
     //   epic-slug/
+    //     index.md         <- epic content
     //     task-slug/
-    //       task_title.md   <- task in its own folder (OK)
+    //       index.md       <- task content
     //       subtask-slug/
-    //         subtask.md    <- subtask in its own folder (OK)
+    //         index.md     <- subtask content
 
-    const taskDir = join(testDir, "epic-slug", "task-slug");
+    const epicDir = join(testDir, "epic-slug");
+    const taskDir = join(epicDir, "task-slug");
     const subtaskDir = join(taskDir, "subtask-slug");
 
     await mkdir(subtaskDir, { recursive: true });
+
+    const epicContent = `---
+id: "epic-001"
+level: "epic"
+title: "Epic Title"
+status: "pending"
+description: ""
+---
+
+# Epic Title
+`;
+    await writeFile(join(epicDir, "index.md"), epicContent);
 
     const taskContent = `---
 id: "task-123"
@@ -283,7 +301,7 @@ acceptanceCriteria: []
 
 # Task Title
 `;
-    await writeFile(join(taskDir, "task_title.md"), taskContent);
+    await writeFile(join(taskDir, "index.md"), taskContent);
 
     const subtaskContent = `---
 id: "subtask-456"
@@ -295,12 +313,11 @@ description: ""
 
 # Subtask Title
 `;
-    await writeFile(join(subtaskDir, "subtask_title.md"), subtaskContent);
+    await writeFile(join(subtaskDir, "index.md"), subtaskContent);
 
-    // Run migration
+    // Run migration — the canonical shape requires no changes.
     const result = await migrateToFolderPerTask(testDir);
 
-    // Should not detect any migrations
     expect(result.migratedCount).toBe(0);
     expect(result.errors).toHaveLength(0);
     expect(result.migrations).toHaveLength(0);

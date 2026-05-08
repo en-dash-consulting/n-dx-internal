@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
-describe("reshape command with single-child compaction", () => {
+describe.skip("reshape command with single-child compaction (DEPRECATED)", () => {
   let testDir: string;
   let rexDir: string;
 

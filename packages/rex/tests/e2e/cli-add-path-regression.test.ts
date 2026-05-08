@@ -183,15 +183,19 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // Leaf subtasks (Rule 1b) are written as bare `<slug>.md` files inside
+    // their parent task folder, so the printed path should resolve to a
+    // file, not a directory.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
 
-    // Both the feature (authentication) and the task (login) are
-    // single-child-compacted because each has exactly one child. The subtask
-    // therefore lives directly under the epic ("platform").
+    // Every PRD item gets its own folder under the new schema, so the path
+    // walks all four ancestors (platform → authentication → login → oauth).
     expect(addedToPath).toContain("platform");
+    expect(addedToPath).toContain("authentication");
+    expect(addedToPath).toContain("login");
     expect(addedToPath).toContain("oauth");
   });
 

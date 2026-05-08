@@ -8,7 +8,6 @@ import { ARCHIVE_FILE, loadArchive, trimArchive } from "../../core/archive.js";
 import { reasonForReshape, formatReshapeProposal } from "../../analyze/reshape-reason.js";
 import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../analyze/reason.js";
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
-import { compactSingleChildren } from "../../core/compact-single-children.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
@@ -46,31 +45,6 @@ export async function cmdReshape(
     warn(`Warning: Failed to create backup snapshot: ${String(err)}`);
   }
 
-  // Run single-child compaction migration pass
-  info("Compacting single-child directories...");
-  let compactionResult;
-  try {
-    compactionResult = await compactSingleChildren(treeRoot);
-  } catch (err) {
-    // Surface backup path in error message for recovery
-    const backupMsg = backupSnapshot
-      ? `\n\nBackup saved to: ${backupSnapshot.backupPath}\nRestore with: cp -r ${backupSnapshot.backupPath} ${treeRoot}`
-      : "";
-    throw new CLIError(
-      `Compaction failed: ${String(err)}${backupMsg}`,
-      "Check the backup path above to restore the PRD tree.",
-    );
-  }
-
-  if (compactionResult.errors.length > 0) {
-    for (const err of compactionResult.errors) {
-      warn(`  Warning: ${err.error} (${err.path})`);
-    }
-  }
-  if (compactionResult.compactedCount > 0) {
-    info(`Compacted ${compactionResult.compactedCount} single-child director${compactionResult.compactedCount === 1 ? "y" : "ies"}.`);
-  }
-
   // Run folder-per-task structural migration pass
   info("Migrating non-conforming task structures to folder-per-task form...");
   let migrationResult;
@@ -96,8 +70,17 @@ export async function cmdReshape(
     info(`Migrated ${migrationResult.migratedCount} item${migrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
   }
 
+  // Canonicalize the on-disk tree: load (handles legacy `__parent*` shims and
+  // dual `<title>.md` + `index.md` shapes via the parser) and save back
+  // through the serializer, which writes one `index.md` per folder item and
+  // sweeps up stale leftovers via `removeStaleEntries`. This satisfies the
+  // user-facing rule that reshape always migrates the tree forward, even
+  // when no proposals end up being applied.
+  const canonicalDoc = await store.loadDocument();
+  await store.saveDocument(canonicalDoc);
+
   // Prune old backups if migrations were applied
-  if (compactionResult.compactedCount > 0 || migrationResult.migratedCount > 0) {
+  if (migrationResult.migratedCount > 0) {
     try {
       await pruneBackups(rexDir, 10);
     } catch {
@@ -105,8 +88,7 @@ export async function cmdReshape(
     }
   }
 
-  // Reload document after migrations
-  const docAfterCompaction = await store.loadDocument();
+  const docAfterCompaction = canonicalDoc;
 
   // Load LLM config
   const llmConfig = await loadLLMConfig(rexDir);
@@ -248,7 +230,6 @@ export async function cmdReshape(
       deleted: reshapeResult.deletedIds.length,
       errors: reshapeResult.errors.length,
       actions: reshapeResult.applied.map((p) => p.action.action),
-      compacted: compactionResult.compactedCount,
       migrated: migrationResult.migratedCount,
       migrations: migrationResult.migrations.map((m) => ({
         type: m.type,

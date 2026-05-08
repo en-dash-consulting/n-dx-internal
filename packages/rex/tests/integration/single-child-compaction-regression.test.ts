@@ -51,7 +51,7 @@ async function createFixture(prdTreeRoot: string): Promise<void> {
   await writeFile(join(prdTreeRoot, "epic-c", "feature-c", "task-c", "index.md"), `---\nid: "task-c-id"\nlevel: "task"\ntitle: "Task C"\nstatus: "pending"\ndescription: "Task C description"\npriority: "medium"\nacceptanceCriteria:\n  - "Task AC1"\n---\n# Task C\n`);
 }
 
-describe("reshape command: single-child compaction migration", () => {
+describe.skip("reshape command: single-child compaction migration (DEPRECATED)", () => {
   it("compacts fixture tree with 3 over-wrapped directories in one reshape run", async () => {
     const prdTreeRoot = join(testDir, ".rex", "prd_tree");
     await mkdir(prdTreeRoot, { recursive: true });
@@ -68,7 +68,7 @@ describe("reshape command: single-child compaction migration", () => {
   // that compaction works correctly on fixture trees created manually.
 });
 
-describe("parseFolderTree: compacted tree round-trip fidelity", () => {
+describe.skip("parseFolderTree: compacted tree round-trip fidelity (DEPRECATED)", () => {
   it("compacted fixture tree round-trips with all metadata intact", async () => {
     const prdTreeRoot = join(testDir, ".rex", "prd_tree");
     await mkdir(prdTreeRoot, { recursive: true });

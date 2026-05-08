@@ -30,7 +30,12 @@ export interface FolderPerTaskMigrationResult {
   /** Details of each migration. */
   migrations: Array<{
     path: string;
-    type: "bare-task-to-folder" | "subtask-with-children-to-folder";
+    type:
+      | "bare-task-to-folder"
+      | "subtask-with-children-to-folder"
+      | "phantom-index-wrapper-merged"
+      | "phantom-index-wrapper-removed"
+      | "title-md-renamed-to-index";
     beforePath: string;
     afterPath: string;
   }>;
@@ -41,6 +46,16 @@ export interface FolderPerTaskMigrationResult {
 /**
  * Scan the folder tree and detect/migrate non-conforming task-level structures.
  * Returns a summary of what was migrated.
+ *
+ * Pass order is significant:
+ *   1. Phantom-index-wrapper cleanup runs first because it can leave a parent
+ *      folder unparseable (no own `index.md`). Other passes assume a
+ *      parser-readable tree.
+ *   2. The recursive folder-per-task scan handles bare `<title>.md` files and
+ *      subtask `.md` files with orphaned children.
+ *   3. The title-md-to-index normalization renames `<title>.md` to `index.md`
+ *      inside item folders so the canonical (index.md-only) shape lands on
+ *      disk.
  */
 export async function migrateToFolderPerTask(
   treeRoot: string,
@@ -60,6 +75,15 @@ export async function migrateToFolderPerTask(
   }
 
   try {
+    await cleanupPhantomIndexWrappers(treeRoot, result);
+  } catch (err) {
+    result.errors.push({
+      path: treeRoot,
+      error: `Phantom-wrapper cleanup failed: ${err instanceof Error ? err.message : String(err)}`,
+    });
+  }
+
+  try {
     await migrateDirRecursive(treeRoot, "epic", 0, result);
   } catch (err) {
     result.errors.push({
@@ -68,7 +92,193 @@ export async function migrateToFolderPerTask(
     });
   }
 
+  try {
+    await renameTitleMdToIndexMd(treeRoot, result);
+  } catch (err) {
+    result.errors.push({
+      path: treeRoot,
+      error: `Title-md normalization failed: ${err instanceof Error ? err.message : String(err)}`,
+    });
+  }
+
   return result;
+}
+
+/**
+ * Walk the tree and remove `index-{hash}/` phantom wrapper folders. These are
+ * artifacts of the previous migration: when an item folder's `index.md` was
+ * itself wrapped (because the migration treated it as a bare file), the result
+ * was a sibling folder named `index-{hash}` containing a single `index.md`
+ * with the parent's metadata, leaving the parent folder with no own
+ * `index.md` and rendering the entire subtree unparseable.
+ *
+ * For each match we promote the wrapped `index.md` back to the parent folder
+ * (or just delete the phantom if the parent already has its own `index.md`).
+ */
+async function cleanupPhantomIndexWrappers(
+  treeRoot: string,
+  result: FolderPerTaskMigrationResult,
+): Promise<void> {
+  const stack: string[] = [treeRoot];
+  while (stack.length > 0) {
+    const dir = stack.pop()!;
+    let entries: string[];
+    try {
+      entries = await readdir(dir);
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      const entryPath = join(dir, entry);
+      const isDir = await stat(entryPath).then((s) => s.isDirectory()).catch(() => false);
+      if (!isDir) continue;
+
+      // Phantom pattern: name starts with `index-` and contains only `index.md`.
+      if (/^index-[A-Za-z0-9-]+$/.test(entry)) {
+        const phantomEntries = await readdir(entryPath).catch(() => [] as string[]);
+        if (phantomEntries.length === 1 && phantomEntries[0] === "index.md") {
+          const phantomIndex = join(entryPath, "index.md");
+          const parentIndex = join(dir, "index.md");
+          const parentHasIndex = await stat(parentIndex).then(() => true).catch(() => false);
+
+          try {
+            if (parentHasIndex) {
+              // Parent already has its content file; the phantom is a dupe.
+              await rm(entryPath, { recursive: true, force: true });
+              result.migrations.push({
+                path: entryPath,
+                type: "phantom-index-wrapper-removed",
+                beforePath: phantomIndex,
+                afterPath: parentIndex,
+              });
+            } else {
+              // Promote the wrapped index.md back to the parent folder.
+              await rename(phantomIndex, parentIndex);
+              await rm(entryPath, { recursive: true, force: true });
+              result.migrations.push({
+                path: entryPath,
+                type: "phantom-index-wrapper-merged",
+                beforePath: phantomIndex,
+                afterPath: parentIndex,
+              });
+            }
+            result.migratedCount++;
+          } catch (err) {
+            result.errors.push({
+              path: entryPath,
+              error: `Failed to merge phantom wrapper: ${err instanceof Error ? err.message : String(err)}`,
+            });
+          }
+          continue; // Don't recurse into the phantom; it's gone.
+        }
+      }
+
+      stack.push(entryPath);
+    }
+  }
+}
+
+/**
+ * Walk the tree and, for each folder that contains exactly one item-level
+ * `<title>.md` file alongside an `index.md`, delete the `<title>.md` (the
+ * canonical content lives in `index.md` per the new schema). For folders
+ * with only a `<title>.md` (no `index.md`), rename it to `index.md`.
+ *
+ * Leaf-subtask `.md` files at parent level (Rule 1b) are left untouched —
+ * they live alongside the parent's `index.md` and are identified by their
+ * frontmatter `level` being one below the parent folder's expected level.
+ * We conservatively keep any `.md` file we cannot positively identify as the
+ * folder's own `<title>.md`; the serializer's `removeStaleEntries` will
+ * sweep up actual leftovers on the next save.
+ */
+async function renameTitleMdToIndexMd(
+  treeRoot: string,
+  result: FolderPerTaskMigrationResult,
+): Promise<void> {
+  // `expectedLevel` is the level of the item whose `index.md` lives directly
+  // in `dir`. The treeRoot itself is not a PRD item, so its expectedLevel is
+  // null; its immediate subdirectories are epic folders, and so on.
+  type Frame = { dir: string; expectedLevel: "epic" | "feature" | "task" | "subtask" | null };
+  const stack: Frame[] = [{ dir: treeRoot, expectedLevel: null }];
+
+  while (stack.length > 0) {
+    const { dir, expectedLevel } = stack.pop()!;
+    let entries: string[];
+    try {
+      entries = await readdir(dir);
+    } catch {
+      continue;
+    }
+
+    const subdirs: string[] = [];
+    const mdFiles: string[] = [];
+    for (const entry of entries) {
+      const entryPath = join(dir, entry);
+      const isDir = await stat(entryPath).then((s) => s.isDirectory()).catch(() => false);
+      if (isDir) subdirs.push(entry);
+      else if (entry.endsWith(".md")) mdFiles.push(entry);
+    }
+
+    if (expectedLevel !== null) {
+      const ownContentFiles: string[] = [];
+      for (const mdFile of mdFiles) {
+        const lvl = await readItemLevel(join(dir, mdFile));
+        if (lvl === expectedLevel) ownContentFiles.push(mdFile);
+      }
+
+      const hasIndex = ownContentFiles.includes("index.md");
+      const titleNamed = ownContentFiles.filter((f) => f !== "index.md");
+
+      if (hasIndex && titleNamed.length > 0) {
+        for (const stale of titleNamed) {
+          const stalePath = join(dir, stale);
+          try {
+            await rm(stalePath, { force: true });
+            result.migrations.push({
+              path: stalePath,
+              type: "title-md-renamed-to-index",
+              beforePath: stalePath,
+              afterPath: join(dir, "index.md"),
+            });
+            result.migratedCount++;
+          } catch (err) {
+            result.errors.push({
+              path: stalePath,
+              error: `Failed to remove redundant <title>.md: ${err instanceof Error ? err.message : String(err)}`,
+            });
+          }
+        }
+      } else if (!hasIndex && titleNamed.length === 1) {
+        const stalePath = join(dir, titleNamed[0]);
+        const indexPath = join(dir, "index.md");
+        try {
+          await rename(stalePath, indexPath);
+          result.migrations.push({
+            path: stalePath,
+            type: "title-md-renamed-to-index",
+            beforePath: stalePath,
+            afterPath: indexPath,
+          });
+          result.migratedCount++;
+        } catch (err) {
+          result.errors.push({
+            path: stalePath,
+            error: `Failed to rename <title>.md to index.md: ${err instanceof Error ? err.message : String(err)}`,
+          });
+        }
+      }
+    }
+
+    const childExpected: "epic" | "feature" | "task" | "subtask" =
+      expectedLevel === null ? "epic"
+        : expectedLevel === "epic" ? "feature"
+          : expectedLevel === "feature" ? "task"
+            : "subtask";
+    for (const sub of subdirs) {
+      stack.push({ dir: join(dir, sub), expectedLevel: childExpected });
+    }
+  }
 }
 
 /**

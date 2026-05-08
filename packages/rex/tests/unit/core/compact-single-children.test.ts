@@ -9,7 +9,13 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { compactSingleChildren } from "../../../src/core/compact-single-children.js";
 
-describe("compactSingleChildren", () => {
+// `compactSingleChildren` is deprecated and now a no-op (see
+// `src/core/compact-single-children.ts`). The previous behavior tested here —
+// elide a parent folder by embedding `__parent*` shims in the child — has
+// been removed. Un-compaction of legacy `__parent*` trees now happens
+// implicitly via the parser+serializer round-trip; the migration integration
+// test exercises that path on real fixtures.
+describe.skip("compactSingleChildren", () => {
   let testDir: string;
 
   beforeEach(async () => {
