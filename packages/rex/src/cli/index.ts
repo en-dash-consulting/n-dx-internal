@@ -333,6 +333,11 @@ async function dispatchCommand(
       await cmdStatus(resolveDir(positional), flags);
       break;
     }
+    case "tree": {
+      const { cmdTree } = await import("./commands/tree.js");
+      await cmdTree(resolveDir(positional), flags);
+      break;
+    }
     case "next": {
       const { cmdNext } = await import("./commands/next.js");
       await cmdNext(resolveDir(positional), flags);
@@ -494,7 +499,7 @@ async function dispatchCommand(
       }
 
       const REX_COMMANDS = [
-        "init", "status", "next", "add", "update", "move", "remove", "reshape",
+        "init", "status", "tree", "next", "add", "update", "move", "remove", "reshape",
         "prune", "validate", "fix", "sync", "usage", "report", "verify",
         "recommend", "analyze", "import", "adapter", "reorganize", "health", "mcp",
         "migrate-to-md", "migrate-to-folder-tree", "migrate-folder-tree-filenames", "parse-md",

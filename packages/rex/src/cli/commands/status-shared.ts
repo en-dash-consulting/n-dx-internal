@@ -64,7 +64,7 @@ export function formatTimestamp(iso: string): string {
 }
 
 /** Build a timestamp suffix for tree display. */
-function timestampSuffix(item: PRDItem): string {
+export function timestampSuffix(item: PRDItem): string {
   if (item.status === "completed" && typeof item.completedAt === "string") {
     const ts = formatTimestamp(item.completedAt);
     return ts ? ` (done ${ts})` : "";
@@ -80,7 +80,7 @@ function timestampSuffix(item: PRDItem): string {
 }
 
 /** Build a suffix showing blockedBy dependency IDs for blocked items. */
-function blockedBySuffix(item: PRDItem): string {
+export function blockedBySuffix(item: PRDItem): string {
   if (item.status !== "blocked" || !item.blockedBy || item.blockedBy.length === 0) {
     return "";
   }
@@ -88,7 +88,7 @@ function blockedBySuffix(item: PRDItem): string {
 }
 
 /** Format a coverage suffix for a task with acceptance criteria. */
-function coverageSuffix(itemId: string, coverage?: CoverageMap): string {
+export function coverageSuffix(itemId: string, coverage?: CoverageMap): string {
   if (!coverage) return "";
   const entry = coverage.get(itemId);
   if (!entry) return "";
@@ -103,7 +103,7 @@ function coverageSuffix(itemId: string, coverage?: CoverageMap): string {
   return ` [${covered}/${total} covered]`;
 }
 
-function overrideSuffix(item: PRDItem): string {
+export function overrideSuffix(item: PRDItem): string {
   if (!item.overrideMarker) return "";
   return ` [override: ${item.overrideMarker.reason}]`;
 }
