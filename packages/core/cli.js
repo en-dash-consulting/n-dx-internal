@@ -1949,6 +1949,14 @@ async function handleNext(rest) {
   exitWithCleanup(0);
 }
 
+async function handleTree(rest) {
+  const dir = resolveDir(rest);
+  requireInit(dir, [".rex"]);
+  const flags = extractFlags(rest);
+  await runOrDie(tools.rex, ["tree", ...flags, dir]);
+  exitWithCleanup(0);
+}
+
 // ── Delegated sourcevision commands ───────────────────────────────────────────
 
 async function handleReset(rest) {
@@ -2248,6 +2256,7 @@ const COMMAND_DISPATCH = new Map([
   ["reorganize",        handleReorganize],
   ["prune",             handlePrune],
   ["next",              handleNext],
+  ["tree",              handleTree],
   // ── Delegated sourcevision commands ──
   ["reset",             handleReset],
   // ── Delegated hench commands ──

@@ -2,13 +2,18 @@
 id: "27de7e14-db19-4fbc-b91d-760e765bb9b4"
 level: "task"
 title: "Implement `rex tree` / `ndx tree` command that walks prd_tree and prints an indented hierarchy"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "cli"
   - "rex"
   - "prd"
 source: "smart-add"
+startedAt: "2026-05-08T04:39:56.103Z"
+completedAt: "2026-05-08T04:46:11.885Z"
+endedAt: "2026-05-08T04:46:11.885Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented ndx tree handler by adding handleTree function to packages/core/cli.js and registering it in COMMAND_DISPATCH. Updated help.js with command registry entries. Updated CLI contract test to include tree command."
 acceptanceCriteria:
   - "`rex tree` and `ndx tree` both execute successfully against a valid `.rex/prd_tree/` directory"
   - "Output indentation reflects the full epic → feature → task hierarchy"
@@ -20,7 +25,7 @@ description: "Add a `rex tree` command (with `ndx tree` orchestrator alias) that
 
 # Implement `rex tree` / `ndx tree` command that walks prd_tree and prints an indented hierarchy
 
-🟠 [pending]
+🟠 [completed]
 
 ## Summary
 
@@ -28,7 +33,10 @@ Add a `rex tree` command (with `ndx tree` orchestrator alias) that reads the `.r
 
 ## Info
 
-- **Status:** pending
+- **Status:** completed
 - **Priority:** high
 - **Tags:** cli, rex, prd
 - **Level:** task
+- **Started:** 2026-05-08T04:39:56.103Z
+- **Completed:** 2026-05-08T04:46:11.885Z
+- **Duration:** 6m
