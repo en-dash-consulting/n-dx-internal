@@ -2,13 +2,14 @@
 id: "b3ffbc17-9c74-4ca9-8583-c74941751291"
 level: "task"
 title: "Implement shape-based node classification and rendering for Rex context graph nodes"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "ui"
   - "graph"
   - "rex"
 source: "smart-add"
+startedAt: "2026-05-08T05:49:00.682Z"
 acceptanceCriteria:
   - "Nodes with index.md plus additional non-index.md siblings render as diamonds"
   - "Nodes with only non-index.md files and no subdirectory children render as squares"

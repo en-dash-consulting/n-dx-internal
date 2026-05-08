@@ -2,15 +2,18 @@
 id: "f8638a30-55d9-48c3-85b8-c6006600c138"
 level: "feature"
 title: "Folder-Per-Task Hierarchy Enforcement"
-status: "pending"
+status: "completed"
 source: "smart-add"
+startedAt: "2026-05-08T05:46:20.049Z"
+completedAt: "2026-05-08T05:46:20.049Z"
+endedAt: "2026-05-08T05:46:20.049Z"
 acceptanceCriteria: []
 description: "Make task-level PRD items always materialize as a folder containing an index.md, while allowing their subtasks to be either nested folders (recursing the same rule) or leaf .md files. Promote a leaf subtask .md file to a folder with index.md the moment it gains children, so the storage shape is uniform regardless of how a subtree grows."
 ---
 
 # Folder-Per-Task Hierarchy Enforcement
 
- [pending]
+ [completed]
 
 ## Summary
 
@@ -20,10 +23,13 @@ Make task-level PRD items always materialize as a folder containing an index.md,
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Auto-promote leaf subtask .md files to folder-with-index.md when children are added | task | in_progress | 2026-05-08 |
-| Enforce folder-with-index.md storage for tasks and dual-mode subtask serialization | task | pending | 1970-01-01 |
+| Auto-promote leaf subtask .md files to folder-with-index.md when children are added | task | completed | 2026-05-08 |
+| Enforce folder-with-index.md storage for tasks and dual-mode subtask serialization | task | completed | 2026-05-08 |
 
 ## Info
 
-- **Status:** pending
+- **Status:** completed
 - **Level:** feature
+- **Started:** 2026-05-08T05:46:20.049Z
+- **Completed:** 2026-05-08T05:46:20.049Z
+- **Duration:** < 1m

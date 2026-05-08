@@ -2,7 +2,7 @@
 id: "6acff042-3eb9-4fde-bd59-159a8324a88d"
 level: "task"
 title: "Auto-promote leaf subtask .md files to folder-with-index.md when children are added"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "prd-storage"
@@ -10,6 +10,10 @@ tags:
   - "serializer"
 source: "smart-add"
 startedAt: "2026-05-08T04:46:38.321Z"
+completedAt: "2026-05-08T05:38:06.205Z"
+endedAt: "2026-05-08T05:38:06.205Z"
+resolutionType: "code-change"
+resolutionDetail: "Completed atomic promotion logic implementation. Fixed 2 issues from Phase 2: (1) Migration logic now correctly detects bare task files with children at parent levels and migrates them to folders. (2) Validation logic now correctly enforces subtask parent requirements despite recursive nesting schema changes. All 7 migration tests and 65 recommendation tests passing."
 acceptanceCriteria:
   - "Adding a child to a leaf .md subtask via any write path (rex CLI, MCP, plan accept) converts the .md to folder/index.md and writes the child"
   - "The promoted index.md preserves every field (frontmatter, body, status, tags, branch attribution, etc.) from the original .md file"
