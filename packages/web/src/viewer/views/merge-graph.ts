@@ -20,7 +20,6 @@ import { h, Fragment } from "preact";
 import { useState, useEffect, useMemo, useCallback, useRef } from "preact/hooks";
 import { usePanZoom } from "../hooks/index.js";
 import type { NavigateTo } from "../types.js";
-import { TaskDetail } from "../components/prd-tree/task-detail.js";
 import type { PRDItemData } from "../components/prd-tree/types.js";
 import { findItemById } from "../components/prd-tree/tree-utils.js";
 
@@ -463,19 +462,104 @@ function statusClass(s: FileChangeStatus): string {
   return "";
 }
 
+// ── Subtree helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Collect a PRD node's id plus the ids of every transitive descendant.
+ *
+ * Walks the parent->child relationship encoded in `graph.nodes` (each PRD
+ * node carries its `parentId`), returning a set that includes the root.
+ * Used to highlight an entire subtree on click.
+ */
+export function collectPrdSubtreeIds(graph: MergeGraph, rootId: string): Set<string> {
+  const childrenByParent = new Map<string, string[]>();
+  for (const n of graph.nodes) {
+    if (n.kind !== "prd" || !n.parentId) continue;
+    const arr = childrenByParent.get(n.parentId) ?? [];
+    arr.push(n.id);
+    childrenByParent.set(n.parentId, arr);
+  }
+
+  const result = new Set<string>([rootId]);
+  const queue = [rootId];
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    for (const child of childrenByParent.get(cur) ?? []) {
+      if (!result.has(child)) {
+        result.add(child);
+        queue.push(child);
+      }
+    }
+  }
+  return result;
+}
+
 // ── Detail panel ─────────────────────────────────────────────────────────────
 
 type SelectedNode =
   | { kind: "prd"; node: PrdNode; linkedMergeIds: string[] }
   | { kind: "merge"; node: MergeNode };
 
+const EMPTY_FIELD = "—"; // em dash
+
+/**
+ * Concise PRD front-matter summary card.
+ *
+ * Surfaces only the front-matter fields already present on a PRD item
+ * (title, status, priority, tags, level, branch). Missing/empty fields
+ * render as an em dash instead of being silently omitted, so users can
+ * tell "no value" apart from "field unsupported". Keeps to existing
+ * dashboard styling — no new schema is introduced.
+ */
+function PrdFrontMatterSummary({ item, fallback, level, onClose }: {
+  item: PRDItemData | null;
+  fallback: { title: string; status: string; priority?: string };
+  level: string;
+  onClose: () => void;
+}) {
+  const title = (item?.title ?? fallback.title).trim() || EMPTY_FIELD;
+  const status = item?.status ?? fallback.status;
+  const priority = item?.priority ?? fallback.priority;
+  const tags = item?.tags ?? [];
+
+  return h("div", { class: "mg-detail mg-detail-prd" },
+    h("div", { class: "mg-detail-header" },
+      h("span", { class: "mg-detail-title" }, level.toUpperCase()),
+      h("button", {
+        class: "mg-detail-close",
+        onClick: onClose,
+        "aria-label": "Close",
+      }, "×"),
+    ),
+    h("p", { class: "mg-detail-subject" }, title),
+    h("dl", { class: "mg-frontmatter" },
+      h("dt", null, "Status"),
+      h("dd", null,
+        h("span", {
+          class: "mg-frontmatter-status",
+          style: { color: STATUS_COLOR[status] ?? "inherit" },
+        }, status ? status.replace(/_/g, " ") : EMPTY_FIELD),
+      ),
+      h("dt", null, "Priority"),
+      h("dd", null, priority ? priority : EMPTY_FIELD),
+      h("dt", null, "Tags"),
+      h("dd", null,
+        tags.length === 0
+          ? h("span", { class: "mg-frontmatter-empty" }, EMPTY_FIELD)
+          : h("span", { class: "mg-frontmatter-tags" },
+              tags.map((t) =>
+                h("span", { key: t, class: "mg-frontmatter-tag" }, t),
+              ),
+            ),
+      ),
+    ),
+  );
+}
+
 /**
  * Custom detail panel for merge graph.
- * For PRD nodes, renders the full TaskDetail component (from tasks view).
- * For merge nodes, renders a custom summary.
- *
- * TaskDetail callbacks are stubbed to prevent errors when users interact,
- * but the merge-graph view doesn't support editing features.
+ * For PRD nodes, renders a concise front-matter summary card.
+ * For merge nodes, renders a custom file-change summary.
  */
 function DetailPanelContent({ selection, prdData, onClose }: {
   selection: SelectedNode;
@@ -523,50 +607,15 @@ function DetailPanelContent({ selection, prdData, onClose }: {
     );
   }
 
-  // For PRD nodes, render the full TaskDetail component
+  // PRD node: concise front-matter summary, sourced from PRD item when available.
   const pn = selection.node;
-  if (prdData) {
-    const item = findItemById(prdData, pn.id);
-    if (item) {
-      // Stub callbacks for TaskDetail (read-only mode in merge-graph context)
-      return h(TaskDetail, {
-        item,
-        allItems: prdData,
-        showTokenBudget: false,
-        // Stub callbacks to allow rendering without errors
-        // (editing is not supported in the merge-graph context)
-        onUpdate: undefined,
-        onNavigateToItem: undefined,
-        onExecuteTask: undefined,
-        onPrdChanged: undefined,
-        onAddChild: undefined,
-        onRemove: undefined,
-        navigateTo: undefined,
-      });
-    }
-  }
-
-  // Fallback: minimal PRD detail
-  return h("div", { class: "mg-detail" },
-    h("div", { class: "mg-detail-header" },
-      h("span", { class: "mg-detail-title" }, pn.level.toUpperCase()),
-      h("button", {
-        class: "mg-detail-close",
-        onClick: onClose,
-        "aria-label": "Close",
-      }, "×"),
-    ),
-    h("p", { class: "mg-detail-subject" }, pn.title),
-    h("div", { class: "mg-detail-meta" },
-      h("span", { style: { color: STATUS_COLOR[pn.status] ?? "inherit" } }, pn.status.replace("_", " ")),
-      pn.priority ? h("span", null, ` · ${pn.priority}`) : null,
-    ),
-    selection.linkedMergeIds.length > 0
-      ? h("div", { class: "mg-detail-links" },
-          h("p", { class: "mg-detail-links-label" }, `${selection.linkedMergeIds.length} linked merge${selection.linkedMergeIds.length !== 1 ? "s" : ""}`),
-        )
-      : h("p", { class: "mg-detail-empty" }, "No linked merges."),
-  );
+  const item = prdData ? findItemById(prdData, pn.id) : null;
+  return h(PrdFrontMatterSummary, {
+    item,
+    fallback: { title: pn.title, status: pn.status, priority: pn.priority },
+    level: pn.level,
+    onClose,
+  });
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -765,10 +814,19 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
   // ── Node click handlers ────────────────────────────────────────────────────
   const handlePrdClick = useCallback((node: PrdNode) => {
     if (!graph) return;
-    const linkedEdges = graph.edges.filter((e) => e.to === node.id && visibleMergeIds.has(e.from));
-    const linkedMergeIds = linkedEdges.map((e) => e.from);
+    // Highlight the selected node's full subtree (direct + transitive
+    // descendants) plus every merge linked to anything in that subtree.
+    // Selecting a different node always builds a fresh highlight set,
+    // so the previous selection is implicitly cleared.
+    const subtreeIds = collectPrdSubtreeIds(graph, node.id);
+    const subtreeMergeIds = graph.edges
+      .filter((e) => subtreeIds.has(e.to) && visibleMergeIds.has(e.from))
+      .map((e) => e.from);
+    const linkedMergeIds = graph.edges
+      .filter((e) => e.to === node.id && visibleMergeIds.has(e.from))
+      .map((e) => e.from);
     setSelected({ kind: "prd", node, linkedMergeIds });
-    setHighlightIds(new Set([node.id, ...linkedMergeIds]));
+    setHighlightIds(new Set([...subtreeIds, ...subtreeMergeIds]));
   }, [graph, visibleMergeIds]);
 
   const handleMergeClick = useCallback((node: MergeNode) => {

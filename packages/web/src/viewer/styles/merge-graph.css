@@ -427,6 +427,57 @@
   font-style: italic;
 }
 
+/* ── PRD front-matter summary ─────────────────────────────────────────────── */
+
+.mg-frontmatter {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  margin: 0;
+  font-size: var(--font-xs);
+  align-items: baseline;
+}
+
+.mg-frontmatter dt {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  font-weight: var(--weight-semibold);
+}
+
+.mg-frontmatter dd {
+  margin: 0;
+  color: var(--text-dim);
+  word-break: break-word;
+  min-width: 0;
+}
+
+.mg-frontmatter-status {
+  text-transform: capitalize;
+}
+
+.mg-frontmatter-empty {
+  color: var(--text-muted);
+}
+
+.mg-frontmatter-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.mg-frontmatter-tag {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: var(--font-xs);
+  white-space: nowrap;
+}
+
 /* ── File list ────────────────────────────────────────────────────────────── */
 
 .mg-file-list {
