@@ -216,7 +216,7 @@ describe("cmdAdd – level inference (no explicit level)", () => {
     ).rejects.toThrow(/not found/);
   });
 
-  it("errors when parent is a subtask (cannot infer child level)", async () => {
+  it("allows adding a subtask under a subtask (infers subtask level)", async () => {
     writePRD(tmp, makePrd([{
         id: "epic-1", title: "E", level: "epic", status: "pending",
         children: [{
@@ -228,9 +228,19 @@ describe("cmdAdd – level inference (no explicit level)", () => {
         }],
       }]));
 
-    await expect(
-      cmdAdd(tmp, undefined, { title: "Cannot Infer", parent: "sub-1" }),
-    ).rejects.toThrow(/Cannot infer child level/);
+    // Now subtasks can have children, so we should be able to add a subtask under a subtask
+    await cmdAdd(tmp, undefined, { title: "Nested Subtask", parent: "sub-1", format: "json" });
+
+    const prd = readPRD(tmp);
+    const task = prd.items[0].children[0].children[0];
+    const parentSub = task.children[0];
+    expect(parentSub).toBeDefined();
+    expect(parentSub.id).toBe("sub-1");
+    expect(parentSub.children).toBeDefined();
+    expect(parentSub.children.length).toBe(1);
+    const nestedSub = parentSub.children[0];
+    expect(nestedSub.title).toBe("Nested Subtask");
+    expect(nestedSub.level).toBe("subtask");
   });
 
   it("explicit level overrides inference", async () => {
@@ -290,7 +300,7 @@ describe("cmdAdd – flexible hierarchy (tasks under epics)", () => {
     expect(task.level).toBe("task");
   });
 
-  it("rejects adding a task under a subtask", async () => {
+  it("rejects adding a task under a subtask (task requires task or feature parent)", async () => {
     writePRD(tmp, makePrd([{
         id: "epic-1", title: "E", level: "epic", status: "pending",
         children: [{
@@ -302,9 +312,10 @@ describe("cmdAdd – flexible hierarchy (tasks under epics)", () => {
         }],
       }]));
 
+    // Task can only have feature or epic as parent (not subtask)
     await expect(
       cmdAdd(tmp, "task", { title: "Bad Task", parent: "sub-1" }),
-    ).rejects.toThrow(/must be a child of/);
+    ).rejects.toThrow(/(must be a child of|invalid parent)/);
   });
 
   it("rejects adding a task without any parent", async () => {
@@ -358,8 +369,8 @@ describe("cmdAdd – blockedBy support", () => {
 
   it("accepts --blockedBy as comma-separated IDs", async () => {
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending" },
-        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending" },
+        { id: "t2", title: "Task 2", level: "epic", status: "pending" },
       ]));
 
     await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1,t2", format: "json" });
@@ -372,7 +383,7 @@ describe("cmdAdd – blockedBy support", () => {
 
   it("accepts single blockedBy ID", async () => {
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending" },
       ]));
 
     await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1", format: "json" });
@@ -396,8 +407,8 @@ describe("cmdAdd – blockedBy support", () => {
   it("rejects blockedBy that creates a cycle", async () => {
     // t1 blocks t2, trying to add t3 that blocks t1 while t1 blocks t3
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending", blockedBy: ["t2"] },
-        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending", blockedBy: ["t2"] },
+        { id: "t2", title: "Task 2", level: "epic", status: "pending" },
       ]));
 
     // New item blocked by t1, where t1 is blocked by t2 — no cycle, should succeed

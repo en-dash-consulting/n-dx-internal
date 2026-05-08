@@ -115,23 +115,13 @@ async function migrateDirRecursive(
         : "subtask" as const;
 
   // Detect and migrate non-conforming files:
+  // - Subtask .md files with children (check this FIRST)
   // - Bare task/subtask .md files at the wrong level
-  // - Subtask .md files with children
   for (const mdFile of mdFiles) {
     const itemLevel = await readItemLevel(join(dir, mdFile));
 
-    // Check if this file is a child-level item (should be in a folder, not bare)
-    if (itemLevel === childLevel) {
-      try {
-        await migrateBareFileToFolder(dir, mdFile, result);
-        result.migratedCount++;
-      } catch (err) {
-        result.errors.push({
-          path: join(dir, mdFile),
-          error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
-        });
-      }
-    } else if (itemLevel === "subtask" && currentLevel === "task") {
+    // Check for subtask .md files with children BEFORE bare file migration
+    if (itemLevel === "subtask" && currentLevel === "task") {
       // At task level, check for subtask .md files with children
       const hasChildren = await hasChildrenSiblings(dir, mdFile);
       if (hasChildren) {
@@ -144,6 +134,24 @@ async function migrateDirRecursive(
             error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
           });
         }
+        // Skip further processing for this file since we handled the children
+        continue;
+      }
+      // If no children, fall through to bare file migration below
+    }
+
+    // Check if this file is a child-level item (should be in a folder, not bare)
+    // BUT: if we're already inside an item's own folder (not at top level), this is OK
+    // Only migrate files that are at the wrong nesting level
+    if (itemLevel === childLevel && currentLevel !== childLevel) {
+      try {
+        await migrateBareFileToFolder(dir, mdFile, result);
+        result.migratedCount++;
+      } catch (err) {
+        result.errors.push({
+          path: join(dir, mdFile),
+          error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
+        });
       }
     }
   }

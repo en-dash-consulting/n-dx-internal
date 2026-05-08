@@ -13,4 +13,4 @@ endedAt: "2026-05-06T13:01:11.375Z"
 
 | Title | Status |
 |-------|--------|
-| [Standardize self-heal tag to 'self-heal-items' across creation and selection paths](./standardize-self-heal-tag-to-756197/index.md) | completed |
+| [Strict Self-Heal Tag Scoping Enforcement](./strict-self-heal-tag-scoping-enforcement/index.md) | completed |

@@ -12,5 +12,5 @@ description: "Make task-level PRD items always materialize as a folder containin
 
 | Title | Status |
 |-------|--------|
-| [Auto-promote leaf subtask .md files to folder-with-index.md when children are added](./auto-promote-leaf-subtask-md-6acff0/index.md) | pending |
+| [Auto-promote leaf subtask .md files to folder-with-index.md when children are added](./auto-promote-leaf-subtask-md-6acff0/index.md) | in_progress |
 | [Enforce folder-with-index.md storage for tasks and dual-mode subtask serialization](./enforce-folder-with-index-md-23bf71/index.md) | pending |

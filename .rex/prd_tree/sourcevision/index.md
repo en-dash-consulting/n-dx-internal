@@ -30,9 +30,9 @@ Build an evaluation harness in tests/gauntlet/ that captures sourcevision's curr
 | Background Tab Resource Optimization | feature | completed | 2026-02-27 |
 | Fix 1: Go Zone Edge Resolution | feature | completed | 2026-03-26 |
 | Fix 2: Mixed-Language Support | feature | completed | 2026-03-26 |
-| Fix observation in sourcevision-cli: High coupling (0.85) — 6 imports target "sourcevision" | task | completed | 2026-04-13 |
-| Fix observation in sourcevision-2: Generic zone name "Sourcevision 2" — enrichment did not assign a meaningful name | task | completed | 2026-04-13 |
-| Fix suggestion in polling: Zone "Polling" (polling) has catastrophic risk (score: 0.75, cohesion: 0.25, cou | task | completed | 2026-04-13 |
+| Fix observation in sourcevision-cli (1 finding) | feature | completed | 2026-04-13 |
+| Fix observation in sourcevision-2 (1 finding) | feature | completed | 2026-04-13 |
+| Fix suggestion in polling (1 finding) | feature | completed | 2026-04-13 |
 | Git Credential Helper Opt-In Recovery | feature | completed | 2026-02-23 |
 | Git-Independent PR Markdown Generation | feature | completed | 2026-02-23 |
 | Go Fixture Enhancement | feature | completed | 2026-03-26 |

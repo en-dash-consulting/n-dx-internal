@@ -443,12 +443,13 @@ export const PRIORITY_ORDER: Record<Priority, number> = {
  * - `null` entries mean the level can be a root (no parent required).
  * - Multiple entries mean several parent levels are accepted (e.g. a task
  *   can live under a feature *or* directly under an epic).
+ * - Subtasks can now have subtask parents for recursive nesting.
  */
 export const LEVEL_HIERARCHY: Record<ItemLevel, Array<ItemLevel | null>> = {
   epic: [null],
   feature: ["epic"],
   task: ["feature", "epic"],
-  subtask: ["task"],
+  subtask: ["task", "subtask"],
 };
 
 // ── Validation sets ────────────────────────────────────────────────
@@ -483,13 +484,13 @@ export const VALID_PRIORITIES = new Set<Priority>(
 /**
  * Map parent level → default child level for inference.
  * Used when adding items under a parent without specifying a level.
- * Subtasks have no children, so they map to null.
+ * Subtasks can now have subtask children (recursive nesting).
  */
 export const CHILD_LEVEL: Record<ItemLevel, ItemLevel | null> = {
   epic: "feature",
   feature: "task",
   task: "subtask",
-  subtask: null,
+  subtask: "subtask",
 };
 
 // ── Type guards ────────────────────────────────────────────────────

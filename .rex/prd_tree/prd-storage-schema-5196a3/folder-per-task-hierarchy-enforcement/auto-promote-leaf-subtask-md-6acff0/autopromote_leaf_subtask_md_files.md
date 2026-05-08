@@ -2,13 +2,14 @@
 id: "6acff042-3eb9-4fde-bd59-159a8324a88d"
 level: "task"
 title: "Auto-promote leaf subtask .md files to folder-with-index.md when children are added"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "prd-storage"
   - "migration"
   - "serializer"
 source: "smart-add"
+startedAt: "2026-05-08T04:46:38.321Z"
 acceptanceCriteria:
   - "Adding a child to a leaf .md subtask via any write path (rex CLI, MCP, plan accept) converts the .md to folder/index.md and writes the child"
   - "The promoted index.md preserves every field (frontmatter, body, status, tags, branch attribution, etc.) from the original .md file"

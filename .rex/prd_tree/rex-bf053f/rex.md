@@ -16,11 +16,11 @@ description: "PRD management: hierarchical epics/features/tasks/subtasks, smart 
 | [Duplicate-aware Proposal Override for rex add](./duplicate-aware-proposal-15572c/index.md) | completed |
 | [Enhanced Rex Recommend Selective PRD Creation](./enhanced-rex-recommend-1d50fb/index.md) | completed |
 | [Fix --mode=fast being ignored when --accept is passed to reorganize](./fix-mode-fast-being-ignored-0f8711/index.md) | completed |
-| [Fix observation in rex-recommend: High coupling (0.78) — 5 imports target "web"](./fix-observation-in-rex-b97a44/index.md) | completed |
-| [Fix observation in rex-core: High coupling (0.82) — 5 imports target "web"](./fix-observation-in-rex-core-d6dd5c/index.md) | completed |
-| [Fix observation in rex: High coupling (0.79) — 9 imports target "web" (+1 more)](./fix-observation-in-rex-high-fbb2f2/index.md) | completed |
-| [Fix suggestion in rex: Zone "Rex" (rex) has catastrophic risk (score: 0.79, cohesion: 0.21, coupling: 0](./fix-suggestion-in-rex-zone-rex-362e10/index.md) | completed |
-| [Implement Codex rate limiting detection and retry in rex LLM call paths](./implement-codex-rate-limiting-7ad242/index.md) | completed |
+| [Fix observation in rex-recommend (1 finding)](./fix-observation-in-rex-ba206d/index.md) | completed |
+| [Fix observation in rex-core (1 finding)](./fix-observation-in-rex-core-1-finding/index.md) | completed |
+| [Fix observation in rex (2 findings)](./fix-observation-in-rex-2-findings/index.md) | completed |
+| [Fix suggestion in rex (1 finding)](./fix-suggestion-in-rex-1-finding/index.md) | completed |
+| [Codex-Compatible PRD Authoring and Proposal Generation](./codex-compatible-prd-authoring-089d9b/index.md) | completed |
 | [Interactive Workflow Shaping and Requirements Integration](./interactive-workflow-shaping-a19a8b/index.md) | completed |
 | [LoE-Calibrated Proposal Generation in rex add](./loe-calibrated-proposal-8feca9/index.md) | completed |
 | [Move file lock to saveDocument for complete write safety](./move-file-lock-to-savedocument-9fa854/index.md) | completed |

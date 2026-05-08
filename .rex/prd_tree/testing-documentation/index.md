@@ -23,31 +23,31 @@ Local testing infrastructure (gauntlet config validation), platform/prerequisite
 
 | Child | Level | Status | Last Updated |
 |-------|-------|--------|--------------|
-| Audit past-week merges and produce a documentation delta report | task | completed | 2026-04-23 |
+| Audit Recent Merges and Catalog Documentation Gaps | feature | completed | 2026-04-23 |
 | Auto Re-Init Detection for Stale Projects | feature | completed | 2026-04-09 |
 | Auto-Update Detection from npm Registry | feature | completed | 2026-04-09 |
-| Build Linux/macOS-representative Docker container with ndx base command tests | task | completed | 2026-04-20 |
+| macOS Local Docker Test Suite | feature | completed | 2026-04-20 |
 | Claude and Codex Config Validation in Gauntlet | feature | completed | 2026-04-15 |
 | Documentation improvements | feature | completed | 2026-03-24 |
 | End-User Platform Requirements | feature | completed | 2026-04-19 |
 | Fix MCP server re-registration during ndx init | feature | completed | 2026-04-10 |
 | Fix move-file in web-server (1 finding) | feature | completed | 2026-04-15 |
-| Fix observation in refresh: High coupling (0.67) — 3 imports target "web-unit" | task | completed | 2026-04-13 |
-| Fix observation in rex-2: Generic zone name "Rex 2" — enrichment did not assign a meaningful name reflecti | task | completed | 2026-04-16 |
-| Fix observation in sourcevision-4: Generic zone name "Sourcevision 4" — enrichment did not assign a meaningful name | task | completed | 2026-04-16 |
-| Fix observation in sourcevision-3: Generic zone name "Sourcevision 3" — enrichment did not assign a meaningful name | task | completed | 2026-04-16 |
-| Fix observation in web-server: Low cohesion (0.33) — files are loosely related, consider splitting this zone | task | completed | 2026-04-16 |
-| Fix observation in web-unit: High coupling (0.6) — 5 imports target "web-server" | task | completed | 2026-04-16 |
-| Fix suggestion in global: 4 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): r | task | completed | 2026-04-13 |
-| Fix suggestion in global: Hub function: jsonResponse in packages/web/src/server/response-utils.ts is calle | task | completed | 2026-04-16 |
-| Fix suggestion in web-server: Zone "Web Server" (web-server) has critical risk (score: 0.67, cohesion: 0.33, c | task | completed | 2026-04-16 |
+| Fix observation in refresh (1 finding) | feature | completed | 2026-04-13 |
+| Fix observation in rex-2 (1 finding) | feature | completed | 2026-04-16 |
+| Fix observation in sourcevision-4 (1 finding) | feature | completed | 2026-04-16 |
+| Fix observation in sourcevision-3 (1 finding) | feature | completed | 2026-04-16 |
+| Fix observation in web-server (1 finding) | feature | completed | 2026-04-16 |
+| Fix observation in web-unit (1 finding) | feature | completed | 2026-04-16 |
+| Fix suggestion in global (1 finding) | feature | completed | 2026-04-13 |
+| Fix suggestion in global (1 finding) | feature | completed | 2026-04-16 |
+| Fix suggestion in web-server (1 finding) | feature | completed | 2026-04-16 |
 | Local Test Suite Documentation in Main README | feature | completed | 2026-04-20 |
 | Project-aware Navigation and Context | feature | completed | 2026-02-17 |
 | Timeout Guardrails for Hanging Tests | feature | completed | 2026-04-02 |
 | TreeNodes DOM Performance Optimization | feature | completed | 2026-02-26 |
 | Update Documentation for New PRD Structure | feature | completed | 2026-04-24 |
 | Web Viewer Architecture: Package Extraction and Independent Viewers | feature | completed | 2026-02-10 |
-| Write contributor prerequisites and platform-specific setup guide | task | completed | 2026-04-19 |
+| Developer Environment Prerequisites Documentation | feature | completed | 2026-04-19 |
 
 ## Info
 

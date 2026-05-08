@@ -82,18 +82,17 @@ export function isWorkItem(level: string): boolean {
 /**
  * Is this a container level (groups other items)?
  *
+ * Containers are organizational structures (epics, features) designed to group
+ * and organize work. Tasks and subtasks are work items that can optionally
+ * subdivide into children but don't inherently require children.
+ *
  * Replaces: `level === "epic" || level === "feature"`
  */
 export function isContainerLevel(level: string): boolean {
   if (!isValidLevel(level)) return false;
-  const child = CHILD_LEVEL[level as ItemLevel];
-  // A container has children, and those children can themselves have children
-  // (i.e., the container is at least 2 levels above the deepest leaf).
-  // Task is NOT a container even though it can have subtask children —
-  // it's a work item that can be subdivided.
-  if (child === null) return false;
-  const grandchild = CHILD_LEVEL[child];
-  return grandchild !== null;
+  // Only epics and features are true containers.
+  // Tasks and subtasks are work items that can optionally have children.
+  return level === "epic" || level === "feature";
 }
 
 /**
