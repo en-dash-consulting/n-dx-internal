@@ -410,6 +410,25 @@ function extractFlags(args) {
   return args.filter((a) => a.startsWith("-"));
 }
 
+/**
+ * Pick out model-selection flags from an arg list so the orchestrator can
+ * forward them into spawned `hench run` invocations. Recognizes the same
+ * three flags accepted by `ndx init` and `hench run`:
+ *   --model=…            vendor-neutral
+ *   --claude-model=…     vendor-pinned (claude)
+ *   --codex-model=…      vendor-pinned (codex)
+ * Returns the original arg strings (preserving `--name=value` form) so they
+ * can be spliced verbatim into a downstream argv.
+ */
+function extractModelFlags(args) {
+  return args.filter(
+    (a) =>
+      a.startsWith("--model=") ||
+      a.startsWith("--claude-model=") ||
+      a.startsWith("--codex-model="),
+  );
+}
+
 function extractInitProvider(args) {
   const providerFlag = args.find((a) => a.startsWith("--provider="));
   if (!providerFlag) return undefined;
@@ -1712,6 +1731,9 @@ async function handleSelfHeal(rest) {
   // --yes suppresses interactive prompts (commit confirmation, rollback) inside the hench loop
   const yes = rest.includes("--yes");
   const yesFlag = yes ? ["--yes"] : [];
+  // Forward model-selection flags into the inner `hench run` so `ndx self-heal --model=opus`
+  // (or --claude-model/--codex-model) actually changes which model the agent uses.
+  const modelFlags = extractModelFlags(rest);
 
   const shTag = cyan("[self-heal]");
   console.log(`${shTag} starting ${bold(String(iterCount))} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : dim(" (excluding structural findings)")}`);
@@ -1772,8 +1794,9 @@ async function handleSelfHeal(rest) {
     console.log(`\n${shTag} step 3/5: rex recommend --actionable-only --accept`);
     await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, dir]);
 
-    console.log(`\n${shTag} step 4/5: hench run --auto --loop --self-heal --tags=self-heal${yes ? " --yes" : ""}`);
-    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", "--tags=self-heal", ...yesFlag, dir]);
+    const modelFlagSummary = modelFlags.length > 0 ? ` ${modelFlags.join(" ")}` : "";
+    console.log(`\n${shTag} step 4/5: hench run --auto --loop --self-heal --tags=self-heal${yes ? " --yes" : ""}${modelFlagSummary}`);
+    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", "--tags=self-heal", ...yesFlag, ...modelFlags, dir]);
 
     console.log(`\n${shTag} step 5/5: acknowledge completed findings`);
     await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);

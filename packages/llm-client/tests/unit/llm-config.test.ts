@@ -188,4 +188,61 @@ describe("loadLLMConfig", () => {
     const cfg = await loadLLMConfig(tmpDir);
     expect(cfg.autoFailover).toBeUndefined();
   });
+
+  it("reads top-level llm.model into LLMConfig.model", async () => {
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: {
+          vendor: "claude",
+          model: "claude-haiku-4-5",
+          claude: { model: "claude-sonnet-4-6" },
+        },
+      }, null, 2),
+      "utf-8",
+    );
+
+    const cfg = await loadLLMConfig(tmpDir);
+    expect(cfg.model).toBe("claude-haiku-4-5");
+    // Vendor-pinned slot is preserved as a fallback; resolveVendorModel
+    // is responsible for picking top-level over vendor-pinned.
+    expect(cfg.claude?.model).toBe("claude-sonnet-4-6");
+  });
+
+  it("normalizes legacy codex aliases when read from top-level llm.model", async () => {
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: {
+          vendor: "codex",
+          model: "gpt-5-codex",
+        },
+      }, null, 2),
+      "utf-8",
+    );
+
+    const cfg = await loadLLMConfig(tmpDir);
+    // gpt-5-codex is a legacy alias normalized to NEWEST_MODELS.codex
+    expect(cfg.model).toBe("gpt-5.5");
+  });
+
+  it("ignores non-string and empty top-level llm.model values", async () => {
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: { model: 42 },
+      }, null, 2),
+      "utf-8",
+    );
+    expect((await loadLLMConfig(tmpDir)).model).toBeUndefined();
+
+    await writeFile(
+      join(tmpDir, ".n-dx.json"),
+      JSON.stringify({
+        llm: { model: "" },
+      }, null, 2),
+      "utf-8",
+    );
+    expect((await loadLLMConfig(tmpDir)).model).toBeUndefined();
+  });
 });

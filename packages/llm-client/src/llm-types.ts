@@ -55,6 +55,13 @@ export interface CodexConfig {
 export interface LLMConfig {
   /** Default vendor selected by the project. */
   vendor?: LLMVendor;
+  /**
+   * Top-level model override for the active vendor. When set, this wins over
+   * `claude.model`/`codex.model` so users can switch the active model with a
+   * single edit without having to clear the vendor-pinned slot written by
+   * `ndx init`.
+   */
+  model?: string;
   /** Claude-specific config (legacy + active). */
   claude?: ClaudeConfig;
   /** Codex-specific config (reserved for adapter integration). */

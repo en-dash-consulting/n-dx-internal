@@ -64,7 +64,7 @@ describe("printVendorModelHeader", () => {
     printVendorModelHeader("claude", config);
     const line = logSpy.mock.calls[0][0] as string;
     expect(line).toContain("Model: claude-opus-4-20250514");
-    expect(line).toContain("(configured)");
+    expect(line).toContain("(configured from llm.claude.model)");
   });
 
   it("prints header with configured model source for codex vendor", () => {
@@ -76,7 +76,21 @@ describe("printVendorModelHeader", () => {
     const line = logSpy.mock.calls[0][0] as string;
     expect(line).toContain("Vendor: codex");
     expect(line).toContain("Model: gpt-5-codex-custom");
-    expect(line).toContain("(configured)");
+    expect(line).toContain("(configured from llm.codex.model)");
+  });
+
+  it("annotates configured source as llm.model when top-level field is set", () => {
+    const config: LLMConfig = {
+      vendor: "claude",
+      model: "claude-haiku-4-5",
+      claude: { model: "claude-sonnet-4-6" },
+    };
+    printVendorModelHeader("claude", config);
+    const line = logSpy.mock.calls[0][0] as string;
+    // resolveVendorModel will pick top-level `model` ahead of `claude.model`.
+    expect(line).toContain("Model: claude-haiku-4-5");
+    expect(line).toContain("(configured from llm.model)");
+    expect(line).not.toContain("llm.claude.model");
   });
 
   // ── Suppression ────────────────────────────────────────────────────────────

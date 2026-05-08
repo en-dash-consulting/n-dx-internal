@@ -782,37 +782,47 @@ export async function cmdRun(
   const llmConfig = await loadLLMConfig(henchDir);
   const llmVendor = resolveLLMVendor(llmConfig);
 
-  // Resolve model: CLI flag > .n-dx.json config > default
-  const cliModelOverride = flags.model;
+  // Resolve model: CLI flag > .n-dx.json config > default.
+  // CLI flag accepts both the vendor-neutral `--model` and the vendor-specific
+  // `--claude-model` / `--codex-model` (the latter pair is also recognized by
+  // `ndx init`; supporting them here means `ndx work --claude-model=…` works
+  // end-to-end). The top-level `llm.model` field is honored ahead of the
+  // vendor-pinned slot inside `resolveVendorModel`.
+  const cliModelOverride =
+    flags.model
+    ?? (llmVendor === "claude" ? flags["claude-model"] : flags["codex-model"]);
   const configuredModel = resolveVendorModel(llmVendor, llmConfig);
   const resolvedModel = cliModelOverride ? resolveModel(cliModelOverride) : configuredModel;
+  const hasConfiguredModel =
+    !!llmConfig?.model
+    || (llmVendor === "claude" ? !!llmConfig?.claude?.model : !!llmConfig?.codex?.model);
   const modelSource: "cli-override" | "configured" | "default" = cliModelOverride
     ? "cli-override"
-    : (llmVendor === "claude" ? !!llmConfig?.claude?.model : !!llmConfig?.codex?.model)
+    : hasConfiguredModel
       ? "configured"
       : "default";
 
-  // Validate vendor-model compatibility: warn if configured model is stale
-  const configuredClaudeModel = llmConfig?.claude?.model;
-  const configuredCodexModel = llmConfig?.codex?.model;
-  if (!cliModelOverride) {
+  // Validate vendor-model compatibility: error if the model that actually
+  // resolved (either top-level llm.model or vendor-pinned) is incompatible
+  // with the active vendor. Picks the same value resolveVendorModel uses.
+  const activeConfiguredModel = llmConfig?.model
+    ?? (llmVendor === "claude" ? llmConfig?.claude?.model : llmConfig?.codex?.model);
+  if (!cliModelOverride && activeConfiguredModel) {
     if (
       llmVendor === "claude" &&
-      configuredClaudeModel &&
-      !isModelCompatibleWithVendor("claude", configuredClaudeModel)
+      !isModelCompatibleWithVendor("claude", activeConfiguredModel)
     ) {
       throw new CLIError(
-        `Configured model "${configuredClaudeModel}" is not compatible with vendor="claude".`,
+        `Configured model "${activeConfiguredModel}" is not compatible with vendor="claude".`,
         `Either use a Claude model (e.g., sonnet, opus) or switch vendor: 'n-dx config llm.vendor codex'`,
       );
     }
     if (
       llmVendor === "codex" &&
-      configuredCodexModel &&
-      !isModelCompatibleWithVendor("codex", configuredCodexModel)
+      !isModelCompatibleWithVendor("codex", activeConfiguredModel)
     ) {
       throw new CLIError(
-        `Configured model "${configuredCodexModel}" is not compatible with vendor="codex".`,
+        `Configured model "${activeConfiguredModel}" is not compatible with vendor="codex".`,
         `Either use a Codex/GPT model (e.g., gpt-4o, o1) or switch vendor: 'n-dx config llm.vendor claude'`,
       );
     }
@@ -840,9 +850,10 @@ export async function cmdRun(
   // --yes suppresses the interactive confirmation prompt before rollback.
   const yes = flags["yes"] === "true";
   const model = resolvedModel;
-  const spawnModel = llmVendor === "codex" && !cliModelOverride
-    ? undefined
-    : resolvedModel;
+  // Always pass the resolved model to the spawned vendor CLI so the user's
+  // configured choice (top-level or vendor-pinned) survives the spawn. The
+  // adapter only appends a model flag when this value is set.
+  const spawnModel = resolvedModel;
   const auto = flags.auto === "true";
   const loop = flags.loop === "true";
   const selfHeal = flags["self-heal"] === "true";

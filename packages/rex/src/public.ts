@@ -334,6 +334,11 @@ export type { ApplyResult, ProposalResult } from "./core/reorganize-executor.js"
 export { applyReshape } from "./core/reshape.js";
 export type { ReshapeProposal, ReshapeAction, ReshapeResult } from "./core/reshape.js";
 
+// ---- Core: folder-per-task migration ----------------------------------------
+
+export { migrateToFolderPerTask } from "./core/folder-per-task-migration.js";
+export type { FolderPerTaskMigrationResult } from "./core/folder-per-task-migration.js";
+
 // ---- Analyze: reshape-reason ------------------------------------------------
 
 export { reasonForReshape, formatReshapeProposal } from "./analyze/reshape-reason.js";

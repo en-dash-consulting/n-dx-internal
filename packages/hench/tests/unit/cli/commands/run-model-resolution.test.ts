@@ -48,7 +48,27 @@ describe("Model resolution in ndx work", () => {
     const line = logSpy.mock.calls[0][0] as string;
     expect(line).toContain("Vendor: claude");
     expect(line).toContain("Model: claude-opus-4-20250514");
-    expect(line).toContain("(configured)");
+    expect(line).toContain("(configured from llm.claude.model)");
+  });
+
+  it("annotates configured source as llm.model when top-level field is set", () => {
+    const llmConfig: LLMConfig = {
+      vendor: "claude",
+      model: "claude-haiku-4-5",
+      claude: { model: "claude-sonnet-4-6" },
+    };
+    const resolvedModel = "claude-haiku-4-5";
+    const options: VendorModelHeaderOptions = {
+      resolvedModel,
+      modelSource: "configured",
+    };
+
+    printVendorModelHeader("claude", llmConfig, options);
+
+    const line = logSpy.mock.calls[0][0] as string;
+    expect(line).toContain("Model: claude-haiku-4-5");
+    expect(line).toContain("(configured from llm.model)");
+    expect(line).not.toContain("llm.claude.model");
   });
 
   // ── CLI override takes precedence ──────────────────────────────────────────
@@ -104,8 +124,8 @@ describe("Model resolution in ndx work", () => {
 
     expect(logSpy).toHaveBeenCalledOnce();
     const line = logSpy.mock.calls[0][0] as string;
-    // Should detect configured from config alone
-    expect(line).toContain("(configured)");
+    // Should detect configured from config alone, annotated with the source key
+    expect(line).toContain("(configured from llm.claude.model)");
   });
 
   // ── Codex vendor ───────────────────────────────────────────────────────────
@@ -127,7 +147,7 @@ describe("Model resolution in ndx work", () => {
     const line = logSpy.mock.calls[0][0] as string;
     expect(line).toContain("Vendor: codex");
     expect(line).toContain("Model: gpt-5");
-    expect(line).toContain("(configured)");
+    expect(line).toContain("(configured from llm.codex.model)");
   });
 
   // ── Shorthand expansion ────────────────────────────────────────────────────

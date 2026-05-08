@@ -74,9 +74,18 @@ function extractLLMConfig(root: Record<string, unknown>): LLMConfig {
   const legacyClaude = extractClaudeConfig(root.claude);
   const autoFailover =
     typeof llm?.autoFailover === "boolean" ? llm.autoFailover : undefined;
+  const rawTopLevelModel =
+    typeof llm?.model === "string" && llm.model ? llm.model : undefined;
 
   const config: LLMConfig = {};
   if (llmVendor) config.vendor = llmVendor;
+  if (rawTopLevelModel) {
+    // Normalize codex aliases at load time when the active vendor is codex
+    // so downstream resolvers see a canonical model id. For claude, the
+    // shorthand→full-id expansion happens later in `resolveModel()`.
+    config.model =
+      llmVendor === "codex" ? normalizeCodexModel(rawTopLevelModel) : rawTopLevelModel;
+  }
   if (llmClaude || legacyClaude) config.claude = llmClaude ?? legacyClaude;
   if (llmCodex) config.codex = llmCodex;
   if (autoFailover !== undefined) config.autoFailover = autoFailover;

@@ -9,6 +9,7 @@ import { reasonForReshape, formatReshapeProposal } from "../../analyze/reshape-r
 import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../analyze/reason.js";
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
 import { compactSingleChildren } from "../../core/compact-single-children.js";
+import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
@@ -47,7 +48,19 @@ export async function cmdReshape(
     info(`Compacted ${compactionResult.compactedCount} single-child director${compactionResult.compactedCount === 1 ? "y" : "ies"}.`);
   }
 
-  // Reload document after compaction
+  // Run folder-per-task structural migration pass
+  info("Migrating non-conforming task structures to folder-per-task form...");
+  const migrationResult = await migrateToFolderPerTask(treeRoot);
+  if (migrationResult.errors.length > 0) {
+    for (const err of migrationResult.errors) {
+      warn(`  Warning: ${err.error} (${err.path})`);
+    }
+  }
+  if (migrationResult.migratedCount > 0) {
+    info(`Migrated ${migrationResult.migratedCount} item${migrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
+  }
+
+  // Reload document after migrations
   const docAfterCompaction = await store.loadDocument();
 
   // Load LLM config
@@ -181,7 +194,7 @@ export async function cmdReshape(
   // Save document
   await store.saveDocument(doc);
 
-  // Log the reshape
+  // Log the reshape and migrations
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "reshape",
@@ -190,6 +203,13 @@ export async function cmdReshape(
       deleted: reshapeResult.deletedIds.length,
       errors: reshapeResult.errors.length,
       actions: reshapeResult.applied.map((p) => p.action.action),
+      compacted: compactionResult.compactedCount,
+      migrated: migrationResult.migratedCount,
+      migrations: migrationResult.migrations.map((m) => ({
+        type: m.type,
+        beforePath: m.beforePath,
+        afterPath: m.afterPath,
+      })),
     }),
   });
 
