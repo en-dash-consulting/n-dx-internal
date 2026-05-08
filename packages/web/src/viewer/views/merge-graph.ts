@@ -66,6 +66,15 @@ interface PrdNode {
   parentId?: string;
   priority?: string;
   shape?: string;
+  /**
+   * Folder-tree slug chain for this item (`<epic>/<feature>/<task>`).
+   *
+   * Mirrors the on-disk path under `.rex/prd_tree/`. The graph hierarchy and
+   * sibling order are driven by this path, so the context graph echoes the
+   * dashboard's folder-tree view by construction. Click-through still uses
+   * `id` — `treePath` is purely a positional/identity hint.
+   */
+  treePath?: string;
 }
 
 interface MergeNode {
