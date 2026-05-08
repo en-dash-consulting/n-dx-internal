@@ -2,7 +2,7 @@
 id: "4feb768c-2c8b-42d4-abb1-92fcb755106e"
 level: "task"
 title: "Add folder-per-task structural migration pass to ndx reshape and ndx add"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "prd-storage"
@@ -10,6 +10,10 @@ tags:
   - "cli"
 source: "smart-add"
 startedAt: "2026-05-07T19:26:13.571Z"
+completedAt: "2026-05-07T22:14:55.274Z"
+endedAt: "2026-05-07T22:14:55.274Z"
+resolutionType: "code-change"
+resolutionDetail: "Implemented pre-write folder-per-task migration check in ndx add command that detects and transparently migrates non-conforming task structures before persisting items. Migration is idempotent and thoroughly tested."
 acceptanceCriteria:
   - "ndx reshape detects and migrates non-conforming task-level .md files to folder/index.md form"
   - "ndx reshape detects subtask .md files that have orphan child siblings (slug-prefixed) and promotes them to folders"

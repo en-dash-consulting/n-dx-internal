@@ -12,5 +12,5 @@ description: "Make ndx reshape and ndx add idempotently bring any pre-existing P
 
 | Title | Status |
 |-------|--------|
-| [Add folder-per-task structural migration pass to ndx reshape and ndx add](./add-folder-per-task-structural-4feb76/index.md) | pending |
-| [Snapshot .rex/prd_tree to a timestamped backup before structural migration](./snapshot-rex-prd-tree-to-a-59a410/index.md) | pending |
+| [Add folder-per-task structural migration pass to ndx reshape and ndx add](./add-folder-per-task-structural-4feb76/index.md) | completed |
+| [Snapshot .rex/prd_tree to a timestamped backup before structural migration](./snapshot-rex-prd-tree-to-a-59a410/index.md) | in_progress |

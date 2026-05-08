@@ -2,7 +2,7 @@
 id: "59a410eb-d550-431f-97aa-66adab334494"
 level: "task"
 title: "Snapshot .rex/prd_tree to a timestamped backup before structural migration"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "prd-storage"
@@ -10,6 +10,7 @@ tags:
   - "backup"
   - "safety"
 source: "smart-add"
+startedAt: "2026-05-07T22:15:10.681Z"
 acceptanceCriteria:
   - "A timestamped copy of .rex/prd_tree is written to .rex/.backups/prd_tree_<ISO-timestamp>/ before any structural migration mutation"
   - "Backup creation is skipped when the structural migration pass would be a no-op"
