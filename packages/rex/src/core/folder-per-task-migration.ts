@@ -60,7 +60,7 @@ export async function migrateToFolderPerTask(
   }
 
   try {
-    await migrateDirRecursive(treeRoot, "epic", result);
+    await migrateDirRecursive(treeRoot, "epic", 0, result);
   } catch (err) {
     result.errors.push({
       path: treeRoot,
@@ -74,11 +74,12 @@ export async function migrateToFolderPerTask(
 /**
  * Recursively scan and migrate a directory and its children.
  * currentLevel is the level of items we expect to find AT this directory.
- * For example, if currentLevel="feature", we're inside a feature directory.
+ * depth is the actual nesting depth: 0 (root), 1 (epic), 2 (feature), 3 (task), 4+ (subtask).
  */
 async function migrateDirRecursive(
   dir: string,
   currentLevel: "epic" | "feature" | "task" | "subtask",
+  depth: number,
   result: FolderPerTaskMigrationResult,
 ): Promise<void> {
   let entries: string[];
@@ -105,6 +106,27 @@ async function migrateDirRecursive(
     }
   }
 
+  // Check if this directory itself is an item folder
+  // An item folder should have index.md or a title-based file at the currentLevel
+  // For conforming structures, index.md is preferred. For legacy structures, title-based files are OK.
+  // We know this is an item folder if:
+  // - It has index.md at currentLevel, OR
+  // - It has a title-based file at currentLevel AND it has no other files at currentLevel
+  // The second condition helps us detect task-slug/task_title.md where task_title.md is the item
+  let dirIsItemFolder = false;
+  const filesAtCurrentLevel = [];
+  for (const mdFile of mdFiles) {
+    const level = await readItemLevel(join(dir, mdFile));
+    if (level === currentLevel) {
+      filesAtCurrentLevel.push(mdFile);
+    }
+  }
+  // If there's exactly one file at currentLevel, it's probably the item's own file
+  // (either index.md or a title-based file like task_title.md)
+  if (filesAtCurrentLevel.length === 1) {
+    dirIsItemFolder = true;
+  }
+
   // The child level is what we expect to find in subdirectories
   const childLevel = currentLevel === "epic"
     ? "feature"
@@ -116,7 +138,7 @@ async function migrateDirRecursive(
 
   // Detect and migrate non-conforming files:
   // - Subtask .md files with children (check this FIRST)
-  // - Bare task/subtask .md files at the wrong level
+  // - Bare task/subtask .md files that should be in folders
   for (const mdFile of mdFiles) {
     const itemLevel = await readItemLevel(join(dir, mdFile));
 
@@ -140,9 +162,45 @@ async function migrateDirRecursive(
       // If no children, fall through to bare file migration below
     }
 
-    // Check if this file is a child-level item (should be in a folder, not bare)
-    // BUT: if we're already inside an item's own folder (not at top level), this is OK
-    // Only migrate files that are at the wrong nesting level
+    // Check if this is a bare task file that has child subdirectories
+    // If so, migrate it to a folder (this handles non-conforming structures with task1.md + task1-sub1/)
+    if (itemLevel === "task" && currentLevel === "task") {
+      // This might be a bare task file with children
+      const hasChildren = await hasChildrenSiblings(dir, mdFile);
+      if (hasChildren) {
+        try {
+          await migrateBareFileToFolder(dir, mdFile, result);
+          result.migratedCount++;
+        } catch (err) {
+          result.errors.push({
+            path: join(dir, mdFile),
+            error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
+          });
+        }
+        continue;
+      }
+      // If no children, fall through to the next check
+    }
+
+    // Check if this is a bare task/subtask file in a container (not an item folder)
+    // This handles the case where a task .md is directly in a feature directory, not in its own folder
+    if (!dirIsItemFolder && itemLevel === currentLevel && (itemLevel === "task" || itemLevel === "subtask")) {
+      // This is a bare task/subtask file in a container (not an item folder)
+      // It should be in its own folder
+      try {
+        await migrateBareFileToFolder(dir, mdFile, result);
+        result.migratedCount++;
+      } catch (err) {
+        result.errors.push({
+          path: join(dir, mdFile),
+          error: `Failed to migrate: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+      continue;
+    }
+
+    // Also check if this file is a child-level item (should be in a folder, not bare)
+    // This handles cases where an item at childLevel appears as a bare file
     if (itemLevel === childLevel && currentLevel !== childLevel) {
       try {
         await migrateBareFileToFolder(dir, mdFile, result);
@@ -161,7 +219,8 @@ async function migrateDirRecursive(
     const subdirPath = join(dir, subdir);
     // The next level is one level deeper
     const nextLevel = childLevel;
-    await migrateDirRecursive(subdirPath, nextLevel, result);
+    const nextDepth = depth + 1;
+    await migrateDirRecursive(subdirPath, nextLevel, nextDepth, result);
   }
 }
 

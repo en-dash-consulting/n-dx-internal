@@ -161,15 +161,16 @@ function validatePlacement(
     }
   } else {
     // Root placement: only reject levels that strictly require a parent.
-    // Leaf levels (subtasks) always need a parent; other levels are allowed
+    // Subtasks always need a parent (task or parent subtask); other levels are allowed
     // at root for recommendation workflows (e.g. features from sourcevision).
+    // Even though subtasks can now have children (recursive nesting), they still require
+    // a parent task or ancestor subtask to exist.
     const canBeRoot = allowedParents.includes(null);
     if (!canBeRoot && allowedParentLevels.length > 0) {
-      // Only block if this is a leaf-only level (e.g. subtask→task)
-      // Allow epics, features, and tasks at root for recommendation flexibility
-      const isStrictlyChildOnly =
-        allowedParentLevels.length > 0 && isLeafLevel(item.level);
-      if (isStrictlyChildOnly) {
+      // Only block subtasks that have no root parent allowed
+      // Subtasks must always have a parent (cannot exist at root, even with recursive nesting)
+      const isSubtask = item.level === "subtask";
+      if (isSubtask) {
         const parentNames = allowedParentLevels.map(getLevelLabel).join(" or ");
         return `A ${getLevelLabel(item.level)} requires a parent (${parentNames}).`;
       }
