@@ -3,14 +3,16 @@
  * Tests for the MergeGraphView component.
  *
  * Covers:
- *   - top-down progressive disclosure (only epics visible on initial load,
- *     children appear when their parent is clicked)
+ *   - default full-tree rendering (every PRD item visible without expansion)
+ *   - the "Epics only" view-mode toggle in the header
  *   - selection-driven highlighting (root + transitive descendants)
+ *   - viewport recenter when a node is clicked
+ *   - lazy origin fetch on PRD click and the resulting detail-panel section
  *   - the inline PRD front-matter summary card
  *   - the merge metadata panel above the graph
  *
- * Mocks both backing fetches (`/api/merge-graph` and `/data/prd.json`) so
- * the view renders fully.
+ * Mocks all backing fetches (`/api/merge-graph`, `/data/prd.json`,
+ * `/api/prd-origin`) so the view renders end-to-end without a real server.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,8 +22,6 @@ import {
   MergeGraphView,
   collectPrdSubtreeIds,
   resolveMergeMetaForSelection,
-  applyExpansionVisibility,
-  buildPrdChildCount,
 } from "../../../src/viewer/views/merge-graph.js";
 
 // ── Fixture helpers ───────────────────────────────────────────────────────────
@@ -35,6 +35,7 @@ interface MinimalPrdNode {
   parentId?: string;
   priority?: string;
   shape?: string;
+  treePath?: string;
 }
 
 interface MinimalMergeNode {
@@ -80,17 +81,22 @@ function emptyFilesSummary() {
 /**
  * Build a 4-node PRD subtree with one branching feature so descendant logic
  * can be exercised: epic E1 → feature F1 → task T1 + task T2; epic E2 is
- * unrelated.
+ * unrelated. Each PRD node carries a `treePath` so origin lookups have a
+ * realistic key.
  */
 function makeGraph(): MinimalGraph {
+  // Shape values mirror what `flattenPrdItems` would produce on disk:
+  //   E1 has F1 (a folder child) only      → trapezoid
+  //   F1 has T1+T2 (leaf children)         → diamond
+  //   T1, T2, E2 are leaves (no children)  → triangle
   return {
     generatedAt: "2026-05-08T00:00:00Z",
     nodes: [
-      { kind: "prd", id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
-      { kind: "prd", id: "F1", title: "Feature One", level: "feature", status: "pending", parentId: "E1" },
-      { kind: "prd", id: "T1", title: "Task One", level: "task", status: "pending", parentId: "F1", priority: "high" },
-      { kind: "prd", id: "T2", title: "Task Two", level: "task", status: "pending", parentId: "F1" },
-      { kind: "prd", id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+      { kind: "prd", id: "E1", title: "Epic One", level: "epic", status: "in_progress", treePath: "epic-one", shape: "trapezoid" },
+      { kind: "prd", id: "F1", title: "Feature One", level: "feature", status: "pending", parentId: "E1", treePath: "epic-one/feature-one", shape: "diamond" },
+      { kind: "prd", id: "T1", title: "Task One", level: "task", status: "pending", parentId: "F1", priority: "high", treePath: "epic-one/feature-one/task-one", shape: "triangle" },
+      { kind: "prd", id: "T2", title: "Task Two", level: "task", status: "pending", parentId: "F1", treePath: "epic-one/feature-one/task-two", shape: "triangle" },
+      { kind: "prd", id: "E2", title: "Epic Two", level: "epic", status: "pending", treePath: "epic-two", shape: "triangle" },
       {
         kind: "merge", id: "M1", sha: "abcdef1", shortSha: "abcdef1",
         subject: "fix: thing", body: "", mergedAt: "2026-05-01T00:00:00Z",
@@ -135,14 +141,27 @@ function findPrdNode(root: HTMLElement, titleSubstring: string): SVGGElement | u
 
 /**
  * Click a PRD node by title. Throws if it isn't currently visible — that
- * surfaces ordering bugs in expand/collapse-driven tests instead of letting
- * a missing click silently no-op.
+ * surfaces ordering bugs in selection-driven tests instead of letting a
+ * missing click silently no-op.
  */
 async function clickPrd(root: HTMLElement, titleSubstring: string) {
   const node = findPrdNode(root, titleSubstring);
   if (!node) throw new Error(`PRD node with title containing "${titleSubstring}" is not currently visible`);
   await act(async () => {
     node.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await flush();
+  });
+}
+
+/**
+ * Click the chip that switches between "Full tree" and "Epics only" modes.
+ */
+async function clickToggle(root: HTMLElement, label: "Full tree" | "Epics only") {
+  const button = [...root.querySelectorAll<HTMLButtonElement>(".mg-view-toggle .mg-chip")]
+    .find((b) => b.textContent === label);
+  if (!button) throw new Error(`view-mode chip "${label}" not found`);
+  await act(async () => {
+    button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await flush();
   });
 }
@@ -199,9 +218,7 @@ describe("resolveMergeMetaForSelection", () => {
   });
 
   it("resolves linked merges for a PRD selection, sorted by mergedAt desc", () => {
-    const graph: MinimalGraph = {
-      ...makeGraph(),
-    };
+    const graph: MinimalGraph = { ...makeGraph() };
     graph.nodes = [
       ...graph.nodes,
       {
@@ -225,7 +242,7 @@ describe("resolveMergeMetaForSelection", () => {
 
 // ── MergeGraphView (DOM) ─────────────────────────────────────────────────────
 
-describe("MergeGraphView selection behaviour", () => {
+describe("MergeGraphView", () => {
   let root: HTMLDivElement;
   let fetchSpy: ReturnType<typeof vi.fn>;
 
@@ -242,13 +259,28 @@ describe("MergeGraphView selection behaviour", () => {
     vi.restoreAllMocks();
   });
 
-  function mountWithPrd(items: Array<Record<string, unknown>>) {
+  /**
+   * Default mount: returns the standard 4-node PRD fixture, the matching
+   * `/data/prd.json` items, and an empty `/api/prd-origin` response (no
+   * commit history) for any path. Tests that need a different origin can
+   * set `originHandler`.
+   */
+  function mountWithPrd(
+    items: Array<Record<string, unknown>>,
+    options: {
+      originHandler?: (url: string) => Promise<Response>;
+    } = {},
+  ) {
     fetchSpy.mockImplementation((url: string) => {
       if (url.startsWith("/api/merge-graph")) {
         return Promise.resolve(new Response(JSON.stringify(makeGraph()), { status: 200 }));
       }
       if (url.startsWith("/data/prd.json")) {
         return Promise.resolve(new Response(JSON.stringify({ items }), { status: 200 }));
+      }
+      if (url.startsWith("/api/prd-origin")) {
+        if (options.originHandler) return options.originHandler(url);
+        return Promise.resolve(new Response(JSON.stringify({ origin: null }), { status: 200 }));
       }
       return Promise.reject(new Error(`Unexpected fetch: ${url}`));
     });
@@ -258,7 +290,112 @@ describe("MergeGraphView selection behaviour", () => {
     });
   }
 
-  it("highlights the clicked PRD subtree and dims unrelated nodes once expanded", async () => {
+  // ── Default full-tree rendering ────────────────────────────────────────────
+
+  it("renders every PRD item from the graph on initial load (full-tree default)", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    // Five PRD nodes — every level (epic, feature, task) is visible without
+    // any expansion gesture.
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    const labels = [...root.querySelectorAll<SVGGElement>(".mg-prd-node")]
+      .map((n) => n.getAttribute("aria-label") ?? "");
+    expect(labels.some((l) => l.includes("Epic One"))).toBe(true);
+    expect(labels.some((l) => l.includes("Feature One"))).toBe(true);
+    expect(labels.some((l) => l.includes("Task One"))).toBe(true);
+    expect(labels.some((l) => l.includes("Task Two"))).toBe(true);
+    expect(labels.some((l) => l.includes("Epic Two"))).toBe(true);
+  });
+
+  it("renders no chevron affordance — clicking a node only selects, never toggles", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    expect(root.querySelector(".mg-affordance")).toBeNull();
+    expect(root.querySelector(".mg-prd-node[aria-expanded]")).toBeNull();
+
+    // Clicking E1 doesn't hide F1 (which would happen under the old
+    // expand/collapse behavior — F1 was a direct child of E1).
+    await clickPrd(root, "Epic One");
+    expect(findPrdNode(root, "Feature One")).toBeTruthy();
+
+    // Clicking E1 again doesn't make F1 appear/disappear either.
+    await clickPrd(root, "Epic One");
+    expect(findPrdNode(root, "Feature One")).toBeTruthy();
+    expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+  });
+
+  // ── View-mode toggle ───────────────────────────────────────────────────────
+
+  it("renders both view-mode chips with full-tree active by default", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelector(".mg-view-toggle")).not.toBeNull();
+    });
+
+    const chips = [...root.querySelectorAll<HTMLButtonElement>(".mg-view-toggle .mg-chip")];
+    expect(chips.map((c) => c.textContent)).toEqual(["Full tree", "Epics only"]);
+    expect(chips[0].classList.contains("active")).toBe(true);
+    expect(chips[0].getAttribute("aria-pressed")).toBe("true");
+    expect(chips[1].classList.contains("active")).toBe(false);
+    expect(chips[1].getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("trims to epics only when 'Epics only' is selected and restores everything when toggled back", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    await clickToggle(root, "Epics only");
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+    });
+    const epicLabels = [...root.querySelectorAll<SVGGElement>(".mg-prd-node")]
+      .map((n) => n.getAttribute("aria-label") ?? "");
+    expect(epicLabels.every((l) => l.includes("epic"))).toBe(true);
+
+    await clickToggle(root, "Full tree");
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+  });
+
+  // ── Selection / highlight behavior ─────────────────────────────────────────
+
+  it("highlights the clicked PRD subtree and dims unrelated nodes", async () => {
     mountWithPrd([
       { id: "E1", title: "Epic One", level: "epic", status: "in_progress", priority: "high", tags: ["alpha", "beta"] },
       { id: "F1", title: "Feature One", level: "feature", status: "pending" },
@@ -267,28 +404,87 @@ describe("MergeGraphView selection behaviour", () => {
       { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
     ]);
 
-    // Initial render: only the two epics are visible — descendants stay
-    // hidden until the user expands them.
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Click E1 → selects it AND expands its direct children, so F1 appears.
     await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
 
-    // Subtree highlight covers E1 and F1 (T1/T2 are also in the highlight
-    // id-set but not yet rendered); the unrelated epic dims.
     const opacityFor = (title: string) =>
       (findPrdNode(root, title) as unknown as HTMLElement | undefined)?.style.opacity || "";
     expect(opacityFor("Epic One")).toBe("1");
     expect(opacityFor("Feature One")).toBe("1");
+    expect(opacityFor("Task One")).toBe("1");
+    expect(opacityFor("Task Two")).toBe("1");
     expect(opacityFor("Epic Two")).toBe("0.2");
   });
 
-  it("renders a front-matter summary with title, status, priority, and tags", async () => {
+  it("clears the previous highlight when a different node is selected", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    await clickPrd(root, "Epic One");
+    const find = (title: string) =>
+      findPrdNode(root, title) as unknown as HTMLElement;
+    expect(find("Epic One").style.opacity || "1").toBe("1");
+    expect(find("Epic Two").style.opacity).toBe("0.2");
+
+    await clickPrd(root, "Epic Two");
+    expect(find("Epic Two").style.opacity || "1").toBe("1");
+    expect(find("Epic One").style.opacity).toBe("0.2");
+    expect(find("Feature One").style.opacity).toBe("0.2");
+  });
+
+  // ── Recenter on click ─────────────────────────────────────────────────────
+
+  it("recenters the SVG viewport on the clicked node", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    const parseViewBox = (): { x: number; y: number; w: number; h: number } => {
+      const vb = root.querySelector("svg.mg-svg")!.getAttribute("viewBox") ?? "";
+      const [x, y, w, h] = vb.split(/\s+/).map((s) => parseFloat(s));
+      return { x, y, w, h };
+    };
+    const parseTranslate = (el: SVGGElement): { x: number; y: number } => {
+      const t = el.getAttribute("transform") ?? "";
+      const m = /translate\(([^,]+),([^)]+)\)/.exec(t);
+      return { x: m ? parseFloat(m[1]) : NaN, y: m ? parseFloat(m[2]) : NaN };
+    };
+
+    // Capture the deeply-nested target's position before any click.
+    const t2Pos = parseTranslate(findPrdNode(root, "Task Two")!);
+
+    await clickPrd(root, "Task Two");
+
+    const vb = parseViewBox();
+    // After recenter, the viewBox center (vb.x + vb.w/2, vb.y + vb.h/2)
+    // should sit on the clicked node's coordinates.
+    expect(vb.x + vb.w / 2).toBeCloseTo(t2Pos.x, 3);
+    expect(vb.y + vb.h / 2).toBeCloseTo(t2Pos.y, 3);
+  });
+
+  // ── Front-matter summary ───────────────────────────────────────────────────
+
+  it("renders a front-matter summary with title, status, priority, and tags on click", async () => {
     mountWithPrd([
       { id: "E1", title: "Epic One", level: "epic", status: "in_progress", priority: "high", tags: ["alpha", "beta"] },
       { id: "F1", title: "Feature One", level: "feature", status: "pending" },
@@ -298,13 +494,10 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Clicking an epic both expands its children and opens the front-matter
-    // summary panel for the clicked node.
     await clickPrd(root, "Epic One");
-
     await waitFor(() => {
       expect(root.querySelector(".mg-detail-prd")).not.toBeNull();
     });
@@ -329,35 +522,95 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Walk down to T2: expand E1 → expand F1 → click T2.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task Two")).toBeTruthy();
-    });
     await clickPrd(root, "Task Two");
-
     await waitFor(() => {
       expect(root.querySelector(".mg-detail-prd")).not.toBeNull();
     });
 
     const panel = root.querySelector(".mg-detail-prd")!;
     const dds = [...panel.querySelectorAll<HTMLElement>("dd")];
-    // Three rows: status, priority, tags.
     expect(dds.length).toBe(3);
-    // Priority cell — em dash.
     expect(dds[1].textContent).toBe("—");
-    // Tags cell — em dash via .mg-frontmatter-empty span.
     expect(dds[2].querySelector(".mg-frontmatter-empty")?.textContent).toBe("—");
-    // No tag chips rendered.
     expect(panel.querySelectorAll(".mg-frontmatter-tag").length).toBe(0);
   });
+
+  // ── Origin section (lazy fetch) ────────────────────────────────────────────
+
+  it("fetches and renders the introducing-commit origin when a PRD node is clicked", async () => {
+    const origin = {
+      sha: "f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1",
+      shortSha: "f1f1f1f",
+      createdAt: "2026-05-02T10:00:00Z",
+      author: "Hal",
+      authorEmail: "hal@example.com",
+      coAuthors: [
+        { name: "Claude", email: "noreply@anthropic.com" },
+      ],
+      subject: "feat: introduce Task Two",
+    };
+    mountWithPrd(
+      [
+        { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+        { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+        { id: "T1", title: "Task One", level: "task", status: "pending" },
+        { id: "T2", title: "Task Two", level: "task", status: "pending" },
+        { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+      ],
+      {
+        originHandler: (url: string) => {
+          // Path is URL-encoded; verify it carries the correct treePath.
+          expect(url).toContain("path=epic-one%2Ffeature-one%2Ftask-two");
+          return Promise.resolve(new Response(JSON.stringify({ origin }), { status: 200 }));
+        },
+      },
+    );
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    await clickPrd(root, "Task Two");
+    await waitFor(() => {
+      expect(root.querySelector(".mg-origin-sha")?.textContent).toBe("f1f1f1f");
+    });
+
+    const panel = root.querySelector(".mg-detail-prd")!;
+    expect(panel.querySelector(".mg-origin-author")?.textContent).toBe("Hal");
+    expect(panel.querySelector(".mg-origin-coauthors")?.textContent ?? "")
+      .toContain("Claude");
+    expect(panel.querySelector(".mg-origin-subject")?.textContent)
+      .toBe("feat: introduce Task Two");
+    expect(panel.querySelector(".mg-origin-copy")?.getAttribute("data-full-sha"))
+      .toBe(origin.sha);
+  });
+
+  it("renders a 'No commit history' state when the origin lookup returns null", async () => {
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
+
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
+
+    await clickPrd(root, "Task One");
+    await waitFor(() => {
+      const status = root.querySelector(".mg-origin-status");
+      if (!status || !status.textContent?.includes("No commit history")) {
+        throw new Error("waiting for no-commit-history state");
+      }
+    });
+  });
+
+  // ── Merge metadata panel ───────────────────────────────────────────────────
 
   it("renders the empty/instructional merge metadata panel before any selection", async () => {
     mountWithPrd([
@@ -369,7 +622,7 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
     const panel = root.querySelector(".mg-meta-panel");
@@ -377,7 +630,6 @@ describe("MergeGraphView selection behaviour", () => {
     expect(panel!.classList.contains("mg-meta-empty")).toBe(true);
     expect(panel!.querySelector(".mg-meta-instruction")?.textContent ?? "")
       .toMatch(/select a node/i);
-    // Empty state has no rows.
     expect(root.querySelector(".mg-meta-row")).toBeNull();
   });
 
@@ -391,34 +643,19 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Reach T1 via the expand chain: E1 → F1 → click T1 (which is linked
-    // to merge M1 in the fixture).
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-    });
     await clickPrd(root, "Task One");
-
     await waitFor(() => {
       expect(root.querySelector(".mg-meta-row")).not.toBeNull();
     });
 
     const row = root.querySelector(".mg-meta-row")!;
-    // Short SHA label.
     expect(row.querySelector(".mg-meta-sha-text")?.textContent).toBe("abcdef1");
-    // Author.
     expect(row.querySelector(".mg-meta-author")?.textContent).toBe("alice");
-    // Timestamp present (dateTime attribute carries the ISO source).
     expect(row.querySelector("time")?.getAttribute("datetime"))
       .toBe("2026-05-01T00:00:00Z");
-    // Copy button carries the full hash for the affordance contract.
     expect(row.querySelector(".mg-meta-copy")?.getAttribute("data-full-sha"))
       .toBe("abcdef1");
   });
@@ -433,20 +670,10 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Walk down to T2 (no linked merge in the fixture).
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task Two")).toBeTruthy();
-    });
     await clickPrd(root, "Task Two");
-
     await waitFor(() => {
       const panel = root.querySelector(".mg-meta-panel");
       if (!panel || !panel.classList.contains("mg-meta-no-merge")) {
@@ -457,11 +684,10 @@ describe("MergeGraphView selection behaviour", () => {
     const panel = root.querySelector(".mg-meta-panel")!;
     expect(panel.querySelector(".mg-meta-status")?.textContent).toBe("No merge recorded");
     expect(panel.querySelector(".mg-meta-context")?.textContent).toContain("Task Two");
-    // No row content leaks through.
     expect(root.querySelector(".mg-meta-row")).toBeNull();
   });
 
-  it("copies the full commit hash to the clipboard when the copy button is clicked", async () => {
+  it("copies the full commit hash to the clipboard when the merge meta copy button is clicked", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -477,19 +703,10 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-    });
     await clickPrd(root, "Task One");
-
     await waitFor(() => {
       expect(root.querySelector(".mg-meta-copy")).not.toBeNull();
     });
@@ -500,9 +717,6 @@ describe("MergeGraphView selection behaviour", () => {
       await flush();
     });
 
-    // The fixture's full SHA equals the short SHA ("abcdef1") — the contract
-    // is that whatever the merge node carries in `sha` is what gets written,
-    // not the abbreviated label.
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText).toHaveBeenCalledWith("abcdef1");
   });
@@ -517,27 +731,14 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Expand the chain so the leaf tasks are reachable for selection.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-      expect(findPrdNode(root, "Task Two")).toBeTruthy();
-    });
-
-    // Select T1 (has merge) — row appears.
     await clickPrd(root, "Task One");
     await waitFor(() => {
       expect(root.querySelector(".mg-meta-row")).not.toBeNull();
     });
 
-    // Switch to T2 (no merge) — row gone, no-merge state present.
     await clickPrd(root, "Task Two");
     await waitFor(() => {
       const panel = root.querySelector(".mg-meta-panel");
@@ -547,7 +748,6 @@ describe("MergeGraphView selection behaviour", () => {
     });
     expect(root.querySelector(".mg-meta-row")).toBeNull();
 
-    // Switch back to T1 — row reappears, no stale "no merge" state.
     await clickPrd(root, "Task One");
     await waitFor(() => {
       expect(root.querySelector(".mg-meta-row")).not.toBeNull();
@@ -555,7 +755,7 @@ describe("MergeGraphView selection behaviour", () => {
     expect(root.querySelector(".mg-meta-no-merge")).toBeNull();
   });
 
-  it("does not refetch merge graph data when the selection changes", async () => {
+  it("does not refetch the merge graph when the selection changes", async () => {
     mountWithPrd([
       { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
       { id: "F1", title: "Feature One", level: "feature", status: "pending" },
@@ -565,7 +765,7 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
     const initialMergeFetches = fetchSpy.mock.calls
@@ -573,16 +773,6 @@ describe("MergeGraphView selection behaviour", () => {
       .length;
     expect(initialMergeFetches).toBe(1);
 
-    // Expanding/selecting nodes must never re-issue the graph fetch — the
-    // existing graph data drives both the layout and the metadata panel.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-    });
     await clickPrd(root, "Task One");
     await clickPrd(root, "Task Two");
     await clickPrd(root, "Epic One");
@@ -593,142 +783,7 @@ describe("MergeGraphView selection behaviour", () => {
     expect(finalMergeFetches).toBe(1);
   });
 
-  it("clears the previous highlight when a different node is selected", async () => {
-    mountWithPrd([
-      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
-      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
-      { id: "T1", title: "Task One", level: "task", status: "pending" },
-      { id: "T2", title: "Task Two", level: "task", status: "pending" },
-      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
-    ]);
-
-    await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
-    });
-
-    // Click E1 — expands to F1, dims E2.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-
-    const find = (title: string) =>
-      findPrdNode(root, title) as unknown as HTMLElement;
-
-    expect(find("Epic One").style.opacity || "1").toBe("1");
-    expect(find("Feature One").style.opacity || "1").toBe("1");
-    expect(find("Epic Two").style.opacity).toBe("0.2");
-
-    // Click E2 — selecting/highlighting flips to E2's subtree, so E1+F1
-    // dim. E1 stays expanded (expansion is independent of selection),
-    // so F1 is still rendered for the assertion.
-    await clickPrd(root, "Epic Two");
-
-    expect(find("Epic Two").style.opacity || "1").toBe("1");
-    expect(find("Epic One").style.opacity).toBe("0.2");
-    expect(find("Feature One").style.opacity).toBe("0.2");
-  });
-
-  // ── Top-down layout & expand/collapse ────────────────────────────────────
-
-  it("renders only top-level (epic) nodes on initial load", async () => {
-    mountWithPrd([
-      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
-      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
-      { id: "T1", title: "Task One", level: "task", status: "pending" },
-      { id: "T2", title: "Task Two", level: "task", status: "pending" },
-      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
-    ]);
-
-    await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
-    });
-
-    // Both visible nodes are epics. Descendants are unmounted.
-    const labels = [...root.querySelectorAll<SVGGElement>(".mg-prd-node")]
-      .map((n) => n.getAttribute("aria-label") ?? "");
-    expect(labels.some((l) => l.includes("Epic One"))).toBe(true);
-    expect(labels.some((l) => l.includes("Epic Two"))).toBe(true);
-    expect(labels.some((l) => l.includes("Feature"))).toBe(false);
-    expect(labels.some((l) => l.includes("Task"))).toBe(false);
-  });
-
-  it("toggles direct children visible / hidden on each click", async () => {
-    mountWithPrd([
-      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
-      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
-      { id: "T1", title: "Task One", level: "task", status: "pending" },
-      { id: "T2", title: "Task Two", level: "task", status: "pending" },
-      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
-    ]);
-
-    await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
-    });
-
-    // First click expands E1 — F1 (direct child) appears; T1/T2 stay
-    // hidden because F1 itself is still collapsed.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    expect(findPrdNode(root, "Task One")).toBeUndefined();
-    expect(findPrdNode(root, "Task Two")).toBeUndefined();
-
-    // Second click on E1 collapses it — F1 disappears.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeUndefined();
-    });
-
-    // Re-expand E1, then expand F1 to surface tasks one level deeper.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-      expect(findPrdNode(root, "Task Two")).toBeTruthy();
-    });
-
-    // Collapsing E1 hides the entire subtree, not just its direct children.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeUndefined();
-    });
-    expect(findPrdNode(root, "Task One")).toBeUndefined();
-    expect(findPrdNode(root, "Task Two")).toBeUndefined();
-  });
-
-  it("renders an expand affordance on nodes with children, none on leaves", async () => {
-    mountWithPrd([
-      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
-      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
-      { id: "T1", title: "Task One", level: "task", status: "pending" },
-      { id: "T2", title: "Task Two", level: "task", status: "pending" },
-      // E2 is a leaf epic (no descendants); should not get an affordance.
-      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
-    ]);
-
-    await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
-    });
-
-    const e1 = findPrdNode(root, "Epic One")!;
-    const e2 = findPrdNode(root, "Epic Two")!;
-    expect(e1.getAttribute("data-expanded")).toBe("false"); // collapsed, has children
-    expect(e2.getAttribute("data-expanded")).toBe("leaf");  // no children, no affordance
-    expect(e1.querySelector(".mg-affordance")?.textContent).toBe("▶");
-    expect(e2.querySelector(".mg-affordance")).toBeNull();
-
-    // After expand, the affordance flips to ▼.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Epic One")?.getAttribute("data-expanded")).toBe("true");
-    });
-    expect(findPrdNode(root, "Epic One")?.querySelector(".mg-affordance")?.textContent).toBe("▼");
-  });
+  // ── Layout (regression: compact folder-tree rhythm) ──────────────────────
 
   it("places parents above children in the top-down layout", async () => {
     mountWithPrd([
@@ -740,17 +795,9 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
-    // Expand the chain so we can compare parent/child y coords.
-    await clickPrd(root, "Epic One");
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-    });
-
-    // Each PRD node carries its position in `transform="translate(x,y)"`.
     const parseY = (el: SVGGElement): number => {
       const t = el.getAttribute("transform") ?? "";
       const m = /translate\(([^,]+),([^)]+)\)/.exec(t);
@@ -761,20 +808,16 @@ describe("MergeGraphView selection behaviour", () => {
     const f1y = parseY(findPrdNode(root, "Feature One")!);
     const t1y = parseY(findPrdNode(root, "Task One")!);
     expect(Number.isFinite(e1y) && Number.isFinite(f1y) && Number.isFinite(t1y)).toBe(true);
-    // Parents above children → smaller y at the top of an SVG canvas.
     expect(e1y).toBeLessThan(f1y);
     expect(f1y).toBeLessThan(t1y);
   });
 
-  // ── Visual regression: compact folder-tree layout ────────────────────────
-  //
-  // Locks in the new rhythm so a future "let's spread the graph out again"
-  // change registers as an obvious snapshot diff. Captures, for the standard
-  // 4-node PRD fixture (E1 → F1 → T1, T2 + E2), each node's position, the
-  // overall vertical span, and the indent rhythm. Fixture and assertions
-  // intentionally stay simple so the snapshot is easy to update if (and only
-  // if) the design moves on purpose.
-
+  /**
+   * Locks in the new rhythm so a future "let's spread the graph out again"
+   * change registers as an obvious snapshot diff. Captures, for the standard
+   * 4-node PRD fixture (E1 → F1 → T1, T2 + E2), each node's position, the
+   * overall vertical span, and the indent rhythm.
+   */
   it("renders the compact folder-tree layout for a representative PRD fixture", async () => {
     mountWithPrd([
       { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
@@ -785,20 +828,7 @@ describe("MergeGraphView selection behaviour", () => {
     ]);
 
     await waitFor(() => {
-      expect(root.querySelectorAll(".mg-prd-node").length).toBe(2);
-    });
-
-    // Fully expand the E1 subtree so all four nodes (E1, F1, T1, T2) plus E2
-    // are visible at once — the most-coverage state for the snapshot.
-    await clickPrd(root, "Epic One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Feature One")).toBeTruthy();
-    });
-    await clickPrd(root, "Feature One");
-    await waitFor(() => {
-      expect(findPrdNode(root, "Task One")).toBeTruthy();
-      expect(findPrdNode(root, "Task Two")).toBeTruthy();
-      expect(findPrdNode(root, "Epic Two")).toBeTruthy();
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
     });
 
     const parseXY = (el: SVGGElement): { x: number; y: number } => {
@@ -816,7 +846,6 @@ describe("MergeGraphView selection behaviour", () => {
     }
 
     // Snapshot: exact positions for the compact folder-tree layout.
-    //
     //   • Indent (x): epic=0, feature=22, task=44 — every level adds INDENT_W.
     //   • Pitch  (y): every visible node owns a row of ROW_H=22 in DFS
     //     pre-order, so the column reads as a single tight stack.
@@ -828,92 +857,52 @@ describe("MergeGraphView selection behaviour", () => {
       "Epic Two":    { x: 0,  y: 88 },
     });
 
-    // The whole 5-node tree fits inside 88px of vertical space — well under
-    // the prior flowchart layout's ~330px (3 levels × ROW_H_LEVEL=110) — so
-    // a typical PRD prints in noticeably less space.
     const ys = Object.values(positions).map((p) => p.y);
     const verticalSpan = Math.max(...ys) - Math.min(...ys);
     expect(verticalSpan).toBeLessThanOrEqual(100);
-    expect(verticalSpan).toBeLessThan(330);
 
-    // Adjacent rows in DFS order are exactly one ROW_H apart — the rhythm
-    // that gives the layout its folder-tree feel.
     const sortedYs = [...ys].sort((a, b) => a - b);
     for (let i = 1; i < sortedYs.length; i++) {
       expect(sortedYs[i] - sortedYs[i - 1]).toBe(22);
     }
 
-    // The single MERGES column header is the only column label — per-row
-    // level labels were dropped because shape + indent already encode level.
     const colLabels = root.querySelectorAll(".mg-col-label");
     expect(colLabels.length).toBe(1);
     expect(colLabels[0].textContent).toBe("MERGES");
 
-    // Tree edges render as straight L-shapes (no curve commands) so the
-    // indent rails read crisply at small sizes.
     const treeEdgeDs = [...root.querySelectorAll<SVGPathElement>(".mg-edge-tree")]
       .map((p) => p.getAttribute("d") ?? "");
     expect(treeEdgeDs.length).toBeGreaterThan(0);
     for (const d of treeEdgeDs) {
-      expect(d).not.toMatch(/[CcQqSsTt]/); // no Bézier curve commands
-      expect(d).toMatch(/^M[^L]+L[^L]+L[^L]+$/); // M …, L …, L …
+      expect(d).not.toMatch(/[CcQqSsTt]/);
+      expect(d).toMatch(/^M[^L]+L[^L]+L[^L]+$/);
     }
   });
-});
 
-// ── applyExpansionVisibility (pure helper) ────────────────────────────────────
+  // ── Color encoding ────────────────────────────────────────────────────────
 
-describe("applyExpansionVisibility", () => {
-  it("returns only top-level filtered ids when nothing is expanded", () => {
-    const graph = makeGraph();
-    const filtered = new Set<string>(["E1", "F1", "T1", "T2", "E2"]);
-    const visible = applyExpansionVisibility(graph as never, filtered, new Set());
-    expect([...visible].sort()).toEqual(["E1", "E2"]);
-  });
+  it("colors each PRD node by its shape, not its status", async () => {
+    // Two epics with different statuses but the same shape should share a
+    // fill — the user-facing contract is "shape ⇒ color". Status is encoded
+    // by the glyph prefix in the node label (▶ ⊘ ✓ etc.).
+    mountWithPrd([
+      { id: "E1", title: "Epic One", level: "epic", status: "in_progress" },
+      { id: "F1", title: "Feature One", level: "feature", status: "pending" },
+      { id: "T1", title: "Task One", level: "task", status: "pending" },
+      { id: "T2", title: "Task Two", level: "task", status: "pending" },
+      { id: "E2", title: "Epic Two", level: "epic", status: "pending" },
+    ]);
 
-  it("reveals descendants only when every ancestor is expanded", () => {
-    const graph = makeGraph();
-    const filtered = new Set<string>(["E1", "F1", "T1", "T2", "E2"]);
-    // Expand E1 only — F1 surfaces but T1/T2 stay hidden because F1 is still
-    // collapsed.
-    const visibleE1Only = applyExpansionVisibility(graph as never, filtered, new Set(["E1"]));
-    expect([...visibleE1Only].sort()).toEqual(["E1", "E2", "F1"]);
+    await waitFor(() => {
+      expect(root.querySelectorAll(".mg-prd-node").length).toBe(5);
+    });
 
-    // Expand E1 + F1 — full subtree under E1 becomes visible.
-    const visibleE1F1 = applyExpansionVisibility(
-      graph as never,
-      filtered,
-      new Set(["E1", "F1"]),
-    );
-    expect([...visibleE1F1].sort()).toEqual(["E1", "E2", "F1", "T1", "T2"]);
-  });
+    // T1 is a leaf → triangle → var(--brand-rose)
+    const t1Shape = findPrdNode(root, "Task One")!.querySelector(".mg-shape");
+    expect(t1Shape?.getAttribute("fill")).toBe("var(--brand-rose)");
 
-  it("ignores expansion of an ancestor that is itself filtered out", () => {
-    const graph = makeGraph();
-    // E1 is filtered out but expanded — F1/T1/T2 should NOT appear because
-    // their ancestor chain is broken at E1.
-    const filtered = new Set<string>(["F1", "T1", "T2", "E2"]);
-    const visible = applyExpansionVisibility(
-      graph as never,
-      filtered,
-      new Set(["E1", "F1"]),
-    );
-    // F1 has parent E1 expanded, so F1 surfaces. T1/T2 require F1 expanded
-    // (which it is) AND E1 expanded — both true. So all of F1/T1/T2 visible.
-    // Note: this test documents that visibility checks the *expansion* of
-    // ancestors regardless of whether they pass the filter themselves.
-    expect([...visible].sort()).toEqual(["E2", "F1", "T1", "T2"]);
-  });
-});
-
-// ── buildPrdChildCount ────────────────────────────────────────────────────────
-
-describe("buildPrdChildCount", () => {
-  it("counts direct children per PRD parent and skips merge nodes", () => {
-    const counts = buildPrdChildCount(makeGraph() as never);
-    expect(counts.get("E1")).toBe(1); // F1
-    expect(counts.get("F1")).toBe(2); // T1, T2
-    expect(counts.get("E2")).toBeUndefined();
-    expect(counts.get("T1")).toBeUndefined();
+    // E2 is also a leaf (no fixture children) → triangle → same color
+    const e2Shape = findPrdNode(root, "Epic Two")!.querySelector(".mg-shape");
+    expect(e2Shape?.getAttribute("fill")).toBe("var(--brand-rose)");
   });
 });

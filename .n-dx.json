@@ -1,7 +1,7 @@
 {
   "llm": {
     "vendor": "claude",
-    "model": "claude-haiku-4-5",
+    "model": "claude-opus-4-7",
     "claude": {
       "model": "claude-sonnet-4-6"
     },
@@ -209,7 +209,7 @@
       }
     }
   },
-  "_initVersion": "0.3.3",
+  "_initVersion": "0.4.0",
   "cli": {
     "timeoutMs": 18000000
   },

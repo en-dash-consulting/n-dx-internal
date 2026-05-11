@@ -433,22 +433,6 @@
 }
 
 /*
- * Expand/collapse affordance. The chevron sits at the top-right of any PRD
- * node that has children, rotating slightly when expanded so the toggle
- * state reads at a glance.
- */
-.mg-affordance {
-  fill: var(--text-muted);
-  font-family: monospace;
-  user-select: none;
-}
-
-.mg-prd-node.has-children:hover .mg-affordance,
-.mg-prd-node.selected .mg-affordance {
-  fill: var(--accent);
-}
-
-/*
  * Folder-tree connector rails. Drawn as straight L-shaped paths (no curves)
  * so the indent guides read crisply at small sizes. Slightly heavier when a
  * subtree is highlighted, but never so dark that they compete with nodes.
@@ -629,6 +613,104 @@
   color: var(--text-dim);
   font-size: var(--font-xs);
   white-space: nowrap;
+}
+
+/* ── PRD origin (introducing-commit metadata) ─────────────────────────────── */
+
+.mg-origin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px dashed var(--border);
+  font-size: var(--font-xs);
+  color: var(--text-dim);
+}
+
+.mg-origin-label {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.mg-origin-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.mg-origin-sha {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-xs);
+  background: var(--bg-hover);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+.mg-origin-copy {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-xs);
+  padding: 1px 6px;
+  line-height: 1;
+}
+
+.mg-origin-copy:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.mg-origin-copy.copied {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.mg-origin-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mg-origin-authors {
+  color: var(--text-dim);
+}
+
+.mg-origin-author {
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.mg-origin-coauthors {
+  color: var(--text-muted);
+}
+
+.mg-origin-subject {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-style: italic;
+  word-break: break-word;
+}
+
+.mg-origin-status {
+  color: var(--text-muted);
+}
+
+.mg-origin-error-detail {
+  color: var(--brand-rose);
+  font-size: var(--font-xs);
+}
+
+/* ── View-mode toggle ─────────────────────────────────────────────────────── */
+
+.mg-view-toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
 }
 
 /* ── File list ────────────────────────────────────────────────────────────── */
