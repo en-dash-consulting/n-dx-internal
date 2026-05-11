@@ -12,25 +12,8 @@ description: "- Bidirectional coupling: \"viewer-ui-hub\" ↔ \"web-viewer\" (5+
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in global (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Bidirectional coupling: "viewer-ui-hub" ↔ "web-viewer" (5+5 crossings) — consider extracting shared interface
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in global: Bidirectional coupling: "viewer-ui-hub" ↔ "web-viewer" (5+5 crossings) — conside | task | completed | 2026-04-17 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-17T15:47:26.842Z
-- **Completed:** 2026-04-17T15:47:26.842Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in global: Bidirectional coupling: "viewer-ui-hub" ↔ "web-viewer" (5+5 crossings) — conside](./fix-observation-in-global-c45f46.md) | completed |

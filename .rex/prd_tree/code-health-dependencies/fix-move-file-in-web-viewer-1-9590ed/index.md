@@ -12,25 +12,8 @@ description: "- File \"packages/web/src/viewer/external.ts\" is pinned to zone \
 recommendationMeta: "[object Object]"
 ---
 
-# Fix move-file in web-viewer (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- File "packages/web/src/viewer/external.ts" is pinned to zone "Web Viewer" but lives in packages/web/src/viewer/ — consider moving to packages/web/src/server/ to align physical location with architectural zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix move-file in web-viewer: File "packages/web/src/viewer/external.ts" is pinned to zone "Web Viewer" but li | task | completed | 2026-04-17 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-17T15:32:57.234Z
-- **Completed:** 2026-04-17T15:32:57.234Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix move-file in web-viewer: File "packages/web/src/viewer/external.ts" is pinned to zone "Web Viewer" but li](./fix-move-file-in-web-viewer-f85abf.md) | completed |

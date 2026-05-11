@@ -9,26 +9,10 @@ completedAt: "2026-02-23T02:07:03.716Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision PR Markdown Artifact-Based Fallback Mode
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fallback Output Semantics and Metadata | task | completed | 2026-02-23 |
-| Fallback Trigger and Quality Regression Coverage | task | completed | 2026-02-23 |
-| Fallback Triggering and Orchestration | task | completed | 2026-02-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-23T02:07:03.716Z
-- **Completed:** 2026-02-23T02:07:03.716Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fallback Output Semantics and Metadata](./fallback-output-semantics-and-metadata.md) | completed |
+| [Fallback Trigger and Quality Regression Coverage](./fallback-trigger-and-quality-3c6675.md) | completed |
+| [Fallback Triggering and Orchestration](./fallback-triggering-and-orchestration.md) | completed |

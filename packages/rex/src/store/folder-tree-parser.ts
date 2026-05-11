@@ -71,6 +71,16 @@ export async function parseFolderTree(treeRoot: string): Promise<FolderParseResu
     if (item) items.push(item);
   }
 
+  // Discover bare-leaf `.md` files at treeRoot. The canonical schema places
+  // leaf subtasks (Rule 1b) under their parent task, so these are unusual,
+  // but a malformed PRD that puts a non-epic item at root must still
+  // round-trip — `validate` is designed to detect that misplacement and to
+  // surface duplicate ids, so we do not deduplicate here.
+  const rootLeaves = await discoverLeafChildMarkdownFiles(treeRoot, "", 1, warnings);
+  for (const leaf of rootLeaves) {
+    items.push(leaf);
+  }
+
   return { items, warnings };
 }
 
@@ -79,23 +89,149 @@ export async function parseFolderTree(treeRoot: string): Promise<FolderParseResu
  *
  * The item's `level` is taken from its frontmatter. `depth` is passed through
  * only to provide a useful hint when frontmatter is missing or malformed.
+ *
+ * Single-child optimization: If an orphaned child .md file exists in the current
+ * directory with `__parentId` in its frontmatter, it is a flattened single-child.
+ * The parent is reconstructed from `__parent*` fields, and this orphaned item
+ * becomes the parent's only child.
+ *
+ * @param dir - Directory to parse
+ * @param depth - Directory depth (for level inference and warnings)
+ * @param warnings - Warnings accumulator
+ * @param fromReconstructedParent - If true, suppress depth mismatch warnings (we're inside a single-child flattened tree)
  */
 async function parseDirRecursive(
   dir: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): Promise<PRDItem | null> {
   const itemFile = await discoverItemFile(dir, warnings);
   if (!itemFile) return null;
 
-  const item = await parseItemFileFromFrontmatter(itemFile, depth, warnings);
+  const item = await parseItemFileFromFrontmatter(itemFile, depth, warnings, fromReconstructedParent);
   if (!item) return null;
 
-  // Recursively parse subdirectories as children.
+  // Check for single-child reconstruction: if this item has __parentId,
+  // reconstruct the parent and return the parent (with this item as its child).
+  // Also handle ancestor chains (grandparent, great-grandparent, etc.) for nested single-children.
+  if ((item as Record<string, unknown>).__parentId !== undefined) {
+    let directParent = reconstructParentFromChildMetadata(item, warnings);
+    if (directParent) {
+      let current = item;
+      // Clean up __parent* fields from the immediate child
+      cleanupParentMetadataFromChild(current);
+
+      // Before building the ancestor chain, parse subdirectories as children of current item
+      // (not of the reconstructed parent). This ensures that when a feature is collapsed
+      // with its parent epic, the feature's children are still attached correctly.
+      // Since this item was reconstructed from a parent (single-child optimization),
+      // pass fromReconstructedParent=true to suppress depth mismatch warnings for children.
+      const childItems: PRDItem[] = [];
+      for (const childDir of await listSubdirs(dir)) {
+        const child = await parseDirRecursive(join(dir, childDir), depth + 1, warnings, true);
+        if (child) childItems.push(child);
+      }
+      // Tasks may also carry legacy `## Subtask:` sections if this is a task item.
+      if (current.level === "task") {
+        const legacySubtasks = await readLegacySubtasksIfTask(itemFile, warnings);
+        if (legacySubtasks.length > 0) {
+          const seenIds = new Set(childItems.map((c) => c.id));
+          for (const legacy of legacySubtasks) {
+            if (!seenIds.has(legacy.id)) childItems.push(legacy);
+          }
+        }
+      }
+      if (childItems.length > 0) current.children = childItems;
+
+      // Attach the item to its direct parent
+      directParent.children = [current];
+
+      // Build ancestor chain: keep reconstructing while parent has __parentId
+      let ancestor = directParent;
+      while ((ancestor as Record<string, unknown>).__parentId !== undefined) {
+        const nextAncestor = reconstructParentFromChildMetadata(ancestor, warnings);
+        cleanupParentMetadataFromChild(ancestor);
+        if (nextAncestor) {
+          // Attach the current ancestor as a child of the next level up
+          nextAncestor.children = [ancestor];
+          ancestor = nextAncestor;
+        } else {
+          // Stop if we can't reconstruct further
+          break;
+        }
+      }
+
+      // Return the root ancestor (or direct parent if no further ancestors)
+      return ancestor;
+    }
+    // If reconstruction failed, emit warning and continue with child as-is
+    // (treat it as a standalone item with orphaned metadata)
+  }
+
+  // Single-child optimization: check for orphaned children in the current directory
+  // (items flattened from a subdirectory due to single-child optimization)
+  const orphanedChild = await findOrphanedChildInCurrentDir(dir, itemFile, warnings);
+  if (orphanedChild) {
+    // Recursively reconstruct the parent chain (in case of nested single-children)
+    let parent = reconstructParentFromChildMetadata(orphanedChild, warnings);
+    if (parent) {
+      let current = orphanedChild;
+      // Clean up __parent* fields from the immediate child
+      cleanupParentMetadataFromChild(current);
+
+      // While the parent also has __parentId, keep reconstructing up the chain
+      while ((parent as Record<string, unknown>).__parentId !== undefined) {
+        const grandparent = reconstructParentFromChildMetadata(parent, warnings);
+        cleanupParentMetadataFromChild(parent);
+        if (grandparent) {
+          grandparent.children = [parent];
+          parent = grandparent;
+        } else {
+          // Stop if we can't reconstruct further
+          break;
+        }
+      }
+
+      // Attach the immediate child to the reconstructed parent
+      if (parent.children === undefined || parent.children.length === 0) {
+        parent.children = [current];
+      } else {
+        // Edge case: parent already has children (shouldn't happen in normal single-child case)
+        parent.children.unshift(current);
+      }
+
+      // Attach the root parent (originally orphanedChild's ancestor) to current item
+      const childItems: PRDItem[] = [parent];
+
+      // Still check for subdirectories in case there are non-single-child items
+      for (const childDir of await listSubdirs(dir)) {
+        const child = await parseDirRecursive(join(dir, childDir), depth + 1, warnings);
+        if (child) childItems.push(child);
+      }
+
+      if (childItems.length > 0) item.children = childItems;
+      return item;
+    }
+  }
+
+  // Recursively parse subdirectories as children (branch subtasks and lower).
   const childItems: PRDItem[] = [];
   for (const childDir of await listSubdirs(dir)) {
     const child = await parseDirRecursive(join(dir, childDir), depth + 1, warnings);
     if (child) childItems.push(child);
+  }
+
+  // Discover leaf-subtask `.md` files at this level (Rule 1b).
+  // Skip the item's own file (`index.md` or a legacy `<title>.md`) and any
+  // file we already loaded as an orphaned-child shim above.
+  const seenIds = new Set(childItems.map((c) => c.id));
+  const leafChildren = await discoverLeafChildMarkdownFiles(dir, itemFile, depth + 1, warnings);
+  for (const leaf of leafChildren) {
+    if (!seenIds.has(leaf.id)) {
+      childItems.push(leaf);
+      seenIds.add(leaf.id);
+    }
   }
 
   // Tasks may also carry legacy `## Subtask:` sections in their index.md.
@@ -103,15 +239,256 @@ async function parseDirRecursive(
   if (item.level === "task") {
     const legacySubtasks = await readLegacySubtasksIfTask(itemFile, warnings);
     if (legacySubtasks.length > 0) {
-      const seenIds = new Set(childItems.map((c) => c.id));
       for (const legacy of legacySubtasks) {
-        if (!seenIds.has(legacy.id)) childItems.push(legacy);
+        if (!seenIds.has(legacy.id)) {
+          childItems.push(legacy);
+          seenIds.add(legacy.id);
+        }
       }
     }
   }
 
   if (childItems.length > 0) item.children = childItems;
   return item;
+}
+
+/**
+ * Discover leaf-subtask `.md` files in the current directory and parse each
+ * as a self-contained PRDItem child. Files with `__parentId` (legacy
+ * single-child compaction shims) are skipped — they are handled by the
+ * separate orphaned-child path. The owning item's own file (`itemFile`)
+ * and any nested `index.md` are also skipped.
+ */
+async function discoverLeafChildMarkdownFiles(
+  dir: string,
+  itemFile: string,
+  depth: number,
+  warnings: ParseWarning[],
+): Promise<PRDItem[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return [];
+  }
+
+  const found: PRDItem[] = [];
+  for (const entry of entries) {
+    if (!entry.endsWith(".md")) continue;
+    if (entry === "index.md") continue;
+    const filePath = join(dir, entry);
+    if (filePath === itemFile) continue;
+
+    const text = await readIndexFile(filePath, warnings);
+    if (text === null) continue;
+    const fm = parseFrontmatter(text, filePath, warnings);
+    if (fm === null) continue;
+
+    // Legacy single-child shim — handled elsewhere; do not treat as leaf.
+    if (fm.__parentId !== undefined) continue;
+
+    // Leaf subtask `.md` files are stored directly in the parent's folder
+    // with no folder of their own, so the depth-derived level (which would
+    // be "task" or below for a leaf placed under a feature) does not match
+    // the file's `level: subtask` frontmatter. Skip the depth-mismatch
+    // warning by reusing the reconstructed-parent flag — leaves and
+    // reconstructed children share the same property: the depth-to-level
+    // mapping does not apply to them.
+    const item = await parseItemFileFromFrontmatter(filePath, depth, warnings, true);
+    if (item) found.push(item);
+  }
+
+  return found;
+}
+
+/**
+ * Reconstruct a parent PRDItem from a child's embedded parent metadata (__parent* fields).
+ * Returns null if required parent fields are missing, emits a warning.
+ *
+ * @deprecated Legacy single-child compaction shim. The current serializer
+ * never emits `__parent*` fields, but trees written by older versions may
+ * still contain them — they are reconstructed at parse time and written
+ * back canonically (without shims) on the next `saveDocument`. Emits a
+ * structured warning each time it fires so we can confirm the shim is no
+ * longer in use before removing this path.
+ */
+function reconstructParentFromChildMetadata(
+  child: PRDItem,
+  warnings: ParseWarning[],
+): PRDItem | null {
+  warnings.push({
+    path: "",
+    message: `Reconstructing parent from legacy __parent* fields on child "${child.title}" (id=${child.id}). This shim is deprecated; re-saving the PRD will rewrite the tree without it.`,
+  });
+  const childRecord = child as Record<string, unknown>;
+  const parentId = childRecord.__parentId as string | undefined;
+  const parentTitle = childRecord.__parentTitle as string | undefined;
+  const parentLevel = childRecord.__parentLevel as string | undefined;
+  const parentStatus = childRecord.__parentStatus as string | undefined;
+
+  if (!parentId || !parentTitle || !parentLevel || !parentStatus) {
+    warnings.push({
+      path: "",
+      message: `Child item "${child.title}" (id=${child.id}) has incomplete parent metadata. Missing one of: __parentId, __parentTitle, __parentLevel, __parentStatus`,
+    });
+    return null;
+  }
+
+  const parent: PRDItem = {
+    id: parentId,
+    title: parentTitle,
+    level: parentLevel as ItemLevel,
+    status: parentStatus as ItemStatus,
+  };
+
+  // Restore optional parent fields from __parent* equivalents
+  const parentDescription = childRecord.__parentDescription as string | undefined;
+  if (parentDescription !== undefined) {
+    parent.description = parentDescription;
+  }
+
+  const parentPriority = childRecord.__parentPriority as Priority | undefined;
+  if (parentPriority !== undefined) {
+    parent.priority = parentPriority;
+  }
+
+  const parentTags = childRecord.__parentTags as string[] | undefined;
+  if (parentTags !== undefined) {
+    parent.tags = parentTags;
+  }
+
+  const parentBlockedBy = childRecord.__parentBlockedBy as string[] | undefined;
+  if (parentBlockedBy !== undefined) {
+    parent.blockedBy = parentBlockedBy;
+  }
+
+  const parentSource = childRecord.__parentSource as string | undefined;
+  if (parentSource !== undefined) {
+    parent.source = parentSource;
+  }
+
+  const parentStartedAt = childRecord.__parentStartedAt as string | undefined;
+  if (parentStartedAt !== undefined) {
+    parent.startedAt = parentStartedAt;
+  }
+
+  const parentCompletedAt = childRecord.__parentCompletedAt as string | undefined;
+  if (parentCompletedAt !== undefined) {
+    parent.completedAt = parentCompletedAt;
+  }
+
+  const parentEndedAt = childRecord.__parentEndedAt as string | undefined;
+  if (parentEndedAt !== undefined) {
+    parent.endedAt = parentEndedAt;
+  }
+
+  const parentResolutionType = childRecord.__parentResolutionType as ResolutionType | undefined;
+  if (parentResolutionType !== undefined) {
+    parent.resolutionType = parentResolutionType;
+  }
+
+  const parentResolutionDetail = childRecord.__parentResolutionDetail as string | undefined;
+  if (parentResolutionDetail !== undefined) {
+    parent.resolutionDetail = parentResolutionDetail;
+  }
+
+  const parentFailureReason = childRecord.__parentFailureReason as string | undefined;
+  if (parentFailureReason !== undefined) {
+    parent.failureReason = parentFailureReason;
+  }
+
+  const parentAcceptanceCriteria = childRecord.__parentAcceptanceCriteria as string[] | undefined;
+  if (parentAcceptanceCriteria !== undefined) {
+    parent.acceptanceCriteria = parentAcceptanceCriteria;
+  }
+
+  const parentLoe = childRecord.__parentLoe as string | undefined;
+  if (parentLoe !== undefined) {
+    (parent as Record<string, unknown>).loe = parentLoe;
+  }
+
+  // Restore unknown parent fields (any field like __parent<FieldName>)
+  const knownParentPrefixes = new Set([
+    "__parentId", "__parentTitle", "__parentStatus", "__parentLevel", "__parentDescription",
+    "__parentPriority", "__parentTags", "__parentBlockedBy", "__parentSource", "__parentStartedAt",
+    "__parentCompletedAt", "__parentEndedAt", "__parentResolutionType", "__parentResolutionDetail",
+    "__parentFailureReason", "__parentAcceptanceCriteria", "__parentLoe",
+  ]);
+  for (const [key, value] of Object.entries(childRecord)) {
+    if (key.startsWith("__parent") && !knownParentPrefixes.has(key)) {
+      if (key.startsWith("__parent__parent")) {
+        // Ancestor field from the parent's own parent (e.g., __parent__parentId from grandparent)
+        // Preserve it as-is in the parent so reconstruction can continue up the chain
+        (parent as Record<string, unknown>)[key.slice(8)] = value;  // Remove one __parent prefix
+      } else {
+        // Extract the field name (remove __parent prefix and un-capitalize first letter)
+        const fieldName = key.slice(8); // Remove "__parent"
+        const realKey = fieldName.charAt(0).toLowerCase() + fieldName.slice(1);
+        (parent as Record<string, unknown>)[realKey] = value;
+      }
+    }
+  }
+
+  return parent;
+}
+
+/**
+ * Remove embedded parent metadata fields (__parent*) from a child item.
+ * Called after the parent is reconstructed, to clean up the child's metadata.
+ */
+function cleanupParentMetadataFromChild(item: PRDItem): void {
+  const itemRecord = item as Record<string, unknown>;
+  for (const key of Object.keys(itemRecord)) {
+    if (key.startsWith("__parent")) {
+      delete itemRecord[key];
+    }
+  }
+}
+
+/**
+ * Find orphaned child files in the current directory that have __parentId.
+ * Single-child optimization causes child items to be written directly to the
+ * parent directory instead of in subdirectories. This function finds such orphaned
+ * children by looking for .md files (other than the primary item file) that contain
+ * __parentId in their frontmatter.
+ *
+ * Returns the first orphaned child found, or null if none exist.
+ */
+async function findOrphanedChildInCurrentDir(
+  dir: string,
+  itemFile: string,
+  warnings: ParseWarning[],
+): Promise<PRDItem | null> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return null;
+  }
+
+  // Find all .md files except the main item file
+  const markdownFiles = entries.filter(
+    (f) => f.endsWith(".md") && join(dir, f) !== itemFile && f !== "index.md",
+  );
+
+  for (const mdFile of markdownFiles) {
+    const filePath = join(dir, mdFile);
+    const text = await readIndexFile(filePath, warnings);
+    if (text === null) continue;
+
+    const fm = parseFrontmatter(text, filePath, warnings);
+    if (fm === null) continue;
+
+    // Check if this file has __parentId (indicates it's an orphaned child)
+    if (fm.__parentId !== undefined) {
+      // Parse this as a PRDItem
+      const depth = (await isDirectory(dir)) ? 1 : 0; // Rough depth estimate
+      const item = await parseItemFileFromFrontmatter(filePath, depth, warnings);
+      if (item) return item;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -153,17 +530,18 @@ async function listSubdirs(dir: string): Promise<string[]> {
 }
 
 /**
- * Discover the item file in a directory, using title-named files with fallback
- * to legacy index.md.
+ * Discover the item file in a directory.
  *
- * Discovery algorithm:
- * 1. Scan directory for `.md` files (excluding index.md)
- * 2. If exactly one non-index markdown file exists, return its full path
- * 3. Else if `index.md` exists, return its full path (legacy fallback)
- * 4. Else return null and emit warning
+ * The canonical layout (see `docs/architecture/prd-folder-tree-schema.md`)
+ * places each folder item's content in `index.md`. Sibling `.md` files in
+ * the same directory are leaf subtask children (Rule 1b), not the folder's
+ * own content. We therefore prefer `index.md` when it exists.
  *
- * This supports migration: during transition, both title-named and index.md
- * can coexist. The deterministic discovery rule ensures consistent behavior.
+ * For legacy trees written before this convention — where the folder's
+ * content lived in a `<title>.md` file with no `index.md` — we fall back
+ * to a non-`index.md` `.md` file *only when there is exactly one*. Multiple
+ * non-`index.md` files with no `index.md` is ambiguous and we report a
+ * warning rather than guess.
  */
 async function discoverItemFile(
   dir: string,
@@ -177,29 +555,29 @@ async function discoverItemFile(
     return null;
   }
 
-  // Find all .md files (excluding index.md)
-  const markdownFiles = entries.filter(
-    (f) => f.endsWith(".md") && f !== "index.md",
-  );
-
-  // If exactly one non-index markdown file, use it
-  if (markdownFiles.length === 1) {
-    return join(dir, markdownFiles[0]);
-  }
-
-  // Else fall back to index.md if it exists
+  // Prefer `index.md` if it exists (canonical layout).
   const indexPath = join(dir, "index.md");
   try {
     await stat(indexPath);
     return indexPath;
   } catch {
-    // Neither title-named nor index.md exists
-    warnings.push({
-      path: dir,
-      message: "No item markdown file found (expected index.md or title-named .md file)",
-    });
-    return null;
+    // Fall through to legacy <title>.md fallback.
   }
+
+  const markdownFiles = entries.filter(
+    (f) => f.endsWith(".md") && f !== "index.md",
+  );
+  if (markdownFiles.length === 1) {
+    return join(dir, markdownFiles[0]);
+  }
+
+  warnings.push({
+    path: dir,
+    message: markdownFiles.length === 0
+      ? "No item markdown file found (expected index.md or title-named .md file)"
+      : `Ambiguous item file: ${markdownFiles.length} non-index .md files and no index.md`,
+  });
+  return null;
 }
 
 // ── index.md parsing ──────────────────────────────────────────────────────────
@@ -213,6 +591,7 @@ async function parseItemFileFromFrontmatter(
   filePath: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): Promise<PRDItem | null> {
   const text = await readIndexFile(filePath, warnings);
   if (text === null) return null;
@@ -220,7 +599,7 @@ async function parseItemFileFromFrontmatter(
   const fm = parseFrontmatter(text, filePath, warnings);
   if (fm === null) return null;
 
-  return buildItem(fm, filePath, depth, warnings);
+  return buildItem(fm, filePath, depth, warnings, fromReconstructedParent);
 }
 
 async function readIndexFile(filePath: string, warnings: ParseWarning[]): Promise<string | null> {
@@ -239,6 +618,7 @@ function buildItem(
   filePath: string,
   depth: number,
   warnings: ParseWarning[],
+  fromReconstructedParent: boolean = false,
 ): PRDItem | null {
   const expectedLevel = depthToLevel(depth);
   const id = asString(fm["id"]);
@@ -333,7 +713,12 @@ function buildItem(
   // Skip-level placements (e.g. a task at depth 2 with no intermediate
   // feature) are legal under LEVEL_HIERARCHY, so we surface a warning when
   // depth and frontmatter disagree but never mutate the level.
-  if (expectedLevel !== null && level !== expectedLevel) {
+  // Exception 1: single-child optimized items have __parentId and can be at any
+  // directory depth due to flattening, so suppress the depth mismatch warning.
+  // Exception 2: items parsed as children of reconstructed parents are also affected
+  // by flattening, so suppress warnings for them too.
+  const isSingleChildOptimized = (fm["__parentId"] !== undefined);
+  if (expectedLevel !== null && level !== expectedLevel && !isSingleChildOptimized && !fromReconstructedParent) {
     warnings.push({
       path: filePath,
       message: `Frontmatter level "${level}" does not match depth-derived level "${expectedLevel}" — preserving frontmatter (item id=${id})`,
@@ -494,7 +879,7 @@ function findBodyStart(text: string): number {
 //   - `>`, `>-`, `>+`, `|`, `|-`, `|+` block scalars (for description fields)
 //   - Block sequences of plain or quoted scalars (for tags, acceptanceCriteria)
 
-function parseFrontmatter(
+export function parseFrontmatter(
   text: string,
   filePath: string,
   warnings: ParseWarning[],

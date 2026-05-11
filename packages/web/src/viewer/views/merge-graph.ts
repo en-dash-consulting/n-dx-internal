@@ -20,6 +20,9 @@ import { h, Fragment } from "preact";
 import { useState, useEffect, useMemo, useCallback, useRef } from "preact/hooks";
 import { usePanZoom } from "../hooks/index.js";
 import type { NavigateTo } from "../types.js";
+import { TaskDetail } from "../components/prd-tree/task-detail.js";
+import type { PRDItemData } from "../components/prd-tree/types.js";
+import { findItemById } from "../components/prd-tree/tree-utils.js";
 
 // ── API types (mirrors packages/web/src/server/merge-history.ts) ─────────────
 
@@ -55,6 +58,7 @@ interface PrdNode {
   status: string;
   parentId?: string;
   priority?: string;
+  shape?: string;
 }
 
 interface MergeNode {
@@ -327,6 +331,101 @@ function computeLayout(
   };
 }
 
+// ── Shape rendering helpers ───────────────────────────────────────────────────
+
+/**
+ * Render a shape element for a PRD node based on its shape field.
+ * All shapes use a hit target and a visible shape element.
+ */
+function renderNodeShape(shape: string | undefined, r: number, fill: string, isSelected: boolean) {
+  const hitR = r + 6;
+  const strokeWidth = isSelected ? 2.5 : 1.5;
+  const baseAttrs = {
+    fill,
+    "fill-opacity": 0.25,
+    stroke: fill,
+    "stroke-width": strokeWidth,
+  };
+
+  switch (shape) {
+    case "diamond":
+      // Diamond: 45-degree rotated square
+      return [
+        h("rect", {
+          x: -hitR, y: -hitR,
+          width: hitR * 2, height: hitR * 2,
+          fill: "transparent",
+          class: "mg-hit",
+        }),
+        h("polygon", {
+          points: `0,${-r} ${r},0 0,${r} ${-r},0`,
+          ...baseAttrs,
+          class: "mg-shape mg-diamond",
+        }),
+      ];
+    case "square":
+      // Square: aligned with axes
+      return [
+        h("rect", {
+          x: -hitR, y: -hitR,
+          width: hitR * 2, height: hitR * 2,
+          fill: "transparent",
+          class: "mg-hit",
+        }),
+        h("rect", {
+          x: -r, y: -r,
+          width: r * 2, height: r * 2,
+          ...baseAttrs,
+          class: "mg-shape mg-square",
+        }),
+      ];
+    case "trapezoid":
+      // Trapezoid: wider at bottom
+      return [
+        h("rect", {
+          x: -hitR, y: -hitR,
+          width: hitR * 2, height: hitR * 2,
+          fill: "transparent",
+          class: "mg-hit",
+        }),
+        h("polygon", {
+          points: `${-r * 0.7},${-r} ${r * 0.7},${-r} ${r},${r} ${-r},${r}`,
+          ...baseAttrs,
+          class: "mg-shape mg-trapezoid",
+        }),
+      ];
+    case "triangle":
+      // Triangle: pointing up
+      return [
+        h("circle", {
+          cx: 0, cy: 0, r: hitR,
+          fill: "transparent",
+          class: "mg-hit",
+        }),
+        h("polygon", {
+          points: `0,${-r} ${r * 0.866},${r * 0.5} ${-r * 0.866},${r * 0.5}`,
+          ...baseAttrs,
+          class: "mg-shape mg-triangle",
+        }),
+      ];
+    case "circle":
+    default:
+      // Circle: default
+      return [
+        h("circle", {
+          r: hitR,
+          fill: "transparent",
+          class: "mg-hit",
+        }),
+        h("circle", {
+          r,
+          ...baseAttrs,
+          class: "mg-shape mg-circle",
+        }),
+      ];
+  }
+}
+
 // ── Attribution stroke ────────────────────────────────────────────────────────
 
 function attributionStroke(attr?: EdgeAttribution): string {
@@ -370,8 +469,17 @@ type SelectedNode =
   | { kind: "prd"; node: PrdNode; linkedMergeIds: string[] }
   | { kind: "merge"; node: MergeNode };
 
-function DetailPanel({ selection, onClose }: {
+/**
+ * Custom detail panel for merge graph.
+ * For PRD nodes, renders the full TaskDetail component (from tasks view).
+ * For merge nodes, renders a custom summary.
+ *
+ * TaskDetail callbacks are stubbed to prevent errors when users interact,
+ * but the merge-graph view doesn't support editing features.
+ */
+function DetailPanelContent({ selection, prdData, onClose }: {
   selection: SelectedNode;
+  prdData?: PRDItemData[] | null;
   onClose: () => void;
 }) {
   if (selection.kind === "merge") {
@@ -415,7 +523,30 @@ function DetailPanel({ selection, onClose }: {
     );
   }
 
+  // For PRD nodes, render the full TaskDetail component
   const pn = selection.node;
+  if (prdData) {
+    const item = findItemById(prdData, pn.id);
+    if (item) {
+      // Stub callbacks for TaskDetail (read-only mode in merge-graph context)
+      return h(TaskDetail, {
+        item,
+        allItems: prdData,
+        showTokenBudget: false,
+        // Stub callbacks to allow rendering without errors
+        // (editing is not supported in the merge-graph context)
+        onUpdate: undefined,
+        onNavigateToItem: undefined,
+        onExecuteTask: undefined,
+        onPrdChanged: undefined,
+        onAddChild: undefined,
+        onRemove: undefined,
+        navigateTo: undefined,
+      });
+    }
+  }
+
+  // Fallback: minimal PRD detail
   return h("div", { class: "mg-detail" },
     h("div", { class: "mg-detail-header" },
       h("span", { class: "mg-detail-title" }, pn.level.toUpperCase()),
@@ -472,6 +603,7 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<SelectedNode | null>(null);
+  const [prdData, setPrdData] = useState<PRDItemData[] | null>(null);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -501,6 +633,27 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
       });
 
     return () => ctrl.abort();
+  }, []);
+
+  // ── Fetch PRD data (used for detail panel) ─────────────────────────────────
+  useEffect(() => {
+    const abortCtrl = new AbortController();
+
+    fetch("/data/prd.json", { signal: abortCtrl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json() as Promise<{ items: PRDItemData[] }>;
+      })
+      .then((data) => {
+        setPrdData(data.items);
+      })
+      .catch((err: Error) => {
+        if (err.name !== "AbortError") {
+          console.warn("Failed to fetch PRD data for detail panel:", err.message);
+        }
+      });
+
+    return () => abortCtrl.abort();
   }, []);
 
   // ── Compute visible sets based on filters ──────────────────────────────────
@@ -583,6 +736,24 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     return computeLayout(graph, visiblePrdIds, visibleMergeIds);
   }, [graph, visiblePrdIds, visibleMergeIds]);
 
+  const clearSelection = useCallback(() => {
+    setSelected(null);
+    setHighlightIds(new Set());
+  }, []);
+
+  // ── Escape key to close detail panel ────────────────────────────────────────
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        clearSelection();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [selected, clearSelection]);
+
   // ── usePanZoom ─────────────────────────────────────────────────────────────
   const fitVB = layout?.fitVB ?? { x: -50, y: -50, w: 900, h: 600 };
   const {
@@ -607,11 +778,6 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     setSelected({ kind: "merge", node });
     setHighlightIds(new Set([node.id, ...linkedPrdIds]));
   }, [graph, visiblePrdIds]);
-
-  const clearSelection = useCallback(() => {
-    setSelected(null);
-    setHighlightIds(new Set());
-  }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   if (loading) {
@@ -763,17 +929,42 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
 
       // Legend
       h("div", { class: "mg-legend" },
-        h("span", { class: "mg-legend-item" },
+        h("span", { class: "mg-legend-title" }, "Node Shapes:"),
+        h("span", { class: "mg-legend-item", title: "Circle: parent node with no specific structure pattern" },
           h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
-            h("circle", { cx: 6, cy: 6, r: 5, fill: "var(--accent)", "fill-opacity": "0.25", stroke: "var(--accent)", "stroke-width": 1.5 }),
+            h("circle", { cx: 6, cy: 6, r: 4, fill: "var(--text-muted)", "fill-opacity": "0.25", stroke: "var(--text-muted)", "stroke-width": 1 }),
           ),
-          " PRD item",
+          " Circle (default)",
+        ),
+        h("span", { class: "mg-legend-item", title: "Diamond: parent with index.md + leaf subtask files" },
+          h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
+            h("polygon", { points: "6,2 10,6 6,10 2,6", fill: "var(--accent)", "fill-opacity": "0.25", stroke: "var(--accent)", "stroke-width": 1 }),
+          ),
+          " Diamond (leaf children)",
+        ),
+        h("span", { class: "mg-legend-item", title: "Square: parent with only .md files, no subdirectories" },
+          h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
+            h("rect", { x: 2, y: 2, width: 8, height: 8, fill: "var(--green)", "fill-opacity": "0.25", stroke: "var(--green)", "stroke-width": 1 }),
+          ),
+          " Square (files only)",
+        ),
+        h("span", { class: "mg-legend-item", title: "Trapezoid: parent with only subdirectories, no other files" },
+          h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
+            h("polygon", { points: "2.5,2 9.5,2 10,10 2,10", fill: "var(--brand-orange)", "fill-opacity": "0.25", stroke: "var(--brand-orange)", "stroke-width": 1 }),
+          ),
+          " Trapezoid (folders only)",
+        ),
+        h("span", { class: "mg-legend-item", title: "Triangle: leaf node with no children" },
+          h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
+            h("polygon", { points: "6,2 10,9 2,9", fill: "var(--brand-rose)", "fill-opacity": "0.25", stroke: "var(--brand-rose)", "stroke-width": 1 }),
+          ),
+          " Triangle (leaf)",
         ),
         h("span", { class: "mg-legend-item" },
           h("svg", { width: 12, height: 12, viewBox: "0 0 12 12" },
-            h("rect", { x: 2, y: 2, width: 8, height: 8, transform: "rotate(45 6 6)", fill: "var(--brand-purple)", "fill-opacity": "0.25", stroke: "var(--brand-purple)", "stroke-width": 1.5 }),
+            h("polygon", { points: "6,2 10,6 6,10 2,6", fill: "var(--brand-purple)", "fill-opacity": "0.25", stroke: "var(--brand-purple)", "stroke-width": 1 }),
           ),
-          " Merge",
+          " Merge commit",
         ),
       ),
 
@@ -859,25 +1050,13 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
                 onClick: (e: MouseEvent) => { e.stopPropagation(); handlePrdClick(n); },
                 role: "button",
                 tabIndex: 0,
-                "aria-label": `PRD ${n.level}: ${n.title} (${n.status})`,
+                "aria-label": `PRD ${n.level}: ${n.title} (${n.status}) - ${n.shape || "circle"}`,
                 onKeyDown: (e: KeyboardEvent) => {
                   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handlePrdClick(n); }
                 },
                 style: { opacity: isHighlighted ? 1 : 0.2 },
               },
-                h("circle", {
-                  r: r + 6,
-                  fill: "transparent",
-                  class: "mg-hit",
-                }),
-                h("circle", {
-                  r,
-                  fill,
-                  "fill-opacity": 0.25,
-                  stroke: fill,
-                  "stroke-width": isSelected ? 2.5 : 1.5,
-                  class: "mg-circle",
-                }),
+                ...renderNodeShape(n.shape, r, fill, isSelected),
                 h("text", {
                   x: r + 6,
                   y: 4,
@@ -967,7 +1146,7 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
 
       // ── Detail panel ───────────────────────────────────────────────────────
       selected
-        ? h(DetailPanel, { selection: selected, onClose: clearSelection })
+        ? h(DetailPanelContent, { selection: selected, prdData, onClose: clearSelection })
         : null,
     ),
   );

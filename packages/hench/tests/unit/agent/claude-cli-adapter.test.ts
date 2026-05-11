@@ -90,11 +90,7 @@ describe("ClaudeCliAdapter: VendorAdapter interface", () => {
 describe("ClaudeCliAdapter: buildSpawnConfig", () => {
   it("returns a valid SpawnConfig", () => {
     const envelope = createStandardEnvelope();
-    const config: SpawnConfig = claudeCliAdapter.buildSpawnConfig(
-      envelope,
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config: SpawnConfig = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.binary).toBe("claude");
     expect(Array.isArray(config.args)).toBe(true);
@@ -105,11 +101,7 @@ describe("ClaudeCliAdapter: buildSpawnConfig", () => {
   });
 
   it("includes required Claude CLI flags", () => {
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).toContain("-p");
     expect(config.args).toContain("--output-format");
@@ -121,21 +113,13 @@ describe("ClaudeCliAdapter: buildSpawnConfig", () => {
   it("includes --system-prompt on non-Windows", () => {
     if (process.platform === "win32") return;
 
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createStandardEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createStandardEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).toContain("--system-prompt");
   });
 
   it("places model override as --model flag", () => {
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      "claude-opus-4",
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, { model: "claude-opus-4" });
 
     expect(config.args).toContain("--model");
     expect(config.args).toContain("claude-opus-4");
@@ -144,21 +128,13 @@ describe("ClaudeCliAdapter: buildSpawnConfig", () => {
   });
 
   it("omits --model when model is undefined", () => {
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.args).not.toContain("--model");
   });
 
   it("maps policy allowedCommands to --allowed-tools", () => {
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      FULL_ACCESS_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), FULL_ACCESS_POLICY, {});
 
     // FULL_ACCESS_POLICY has allowedCommands: ["npm", "git", "node", "tsc"]
     expect(config.args).toContain("Bash(npm:*)");
@@ -176,22 +152,14 @@ describe("ClaudeCliAdapter: buildSpawnConfig", () => {
   it("stdinContent contains task prompt (non-Windows)", () => {
     if (process.platform === "win32") return;
 
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     // On non-Windows, stdinContent is the task sections only
     expect(config.stdinContent).toContain("Fix the bug.");
   });
 
   it("stdinContent is a string, not null (Claude uses pipe-based delivery)", () => {
-    const config = claudeCliAdapter.buildSpawnConfig(
-      createMinimalEnvelope(),
-      DEFAULT_EXECUTION_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.stdinContent).not.toBeNull();
     expect(typeof config.stdinContent).toBe("string");
@@ -324,6 +292,82 @@ describe("ClaudeCliAdapter: snapshot parity with original buildClaudeCliArgs", (
       "Read", "Edit",
       "--model", "claude-opus-4",
     ]);
+  });
+});
+
+// ── 3b. permissionMode plumbing ──────────────────────────────────────────
+
+describe("ClaudeCliAdapter: --permission-mode", () => {
+  it("appends --permission-mode acceptEdits when set", () => {
+    const { args } = buildClaudeCliArgs({
+      systemPrompt: "SP",
+      promptText: "TP",
+      allowedTools: ["Read"],
+      permissionMode: "acceptEdits",
+    });
+
+    const idx = args.indexOf("--permission-mode");
+    expect(idx).toBeGreaterThan(-1);
+    expect(args[idx + 1]).toBe("acceptEdits");
+  });
+
+  it("forwards every supported mode verbatim", () => {
+    const modes = ["default", "acceptEdits", "bypassPermissions", "plan"] as const;
+    for (const mode of modes) {
+      const { args } = buildClaudeCliArgs({
+        systemPrompt: "SP",
+        promptText: "TP",
+        allowedTools: ["Read"],
+        permissionMode: mode,
+      });
+      const idx = args.indexOf("--permission-mode");
+      expect(idx).toBeGreaterThan(-1);
+      expect(args[idx + 1]).toBe(mode);
+    }
+  });
+
+  it("omits --permission-mode entirely when undefined", () => {
+    const { args } = buildClaudeCliArgs({
+      systemPrompt: "SP",
+      promptText: "TP",
+      allowedTools: ["Read"],
+    });
+
+    expect(args).not.toContain("--permission-mode");
+  });
+
+  it("places --permission-mode after --model so Claude CLI sees both", () => {
+    if (process.platform === "win32") return;
+
+    const { args } = buildClaudeCliArgs({
+      systemPrompt: "SP",
+      promptText: "TP",
+      allowedTools: ["Read"],
+      modelOverride: "claude-opus-4",
+      permissionMode: "acceptEdits",
+    });
+
+    expect(args).toEqual([
+      "-p",
+      "--output-format", "stream-json",
+      "--verbose",
+      "--system-prompt", "SP",
+      "--allowed-tools",
+      "Read",
+      "--model", "claude-opus-4",
+      "--permission-mode", "acceptEdits",
+    ]);
+  });
+
+  it("adapter forwards opts.permissionMode through buildSpawnConfig", () => {
+    const config = claudeCliAdapter.buildSpawnConfig(
+      createMinimalEnvelope(),
+      DEFAULT_EXECUTION_POLICY,
+      { permissionMode: "plan" },
+    );
+    const idx = config.args.indexOf("--permission-mode");
+    expect(idx).toBeGreaterThan(-1);
+    expect(config.args[idx + 1]).toBe("plan");
   });
 });
 
@@ -628,11 +672,7 @@ describe("ClaudeCliAdapter: buildAllowedTools", () => {
 describe("ClaudeCliAdapter: end-to-end pipeline", () => {
   it("envelope → buildSpawnConfig → verify args are parseable", () => {
     const envelope = createStandardEnvelope();
-    const config = claudeCliAdapter.buildSpawnConfig(
-      envelope,
-      STANDARD_POLICY,
-      undefined,
-    );
+    const config = claudeCliAdapter.buildSpawnConfig(envelope, STANDARD_POLICY, {});
 
     // Binary is "claude"
     expect(config.binary).toBe("claude");

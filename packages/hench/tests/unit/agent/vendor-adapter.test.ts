@@ -199,7 +199,7 @@ describe("VendorAdapter", () => {
   describe("buildSpawnConfig", () => {
     it("returns a valid SpawnConfig for Claude", () => {
       const adapter = createMockClaudeAdapter();
-      const config = adapter.buildSpawnConfig(envelope, policy, "claude-sonnet-4-20250514");
+      const config = adapter.buildSpawnConfig(envelope, policy, { model: "claude-sonnet-4-20250514" });
       expect(config.binary).toBe("claude");
       expect(config.args).toContain("-p");
       expect(config.stdinContent).not.toBeNull();
@@ -208,7 +208,7 @@ describe("VendorAdapter", () => {
 
     it("returns a valid SpawnConfig for Codex", () => {
       const adapter = createMockCodexAdapter();
-      const config = adapter.buildSpawnConfig(envelope, policy, "gpt-5-codex");
+      const config = adapter.buildSpawnConfig(envelope, policy, { model: "gpt-5-codex" });
       expect(config.binary).toBe("codex");
       expect(config.args).toContain("exec");
       expect(config.stdinContent).toBeNull();
@@ -218,8 +218,8 @@ describe("VendorAdapter", () => {
     it("accepts optional model parameter", () => {
       const adapter = createMockClaudeAdapter();
       // model is optional — both calls should work
-      const withModel = adapter.buildSpawnConfig(envelope, policy, "claude-sonnet-4-20250514");
-      const withoutModel = adapter.buildSpawnConfig(envelope, policy, undefined);
+      const withModel = adapter.buildSpawnConfig(envelope, policy, { model: "claude-sonnet-4-20250514" });
+      const withoutModel = adapter.buildSpawnConfig(envelope, policy, {});
       expect(withModel).toBeDefined();
       expect(withoutModel).toBeDefined();
     });
@@ -236,7 +236,7 @@ describe("VendorAdapter", () => {
         parseEvent: () => null,
         classifyError: () => "unknown",
       };
-      adapter.buildSpawnConfig(envelope, policy, undefined);
+      adapter.buildSpawnConfig(envelope, policy, {});
       expect(capturedEnvelope).not.toBeNull();
       expect(capturedEnvelope!.sections).toHaveLength(2);
       expect(capturedEnvelope!.sections[0].name).toBe("system");
@@ -254,7 +254,7 @@ describe("VendorAdapter", () => {
         parseEvent: () => null,
         classifyError: () => "unknown",
       };
-      adapter.buildSpawnConfig(envelope, policy, undefined);
+      adapter.buildSpawnConfig(envelope, policy, {});
       expect(capturedPolicy).not.toBeNull();
       expect(capturedPolicy!.sandbox).toBe("workspace-write");
     });
@@ -361,7 +361,7 @@ describe("VendorAdapter", () => {
         { name: "workflow", content: "Workflow rules" },
         { name: "brief", content: "Task brief" },
       ]);
-      const config: SpawnConfig = adapter.buildSpawnConfig(env, DEFAULT_EXECUTION_POLICY, "model-v1");
+      const config: SpawnConfig = adapter.buildSpawnConfig(env, DEFAULT_EXECUTION_POLICY, { model: "model-v1" });
       expect(config).toBeDefined();
       expect(typeof config.binary).toBe("string");
       expect(Array.isArray(config.args)).toBe(true);

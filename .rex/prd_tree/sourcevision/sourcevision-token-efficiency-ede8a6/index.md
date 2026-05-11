@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Reduce the number of tokens consumed during sourcevision LLM calls by compacting prompt templates, trimming redundant data payloads, and simplifying analysis code paths — without changing observable behavior or breaking existing tests."
 ---
 
-# SourceVision Token Efficiency and Prompt Compaction
+## Children
 
- [completed]
-
-## Summary
-
-Reduce the number of tokens consumed during sourcevision LLM calls by compacting prompt templates, trimming redundant data payloads, and simplifying analysis code paths — without changing observable behavior or breaking existing tests.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Audit and compact sourcevision LLM prompt templates | task | completed | 2026-04-14 |
-| Simplify and compact sourcevision analysis code for readability and reduced context size | task | completed | 2026-04-14 |
-| Trim and deduplicate LLM data payloads in sourcevision analysis | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-14T15:56:50.053Z
-- **Completed:** 2026-04-14T15:56:50.053Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Audit and compact sourcevision LLM prompt templates](./audit-and-compact-sourcevision-c6bca1.md) | completed |
+| [Simplify and compact sourcevision analysis code for readability and reduced context size](./simplify-and-compact-caa578.md) | completed |
+| [Trim and deduplicate LLM data payloads in sourcevision analysis](./trim-and-deduplicate-llm-data-8474f7.md) | completed |

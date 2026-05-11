@@ -12,26 +12,9 @@ description: "The ndx work command does not surface the LLM model configured in 
 recommendationMeta: "[object Object]"
 ---
 
-# ndx work Model Resolution, Display, and Vendor-Change Reset
+## Children
 
-🟠 [completed]
-
-## Summary
-
-The ndx work command does not surface the LLM model configured in .n-dx.json to the user at run time, and may not propagate it to the underlying hench LLM call sites. Additionally, when the vendor is changed, a stale model value from the previous vendor can persist in config, causing silent misconfiguration.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in global: Bidirectional coupling: "web" ↔ "web-server" (85+5 crossings) — consider extract | task | completed | 2026-04-14 |
-| Implement vendor-change model reset to prevent cross-vendor stale config | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T16:33:04.573Z
-- **Completed:** 2026-04-14T16:33:04.573Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in global: Bidirectional coupling: "web" ↔ "web-server" (85+5 crossings) — consider extract](./fix-observation-in-global-de5ca6.md) | completed |
+| [Implement vendor-change model reset to prevent cross-vendor stale config](./implement-vendor-change-model-cc8616.md) | completed |

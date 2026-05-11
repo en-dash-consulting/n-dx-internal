@@ -74,17 +74,24 @@ export function printVendorModelHeader(
   // Use provided resolved model if available, otherwise resolve from config
   const resolved = options?.resolvedModel || resolveVendorModel(vendor, config);
 
+  // Identify which config slot supplied the model so we can annotate the
+  // header with the exact source path. Top-level `llm.model` wins over
+  // vendor-pinned `llm.{vendor}.model` (matches resolveVendorModel).
+  const vendorPinnedModel = vendor === "claude"
+    ? config?.claude?.model
+    : vendor === "codex"
+      ? config?.codex?.model
+      : undefined;
+  const configuredFrom: "top-level" | "vendor-pinned" | undefined = config?.model
+    ? "top-level"
+    : vendorPinnedModel
+      ? "vendor-pinned"
+      : undefined;
+
   // Use provided source if available, otherwise determine from config
   let source: "cli-override" | "configured" | "default" = options?.modelSource || "default";
-  if (!options?.modelSource) {
-    const configModel = vendor === "claude"
-      ? config?.claude?.model
-      : vendor === "codex"
-        ? config?.codex?.model
-        : undefined;
-    if (configModel) {
-      source = "configured";
-    }
+  if (!options?.modelSource && configuredFrom) {
+    source = "configured";
   }
 
   // Format label based on tier and source
@@ -98,7 +105,17 @@ export function printVendorModelHeader(
     label = source;
   }
 
-  info(`${yellow(`Vendor: ${vendor}`)}  ${yellow(`Model: ${resolved}`)} (${label})`);
+  // When the model came from config, append the exact source key so users
+  // can see which `.n-dx.json` field is winning (helps debug stale duplicates).
+  let sourceSuffix = "";
+  if (source === "configured" && configuredFrom) {
+    sourceSuffix =
+      configuredFrom === "top-level"
+        ? " from llm.model"
+        : ` from llm.${vendor}.model`;
+  }
+
+  info(`${yellow(`Vendor: ${vendor}`)}  ${yellow(`Model: ${resolved}`)} (${label}${sourceSuffix})`);
 
   if (options?.lastModel) {
     const resolvedLast = resolveModel(options.lastModel);

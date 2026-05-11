@@ -12,25 +12,8 @@ description: "- High coupling (0.71) — 9 imports target \"web\""
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in panel (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.71) — 9 imports target "web"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in panel: High coupling (0.71) — 9 imports target "web" | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-13T20:52:30.340Z
-- **Completed:** 2026-04-13T20:52:30.340Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in panel: High coupling (0.71) — 9 imports target "web"](./fix-observation-in-panel-high-c3de1b.md) | completed |

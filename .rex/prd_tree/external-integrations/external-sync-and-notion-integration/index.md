@@ -9,25 +9,9 @@ completedAt: "2026-02-24T20:33:37.695Z"
 acceptanceCriteria: []
 ---
 
-# External sync and Notion integration
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Notion adapter implementation | task | completed | 2026-02-24 |
-| Store adapter architecture | task | completed | 2026-02-24 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-24T20:33:37.695Z
-- **Completed:** 2026-02-24T20:33:37.695Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Notion adapter implementation](./notion-adapter-implementation.md) | completed |
+| [Store adapter architecture](./store-adapter-architecture.md) | completed |

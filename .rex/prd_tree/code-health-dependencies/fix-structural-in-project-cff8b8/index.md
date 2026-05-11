@@ -12,25 +12,8 @@ description: "- Zone cohesion is 0 — files share no import relationships, conf
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in project-scaffold (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone cohesion is 0 — files share no import relationships, confirming this is an incidental grouping of config, brand, and utility scripts rather than a coherent module.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in project-scaffold: Zone cohesion is 0 — files share no import relationships, confirming this is an  | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T02:41:05.171Z
-- **Completed:** 2026-04-19T02:41:05.171Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in project-scaffold: Zone cohesion is 0 — files share no import relationships, confirming this is an ](./fix-structural-in-project-ff8800.md) | completed |

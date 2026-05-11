@@ -12,25 +12,8 @@ description: "- Cohesion (0.4) and coupling (0.6) both sit at warning thresholds
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in viewer-data-loader (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Cohesion (0.4) and coupling (0.6) both sit at warning thresholds; the zone mixes a hook, a service, a utility, and a schema validator — consider whether schema-compat and validate belong in a dedicated schema sub-module to raise cohesion.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in viewer-data-loader: Cohesion (0.4) and coupling (0.6) both sit at warning thresholds; the zone mixes | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T16:25:47.126Z
-- **Completed:** 2026-04-20T16:25:47.126Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in viewer-data-loader: Cohesion (0.4) and coupling (0.6) both sit at warning thresholds; the zone mixes](./fix-structural-in-viewer-data-506ef7.md) | completed |

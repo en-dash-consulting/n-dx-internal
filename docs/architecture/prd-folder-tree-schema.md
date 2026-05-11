@@ -6,24 +6,30 @@ Normative contract for the serializer (PRD → folder tree) and parser (folder t
 
 ## Directory Layout
 
-Tree root: `.rex/prd_tree/` (configurable). Within it, the PRD hierarchy maps to nested directories:
+Tree root: `.rex/prd_tree/` (configurable). Within it, the PRD hierarchy maps to nested directories. Every PRD item — epic, feature, task, or branch subtask — gets its own slug-named folder containing a single `index.md` content file. Leaf subtasks (Rule 1b) are bare `<slug>.md` files inside their parent task's folder.
 
 ```
 .rex/prd_tree/
 ├── {epic-slug}/
-│   ├── {epic_title}.md
+│   ├── index.md                       ← epic content (required)
 │   └── {feature-slug}/
-│       ├── {feature_title}.md
+│       ├── index.md                   ← feature content (required)
 │       └── {task-slug}/
-│           └── {task_title}.md   ← subtasks as sections, not directories
+│           ├── index.md               ← task content (required)
+│           ├── {leaf-subtask-slug}.md ← leaf subtask (no children, Rule 1b)
+│           └── {branch-subtask-slug}/
+│               ├── index.md           ← branch subtask content
+│               └── {grandchild-slug}.md ← recursive nesting
 └── …
 ```
 
 **Rules:**
-- Each epic, feature, or task maps to exactly one directory containing exactly one **title-named** markdown file (`<titleToFilename(title)>.md`). Legacy fixtures that hand-wrote `index.md` are still accepted by the parser; the serializer always emits the title-named form.
-- A folder-level `index.md` aggregating each directory's contents is reserved for the upcoming summary feature (see [`## index.md Summary Schema`](#indexmd-summary-schema)) and is **not yet emitted** by the serializer.
-- Subtasks appear as `## Subtask:` sections inside the parent task's per-item file — never as nested directories.
-- Nesting depth encodes level: epics at depth 1, features at depth 2, tasks at depth 3.
+- **Folder items (epic / feature / task / branch subtask):** Each item maps to exactly one slug-named directory containing exactly one `index.md`. The `index.md` holds the item's YAML frontmatter, requirements body, and a `## Children` table linking to direct children. There is no `<title>.md` companion file.
+- **Leaf subtasks (Rule 1b):** A subtask with no children is stored as a single bare `<slug>.md` file inside its parent task's folder. The leaf file carries only its own frontmatter (no `__parent*` fields, no inherited parent metadata).
+- **Atomic promotion (Rule 2):** When a leaf `<slug>.md` subtask gains its first child, the file's content is moved into a new folder taking the leaf's place: `<slug>.md` → `<slug>/index.md`. The new folder follows Rule 1.
+- **Migration with backup (Rule 3):** `ndx reshape` and `ndx add` create a timestamped snapshot of `.rex/prd_tree/` under `.rex/.backups/prd_tree_<ISO>/` before mutating, then run a structural migration that normalizes any legacy shapes (bare `<title>.md` files, `<title>.md` + `index.md` dual-write, single-child compaction shims, phantom `index-{hash}/` wrappers) into the canonical form above. The migration is data-preserving — when it cannot determine intent it leaves the file in place rather than discarding data.
+- **Reads accept legacy shapes:** The parser still reads `<title>.md` (legacy single-content file), `__parent*`-shimmed children (single-child compaction), and `## Subtask:` sections (legacy task body) so existing checkouts load without error. The serializer always emits the canonical shape, so a single load+save cycle re-writes the tree to the current contract.
+- Nesting depth encodes level: epics at depth 1, features at depth 2, tasks at depth 3, subtasks at depth 4+. Skip-level placements (e.g. a task placed directly under an epic with no intermediate feature) are legal and round-trip without re-typing the item.
 
 ---
 
@@ -72,9 +78,15 @@ The `{id6}` suffix is derived from sanitized PRD IDs. It is applied only for lon
 
 ---
 
-## Title-to-Filename Normalization
+## Title-to-Filename Normalization (legacy)
 
-As PRD item storage evolves from directory-based slug indexing to title-based markdown files, a separate normalization function converts item titles to filesystem-safe filenames. This is distinct from the directory slug algorithm: filenames use underscores for word boundaries (not hyphens) and apply idempotent round-trip normalization.
+> **Status:** Deprecated as the storage filename rule. The current schema
+> uses `index.md` for folder items and `<slug>.md` (slug-style, hyphens) for
+> leaf subtasks. `titleToFilename` is retained as a public utility so legacy
+> trees and migration code can still rename historical files; new
+> serialization paths must not depend on it.
+
+A separate normalization function converts item titles to filesystem-safe filenames. Filenames use underscores for word boundaries (not hyphens) and apply idempotent round-trip normalization.
 
 ### Rules
 
@@ -125,7 +137,7 @@ Exported from `rex` package at `rex.titleToFilename()`. Used by the folder-tree 
 
 ## Per-Item Markdown File Schema
 
-Every per-item markdown file (named `<titleToFilename(title)>.md`) begins with a YAML frontmatter block, followed by Markdown body content. **Bold** = required.
+Every per-item markdown file — `index.md` for folder items, `<slug>.md` for leaf subtasks — begins with a YAML frontmatter block, followed by Markdown body content. **Bold** = required.
 
 ### Common Fields (All Levels)
 
@@ -636,32 +648,98 @@ Every per-item markdown file whose item has direct children **must** include a `
 
 ## Subtask Encoding
 
-Subtasks are encoded as `## Subtask: {title}` sections within the parent task's per-item markdown file.
+Subtasks use **dual-mode serialization** depending on whether they have children:
 
-### Format
+### Leaf Subtasks (No Children)
 
-```markdown
-## Subtask: {title}
+Leaf subtasks are serialized as `.md` files inside the parent task's
+directory:
 
-**ID:** `{uuid}`
-**Status:** {status}
-**Priority:** {priority}            ← omit line if priority is not set
-
-{description prose}                 ← omit if description is empty
-
-**Acceptance Criteria**             ← omit entire block if list is empty
-
-- criterion one
-- criterion two
-
----
+```
+{task-slug}/
+├── index.md             ← task content + ## Children table
+└── {subtask-slug}.md    ← leaf subtask file (Rule 1b)
 ```
 
-**Rules:**
-- Each subtask section is delimited from the next by a horizontal rule (`---`).
-- The final subtask section requires no trailing `---`.
-- Fields appear in the fixed order shown above. No YAML frontmatter.
-- Fields with no value are omitted entirely (do not write `**Priority:** ` with an empty value).
+The leaf subtask `.md` file contains YAML frontmatter (like task-level files) followed by a Markdown body. The schema is identical to the per-item file schema at task level (see [`## Per-Item Markdown File Schema`](#per-item-markdown-file-schema)).
+
+### Branch Subtasks (With Children)
+
+A subtask with children is serialized as a slug-named directory containing
+its own `index.md`, following the same folder-per-branch rule recursively:
+
+```
+{task-slug}/
+├── index.md
+└── {subtask-slug}/
+    ├── index.md                  ← subtask content + ## Children
+    ├── {grandchild-slug}.md      ← leaf grandchild
+    └── {grandchild2-slug}/
+        ├── index.md
+        └── {great-grandchild-slug}.md
+```
+
+Branch subtasks follow the exact same directory structure, naming, and file schema as top-level items (epics/features/tasks), allowing arbitrary nesting depth.
+
+### Promotion Rule
+
+The leaf-to-folder transition (Rule 2) is implemented as a side effect of
+the parser+serializer round-trip rather than as a dedicated mutation:
+
+1. The caller adds a child to the leaf via `store.addItem(child, leafId)`
+   (or any equivalent path: MCP `add_item`, `cmdAdd`, etc.).
+2. `addItem` runs `loadDocument` → the parser sees the leaf `<slug>.md`
+   and produces an in-memory `PRDItem` with `children: []`. It mutates
+   the in-memory tree to attach the new child.
+3. `addItem` then runs `saveDocument` → the serializer's `writeSiblings`
+   sees `children.length > 0` and switches to the branch shape: it
+   `mkdir`s `<slug>/`, writes `<slug>/index.md` from the in-memory item's
+   frontmatter (preserving every field), and recurses to write the new
+   child as another leaf `<child-slug>.md` (or nested folder).
+4. The serializer's `removeStaleEntries` sweep at the parent level
+   removes the original `<slug>.md` file: it is no longer in the
+   expected-leaf set (the item is now a folder, not a leaf).
+
+The transition is therefore a pure shape change driven by the in-memory
+children list — frontmatter is preserved exactly, no `__parent*` shims
+are introduced, and the inverse direction (removing the last child of a
+branch) collapses the folder back to a bare `<slug>.md` by the same
+mechanism. End-to-end behavior is pinned by
+`packages/rex/tests/integration/leaf-to-folder-promotion.test.ts`.
+
+There is no standalone "atomic promotion" code path; the whole
+transition lands as part of one `saveDocument` call. If the save is
+interrupted, recovery uses the snapshot from `.rex/.backups/prd_tree_<ISO>/`
+written by `ndx reshape` / `ndx add` (Rule 3).
+
+### Mixed-Mode Containers
+
+A parent task or subtask directory may contain a mix of leaf `.md` files (childless subtasks) and subdirectories (subtasks with children):
+
+```
+{task-slug}/
+├── index.md                 ← task content + ## Children table
+├── {leaf-sub1}.md           ← childless subtask
+├── {leaf-sub2}.md           ← childless subtask
+├── {branch-sub1}/
+│   ├── index.md
+│   ├── {grandchild}.md
+│   └── {branch-sub2}/
+│       └── index.md
+└── {leaf-sub3}.md           ← childless subtask
+```
+
+The parser handles this naturally by treating `.md` files and directories as leaf/branch subtasks respectively.
+
+### Legacy Subtask Sections (Migration Support)
+
+During migration from the legacy PRD format (where subtasks were encoded as `## Subtask:` sections within the parent task's markdown), the parser may encounter subtask sections in existing `.md` files. These sections are ignored during migration — subtasks are reconstructed from directory nesting only (either as leaf `.md` files or branch directories).
+
+If a legacy task file contains both:
+- Subtask sections in the markdown body (legacy)
+- Subtask `.md` files or directories in the same parent folder (new format)
+
+The subtask files/folders take precedence; the sections are preserved as informational body content but not parsed as items.
 
 ---
 
@@ -723,20 +801,26 @@ The serializer (PRD → folder tree) must:
 
 1. Compute each item's slug using the algorithm in [Naming Convention](#naming-convention).
 2. Create directories at the correct nesting depth under the tree root.
-3. Write `<titleToFilename(title)>.md` with all required frontmatter fields and a complete body. Remove orphaned per-item `.md` files in the same directory (left over from prior titles).
-4. **Item Display:** Generate the heading and status badge from title and status.
-5. **Summary:** 
+3. **Task-level items:** Always write as a directory containing `<titleToFilename(title)>.md`. For items migrating from bare `.md` files (legacy), create the directory and move the file into it.
+4. **Subtask serialization (dual-mode):**
+   - **Leaf subtasks** (no children): Write as title-named `.md` files in the parent task directory
+   - **Branch subtasks** (with children): Write as directories containing a title-named `.md` file (same rule as task-level items, recursively)
+   - **Promotion detection:** If a subtask with children previously existed as a leaf `.md` file, remove the old file and create the new directory structure atomically
+5. Write `<titleToFilename(title)>.md` with all required frontmatter fields and a complete body. Remove orphaned per-item `.md` files in the same directory (left over from prior titles, or leaf subtasks that were promoted to branches).
+6. **Item Display:** Generate the heading and status badge from title and status.
+7. **Summary:** 
    - For new files: initialize from `description` field.
    - For existing files: preserve the existing summary section if present; do not overwrite.
    - If summary is missing and description exists, add it.
-6. **Progress:** For non-leaf items with at least one child, generate a table with child title, level, status, and last-updated date.
-7. **Commits:** For completed or in-progress items, query git history for commits with `N-DX-Status:` trailers matching this item's ID, and list the 10 most recent. If no commits found, omit this section.
-8. **Changes:** Query the execution log for recent mutations (itemId matches this item), and list the 10 most recent. Omit if no mutations exist.
-9. **Info:** Generate metadata section with status, priority (if set), tags (if set), level, branch (if set), started/completed dates (if set), and computed duration.
-10. **Children:** For non-leaf items with at least one child, append a `## Children` section listing direct children in insertion order. Omit if the item has no children.
-11. **Subtasks:** For task items, append `## Subtask:` sections for each subtask child.
-12. Write atomically: build the entire tree into a temp directory, then rename it into place to prevent partial states.
-13. Preserve unknown frontmatter fields (round-trip fidelity for future extensions).
+8. **Progress:** For non-leaf items with at least one child, generate a table with child title, level, status, and last-updated date.
+9. **Commits:** For completed or in-progress items, query git history for commits with `N-DX-Status:` trailers matching this item's ID, and list the 10 most recent. If no commits found, omit this section.
+10. **Changes:** Query the execution log for recent mutations (itemId matches this item), and list the 10 most recent. Omit if no mutations exist.
+11. **Info:** Generate metadata section with status, priority (if set), tags (if set), level, branch (if set), started/completed dates (if set), and computed duration.
+12. **Children:** For non-leaf items with at least one child, append a `## Children` section listing direct children in insertion order. Omit if the item has no children.
+13. **Subtasks:** For task items with leaf subtasks, do not generate `## Subtask:` sections. Subtasks are serialized as sibling files/folders, not as sections.
+14. Write atomically: build the entire tree into a temp directory, then rename it into place to prevent partial states.
+15. Preserve unknown frontmatter fields (round-trip fidelity for future extensions).
+16. **Uniqueness enforcement:** Verify that no two sibling items (at any level) have the same slug. If a slug collision is detected, append the item's `-{id6}` suffix (or positional suffix if needed) to resolve it.
 
 ---
 
@@ -744,43 +828,49 @@ The serializer (PRD → folder tree) must:
 
 The parser (folder tree → PRD) must:
 
-1. Discover the per-item markdown file for each directory under the tree root, preferring the unique title-named `.md` file and accepting `index.md` as a legacy fallback. Traverse depth-first.
+1. Discover items by traversing the folder tree depth-first:
+   - For each directory at depth 1 (epics), depth 2 (features), or depth 3 (tasks): find the unique title-named `.md` file, accepting `index.md` as a legacy fallback. This is the container item.
+   - Within depth 3+ directories (task/subtask containers): discover children as both files and subdirectories:
+     - **Leaf subtask files:** Title-named `.md` files (e.g., `subtask-one.md`)
+     - **Branch subtask directories:** Subdirectories containing a title-named `.md` file
 2. Parse the YAML frontmatter from each file to extract structured fields — this is the canonical source of item data.
-3. Ignore all Markdown body sections except `## Subtask:` sections:
+3. Ignore all Markdown body sections (except legacy support):
    - The `## Summary`, `## Progress`, `## Commits`, `## Changes`, and `## Info` sections are informational only and must not be parsed into item fields.
    - The `## Children` section is informational only; directory structure is authoritative for parent-child relationships.
-4. Infer parent-child relationships from directory nesting depth — a file at `tree/{a}/{b}/{c}/<task_title>.md` is a task `{c}` whose parent is feature `{b}` whose parent is epic `{a}`.
-5. For task-level files, parse `## Subtask:` sections to reconstruct subtask items:
-   - Each `## Subtask: {title}` section defines one subtask child.
-   - Extract ID, status, priority (if present), description, and acceptance criteria from the section.
-   - Omit fields that are not present in the section.
+   - Legacy `## Subtask:` sections may appear in task files migrated from the old format; ignore them (subtasks are now represented as files/folders).
+4. **Subtask discovery (dual-mode):**
+   - For each `.md` file in a task/subtask directory: treat it as a leaf subtask child (load from frontmatter, no recursive children)
+   - For each subdirectory in a task/subtask directory: recursively treat it as a branch subtask container (apply the same tree traversal rules)
+5. Infer parent-child relationships from directory nesting depth — a file at `tree/{a}/{b}/{c}/<task_title>.md` is a task `{c}` whose parent is feature `{b}` whose parent is epic `{a}`. Subtasks at `tree/{a}/{b}/{c}/{d}/<subtask_title>.md` or `tree/{a}/{b}/{c}/{d}/` are subtasks of task `{c}`.
 6. Reject files with missing required frontmatter fields with a descriptive error identifying the file path and the missing field.
 7. Reconstruct items in directory-entry order (alphabetical by slug) within each level, which preserves insertion order because slugs are stable.
+8. **Slug-collision detection:** Verify that no two sibling items at the same level have identical slugs. If duplicates are found, report an error with file paths and slugs, or apply the recovery rule from the serializer (append `-{id6}` suffixes) if configured to auto-heal.
 
 ---
 
 ## Field Summary Table
 
-| Field | Epic | Feature | Task | Subtask (section) |
-|-------|------|---------|------|-------------------|
-| `id` | required | required | required | required |
-| `level` | required | required | required | — (implicit: subtask) |
-| `title` | required | required | required | required (heading) |
-| `status` | required | required | required | required |
-| `description` | required | required | required | optional |
-| `acceptanceCriteria` | — | required | required | optional |
-| `loe` | — | optional | optional | — |
-| `priority` | optional | optional | optional | optional |
-| `tags` | optional | optional | optional | — |
-| `source` | optional | optional | optional | — |
-| `startedAt` | optional | optional | optional | — |
-| `completedAt` | optional | optional | optional | — |
-| `endedAt` | optional | optional | optional | — |
-| `resolutionType` | optional | optional | optional | — |
-| `resolutionDetail` | optional | optional | optional | — |
-| `failureReason` | optional | optional | optional | — |
-| `## Children` body block | when children exist | when children exist | — | — |
-| `## Subtask:` body sections | — | — | when subtasks exist | — |
+| Field | Epic | Feature | Task | Subtask (file) | Subtask (folder) |
+|-------|------|---------|------|---|---|
+| `id` | required | required | required | required | required |
+| `level` | required | required | required | subtask | subtask |
+| `title` | required | required | required | required | required |
+| `status` | required | required | required | required | required |
+| `description` | required | required | required | optional | optional |
+| `acceptanceCriteria` | — | required | required | optional | optional |
+| `loe` | — | optional | optional | — | — |
+| `priority` | optional | optional | optional | optional | optional |
+| `tags` | optional | optional | optional | — | — |
+| `source` | optional | optional | optional | — | — |
+| `startedAt` | optional | optional | optional | — | — |
+| `completedAt` | optional | optional | optional | — | — |
+| `endedAt` | optional | optional | optional | — | — |
+| `resolutionType` | optional | optional | optional | — | — |
+| `resolutionDetail` | optional | optional | optional | — | — |
+| `failureReason` | optional | optional | optional | — | — |
+| Storage format | folder when has children, else `.md` | same | same | `.md` file | folder containing `index.md` |
+| Inline children | mixed (files + folders) | mixed (files + folders) | mixed (files + folders) | N/A | mixed (files + folders) |
+| `## Children` body block | when children exist | when children exist | when children exist | — | when children exist |
 
 ---
 
@@ -791,16 +881,41 @@ This schema is the normative storage contract for the PRD folder-tree format. Fo
 - **CLAUDE.md** (`Key Files` section): Describes `.rex/prd_tree/` as the sole writable PRD surface and references this schema document.
 - **AGENTS.md** (Public guidance): Links to this schema for agents implementing PRD operations.
 - **Implementation**: The `rex` package implements serialization and parsing according to this schema:
-  - `packages/rex/src/store/folder-tree-serializer.ts` — writes files to disk (title-named per-item `.md`, plus orphan cleanup for renamed titles)
-  - `packages/rex/src/store/folder-tree-parser.ts` — reads files from disk (title-named first, `index.md` legacy fallback)
-  - `packages/rex/src/store/title-to-filename.ts` — implements `titleToFilename` (also re-exported from `packages/rex/src/public.ts`)
+  - `packages/rex/src/store/folder-tree-serializer.ts` — writes files to disk:
+    - Branch items (any level with children): folder containing one `index.md` (frontmatter + `## Children` table)
+    - Leaf items (any level with no children): bare `<slug>.md` next to the parent's `index.md`
+    - Stale-entry cleanup: `removeStaleEntries` removes any folder or `.md` file at the parent level that is no longer in the in-memory expected set, which is what drives leaf↔branch promotion on the next save
+  - **Promotion test:** `packages/rex/tests/integration/leaf-to-folder-promotion.test.ts` exercises both directions (leaf→folder when first child added; folder→leaf when last child removed) plus byte-level frontmatter preservation.
+  - `packages/rex/src/store/folder-tree-parser.ts` — reads files from disk:
+    - `index.md` is the canonical content file inside item folders; legacy `<title>.md` is accepted as a fallback when no `index.md` exists
+    - Discovers leaf children as bare `<slug>.md` files at every level (epic, feature, task, branch subtask)
+    - Reconstructs items from legacy `__parent*` shims, emitting a deprecation warning each time
+  - `packages/rex/src/store/title-to-filename.ts` — implements `titleToFilename` (still exported for legacy migration; the current serializer no longer uses it for content files)
+  - `packages/rex/src/core/folder-per-task-migration.ts` — pre-load migration that renames legacy `<title>.md` files to `index.md`, removes phantom `index-{hash}/` wrappers, and wraps bare files that have child siblings
+
+## Dual-Mode Applicability Note
+
+The dual-mode rule (folder when has children, bare `<slug>.md` when leaf) applies uniformly at **every level** — epic, feature, task, subtask. Any item with children is represented as a folder containing `index.md`; any item with no children is a bare `<slug>.md` file inside its parent's folder.
+
+This means:
+- A leaf epic at the project root is `<epic-slug>.md` directly under `.rex/prd_tree/`.
+- A leaf feature is `<feature-slug>.md` next to the epic's `index.md`.
+- A leaf task is `<task-slug>.md` next to the feature's `index.md`.
+- A leaf subtask is `<subtask-slug>.md` next to the task's `index.md`, recursively for nested subtasks.
+
+The same item flips between leaf and branch shape automatically as children are added or removed (see [Promotion Rule](#promotion-rule)).
+
+The storage schema and uniqueness constraints apply uniformly at all levels.
+
+---
 
 ## Versioning and Future Extensions
 
-This is schema version `v1` of the folder-tree format. Future versions may introduce:
+This is schema version `v1` of the folder-tree format with dual-mode subtask serialization. The schema is stable and backward-compatible (legacy formats are supported); future versions may introduce:
 
 - Additional body sections (e.g., `## Metrics`, `## Risks`)
 - Commit-attribution metadata fields in frontmatter
 - Execution-log-derived analytics sections
+- Fold-per-item `index.md` summary aggregation (designed; not yet implemented)
 
 The serializer preserves unknown frontmatter fields for forward compatibility. Any new fields added to the schema should be added to frontmatter (not body sections) to keep them in the canonical item data.

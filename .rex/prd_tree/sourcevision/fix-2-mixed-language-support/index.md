@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Projects containing both Go and TypeScript files (e.g., a Go CLI with a Next.js docs site) detect only a single primary language. The non-primary language's files are inventoried but produce sparse import edges and orphan zones with 0 cohesion because `manifest.language` is a single string, archetype signal filtering scopes to one language, and only the primary language's skip directories, config file names, and test patterns are applied. Applying Fix 1 (zone edge resolution) first is recommended, but this fix is independent — together they make mixed Go+TS projects produce fully meaningful analysis."
 ---
 
-# Fix 2: Mixed-Language Support
+## Children
 
- [completed]
-
-## Summary
-
-Projects containing both Go and TypeScript files (e.g., a Go CLI with a Next.js docs site) detect only a single primary language. The non-primary language's files are inventoried but produce sparse import edges and orphan zones with 0 cohesion because `manifest.language` is a single string, archetype signal filtering scopes to one language, and only the primary language's skip directories, config file names, and test patterns are applied. Applying Fix 1 (zone edge resolution) first is recommended, but this fix is independent — together they make mixed Go+TS projects produce fully meaningful analysis.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add test coverage for mixed-language detection | task | completed | 2026-03-26 |
-| Implement multi-language detection and extend Manifest schema | task | completed | 2026-03-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-26T21:19:10.766Z
-- **Completed:** 2026-03-26T21:19:10.766Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add test coverage for mixed-language detection](./add-test-coverage-for-mixed-44a1fc.md) | completed |
+| [Implement multi-language detection and extend Manifest schema](./implement-multi-language-d56717.md) | completed |

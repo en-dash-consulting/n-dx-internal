@@ -12,25 +12,8 @@ description: "- Zone name 'sourcevision-view-tests' is semantically misleading. 
 recommendationMeta: "[object Object]"
 ---
 
-# Fix documentation in sourcevision-view-tests (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone name 'sourcevision-view-tests' is semantically misleading. These tests cover web viewer tabs that display sourcevision-derived data, not the sourcevision analysis package. The name will cause contributor confusion and test misplacement as the package grows, particularly since the real sourcevision test suite lives in a different package.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix documentation in sourcevision-view-tests: Zone name 'sourcevision-view-tests' is semantically misleading. These tests cove | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T01:59:27.747Z
-- **Completed:** 2026-04-14T01:59:27.747Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix documentation in sourcevision-view-tests: Zone name 'sourcevision-view-tests' is semantically misleading. These tests cove](./fix-documentation-in-2ef967.md) | completed |

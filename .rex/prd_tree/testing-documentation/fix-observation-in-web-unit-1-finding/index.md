@@ -12,25 +12,8 @@ description: "- High coupling (0.6) — 5 imports target \"web-server\""
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in web-unit (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.6) — 5 imports target "web-server"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in web-unit: High coupling (0.6) — 5 imports target "web-server" | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-16T20:18:38.726Z
-- **Completed:** 2026-04-16T20:18:38.726Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in web-unit: High coupling (0.6) — 5 imports target "web-server"](./fix-observation-in-web-unit-67634a.md) | completed |

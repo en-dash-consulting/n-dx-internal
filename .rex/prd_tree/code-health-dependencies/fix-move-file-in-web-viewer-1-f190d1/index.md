@@ -12,25 +12,8 @@ description: "- File \"packages/web/src/viewer/components/progressive-loader.ts\
 recommendationMeta: "[object Object]"
 ---
 
-# Fix move-file in web-viewer (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- File "packages/web/src/viewer/components/progressive-loader.ts" is pinned to zone "Web Viewer" but lives in packages/web/src/viewer/components/ — consider moving to packages/web/src/viewer/views/ to align physical location with architectural zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix move-file in web-viewer: File "packages/web/src/viewer/components/progressive-loader.ts" is pinned to zon | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-03T14:35:01.471Z
-- **Completed:** 2026-04-03T14:35:01.471Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix move-file in web-viewer: File "packages/web/src/viewer/components/progressive-loader.ts" is pinned to zon](./fix-move-file-in-web-viewer-81b1d6.md) | completed |

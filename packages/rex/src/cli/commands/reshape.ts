@@ -8,6 +8,8 @@ import { ARCHIVE_FILE, loadArchive, trimArchive } from "../../core/archive.js";
 import { reasonForReshape, formatReshapeProposal } from "../../analyze/reshape-reason.js";
 import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../analyze/reason.js";
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
+import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
+import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
@@ -32,6 +34,61 @@ export async function cmdReshape(
       "Run 'rex analyze' first to build your PRD.",
     );
   }
+
+  // Snapshot PRD tree before structural migrations (backup for recovery on failure)
+  const treeRoot = join(rexDir, "prd_tree");
+  let backupSnapshot = null;
+  try {
+    backupSnapshot = await snapshotPRDTree(rexDir);
+  } catch (err) {
+    // Best-effort: don't fail the command if backup creation fails
+    warn(`Warning: Failed to create backup snapshot: ${String(err)}`);
+  }
+
+  // Run folder-per-task structural migration pass
+  info("Migrating non-conforming task structures to folder-per-task form...");
+  let migrationResult;
+  try {
+    migrationResult = await migrateToFolderPerTask(treeRoot);
+  } catch (err) {
+    // Surface backup path in error message for recovery
+    const backupMsg = backupSnapshot
+      ? `\n\nBackup saved to: ${backupSnapshot.backupPath}\nRestore with: cp -r ${backupSnapshot.backupPath} ${treeRoot}`
+      : "";
+    throw new CLIError(
+      `Migration failed: ${String(err)}${backupMsg}`,
+      "Check the backup path above to restore the PRD tree.",
+    );
+  }
+
+  if (migrationResult.errors.length > 0) {
+    for (const err of migrationResult.errors) {
+      warn(`  Warning: ${err.error} (${err.path})`);
+    }
+  }
+  if (migrationResult.migratedCount > 0) {
+    info(`Migrated ${migrationResult.migratedCount} item${migrationResult.migratedCount === 1 ? "" : "s"} to folder-per-task form.`);
+  }
+
+  // Canonicalize the on-disk tree: load (handles legacy `__parent*` shims and
+  // dual `<title>.md` + `index.md` shapes via the parser) and save back
+  // through the serializer, which writes one `index.md` per folder item and
+  // sweeps up stale leftovers via `removeStaleEntries`. This satisfies the
+  // user-facing rule that reshape always migrates the tree forward, even
+  // when no proposals end up being applied.
+  const canonicalDoc = await store.loadDocument();
+  await store.saveDocument(canonicalDoc);
+
+  // Prune old backups if migrations were applied
+  if (migrationResult.migratedCount > 0) {
+    try {
+      await pruneBackups(rexDir, 10);
+    } catch {
+      // Best-effort: don't fail the command if pruning fails
+    }
+  }
+
+  const docAfterCompaction = canonicalDoc;
 
   // Load LLM config
   const llmConfig = await loadLLMConfig(rexDir);
@@ -78,7 +135,7 @@ export async function cmdReshape(
   let proposals: ReshapeProposal[];
   let tokenUsage: Awaited<ReturnType<typeof reasonForReshape>>["tokenUsage"];
   try {
-    const reshapeResult = await reasonForReshape(doc.items, { dir, model: resolvedModel });
+    const reshapeResult = await reasonForReshape(docAfterCompaction.items, { dir, model: resolvedModel });
     proposals = reshapeResult.proposals;
     tokenUsage = reshapeResult.tokenUsage;
   } catch (err) {
@@ -100,7 +157,7 @@ export async function cmdReshape(
   // Display proposals
   info(`\nFound ${proposals.length} reshape proposal${proposals.length === 1 ? "" : "s"}:\n`);
   for (let i = 0; i < proposals.length; i++) {
-    info(`${i + 1}. ${formatReshapeProposal(proposals[i], doc.items)}`);
+    info(`${i + 1}. ${formatReshapeProposal(proposals[i], docAfterCompaction.items)}`);
     info("");
   }
 
@@ -126,7 +183,7 @@ export async function cmdReshape(
   if (accept) {
     accepted = proposals;
   } else if (process.stdin.isTTY) {
-    accepted = await interactiveReview(proposals, doc.items);
+    accepted = await interactiveReview(proposals, docAfterCompaction.items);
   } else {
     info("Proposals shown above. Run with --accept to apply, or use interactively in a TTY.");
     return;
@@ -138,7 +195,7 @@ export async function cmdReshape(
   }
 
   // Apply accepted proposals
-  const reshapeResult = applyReshape(doc.items, accepted);
+  const reshapeResult = applyReshape(docAfterCompaction.items, accepted);
 
   // Report errors
   for (const err of reshapeResult.errors) {
@@ -164,7 +221,7 @@ export async function cmdReshape(
   // Save document
   await store.saveDocument(doc);
 
-  // Log the reshape
+  // Log the reshape and migrations
   await store.appendLog({
     timestamp: new Date().toISOString(),
     event: "reshape",
@@ -173,6 +230,12 @@ export async function cmdReshape(
       deleted: reshapeResult.deletedIds.length,
       errors: reshapeResult.errors.length,
       actions: reshapeResult.applied.map((p) => p.action.action),
+      migrated: migrationResult.migratedCount,
+      migrations: migrationResult.migrations.map((m) => ({
+        type: m.type,
+        beforePath: m.beforePath,
+        afterPath: m.afterPath,
+      })),
     }),
   });
 

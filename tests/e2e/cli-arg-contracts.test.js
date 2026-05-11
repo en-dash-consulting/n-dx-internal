@@ -85,6 +85,7 @@ function parseOptions(helpText) {
 const REX_COMMANDS = [
   "init",
   "status",
+  "tree",
   "next",
   "add",
   "update",

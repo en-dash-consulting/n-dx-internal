@@ -172,11 +172,10 @@ describe("Billing", () => {
     }
     const prdNonSubtaskCount = countNonSubtasks(prd.items);
 
-    // Count per-item markdown files in item directories. The serializer writes
-    // a title-named .md file per item (e.g. `epic_alpha.md`); legacy `index.md`
-    // is also accepted by the parser. Skip the tree root's own index.md stub
-    // (depth 0) which `rex init` creates as a human-readable scaffold. Count
-    // only title-named files, not index.md (which is a fallback for parser).
+    // Count items on disk. Under the unified leaf rule a branch item is a
+    // folder containing `index.md`; a leaf item is a bare `<slug>.md` next
+    // to its parent's content. Subtasks are excluded from `prdNonSubtaskCount`
+    // so we exclude any item whose frontmatter level is `subtask` here too.
     async function countItemFiles(dir: string, depth = 0): Promise<number> {
       let count = 0;
       try {
@@ -186,8 +185,18 @@ describe("Billing", () => {
           const s = await stat(entryPath);
           if (s.isDirectory()) {
             count += await countItemFiles(entryPath, depth + 1);
-          } else if (entry.endsWith(".md") && entry !== "index.md" && depth > 0) {
+          } else if (entry === "index.md" && depth > 0) {
             count++;
+          } else if (entry.endsWith(".md") && entry !== "index.md" && depth > 0) {
+            // Leaf `<slug>.md`; include only if it isn't a subtask.
+            try {
+              const text = await readFile(entryPath, "utf8");
+              const fm = text.match(/^---\n([\s\S]*?)\n---/);
+              const level = fm?.[1].match(/^level:\s*"?([^"\n]+)"?/m)?.[1].trim();
+              if (level !== "subtask") count++;
+            } catch {
+              /* ignore */
+            }
           }
         }
       } catch {

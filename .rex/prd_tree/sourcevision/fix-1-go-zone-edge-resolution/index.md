@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Go import edges target package directories rather than individual files, causing the zone crossing algorithm to silently drop all Go cross-zone imports. This produces 0 crossings and 0 coupling in Go projects (observed: PocketBase had 756 edges but only 49 crossings; grit had 12 edges and 0 crossings). The fix introduces prefix-matching at all edge consumption points so directory-targeted edges resolve to their constituent files. This fix is independent of Fix 2 but is recommended first due to smaller scope and high impact on pure Go projects."
 ---
 
-# Fix 1: Go Zone Edge Resolution
+## Children
 
- [completed]
-
-## Summary
-
-Go import edges target package directories rather than individual files, causing the zone crossing algorithm to silently drop all Go cross-zone imports. This produces 0 crossings and 0 coupling in Go projects (observed: PocketBase had 756 edges but only 49 crossings; grit had 12 edges and 0 crossings). The fix introduces prefix-matching at all edge consumption points so directory-targeted edges resolve to their constituent files. This fix is independent of Fix 2 but is recommended first due to smaller scope and high impact on pure Go projects.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add test coverage for Go zone edge resolution | task | completed | 2026-04-13 |
-| Implement Go directory-to-files resolver and update zone pipeline | task | completed | 2026-03-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-26T20:47:10.759Z
-- **Completed:** 2026-03-26T20:47:10.759Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add test coverage for Go zone edge resolution](./add-test-coverage-for-go-zone-95dde9.md) | completed |
+| [Implement Go directory-to-files resolver and update zone pipeline](./implement-go-directory-to-files-9c2806.md) | completed |

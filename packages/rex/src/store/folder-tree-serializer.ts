@@ -2,14 +2,18 @@
  * PRD-to-folder-tree serializer.
  *
  * Converts an in-memory PRD item tree to a nested directory structure under
- * a configurable tree root (default: `.rex/prd_tree/`). Each epic, feature, task,
- * and subtask maps to one directory containing one `index.md`.
+ * a configurable tree root (default: `.rex/prd_tree/`). Each epic, feature,
+ * task, and branch subtask maps to one directory containing exactly one
+ * `index.md`. Leaf subtasks (no children) are written as bare `<slug>.md`
+ * files inside their parent folder.
  *
  * Contract (see docs/architecture/prd-folder-tree-schema.md):
- *   - Depth 1 dirs -> epics, depth 2 -> features, depth 3 -> tasks, depth 4 -> subtasks
- *   - Non-leaf index.md files include a `## Children` table
+ *   - Folder items: `<slug>/index.md` is the canonical content file
+ *   - Leaf subtasks: `<slug>.md` at parent level — leaf only, frontmatter only
+ *   - The `## Children` table inside `index.md` is informational; directory
+ *     nesting is authoritative for parent-child relationships
  *   - Serialization is incremental: files with unchanged content are not rewritten
- *   - Stale directories (items removed from the PRD) are deleted
+ *   - Stale entries (folders & .md files removed from the PRD) are deleted
  *   - Each file write is atomic (temp + rename)
  *   - Unknown PRDItem fields are preserved in frontmatter (round-trip fidelity)
  *
@@ -20,8 +24,6 @@ import { mkdir, readFile, writeFile, readdir, rm, rename, stat } from "node:fs/p
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { PRDItem } from "../schema/index.js";
-import { titleToFilename } from "./title-to-filename.js";
-import { generateIndexMd } from "./folder-tree-index-generator.js";
 
 const MAX_SLUG_LENGTH = 40;
 const SHORT_ID_LENGTH = 6;
@@ -46,7 +48,7 @@ export interface SerializeResult {
 /**
  * Serialize `items` (a list of epic PRDItems with nested children) to the
  * folder tree at `treeRoot`. Creates missing directories, writes changed
- * files atomically, and removes stale directories.
+ * files atomically, and removes stale entries.
  *
  * Never throws on I/O errors for individual files — errors propagate to the
  * caller. Call sites should wrap in try/catch if partial failure tolerance
@@ -64,7 +66,7 @@ export async function serializeFolderTree(
   };
 
   await ensureDir(treeRoot, result);
-  await serializeChildren(items, treeRoot, result);
+  await writeSiblings(items, treeRoot, result);
 
   return result;
 }
@@ -72,61 +74,57 @@ export async function serializeFolderTree(
 /**
  * Recursively serialize a list of sibling items into `parentDir`.
  *
- * Each item gets its own directory, regardless of level. Children are
- * serialized one level deeper, also regardless of level. This preserves
- * skip-level placements that are legal under {@link LEVEL_HIERARCHY}
- * (e.g. a task placed directly under an epic without an intermediate
- * feature) without dropping or re-typing data.
+ * The schema rule is uniform across levels: an item with children is a
+ * folder containing `index.md` (frontmatter + `## Children` table); an
+ * item with no children is a bare `<slug>.md` file at `parentDir`. A
+ * folder is never created just to hold a single `index.md` — that would
+ * collapse to the bare-file form.
  *
- * The directory contains:
- *   - `<title>.md` — the item's primary markdown (with full frontmatter)
- *   - `index.md`   — human-readable summary (Progress / Subtask sections)
- * and one subdirectory per child, recursively.
- *
- * Stale sibling directories under `parentDir` (items removed from the
- * source tree) are deleted via {@link removeStaleSubdirs}.
+ * Cleans up stale subdirectories and stale `.md` files at `parentDir`
+ * before returning. The owner's own `index.md` (when this directory is
+ * itself a folder item) is never touched at this level — it is written by
+ * the caller before the recursion that produced these siblings.
  */
-async function serializeChildren(
+async function writeSiblings(
   items: PRDItem[],
   parentDir: string,
   result: SerializeResult,
 ): Promise<void> {
-  // Position-keyed slugs survive duplicate-id inputs: id-keyed lookups would
-  // collapse two same-id items into one slot. The public id-keyed
-  // `resolveSiblingSlugs` API is unchanged for external callers — only this
-  // internal serialization path uses positional slugs.
   const positionalSlugs = resolvePositionalSiblingSlugs(items);
-  const expectedSlugs = new Set<string>();
+  const folderSlugs = new Set<string>();
+  const leafFiles = new Set<string>();
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const itemSlug = positionalSlugs[i];
-    expectedSlugs.add(itemSlug);
+    const children = item.children ?? [];
+
+    // Leaf item (any level): bare `<slug>.md` at parentDir. It carries
+    // only its own frontmatter — no children listing, no parent metadata.
+    if (children.length === 0) {
+      const leafFilename = `${itemSlug}.md`;
+      const leafPath = join(parentDir, leafFilename);
+      const itemContent = renderItemIndexMd(item, [], new Map());
+      await writeIfChanged(leafPath, itemContent, result);
+      leafFiles.add(leafFilename);
+      continue;
+    }
+
+    // Branch item: own folder with `index.md` listing children.
+    folderSlugs.add(itemSlug);
     const itemDir = join(parentDir, itemSlug);
     await ensureDir(itemDir, result);
 
-    const children = item.children ?? [];
     const childSlugs = resolveSiblingSlugs(children);
-
-    // Item file: <title>.md with full frontmatter and a Children link table.
     const itemContent = renderItemIndexMd(item, children, childSlugs);
-    const itemFilename = titleToFilename(item.title);
-    const itemPath = join(itemDir, itemFilename);
+    const itemPath = join(itemDir, "index.md");
     await writeIfChanged(itemPath, itemContent, result);
-    await removeOrphanedMarkdownFiles(itemDir, itemFilename);
 
-    // index.md: human-readable summary (delegates to generateIndexMd, which
-    // selectively renders Progress / Subtask sections based on item.level).
-    const itemIndexContent = generateIndexMd(item, children, []);
-    const itemIndexPath = join(itemDir, "index.md");
-    await writeIfChanged(itemIndexPath, itemIndexContent, result);
-
-    // Always recurse so stale child subdirectories are cleaned up even when
-    // the item now has no children (e.g. after a move that empties this parent).
-    await serializeChildren(children, itemDir, result);
+    // Recurse into the item's directory; cleanup happens inside writeSiblings.
+    await writeSiblings(children, itemDir, result);
   }
 
-  await removeStaleSubdirs(parentDir, expectedSlugs, result);
+  await removeStaleEntries(parentDir, folderSlugs, leafFiles, result);
 }
 
 /**
@@ -151,13 +149,6 @@ export function slugifyTitle(title: string): string {
   return truncateAtWordBoundary(normalizeTitleSlug(title), MAX_SLUG_LENGTH);
 }
 
-/**
- * Resolve final directory slugs for sibling items.
- *
- * If two siblings normalize to the same unsuffixed slug, every colliding item
- * gets a short ID suffix. This keeps results deterministic regardless of item
- * order and avoids giving the first item a privileged unsuffixed path.
- */
 /**
  * Resolve final directory slugs by position so duplicate-id inputs survive.
  *
@@ -232,7 +223,7 @@ export function resolveSiblingSlugs(items: PRDItem[]): Map<string, string> {
 function normalizeTitleSlug(title: string): string {
   const body = title
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^\x00-\x7F]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -282,8 +273,12 @@ function requireMapValue(map: Map<string, string>, key: string): string {
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
 /**
- * Render the index.md for any item.
- * Includes a `## Children` section if `children` is non-empty.
+ * Render the index.md (or leaf `.md`) content for any item.
+ *
+ * The output is `<frontmatter>` + (optional) `## Children` table linking to
+ * each child's storage path. Leaf subtask children link to `./<slug>.md`;
+ * folder children link to `./<slug>/index.md`. For leaf items pass an empty
+ * `children` array — no Children table will be emitted.
  *
  * @public — used by folder-tree-mutations for targeted rewrites
  */
@@ -306,7 +301,11 @@ export function renderItemIndexMd(
     lines.push("|-------|--------|");
     for (const child of children) {
       const slug = requireSlug(childSlugs, child);
-      lines.push(`| [${child.title}](./${slug}/index.md) | ${child.status} |`);
+      // Leaf children (no own children, any level) live as bare `<slug>.md`
+      // at this level; branch children get their own folder.
+      const isLeaf = (child.children?.length ?? 0) === 0;
+      const link = isLeaf ? `./${slug}.md` : `./${slug}/index.md`;
+      lines.push(`| [${child.title}](${link}) | ${child.status} |`);
     }
     lines.push("");
   }
@@ -329,7 +328,11 @@ const ORDERED_FIELDS: ReadonlyArray<string> = [
 
 /**
  * PRDItem fields that are storage/routing metadata — intentionally excluded
- * from folder-tree frontmatter because they are not item content.
+ * from folder-tree frontmatter because they are not item content. The
+ * `__parent*` fields are legacy single-child-compaction shims that the
+ * current serializer never emits; they are filtered here as defense-in-depth
+ * so an in-memory item carrying stale shims (e.g. just-loaded from a legacy
+ * tree) round-trips clean.
  */
 const STORAGE_FIELDS = new Set([
   "children", "branch", "sourceFile", "requirements",
@@ -340,8 +343,9 @@ const STORAGE_FIELDS = new Set([
 /**
  * Emit YAML frontmatter lines for `item` into `lines`.
  * Known fields are emitted in ORDERED_FIELDS order; unknown extra fields
- * (not in ORDERED_FIELDS and not in STORAGE_FIELDS) are emitted alphabetically
- * after the known set to ensure round-trip fidelity for future extensions.
+ * (not in ORDERED_FIELDS and not in STORAGE_FIELDS, and not `__parent*`
+ * legacy shims) are emitted alphabetically after the known set to ensure
+ * round-trip fidelity for future extensions.
  */
 function emitFrontmatter(lines: string[], item: PRDItem): void {
   const emitted = new Set<string>();
@@ -353,9 +357,10 @@ function emitFrontmatter(lines: string[], item: PRDItem): void {
     emitted.add(key);
   }
 
-  // Emit unknown extra fields alphabetically (round-trip fidelity)
+  // Emit unknown extra fields alphabetically (round-trip fidelity), but
+  // never re-emit `__parent*` legacy shims — see STORAGE_FIELDS comment.
   const extraKeys = Object.keys(item)
-    .filter(k => !emitted.has(k) && !STORAGE_FIELDS.has(k))
+    .filter((k) => !emitted.has(k) && !STORAGE_FIELDS.has(k) && !k.startsWith("__parent"))
     .sort();
   for (const key of extraKeys) {
     const value = (item as Record<string, unknown>)[key];
@@ -364,8 +369,13 @@ function emitFrontmatter(lines: string[], item: PRDItem): void {
   }
 }
 
-/** Emit one YAML key-value line (or block) into `lines`. */
-function emitYamlField(lines: string[], key: string, value: unknown): void {
+/**
+ * Emit one YAML key-value line (or block) into `lines`.
+ *
+ * @public — used by core/compact-single-children to re-emit prefixed parent
+ * fields with the same encoding rules as the rest of the serializer.
+ */
+export function emitYamlField(lines: string[], key: string, value: unknown): void {
   if (Array.isArray(value)) {
     if (value.length === 0) {
       lines.push(`${key}: []`);
@@ -388,40 +398,54 @@ function emitYamlField(lines: string[], key: string, value: unknown): void {
   }
 }
 
-// ── Orphaned file cleanup ─────────────────────────────────────────────────────
+// ── Stale-entry cleanup ──────────────────────────────────────────────────────
 
 /**
- * Remove orphaned markdown files in a directory.
+ * Remove stale subdirectories and stale `.md` files in `dir`.
  *
- * When an item's title changes, the old markdown file is left behind.
- * This function scans the directory for any .md files other than the current
- * item filename and removes them. Non-throwing: silently continues on errors
- * (permissions, missing dir, etc.).
+ * - Subdirectories whose names are not in `expectedSubdirs` are removed.
+ * - Plain `.md` files whose names are not in `expectedFiles` are removed,
+ *   except `index.md` (the owning folder item's content file is written by
+ *   the caller in a separate step).
+ * - Dotfiles, dotdirs, and non-md files are left untouched so adjacent
+ *   tooling output (caches, lockfiles, hand-managed README files) survives.
  *
- * @param dir - Directory to scan
- * @param currentFilename - The current item's markdown filename to keep
+ * Increments `directoriesRemoved` for each removed subdirectory.
  */
-async function removeOrphanedMarkdownFiles(dir: string, currentFilename: string): Promise<void> {
+async function removeStaleEntries(
+  dir: string,
+  expectedSubdirs: Set<string>,
+  expectedFiles: Set<string>,
+  result: SerializeResult,
+): Promise<void> {
   let entries: string[];
   try {
     entries = await readdir(dir);
   } catch {
-    // Directory not readable or missing - nothing to clean
     return;
   }
 
   for (const entry of entries) {
-    // Skip the current item file and non-markdown files
-    if (entry === currentFilename || !entry.endsWith(".md")) {
+    if (entry.startsWith(".")) continue;
+    if (entry === "index.md") continue;
+
+    const entryPath = join(dir, entry);
+    let isDir: boolean;
+    try {
+      isDir = (await stat(entryPath)).isDirectory();
+    } catch {
       continue;
     }
 
-    // Remove the orphaned markdown file
-    try {
-      const filePath = join(dir, entry);
-      await rm(filePath, { force: true });
-    } catch {
-      // Silently continue on removal errors
+    if (isDir) {
+      if (expectedSubdirs.has(entry)) continue;
+      await rm(entryPath, { recursive: true, force: true });
+      result.directoriesRemoved++;
+      continue;
+    }
+
+    if (entry.endsWith(".md") && !expectedFiles.has(entry)) {
+      await rm(entryPath, { force: true });
     }
   }
 }
@@ -461,35 +485,4 @@ async function writeIfChanged(
   await writeFile(tmpPath, content, "utf8");
   await rename(tmpPath, filePath);
   result.filesWritten++;
-}
-
-/**
- * Remove subdirectories of `dir` whose names are not in `expectedSlugs`.
- * Increments directoriesRemoved for each removal.
- */
-async function removeStaleSubdirs(
-  dir: string,
-  expectedSlugs: Set<string>,
-  result: SerializeResult,
-): Promise<void> {
-  let entries: string[];
-  try {
-    entries = await readdir(dir);
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    if (expectedSlugs.has(entry)) continue;
-    const entryPath = join(dir, entry);
-    let isDir: boolean;
-    try {
-      isDir = (await stat(entryPath)).isDirectory();
-    } catch {
-      continue;
-    }
-    if (!isDir) continue;
-    await rm(entryPath, { recursive: true, force: true });
-    result.directoriesRemoved++;
-  }
 }

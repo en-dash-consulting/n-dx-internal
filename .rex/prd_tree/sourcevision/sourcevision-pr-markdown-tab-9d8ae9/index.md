@@ -9,25 +9,9 @@ completedAt: "2026-02-21T06:25:50.699Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision PR Markdown Tab Parity Hardening
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Endpoint Integration and Diagnostic States | task | completed | 2026-02-21 |
-| Navigation and Routing Parity | task | completed | 2026-02-21 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-21T06:25:50.699Z
-- **Completed:** 2026-02-21T06:25:50.699Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Endpoint Integration and Diagnostic States](./endpoint-integration-and-db4a5c.md) | completed |
+| [Navigation and Routing Parity](./navigation-and-routing-parity.md) | completed |

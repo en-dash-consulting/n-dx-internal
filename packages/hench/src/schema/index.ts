@@ -3,6 +3,8 @@ export {
   DEFAULT_HENCH_CONFIG,
   guardDefaultsForLanguage,
   normalizeRunTokens,
+  PERMISSION_MODES,
+  isPermissionMode,
 } from "./v1.js";
 
 export type {
@@ -11,6 +13,7 @@ export type {
   RetryConfig,
   HenchConfig,
   Provider,
+  PermissionMode,
   ProjectLanguage,
   RunStatus,
   ToolCallRecord,

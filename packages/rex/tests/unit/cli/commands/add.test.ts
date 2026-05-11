@@ -216,7 +216,7 @@ describe("cmdAdd – level inference (no explicit level)", () => {
     ).rejects.toThrow(/not found/);
   });
 
-  it("errors when parent is a subtask (cannot infer child level)", async () => {
+  it("allows adding a subtask under a subtask (infers subtask level)", async () => {
     writePRD(tmp, makePrd([{
         id: "epic-1", title: "E", level: "epic", status: "pending",
         children: [{
@@ -228,9 +228,19 @@ describe("cmdAdd – level inference (no explicit level)", () => {
         }],
       }]));
 
-    await expect(
-      cmdAdd(tmp, undefined, { title: "Cannot Infer", parent: "sub-1" }),
-    ).rejects.toThrow(/Cannot infer child level/);
+    // Now subtasks can have children, so we should be able to add a subtask under a subtask
+    await cmdAdd(tmp, undefined, { title: "Nested Subtask", parent: "sub-1", format: "json" });
+
+    const prd = readPRD(tmp);
+    const task = prd.items[0].children[0].children[0];
+    const parentSub = task.children[0];
+    expect(parentSub).toBeDefined();
+    expect(parentSub.id).toBe("sub-1");
+    expect(parentSub.children).toBeDefined();
+    expect(parentSub.children.length).toBe(1);
+    const nestedSub = parentSub.children[0];
+    expect(nestedSub.title).toBe("Nested Subtask");
+    expect(nestedSub.level).toBe("subtask");
   });
 
   it("explicit level overrides inference", async () => {
@@ -290,7 +300,7 @@ describe("cmdAdd – flexible hierarchy (tasks under epics)", () => {
     expect(task.level).toBe("task");
   });
 
-  it("rejects adding a task under a subtask", async () => {
+  it("rejects adding a task under a subtask (task requires task or feature parent)", async () => {
     writePRD(tmp, makePrd([{
         id: "epic-1", title: "E", level: "epic", status: "pending",
         children: [{
@@ -302,9 +312,10 @@ describe("cmdAdd – flexible hierarchy (tasks under epics)", () => {
         }],
       }]));
 
+    // Task can only have feature or epic as parent (not subtask)
     await expect(
       cmdAdd(tmp, "task", { title: "Bad Task", parent: "sub-1" }),
-    ).rejects.toThrow(/must be a child of/);
+    ).rejects.toThrow(/(must be a child of|invalid parent)/);
   });
 
   it("rejects adding a task without any parent", async () => {
@@ -358,8 +369,8 @@ describe("cmdAdd – blockedBy support", () => {
 
   it("accepts --blockedBy as comma-separated IDs", async () => {
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending" },
-        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending" },
+        { id: "t2", title: "Task 2", level: "epic", status: "pending" },
       ]));
 
     await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1,t2", format: "json" });
@@ -372,7 +383,7 @@ describe("cmdAdd – blockedBy support", () => {
 
   it("accepts single blockedBy ID", async () => {
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending" },
       ]));
 
     await cmdAdd(tmp, "epic", { title: "Blocked Epic", blockedBy: "t1", format: "json" });
@@ -396,8 +407,8 @@ describe("cmdAdd – blockedBy support", () => {
   it("rejects blockedBy that creates a cycle", async () => {
     // t1 blocks t2, trying to add t3 that blocks t1 while t1 blocks t3
     writePRD(tmp, makePrd([
-        { id: "t1", title: "Task 1", level: "task", status: "pending", blockedBy: ["t2"] },
-        { id: "t2", title: "Task 2", level: "task", status: "pending" },
+        { id: "t1", title: "Task 1", level: "epic", status: "pending", blockedBy: ["t2"] },
+        { id: "t2", title: "Task 2", level: "epic", status: "pending" },
       ]));
 
     // New item blocked by t1, where t1 is blocked by t2 — no cycle, should succeed
@@ -412,7 +423,7 @@ describe("cmdAdd – blockedBy support", () => {
   // ── Folder tree persistence ──────────────────────────────────────────
 
   describe("folder tree persistence", () => {
-    it("creates folder tree entry after adding an epic", async () => {
+    it("creates a leaf `<slug>.md` after adding an epic with no children", async () => {
       writePRD(tmp, makePrd());
 
       await cmdAdd(tmp, "epic", { title: "My Epic", format: "json" });
@@ -420,15 +431,14 @@ describe("cmdAdd – blockedBy support", () => {
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       expect(existsSync(treeRoot)).toBe(true);
 
-      // Exactly one directory under the tree root
-      const entries = readdirSync(treeRoot);
-      expect(entries.length).toBe(1);
+      // The leaf epic is a bare `<slug>.md` directly inside the tree root.
+      const entries = readdirSync(treeRoot).filter((e) => e !== "index.md");
+      expect(entries).toHaveLength(1);
+      const leafFile = join(treeRoot, entries[0]);
+      expect(statSync(leafFile).isFile()).toBe(true);
+      expect(entries[0].endsWith(".md")).toBe(true);
 
-      // The epic directory contains a title-named markdown (or index.md).
-      const epicDir = join(treeRoot, entries[0]);
-      const mdFiles = readdirSync(epicDir).filter((f) => f.endsWith(".md"));
-      expect(mdFiles.length).toBeGreaterThan(0);
-      const content = readFileSync(join(epicDir, mdFiles[0]), "utf-8");
+      const content = readFileSync(leafFile, "utf-8");
       expect(content).toContain("My Epic");
       expect(content).toContain("level: \"epic\"");
     });
@@ -442,24 +452,20 @@ describe("cmdAdd – blockedBy support", () => {
       await cmdAdd(tmp, "feature", { title: "Child Feature", parent: "epic-aa", format: "json" });
 
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
-      // Find the epic directory by enumerating tree entries; the slug shape
-      // is now "parent-epic" with no id suffix when there's no collision.
+      // The epic now has a child feature, so it gets its own folder.
       const epicEntries = readdirSync(treeRoot).filter((e) =>
         statSync(join(treeRoot, e)).isDirectory(),
       );
       expect(epicEntries.length).toBe(1);
       const epicDir = join(treeRoot, epicEntries[0]);
 
-      // The feature should be nested under the epic; ignore .md files.
-      const featureEntries = readdirSync(epicDir).filter((e) =>
-        statSync(join(epicDir, e)).isDirectory(),
+      // Child feature is a leaf — bare `<slug>.md` inside the epic's folder.
+      const featureFiles = readdirSync(epicDir).filter(
+        (e) => e.endsWith(".md") && e !== "index.md",
       );
-      expect(featureEntries.length).toBe(1);
+      expect(featureFiles.length).toBe(1);
 
-      const featureDir = join(epicDir, featureEntries[0]);
-      const mdFiles = readdirSync(featureDir).filter((f) => f.endsWith(".md"));
-      expect(mdFiles.length).toBeGreaterThan(0);
-      const content = readFileSync(join(featureDir, mdFiles[0]), "utf-8");
+      const content = readFileSync(join(epicDir, featureFiles[0]), "utf-8");
       expect(content).toContain("Child Feature");
       expect(content).toContain("level: \"feature\"");
     });

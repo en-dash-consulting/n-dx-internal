@@ -12,25 +12,8 @@ description: "- High coupling (0.6) — 9 imports target \"web-viewer\""
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in viewer-data-loader (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.6) — 9 imports target "web-viewer"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in viewer-data-loader: High coupling (0.6) — 9 imports target "web-viewer" | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T16:06:24.374Z
-- **Completed:** 2026-04-20T16:06:24.374Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in viewer-data-loader: High coupling (0.6) — 9 imports target "web-viewer"](./fix-observation-in-viewer-data-b97918.md) | completed |

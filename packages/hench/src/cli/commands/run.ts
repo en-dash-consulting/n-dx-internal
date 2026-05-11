@@ -1,9 +1,10 @@
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { readFileSync, existsSync } from "node:fs";
-import { resolveStore, findNextTask, findActionableTasks as findActionable, findItem, collectCompletedIds, isRootLevel, isWorkItem, SCHEMA_VERSION } from "../../prd/rex-gateway.js";
+import { resolveStore, findNextTask, findActionableTasks as findActionable, findItem, collectCompletedIds, isRootLevel, isWorkItem, SCHEMA_VERSION, SELF_HEAL_TAG } from "../../prd/rex-gateway.js";
 import type { PRDItem, PRDStore } from "../../prd/rex-gateway.js";
-import type { RunRecord, ToolCallRecord } from "../../schema/index.js";
+import type { PermissionMode, RunRecord, ToolCallRecord } from "../../schema/index.js";
+import { PERMISSION_MODES, isPermissionMode } from "../../schema/index.js";
 import { classifyChangedFiles } from "../../store/file-classifier.js";
 import type { FileCategory } from "../../store/file-classifier.js";
 import { loadConfig } from "../../store/config.js";
@@ -587,6 +588,7 @@ async function runOne(
   extraContext?: string,
   autonomous?: boolean,
   runNumber?: number,
+  permissionMode?: PermissionMode,
 ): Promise<{ status: string; taskTitle: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
@@ -620,6 +622,7 @@ async function runOne(
         autonomous,
         extraContext,
         runNumber,
+        permissionMode,
       })
     : await agentLoop({
         config: effectiveConfig as typeof config & { provider: "api" },
@@ -779,37 +782,47 @@ export async function cmdRun(
   const llmConfig = await loadLLMConfig(henchDir);
   const llmVendor = resolveLLMVendor(llmConfig);
 
-  // Resolve model: CLI flag > .n-dx.json config > default
-  const cliModelOverride = flags.model;
+  // Resolve model: CLI flag > .n-dx.json config > default.
+  // CLI flag accepts both the vendor-neutral `--model` and the vendor-specific
+  // `--claude-model` / `--codex-model` (the latter pair is also recognized by
+  // `ndx init`; supporting them here means `ndx work --claude-model=…` works
+  // end-to-end). The top-level `llm.model` field is honored ahead of the
+  // vendor-pinned slot inside `resolveVendorModel`.
+  const cliModelOverride =
+    flags.model
+    ?? (llmVendor === "claude" ? flags["claude-model"] : flags["codex-model"]);
   const configuredModel = resolveVendorModel(llmVendor, llmConfig);
   const resolvedModel = cliModelOverride ? resolveModel(cliModelOverride) : configuredModel;
+  const hasConfiguredModel =
+    !!llmConfig?.model
+    || (llmVendor === "claude" ? !!llmConfig?.claude?.model : !!llmConfig?.codex?.model);
   const modelSource: "cli-override" | "configured" | "default" = cliModelOverride
     ? "cli-override"
-    : (llmVendor === "claude" ? !!llmConfig?.claude?.model : !!llmConfig?.codex?.model)
+    : hasConfiguredModel
       ? "configured"
       : "default";
 
-  // Validate vendor-model compatibility: warn if configured model is stale
-  const configuredClaudeModel = llmConfig?.claude?.model;
-  const configuredCodexModel = llmConfig?.codex?.model;
-  if (!cliModelOverride) {
+  // Validate vendor-model compatibility: error if the model that actually
+  // resolved (either top-level llm.model or vendor-pinned) is incompatible
+  // with the active vendor. Picks the same value resolveVendorModel uses.
+  const activeConfiguredModel = llmConfig?.model
+    ?? (llmVendor === "claude" ? llmConfig?.claude?.model : llmConfig?.codex?.model);
+  if (!cliModelOverride && activeConfiguredModel) {
     if (
       llmVendor === "claude" &&
-      configuredClaudeModel &&
-      !isModelCompatibleWithVendor("claude", configuredClaudeModel)
+      !isModelCompatibleWithVendor("claude", activeConfiguredModel)
     ) {
       throw new CLIError(
-        `Configured model "${configuredClaudeModel}" is not compatible with vendor="claude".`,
+        `Configured model "${activeConfiguredModel}" is not compatible with vendor="claude".`,
         `Either use a Claude model (e.g., sonnet, opus) or switch vendor: 'n-dx config llm.vendor codex'`,
       );
     }
     if (
       llmVendor === "codex" &&
-      configuredCodexModel &&
-      !isModelCompatibleWithVendor("codex", configuredCodexModel)
+      !isModelCompatibleWithVendor("codex", activeConfiguredModel)
     ) {
       throw new CLIError(
-        `Configured model "${configuredCodexModel}" is not compatible with vendor="codex".`,
+        `Configured model "${activeConfiguredModel}" is not compatible with vendor="codex".`,
         `Either use a Codex/GPT model (e.g., gpt-4o, o1) or switch vendor: 'n-dx config llm.vendor claude'`,
       );
     }
@@ -837,20 +850,35 @@ export async function cmdRun(
   // --yes suppresses the interactive confirmation prompt before rollback.
   const yes = flags["yes"] === "true";
   const model = resolvedModel;
-  const spawnModel = llmVendor === "codex" && !cliModelOverride
-    ? undefined
-    : resolvedModel;
+  // Always pass the resolved model to the spawned vendor CLI so the user's
+  // configured choice (top-level or vendor-pinned) survives the spawn. The
+  // adapter only appends a model flag when this value is set.
+  const spawnModel = resolvedModel;
   const auto = flags.auto === "true";
   const loop = flags.loop === "true";
   const selfHeal = flags["self-heal"] === "true";
   const skipDeps = flags["skip-deps"] === "true";
-  const tagsFilter = flags["tags"]
+
+  // --permission-mode: validate against the four supported Claude CLI modes.
+  // Resolution order (flag > config > runtime default) is computed below
+  // after `autonomous` is derived, since the autonomous default depends on it.
+  const permissionModeFlag = flags["permission-mode"];
+  if (permissionModeFlag !== undefined && !isPermissionMode(permissionModeFlag)) {
+    throw new CLIError(
+      `Invalid --permission-mode value "${permissionModeFlag}".`,
+      `Use one of: ${PERMISSION_MODES.join(", ")}.`,
+    );
+  }
+  let tagsFilter = flags["tags"]
     ? (flags["tags"] as string).split(",").map((s) => s.trim()).filter(Boolean)
     : undefined;
 
   // Apply self-heal mode to config so it flows through to prompt building
   if (selfHeal) {
     config.selfHeal = true;
+    // In self-heal mode, automatically restrict to self-heal-items.
+    // Tag filter can still be combined with other explicit tags via --tags.
+    tagsFilter = tagsFilter ? [...tagsFilter, SELF_HEAL_TAG] : [SELF_HEAL_TAG];
   }
 
   if (llmVendor === "codex" && provider === "api" && !dryRun) {
@@ -1023,8 +1051,23 @@ export async function cmdRun(
     // governs task autoselect above — both are facets of "running unattended".
     const autonomous = auto || loop || epicByEpic;
 
+    // Resolve the effective permission mode for the spawned Claude session.
+    // Precedence: --permission-mode flag > config.permissionMode > autonomous
+    // default ("acceptEdits") > undefined (Claude CLI's built-in default).
+    // Codex spawns ignore this — warn the user that the value will be dropped.
+    let effectivePermissionMode: PermissionMode | undefined =
+      (permissionModeFlag as PermissionMode | undefined) ??
+      config.permissionMode ??
+      (autonomous ? "acceptEdits" : undefined);
+    if (effectivePermissionMode && llmVendor !== "claude") {
+      info(
+        `⚠ --permission-mode is a Claude CLI feature; ignoring "${effectivePermissionMode}" for vendor=${llmVendor}.`,
+      );
+      effectivePermissionMode = undefined;
+    }
+
     if (epicByEpic) {
-      await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous);
+      await runEpicByEpic(dir, henchDir, rexDir, provider, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous, effectivePermissionMode);
       return;
     }
 
@@ -1038,9 +1081,9 @@ export async function cmdRun(
     // If --auto, --loop, or non-TTY, taskId stays undefined → assembleTaskBrief autoselects
 
     if (loop) {
-      await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId, tagsFilter, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous);
+      await runLoop(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, pauseMs, config.maxFailedAttempts, review, epicId, tagsFilter, queue, priorityOverride, rollbackOnFailure, yes, extraContext, autonomous, effectivePermissionMode);
     } else {
-      await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review, epicId, tagsFilter, rollbackOnFailure, yes, extraContext, autonomous);
+      await runIterations(dir, henchDir, rexDir, provider, taskId, dryRun, model, spawnModel, maxTurns, tokenBudget, iterations, config.maxFailedAttempts, review, epicId, tagsFilter, rollbackOnFailure, yes, extraContext, autonomous, effectivePermissionMode);
     }
   } finally {
     await limiter.release();
@@ -1071,6 +1114,7 @@ async function runIterations(
   yes?: boolean,
   extraContext?: string,
   autonomous?: boolean,
+  permissionMode?: PermissionMode,
 ): Promise<void> {
   for (let i = 0; i < iterations; i++) {
     // Banner between iterations: printed before iteration i+1 starts,
@@ -1101,6 +1145,8 @@ async function runIterations(
       yes,
       extraContext,
       autonomous,
+      undefined,
+      permissionMode,
     );
 
     // Emit quota log line(s) at the inter-run boundary.
@@ -1146,6 +1192,7 @@ async function runLoop(
   yes?: boolean,
   extraContext?: string,
   autonomous?: boolean,
+  permissionMode?: PermissionMode,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -1226,6 +1273,7 @@ async function runLoop(
             extraContext,
             autonomous,
             completed,
+            permissionMode,
           );
           status = result.status;
           if (tags?.length) {
@@ -1359,6 +1407,7 @@ async function runEpicByEpic(
   yes?: boolean,
   extraContext?: string,
   autonomous?: boolean,
+  permissionMode?: PermissionMode,
 ): Promise<void> {
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
@@ -1490,6 +1539,8 @@ async function runEpicByEpic(
               yes,
               extraContext,
               autonomous,
+              undefined,
+              permissionMode,
             );
             status = result.status;
           } finally {

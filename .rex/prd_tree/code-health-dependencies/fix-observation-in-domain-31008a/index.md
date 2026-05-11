@@ -12,25 +12,8 @@ description: "- High coupling (0.6) — 4 imports target \"web-server\""
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in domain-gateway-routes-mcp (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.6) — 4 imports target "web-server"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in domain-gateway-routes-mcp: High coupling (0.6) — 4 imports target "web-server" | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-16T17:26:05.067Z
-- **Completed:** 2026-04-16T17:26:05.067Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in domain-gateway-routes-mcp: High coupling (0.6) — 4 imports target "web-server"](./fix-observation-in-domain-530da8.md) | completed |

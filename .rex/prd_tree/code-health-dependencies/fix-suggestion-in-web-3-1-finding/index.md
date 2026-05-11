@@ -12,25 +12,8 @@ description: "- Zone \"web-3\" has a numeric suffix indicating an overflow commu
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in web-3 (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone "web-3" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in web-3: Zone "web-3" has a numeric suffix indicating an overflow community — pin its fil | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T03:24:10.388Z
-- **Completed:** 2026-04-19T03:24:10.388Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in web-3: Zone "web-3" has a numeric suffix indicating an overflow community — pin its fil](./fix-suggestion-in-web-3-zone-96f491.md) | completed |

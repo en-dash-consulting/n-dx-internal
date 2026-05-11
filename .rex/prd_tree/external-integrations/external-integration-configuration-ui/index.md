@@ -9,26 +9,10 @@ completedAt: "2026-02-18T09:31:53.840Z"
 acceptanceCriteria: []
 ---
 
-# External Integration Configuration UI
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Claude API Configuration | task | completed | 2026-02-06 |
-| Natural language proposal modification | task | completed | 2026-02-18 |
-| Notion Integration Configuration Interface | task | completed | 2026-02-18 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-18T09:31:53.840Z
-- **Completed:** 2026-02-18T09:31:53.840Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Claude API Configuration](./claude-api-configuration.md) | completed |
+| [Natural language proposal modification](./natural-language-proposal-modification.md) | completed |
+| [Notion Integration Configuration Interface](./notion-integration-d7e6c7.md) | completed |

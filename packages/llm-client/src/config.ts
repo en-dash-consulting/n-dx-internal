@@ -147,7 +147,10 @@ export function resolveVendorModel(
       }
       return resolveModel(TIER_MODELS.claude.light);
     }
-    // Standard tier: model can override, then fall back to TIER_MODELS.standard
+    // Standard tier precedence: top-level llm.model > llm.claude.model > tier default.
+    if (config?.model) {
+      return resolveModel(config.model);
+    }
     if (config?.claude?.model) {
       return resolveModel(config.claude.model);
     }
@@ -161,7 +164,10 @@ export function resolveVendorModel(
       }
       return TIER_MODELS.codex.light;
     }
-    // Standard tier: model can override, then fall back to TIER_MODELS.standard
+    // Standard tier precedence: top-level llm.model > llm.codex.model > tier default.
+    if (config?.model) {
+      return normalizeCodexModel(config.model);
+    }
     if (config?.codex?.model) {
       return normalizeCodexModel(config.codex.model);
     }

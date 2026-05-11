@@ -12,25 +12,8 @@ description: "- Zone \"Polling\" (polling) has catastrophic risk (score: 0.75, c
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in polling (1 finding)
+## Children
 
-🔴 [completed]
-
-## Summary
-
-- Zone "Polling" (polling) has catastrophic risk (score: 0.75, cohesion: 0.25, coupling: 0.75) — requires immediate architectural intervention
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in polling: Zone "Polling" (polling) has catastrophic risk (score: 0.75, cohesion: 0.25, cou | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** critical
-- **Level:** feature
-- **Started:** 2026-04-13T18:49:19.159Z
-- **Completed:** 2026-04-13T18:49:19.159Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in polling: Zone "Polling" (polling) has catastrophic risk (score: 0.75, cohesion: 0.25, cou](./fix-suggestion-in-polling-zone-952af9.md) | completed |

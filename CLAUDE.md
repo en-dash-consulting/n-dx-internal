@@ -229,7 +229,7 @@ pnpm typecheck      # typecheck all packages
 
 ## Assistant Instruction Files
 
-`ndx init` generates per-assistant instruction files from a shared source of truth (`packages/core/assistant-assets/project-guidance.md`). Each file has a defined role:
+`ndx init` generates per-assistant instruction files from a shared source of truth (`assistant-assets/project-guidance.md`). Each file has a defined role:
 
 | File | Role | Generated from |
 |------|------|----------------|
@@ -239,7 +239,7 @@ pnpm typecheck      # typecheck all packages
 
 **Design invariant:** Both `AGENTS.md` and `CLAUDE.md` derive their base project documentation (Packages, Architecture, Commands, Key Files) from `project-guidance.md`. Vendor-specific additions are layered on top — never inlined into the shared template. This prevents instruction drift between assistant surfaces.
 
-Re-run `ndx init` to regenerate all instruction files after changes to `packages/core/assistant-assets/`.
+Re-run `ndx init` to regenerate all instruction files after changes to `assistant-assets/`.
 
 ## Command Aliases
 
@@ -258,7 +258,11 @@ ndx add "description"     # smart-add PRD items from freeform descriptions
 ndx add --file=spec.md    # import ideas from a text file
 ndx plan [dir]            # sourcevision analyze → rex analyze (show proposals)
 ndx plan --accept [dir]   # ...then accept proposals into PRD
-ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, --yes, etc.)
+ndx work [dir]            # hench run (pass --task=ID, --auto, --iterations=N, --yes,
+                          #   --permission-mode=<default|acceptEdits|bypassPermissions|plan>, etc.)
+                          # Autonomous runs (--auto/--loop/--epic-by-epic) default to
+                          # acceptEdits so the spawned Claude session won't stall in plan
+                          # mode. Override with --permission-mode or hench.permissionMode.
 ndx self-heal [N] [dir]   # iterative improvement loop (analyze → recommend → execute; --yes for unattended)
 ndx start [dir]           # start server: dashboard + MCP endpoints (--port=N, --background, stop, status)
 ndx status [dir]          # rex status (pass --format=json)

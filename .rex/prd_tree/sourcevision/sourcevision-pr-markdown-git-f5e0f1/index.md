@@ -9,25 +9,9 @@ completedAt: "2026-02-23T02:33:50.175Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision PR Markdown Git Preflight and Credential Diagnostics
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Pre-refresh Git Environment Validation | task | completed | 2026-02-23 |
-| Targeted Remediation Contract for Preflight Failures | task | completed | 2026-02-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-23T02:33:50.175Z
-- **Completed:** 2026-02-23T02:33:50.175Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Pre-refresh Git Environment Validation](./pre-refresh-git-environment-validation.md) | completed |
+| [Targeted Remediation Contract for Preflight Failures](./targeted-remediation-contract-acefbd.md) | completed |

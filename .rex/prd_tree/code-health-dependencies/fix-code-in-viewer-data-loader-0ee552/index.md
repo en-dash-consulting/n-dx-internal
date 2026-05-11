@@ -12,25 +12,8 @@ description: "- Only one test file (loader-onchange.test.ts) is present for four
 recommendationMeta: "[object Object]"
 ---
 
-# Fix code in viewer-data-loader (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Only one test file (loader-onchange.test.ts) is present for four production files; the core loader.ts load path appears untested.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix code in viewer-data-loader: Only one test file (loader-onchange.test.ts) is present for four production file | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T15:25:21.043Z
-- **Completed:** 2026-04-20T15:25:21.043Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix code in viewer-data-loader: Only one test file (loader-onchange.test.ts) is present for four production file](./fix-code-in-viewer-data-loader-3b22f2.md) | completed |

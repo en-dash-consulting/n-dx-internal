@@ -13,25 +13,8 @@ parentId: "0de5be78-d295-4f71-be5d-38594a355240"
 recommendationMeta: "[object Object]"
 ---
 
-# Fix move-file in web-server (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Server" but lives in packages/web/src/server/routes-rex/ — consider moving to packages/web/src/server/ to align physical location with architectural zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix move-file in web-server: File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Ser | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-13T20:09:29.458Z
-- **Completed:** 2026-04-13T20:09:29.458Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix move-file in web-server: File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Ser](./fix-move-file-in-web-server-900666.md) | completed |

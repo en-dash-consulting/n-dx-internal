@@ -12,25 +12,8 @@ description: "- Zone sits precisely at the dual-fragility boundary (cohesion 0.4
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in rex-fix-data-model (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone sits precisely at the dual-fragility boundary (cohesion 0.4, coupling 0.6); per rex-satellite zone policy, any addition that lowers cohesion requires explicit justification
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in rex-fix-data-model: Zone sits precisely at the dual-fragility boundary (cohesion 0.4, coupling 0.6); | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T02:47:47.477Z
-- **Completed:** 2026-04-19T02:47:47.477Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in rex-fix-data-model: Zone sits precisely at the dual-fragility boundary (cohesion 0.4, coupling 0.6);](./fix-structural-in-rex-fix-data-811f83.md) | completed |

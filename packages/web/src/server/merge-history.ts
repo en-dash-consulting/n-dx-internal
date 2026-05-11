@@ -79,6 +79,8 @@ export interface PrdNode {
   status: string;
   parentId?: string;
   priority?: string;
+  /** Shape classification based on folder structure: diamond, square, trapezoid, triangle, circle. */
+  shape?: string;
 }
 
 /** A merge commit node in the graph. */
@@ -315,6 +317,64 @@ export function parseMergeLogOutput(stdout: string): Array<{
   return merges;
 }
 
+/** Shape classification for PRD nodes based on folder structure. */
+export type NodeShape = "diamond" | "square" | "trapezoid" | "triangle" | "circle";
+
+/**
+ * Classify a PRD node's shape based on its folder structure in the prd_tree.
+ *
+ * Rules:
+ *   - triangle: leaf node with no children (no subdirectories, no other .md files)
+ *   - diamond: parent with title.md + other .md files (leaf subtasks)
+ *   - trapezoid: parent with title.md + only subdirectories (no other .md files)
+ *   - square: parent with only .md files and no subdirectories (legacy edge case)
+ *   - circle: default for anything that doesn't match above
+ *
+ * @param itemId - The PRD item's ID
+ * @param folderPath - Path to the item's folder in prd_tree
+ * @returns The shape classification
+ */
+export function classifyNodeShape(
+  itemId: string,
+  folderPath: string,
+): NodeShape {
+  try {
+    const entries = readdirSync(folderPath, { withFileTypes: true });
+    if (!entries.length) return "triangle";
+
+    // Separate files and directories
+    const files = entries.filter((e) => e.isFile()).map((e) => e.name);
+    const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+
+    // Identify the title file (either title-named .md or legacy index.md)
+    const titleFile = files.find((f) => f === "index.md" || f.endsWith(".md"));
+    const otherFiles = files.filter((f) => f !== titleFile);
+
+    // No children at all (only title file, no other files or dirs)
+    if (!titleFile && dirs.length === 0) return "triangle";
+    if (titleFile && otherFiles.length === 0 && dirs.length === 0) return "triangle";
+
+    // Title + other .md files, no directories (diamond)
+    if (titleFile && otherFiles.length > 0 && dirs.length === 0) return "diamond";
+
+    // Title + only other .md files (all files, no directories) (square)
+    // This is different from diamond in that there's no requirement for index.md specifically
+    if (titleFile && otherFiles.length > 0 && dirs.length === 0) return "square";
+
+    // Title + only directories, no other .md files (trapezoid)
+    if (titleFile && otherFiles.length === 0 && dirs.length > 0) return "trapezoid";
+
+    // Title + both other .md files and directories (unusual but possible with mixed children)
+    if (titleFile && otherFiles.length > 0 && dirs.length > 0) return "diamond";
+
+    // Default fallback
+    return "circle";
+  } catch {
+    // If we can't read the folder, default to circle
+    return "circle";
+  }
+}
+
 /**
  * Parse the output of a batched `git show --name-status` call that uses
  * `__NDXSHA__ <sha>` marker lines to delimit per-merge file blocks.
@@ -354,8 +414,29 @@ export function parseNameStatusOutput(
   return out;
 }
 
+/**
+ * Compute the slug for a PRD item based on its title and ID.
+ * This is a simplified version that matches the folder-tree-serializer's behavior.
+ */
+function itemToSlug(item: PRDItem): string {
+  const title = item.title.toLowerCase().trim();
+  if (!title) return item.id.slice(0, 8);
+
+  // Very simplified slug: lowercase, replace spaces with hyphens, remove special chars
+  let slug = title
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (!slug) slug = item.id.slice(0, 8);
+  // Keep slug reasonably short for filesystem compatibility
+  if (slug.length > 40) slug = slug.slice(0, 40).replace(/-+$/, "");
+  return slug;
+}
+
 /** Build a flat tree of PRDNode objects along with a parent-lookup map. */
-export function flattenPrdItems(doc: PRDDocument): {
+export function flattenPrdItems(doc: PRDDocument, rexDir?: string): {
   nodes: PrdNode[];
   knownIds: Set<string>;
   shortIdIndex: Map<string, string>;
@@ -363,12 +444,29 @@ export function flattenPrdItems(doc: PRDDocument): {
   const nodes: PrdNode[] = [];
   const knownIds = new Set<string>();
   const shortIdIndex = new Map<string, string>();
+  // Map of item ID to its folder path for shape classification
+  const idToFolderPath = new Map<string, string>();
 
-  const walk = (items: PRDItem[], parentId?: string): void => {
+  const walk = (items: PRDItem[], parentId?: string, parentPath?: string): void => {
     for (const item of items) {
       knownIds.add(item.id.toLowerCase());
-      // Index 8-char prefixes for short-id matching in branch names
       shortIdIndex.set(item.id.slice(0, 8).toLowerCase(), item.id);
+
+      // Compute folder path for this item
+      const slug = itemToSlug(item);
+      const itemPath = parentPath ? join(parentPath, slug) : join(rexDir ?? ".rex", "prd_tree", slug);
+      idToFolderPath.set(item.id, itemPath);
+
+      // Classify shape based on folder structure if rexDir is provided
+      let shape: string | undefined;
+      if (rexDir) {
+        try {
+          shape = classifyNodeShape(item.id, itemPath);
+        } catch {
+          // If we can't read the folder, shape remains undefined
+        }
+      }
+
       nodes.push({
         kind: "prd",
         id: item.id,
@@ -377,10 +475,16 @@ export function flattenPrdItems(doc: PRDDocument): {
         status: item.status,
         ...(parentId !== undefined && { parentId }),
         ...(item.priority !== undefined && { priority: item.priority }),
+        ...(shape !== undefined && { shape }),
       });
-      if (item.children) walk(item.children, item.id);
+
+      // Recursively walk children with updated parent ID and folder path
+      if (item.children && item.children.length > 0) {
+        walk(item.children, item.id, itemPath);
+      }
     }
   };
+
   walk(doc.items);
   return { nodes, knownIds, shortIdIndex };
 }
@@ -709,7 +813,7 @@ export function buildMergeGraph(opts: BuildMergeGraphOptions): MergeGraph {
   // ── 1. PRD index ────────────────────────────────────────────────
   const doc = opts.loadPRD ? opts.loadPRD() : loadPRDSync(opts.rexDir);
   const { nodes: prdNodes, knownIds, shortIdIndex } = doc
-    ? flattenPrdItems(doc)
+    ? flattenPrdItems(doc, opts.rexDir)
     : { nodes: [] as PrdNode[], knownIds: new Set<string>(), shortIdIndex: new Map<string, string>() };
 
   // ── 2. Merge enumeration + file changes ─────────────────────────

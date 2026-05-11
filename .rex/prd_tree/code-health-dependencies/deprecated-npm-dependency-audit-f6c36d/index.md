@@ -10,24 +10,8 @@ acceptanceCriteria: []
 description: "Identify and replace deprecated or end-of-life npm packages across all monorepo package.json files. Covers direct and transitive dependencies flagged by pnpm audit, npm deprecation notices, and packages with published successors."
 ---
 
-# Deprecated npm Dependency Audit and Remediation
+## Children
 
- [completed]
-
-## Summary
-
-Identify and replace deprecated or end-of-life npm packages across all monorepo package.json files. Covers direct and transitive dependencies flagged by pnpm audit, npm deprecation notices, and packages with published successors.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Audit and remediate deprecated npm dependencies across all monorepo packages | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T22:59:36.242Z
-- **Completed:** 2026-04-08T22:59:36.242Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Audit and remediate deprecated npm dependencies across all monorepo packages](./audit-and-remediate-deprecated-cd67df.md) | completed |

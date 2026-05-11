@@ -10,26 +10,10 @@ acceptanceCriteria: []
 description: "Add Claude and Codex configuration validation tests to the gauntlet test suite. These tests verify config presence, format, authentication, and vendor-specific behavior before allowing pipeline progression."
 ---
 
-# Claude and Codex Config Validation in Gauntlet
+## Children
 
- [completed]
-
-## Summary
-
-Add Claude and Codex configuration validation tests to the gauntlet test suite. These tests verify config presence, format, authentication, and vendor-specific behavior before allowing pipeline progression.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Implement Claude config validation gauntlet tests | task | completed | 2026-04-15 |
-| Implement Codex config validation gauntlet tests | task | completed | 2026-04-15 |
-| Integrate config validation tests into CI/CD gauntlet stage | task | completed | 2026-04-15 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-15T15:21:21.845Z
-- **Completed:** 2026-04-15T15:21:21.845Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Implement Claude config validation gauntlet tests](./implement-claude-config-1c3f14.md) | completed |
+| [Implement Codex config validation gauntlet tests](./implement-codex-config-a89dac.md) | completed |
+| [Integrate config validation tests into CI/CD gauntlet stage](./integrate-config-validation-f06451.md) | completed |

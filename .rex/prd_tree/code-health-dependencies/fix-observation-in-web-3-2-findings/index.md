@@ -12,26 +12,8 @@ description: "- Generic zone name \"Web 3\" — enrichment did not assign a mean
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in web-3 (2 findings)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Generic zone name "Web 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
-- High coupling (0.67) — 3 imports target "web-viewer"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in web-3: Generic zone name "Web 3" — enrichment did not assign a meaningful name reflecti (+1 more) | task | completed | 2026-04-18 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-18T14:54:09.198Z
-- **Completed:** 2026-04-18T14:54:09.198Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in web-3: Generic zone name "Web 3" — enrichment did not assign a meaningful name reflecti (+1 more)](./fix-observation-in-web-3-aa55a6.md) | completed |

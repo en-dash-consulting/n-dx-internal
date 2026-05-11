@@ -48,7 +48,7 @@
 
 // ---- Store ------------------------------------------------------------------
 
-export { resolveStore, PRD_FILENAME, PRD_TREE_DIRNAME } from "./store/index.js";
+export { resolveStore, PRD_FILENAME, PRD_TREE_DIRNAME, SELF_HEAL_TAG } from "./store/index.js";
 export type { PRDStore } from "./store/contracts.js";
 
 // ---- Markdown serializer / parser ------------------------------------------
@@ -333,6 +333,11 @@ export type { ApplyResult, ProposalResult } from "./core/reorganize-executor.js"
 
 export { applyReshape } from "./core/reshape.js";
 export type { ReshapeProposal, ReshapeAction, ReshapeResult } from "./core/reshape.js";
+
+// ---- Core: folder-per-task migration ----------------------------------------
+
+export { migrateToFolderPerTask } from "./core/folder-per-task-migration.js";
+export type { FolderPerTaskMigrationResult } from "./core/folder-per-task-migration.js";
 
 // ---- Analyze: reshape-reason ------------------------------------------------
 

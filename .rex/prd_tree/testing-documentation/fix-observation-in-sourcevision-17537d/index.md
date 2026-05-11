@@ -12,25 +12,8 @@ description: "- Generic zone name \"Sourcevision 3\" — enrichment did not assi
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in sourcevision-3 (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Generic zone name "Sourcevision 3" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in sourcevision-3: Generic zone name "Sourcevision 3" — enrichment did not assign a meaningful name | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-16T20:02:14.565Z
-- **Completed:** 2026-04-16T20:02:14.565Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in sourcevision-3: Generic zone name "Sourcevision 3" — enrichment did not assign a meaningful name](./fix-observation-in-sourcevision-4aa3a1.md) | completed |

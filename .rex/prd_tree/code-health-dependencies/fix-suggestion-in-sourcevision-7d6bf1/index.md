@@ -12,25 +12,8 @@ description: "- Zone \"sourcevision-4\" has a numeric suffix indicating an overf
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in sourcevision-4 (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone "sourcevision-4" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in sourcevision-4: Zone "sourcevision-4" has a numeric suffix indicating an overflow community — pi | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T02:20:30.195Z
-- **Completed:** 2026-04-14T02:20:30.195Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in sourcevision-4: Zone "sourcevision-4" has a numeric suffix indicating an overflow community — pi](./fix-suggestion-in-sourcevision-643cd3.md) | completed |

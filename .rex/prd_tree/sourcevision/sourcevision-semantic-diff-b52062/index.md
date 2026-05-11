@@ -9,26 +9,10 @@ completedAt: "2026-02-23T01:39:38.148Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision Semantic Diff Failure UX Hardening
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Actionable UI diagnostics and retry guidance | task | completed | 2026-02-23 |
-| Deterministic Semantic Diff Command Execution | task | completed | 2026-02-23 |
-| Diff-stage cache safety and API diagnostics | task | completed | 2026-02-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-23T01:39:38.148Z
-- **Completed:** 2026-02-23T01:39:38.148Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Actionable UI diagnostics and retry guidance](./actionable-ui-diagnostics-and-20bbdb.md) | completed |
+| [Deterministic Semantic Diff Command Execution](./deterministic-semantic-diff-71e5ae.md) | completed |
+| [Diff-stage cache safety and API diagnostics](./diff-stage-cache-safety-and-api-8fd7d8.md) | completed |

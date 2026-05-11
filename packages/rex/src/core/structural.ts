@@ -1,5 +1,5 @@
 import type { PRDItem, ItemLevel } from "../schema/index.js";
-import { LEVEL_HIERARCHY, isRootLevel, getContainerLevels } from "../schema/index.js";
+import { LEVEL_HIERARCHY, isRootLevel, getContainerLevels, isWorkItem } from "../schema/index.js";
 import { walkTree, collectAllIds } from "./tree.js";
 
 export interface EpiclessFeature {
@@ -165,12 +165,16 @@ const TERMINAL_CONTAINER_STATUSES = new Set<string>(["completed", "deferred", "d
 /**
  * Find epics and features with no (non-deleted) children.
  * These indicate incomplete work — a container was created but never populated.
+ * Tasks and subtasks are skipped because they are work items that can be leaf
+ * items without requiring children.
  */
 function findEmptyContainers(items: PRDItem[]): EmptyContainerItem[] {
   const empty: EmptyContainerItem[] = [];
 
   for (const { item } of walkTree(items)) {
     if (!CONTAINER_LEVELS.has(item.level)) continue;
+    // Skip work items (tasks/subtasks) - they are allowed to be leaf items without children
+    if (isWorkItem(item.level)) continue;
     if (TERMINAL_CONTAINER_STATUSES.has(item.status)) continue;
 
     const liveChildren = (item.children ?? []).filter(

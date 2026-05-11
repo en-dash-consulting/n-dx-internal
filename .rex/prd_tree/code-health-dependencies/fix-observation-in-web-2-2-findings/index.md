@@ -13,26 +13,8 @@ parentId: "0de5be78-d295-4f71-be5d-38594a355240"
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in web-2 (2 findings)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Generic zone name "Web 2" — enrichment did not assign a meaningful name reflecting this zone's domain purpose
-- High coupling (0.75) — 3 imports target "web"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in web-2: Generic zone name "Web 2" — enrichment did not assign a meaningful name reflecti (+1 more) | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-13T21:53:18.531Z
-- **Completed:** 2026-04-13T21:53:18.531Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in web-2: Generic zone name "Web 2" — enrichment did not assign a meaningful name reflecti (+1 more)](./fix-observation-in-web-2-0fe2a0.md) | completed |

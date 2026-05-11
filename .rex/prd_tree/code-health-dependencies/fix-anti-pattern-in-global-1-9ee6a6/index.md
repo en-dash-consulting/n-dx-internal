@@ -12,25 +12,8 @@ description: "- God function: handleInit in packages/core/cli.js calls 40 unique
 recommendationMeta: "[object Object]"
 ---
 
-# Fix anti-pattern in global (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- God function: handleInit in packages/core/cli.js calls 40 unique functions — consider decomposing into smaller, focused functions
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix anti-pattern in global: God function: handleInit in packages/core/cli.js calls 40 unique functions — con | task | completed | 2026-04-17 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-17T15:22:09.583Z
-- **Completed:** 2026-04-17T15:22:09.583Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix anti-pattern in global: God function: handleInit in packages/core/cli.js calls 40 unique functions — con](./fix-anti-pattern-in-global-god-f65315.md) | completed |

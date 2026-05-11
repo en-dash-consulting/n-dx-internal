@@ -96,6 +96,9 @@ export class FolderTreeStore implements PRDStore {
       } else {
         doc.items.push(item);
       }
+      // The serializer always writes the canonical shape: a leaf subtask
+      // gaining its first child is naturally promoted from `<slug>.md` to
+      // `<slug>/index.md`, and `removeStaleEntries` cleans the old leaf.
       await this.saveDocument(doc);
     });
   }
@@ -217,6 +220,7 @@ export class FolderTreeStore implements PRDStore {
       supportsWatch: false,
     };
   }
+
 }
 
 // ---------------------------------------------------------------------------

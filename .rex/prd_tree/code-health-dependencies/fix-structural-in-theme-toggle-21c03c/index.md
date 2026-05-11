@@ -12,25 +12,8 @@ description: "- Single-file micro-zone with cohesion 0 and coupling 1 — an alg
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in theme-toggle (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Single-file micro-zone with cohesion 0 and coupling 1 — an algorithmic artifact. theme-toggle.ts should be classified within viewer-ui-hub to eliminate a spurious zone boundary with no governance value.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in theme-toggle: Single-file micro-zone with cohesion 0 and coupling 1 — an algorithmic artifact. | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T02:56:32.761Z
-- **Completed:** 2026-04-19T02:56:32.761Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in theme-toggle: Single-file micro-zone with cohesion 0 and coupling 1 — an algorithmic artifact.](./fix-structural-in-theme-toggle-319b1c.md) | completed |

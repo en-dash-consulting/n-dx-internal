@@ -9,29 +9,13 @@ completedAt: "2026-02-18T11:29:02.328Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision UI Import Graph Enhancement
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Call graph extraction and analysis | task | completed | 2026-02-11 |
-| Markdown and Text File Processing | task | completed | 2026-03-02 |
-| Pass Reset Status Indication | task | completed | 2026-02-10 |
-| Replace grid layout with interactive slideout | task | completed | 2026-03-02 |
-| Selective file filtering | task | completed | 2026-02-18 |
-| Zone Slideout Interaction Regression Fix | task | completed | 2026-03-06 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-18T11:29:02.328Z
-- **Completed:** 2026-02-18T11:29:02.328Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Call graph extraction and analysis](./call-graph-extraction-and-analysis.md) | completed |
+| [Markdown and Text File Processing](./markdown-and-text-file-processing.md) | completed |
+| [Pass Reset Status Indication](./pass-reset-status-indication.md) | completed |
+| [Replace grid layout with interactive slideout](./replace-grid-layout-with-cbb158.md) | completed |
+| [Selective file filtering](./selective-file-filtering.md) | completed |
+| [Zone Slideout Interaction Regression Fix](./zone-slideout-interaction-regression-fix.md) | completed |

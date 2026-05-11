@@ -12,25 +12,8 @@ description: "- Production entry points (assistant-assets/index.js, packages/cor
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in e2e-test-infrastructure (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Production entry points (assistant-assets/index.js, packages/core/assistant-integration.js) are grouped into the same zone as test files, suggesting community detection is coupling asset-generation scripts to the test suite via shared import paths.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in e2e-test-infrastructure: Production entry points (assistant-assets/index.js, packages/core/assistant-inte | task | completed | 2026-04-18 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-18T15:15:50.152Z
-- **Completed:** 2026-04-18T15:15:50.152Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in e2e-test-infrastructure: Production entry points (assistant-assets/index.js, packages/core/assistant-inte](./fix-structural-in-e2e-test-99760d.md) | completed |

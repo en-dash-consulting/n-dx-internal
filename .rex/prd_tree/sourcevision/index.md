@@ -8,61 +8,42 @@ completedAt: "2026-03-24T04:16:45.798Z"
 description: "Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.\n\n---\n\nBuild an evaluation harness in tests/gauntlet/ that captures sourcevision's current LLM-driven analysis output (zone enrichment, file classification) as golden fixtures and scores future runs against them. Once the harness exists, optimization PRs (Haiku swap, heuristic-first classifier, payload reduction, raised concurrency, skip-trivial-zones short-circuit, --full pass signature dedup, cached LLM replay, semantic zone-name scoring) become measured changes with eval-score deltas rather than vibes-based judgment. Motivation: sourcevision analyze burns substantial tokens and wall-clock time; multiple optimization paths exist but each carries silent quality regression risk."
 ---
 
-# SourceVision
+## Children
 
- [completed]
-
-## Summary
-
-Static analysis engine: file inventory, import graph, zone detection (Louvain community detection), React component catalog, PR markdown generation. Produces .sourcevision/CONTEXT.md and llms.txt for AI consumption.
-
----
-
-Build an evaluation harness in tests/gauntlet/ that captures sourcevision's current LLM-driven analysis output (zone enrichment, file classification) as golden fixtures and scores future runs against them. Once the harness exists, optimization PRs (Haiku swap, heuristic-first classifier, payload reduction, raised concurrency, skip-trivial-zones short-circuit, --full pass signature dedup, cached LLM replay, semantic zone-name scoring) become measured changes with eval-score deltas rather than vibes-based judgment. Motivation: sourcevision analyze burns substantial tokens and wall-clock time; multiple optimization paths exist but each carries silent quality regression risk.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Analysis Pipeline Optimization | feature | completed | 2026-02-09 |
-| Analyze pipeline improvements | feature | completed | 2026-02-24 |
-| Automatic PR Markdown Generation | feature | completed | 2026-02-25 |
-| Background Tab Resource Optimization | feature | completed | 2026-02-27 |
-| Fix 1: Go Zone Edge Resolution | feature | completed | 2026-03-26 |
-| Fix 2: Mixed-Language Support | feature | completed | 2026-03-26 |
-| Fix observation in sourcevision-2 (1 finding) | feature | completed | 2026-04-13 |
-| Fix observation in sourcevision-cli (1 finding) | feature | completed | 2026-04-13 |
-| Fix suggestion in polling (1 finding) | feature | completed | 2026-04-13 |
-| Git Credential Helper Opt-In Recovery | feature | completed | 2026-02-23 |
-| Git-Independent PR Markdown Generation | feature | completed | 2026-02-23 |
-| Go Fixture Enhancement | feature | completed | 2026-03-26 |
-| Go Import Parser | feature | completed | 2026-03-26 |
-| Import Analyzer Language Dispatch | feature | completed | 2026-03-26 |
-| Landing page for n-dx | feature | completed | 2026-02-13 |
-| Live PR Markdown in SourceVision UI | feature | completed | 2026-02-21 |
-| ndx work Model Resolution, Display, and Vendor-Change Reset | feature | completed | 2026-04-14 |
-| Phase 1: Language Registry & Inventory Foundation | feature | completed | 2026-03-26 |
-| PR Markdown Reviewer Context Enrichment | feature | completed | 2026-02-22 |
-| PR Markdown View Toggle and Copy UX | feature | completed | 2026-02-23 |
-| Recursive zone architecture | feature | completed | 2026-03-02 |
-| Resolve critical SourceVision architectural findings | feature | completed | 2026-02-11 |
-| SourceVision Findings Remediation | feature | completed | 2026-03-06 |
-| SourceVision Import Graph Visualization Enhancement | feature | completed | 2026-02-11 |
-| SourceVision PR Markdown Quality & Manual Refresh | feature | completed | 2026-02-21 |
-| SourceVision PR Markdown Artifact-Based Fallback Mode | feature | completed | 2026-02-23 |
-| SourceVision PR Markdown Refresh Degraded-Mode Hardening | feature | completed | 2026-02-22 |
-| SourceVision PR Markdown Git Preflight and Credential Diagnostics | feature | completed | 2026-02-23 |
-| SourceVision PR Markdown Tab Parity Hardening | feature | completed | 2026-02-21 |
-| SourceVision Semantic Diff Failure UX Hardening | feature | completed | 2026-02-23 |
-| SourceVision Token Efficiency and Prompt Compaction | feature | completed | 2026-04-14 |
-| SourceVision UI Import Graph Enhancement | feature | completed | 2026-02-18 |
-| Web Server Port Management | feature | completed | 2026-02-18 |
-| Web UI Memory Management and Crash Resolution | feature | completed | 2026-02-24 |
-| Zone Detection Validation for Go Projects | feature | completed | 2026-03-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** epic
-- **Started:** 2026-04-13T18:35:49.604Z
-- **Completed:** 2026-03-24T04:16:45.798Z
+| Title | Status |
+|-------|--------|
+| [Analysis Pipeline Optimization](./analysis-pipeline-optimization/index.md) | completed |
+| [Analyze pipeline improvements](./analyze-pipeline-improvements/index.md) | completed |
+| [Automatic PR Markdown Generation](./automatic-pr-markdown-generation/index.md) | completed |
+| [Background Tab Resource Optimization](./background-tab-resource-optimization/index.md) | completed |
+| [Fix 1: Go Zone Edge Resolution](./fix-1-go-zone-edge-resolution/index.md) | completed |
+| [Fix 2: Mixed-Language Support](./fix-2-mixed-language-support/index.md) | completed |
+| [Fix observation in sourcevision-2 (1 finding)](./fix-observation-in-sourcevision-3f7352/index.md) | completed |
+| [Fix observation in sourcevision-cli (1 finding)](./fix-observation-in-sourcevision-6c79b3/index.md) | completed |
+| [Fix suggestion in polling (1 finding)](./fix-suggestion-in-polling-1-finding/index.md) | completed |
+| [Git Credential Helper Opt-In Recovery](./git-credential-helper-opt-in-recovery/index.md) | completed |
+| [Git-Independent PR Markdown Generation](./git-independent-pr-markdown-generation/index.md) | completed |
+| [Go Fixture Enhancement](./go-fixture-enhancement/index.md) | completed |
+| [Go Import Parser](./go-import-parser/index.md) | completed |
+| [Import Analyzer Language Dispatch](./import-analyzer-language-dispatch/index.md) | completed |
+| [Landing page for n-dx](./landing-page-for-n-dx/index.md) | completed |
+| [Live PR Markdown in SourceVision UI](./live-pr-markdown-in-sourcevision-ui/index.md) | completed |
+| [ndx work Model Resolution, Display, and Vendor-Change Reset](./ndx-work-model-resolution-3d1dfc/index.md) | completed |
+| [Phase 1: Language Registry & Inventory Foundation](./phase-1-language-registry-956b71/index.md) | completed |
+| [PR Markdown Reviewer Context Enrichment](./pr-markdown-reviewer-context-enrichment/index.md) | completed |
+| [PR Markdown View Toggle and Copy UX](./pr-markdown-view-toggle-and-copy-ux/index.md) | completed |
+| [Recursive zone architecture](./recursive-zone-architecture/index.md) | completed |
+| [Resolve critical SourceVision architectural findings](./resolve-critical-sourcevision-ecbbbb/index.md) | completed |
+| [SourceVision Findings Remediation](./sourcevision-findings-remediation/index.md) | completed |
+| [SourceVision Import Graph Visualization Enhancement](./sourcevision-import-graph-f5284d/index.md) | completed |
+| [SourceVision PR Markdown Quality & Manual Refresh](./sourcevision-pr-markdown-1c8695/index.md) | completed |
+| [SourceVision PR Markdown Artifact-Based Fallback Mode](./sourcevision-pr-markdown-5e3862/index.md) | completed |
+| [SourceVision PR Markdown Refresh Degraded-Mode Hardening](./sourcevision-pr-markdown-ce5623/index.md) | completed |
+| [SourceVision PR Markdown Git Preflight and Credential Diagnostics](./sourcevision-pr-markdown-git-f5e0f1/index.md) | completed |
+| [SourceVision PR Markdown Tab Parity Hardening](./sourcevision-pr-markdown-tab-9d8ae9/index.md) | completed |
+| [SourceVision Semantic Diff Failure UX Hardening](./sourcevision-semantic-diff-b52062/index.md) | completed |
+| [SourceVision Token Efficiency and Prompt Compaction](./sourcevision-token-efficiency-ede8a6/index.md) | completed |
+| [SourceVision UI Import Graph Enhancement](./sourcevision-ui-import-graph-enhancement/index.md) | completed |
+| [Web Server Port Management](./web-server-port-management/index.md) | completed |
+| [Web UI Memory Management and Crash Resolution](./web-ui-memory-management-and-0344ce/index.md) | completed |
+| [Zone Detection Validation for Go Projects](./zone-detection-validation-for-fe5bf3/index.md) | completed |

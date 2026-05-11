@@ -12,25 +12,8 @@ description: "- File \"assistant-assets/index.js\" is pinned to zone \"Core\" bu
 recommendationMeta: "[object Object]"
 ---
 
-# Fix move-file in core (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- File "assistant-assets/index.js" is pinned to zone "Core" but lives in assistant-assets/ — consider moving to packages/core/ to align physical location with architectural zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix move-file in core: File "assistant-assets/index.js" is pinned to zone "Core" but lives in assistant | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T15:33:01.191Z
-- **Completed:** 2026-04-20T15:33:01.191Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix move-file in core: File "assistant-assets/index.js" is pinned to zone "Core" but lives in assistant](./fix-move-file-in-core-file-245593.md) | completed |

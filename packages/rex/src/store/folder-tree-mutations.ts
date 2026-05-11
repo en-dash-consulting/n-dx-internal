@@ -15,8 +15,6 @@ import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { PRDItem } from "../schema/index.js";
-import { titleToFilename } from "./title-to-filename.js";
-import { generateIndexMd } from "./folder-tree-index-generator.js";
 import { renderItemIndexMd, resolveSiblingSlugs } from "./folder-tree-serializer.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -49,9 +47,9 @@ export interface AncestorChain {
 /**
  * Write a single item's directory (not children) atomically.
  *
- * The item directory will contain:
- *   - `<title>.md` — markdown with full frontmatter
- *   - `index.md` — human-readable summary
+ * The item directory contains exactly one file: `index.md`. It holds the
+ * item's frontmatter and (for non-leaf items) a `## Children` table linking
+ * to children's storage paths.
  *
  * Parent indices are not updated. Use {@link updateAncestorIndices} for that.
  */
@@ -61,22 +59,12 @@ export async function writeItemDirectory(
 ): Promise<MutationResult> {
   const result: MutationResult = { filesWritten: 0, directoriesCreated: 0 };
 
-  // Ensure item directory exists
   await mkdir(itemDir, { recursive: true });
   result.directoriesCreated++;
 
-  // Write <title>.md with frontmatter and children table
   const children = item.children ?? [];
   const childSlugs = resolveSiblingSlugs(children);
-  const itemContent = renderItemIndexMd(item, children, childSlugs);
-  const itemFilename = titleToFilename(item.title);
-  const itemPath = join(itemDir, itemFilename);
-  await atomicWriteIfChanged(itemPath, itemContent);
-  result.filesWritten++;
-
-  // Write index.md (human-readable summary)
-  // Note: we pass an empty array for recentLog since mutations focus on structure, not history
-  const indexContent = generateIndexMd(item, children);
+  const indexContent = renderItemIndexMd(item, children, childSlugs);
   const indexPath = join(itemDir, "index.md");
   await atomicWriteIfChanged(indexPath, indexContent);
   result.filesWritten++;
@@ -87,7 +75,7 @@ export async function writeItemDirectory(
 /**
  * Update a parent directory's index.md to reflect current children.
  *
- * Does not modify the parent's <title>.md or recurse to descendants.
+ * Does not recurse into descendants.
  */
 export async function updateParentIndex(
   parent: PRDItem,
@@ -99,8 +87,7 @@ export async function updateParentIndex(
   const children = parent.children ?? [];
   const childSlugs = resolveSiblingSlugs(children);
 
-  // Re-render parent's index.md with updated children references
-  const indexContent = generateIndexMd(parent, children);
+  const indexContent = renderItemIndexMd(parent, children, childSlugs);
   await atomicWriteIfChanged(indexPath, indexContent);
   result.filesWritten++;
 

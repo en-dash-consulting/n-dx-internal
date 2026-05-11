@@ -418,4 +418,56 @@ describe("resolveVendorModel", () => {
       expect(resolveVendorModel("codex", config, "light")).toBe("gpt-5");
     });
   });
+
+  // Top-level llm.model precedence tests
+  describe("with top-level llm.model", () => {
+    it("uses top-level model for claude over vendor-pinned", () => {
+      const config = {
+        model: "claude-haiku-4-5",
+        claude: { model: "claude-sonnet-4-6" },
+      };
+      expect(resolveVendorModel("claude", config)).toBe("claude-haiku-4-5");
+    });
+
+    it("uses top-level model for claude when vendor-pinned is absent", () => {
+      const config = { model: "claude-opus-4-7" };
+      expect(resolveVendorModel("claude", config)).toBe("claude-opus-4-7");
+    });
+
+    it("falls back to vendor-pinned for claude when top-level is absent", () => {
+      const config = { claude: { model: "claude-opus-4-7" } };
+      expect(resolveVendorModel("claude", config)).toBe("claude-opus-4-7");
+    });
+
+    it("falls back to TIER_MODELS.standard for claude when neither is set", () => {
+      expect(resolveVendorModel("claude", {})).toBe(TIER_MODELS.claude.standard);
+    });
+
+    it("expands shorthand alias from top-level model for claude", () => {
+      const config = { model: "opus" };
+      expect(resolveVendorModel("claude", config)).toBe("claude-opus-4-7");
+    });
+
+    it("uses top-level model for codex over vendor-pinned", () => {
+      const config = {
+        model: "gpt-4o",
+        codex: { model: "gpt-5.5" },
+      };
+      expect(resolveVendorModel("codex", config)).toBe("gpt-4o");
+    });
+
+    it("uses top-level model for codex when vendor-pinned is absent", () => {
+      const config = { model: "gpt-4o" };
+      expect(resolveVendorModel("codex", config)).toBe("gpt-4o");
+    });
+
+    it("top-level model is ignored for light tier (lightModel-only path)", () => {
+      // Light tier honors only lightModel, then falls back to TIER_MODELS.light.
+      const config = {
+        model: "claude-opus-4-7",
+        claude: { model: "claude-opus-4-7" },
+      };
+      expect(resolveVendorModel("claude", config, "light")).toBe(TIER_MODELS.claude.light);
+    });
+  });
 });

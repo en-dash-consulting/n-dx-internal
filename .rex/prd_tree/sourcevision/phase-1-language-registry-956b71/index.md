@@ -10,27 +10,11 @@ acceptanceCriteria: []
 description: "Establish a language registry abstraction in SourceVision so that Go projects can be inventoried correctly alongside JS/TS. All existing JS/TS behavior is preserved as the default path; Go support is purely additive."
 ---
 
-# Phase 1: Language Registry & Inventory Foundation
+## Children
 
- [completed]
-
-## Summary
-
-Establish a language registry abstraction in SourceVision so that Go projects can be inventoried correctly alongside JS/TS. All existing JS/TS behavior is preserved as the default path; Go support is purely additive.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Add language field to .n-dx.json schema and wire config support | task | completed | 2026-03-25 |
-| Create Go fixture project and language registry test suite | task | completed | 2026-03-26 |
-| Implement language registry module in sourcevision | task | completed | 2026-03-25 |
-| Refactor inventory.ts to consume language registry | task | completed | 2026-03-25 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-03-26T04:05:46.055Z
-- **Completed:** 2026-03-26T04:05:46.055Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Add language field to .n-dx.json schema and wire config support](./add-language-field-to-n-dx-json-a070e7.md) | completed |
+| [Create Go fixture project and language registry test suite](./create-go-fixture-project-and-fa93b5.md) | completed |
+| [Implement language registry module in sourcevision](./implement-language-registry-67760e.md) | completed |
+| [Refactor inventory.ts to consume language registry](./refactor-inventory-ts-to-e27102.md) | completed |

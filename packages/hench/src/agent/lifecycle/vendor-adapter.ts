@@ -34,6 +34,7 @@ import type {
   RuntimeEvent,
   FailureCategory,
 } from "../../prd/llm-gateway.js";
+import type { PermissionMode } from "../../schema/index.js";
 
 // ── SpawnConfig ──────────────────────────────────────────────────────────
 
@@ -71,6 +72,26 @@ export interface SpawnConfig {
 
   /** Working directory for the spawned process. */
   readonly cwd: string;
+}
+
+// ── VendorSpawnOptions ───────────────────────────────────────────────────
+
+/**
+ * Per-spawn options accepted by every {@link VendorAdapter#buildSpawnConfig}.
+ *
+ * All fields are optional. Adapters must ignore options that don't apply to
+ * their vendor (e.g. Codex ignores `permissionMode`).
+ */
+export interface VendorSpawnOptions {
+  /** Model override (e.g. "claude-sonnet-4-6", "gpt-5-codex"). */
+  readonly model?: string;
+  /**
+   * Permission posture for the spawned session.
+   *
+   * Currently only honored by the Claude CLI adapter, which forwards it as
+   * `--permission-mode <value>`. Other adapters silently ignore it.
+   */
+  readonly permissionMode?: PermissionMode;
 }
 
 // ── VendorAdapter ────────────────────────────────────────────────────────
@@ -111,13 +132,16 @@ export interface VendorAdapter {
    *
    * @param envelope - Structured prompt with named sections
    * @param policy - Execution policy (sandbox, approvals, allowed tools)
-   * @param model - Optional model override (e.g. "claude-sonnet-4-20250514", "gpt-5-codex")
+   * @param opts - Per-spawn options:
+   *   - `model`: optional model override (e.g. "claude-sonnet-4-20250514", "gpt-5-codex")
+   *   - `permissionMode`: optional Claude permission posture; only the
+   *     Claude adapter honors it, other adapters ignore it.
    * @returns SpawnConfig ready for process creation
    */
   buildSpawnConfig(
     envelope: PromptEnvelope,
     policy: ExecutionPolicy,
-    model: string | undefined,
+    opts: VendorSpawnOptions,
   ): SpawnConfig;
 
   /**

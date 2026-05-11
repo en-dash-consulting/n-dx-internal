@@ -12,25 +12,8 @@ description: "- Duplicate use-polling-suspension.ts exists in both hooks/ and po
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in polling-lifecycle (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Duplicate use-polling-suspension.ts exists in both hooks/ and polling/ directories; one is likely a forwarding re-export creating an invisible seam that can drift out of sync.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in polling-lifecycle: Duplicate use-polling-suspension.ts exists in both hooks/ and polling/ directori | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T02:37:42.213Z
-- **Completed:** 2026-04-19T02:37:42.213Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in polling-lifecycle: Duplicate use-polling-suspension.ts exists in both hooks/ and polling/ directori](./fix-structural-in-polling-5e3f14.md) | completed |

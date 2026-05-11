@@ -12,25 +12,8 @@ description: "- Zone \"Web Server\" (web-server) has critical risk (score: 0.67,
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in web-server (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone "Web Server" (web-server) has critical risk (score: 0.67, cohesion: 0.33, coupling: 0.67) — requires refactoring before new feature development
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in web-server: Zone "Web Server" (web-server) has critical risk (score: 0.67, cohesion: 0.33, c | task | completed | 2026-04-16 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-16T21:08:47.234Z
-- **Completed:** 2026-04-16T21:08:47.234Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in web-server: Zone "Web Server" (web-server) has critical risk (score: 0.67, cohesion: 0.33, c](./fix-suggestion-in-web-server-0ee4d1.md) | completed |

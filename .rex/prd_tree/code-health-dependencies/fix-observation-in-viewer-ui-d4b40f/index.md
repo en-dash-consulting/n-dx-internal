@@ -12,26 +12,8 @@ description: "- High coupling (0.63) — 5 imports target \"web-viewer\"\n- Low 
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in viewer-ui-hub (2 findings)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.63) — 5 imports target "web-viewer"
-- Low cohesion (0.38) — files are loosely related, consider splitting this zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in viewer-ui-hub: High coupling (0.63) — 5 imports target "web-viewer" (+1 more) | task | completed | 2026-04-18 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-18T14:47:49.220Z
-- **Completed:** 2026-04-18T14:47:49.220Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in viewer-ui-hub: High coupling (0.63) — 5 imports target "web-viewer" (+1 more)](./fix-observation-in-viewer-ui-6291b7.md) | completed |

@@ -12,25 +12,8 @@ description: "- Zone \"hench-2\" has a numeric suffix indicating an overflow com
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in hench-2 (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone "hench-2" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in hench-2: Zone "hench-2" has a numeric suffix indicating an overflow community — pin its f | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-19T03:08:16.188Z
-- **Completed:** 2026-04-19T03:08:16.188Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in hench-2: Zone "hench-2" has a numeric suffix indicating an overflow community — pin its f](./fix-suggestion-in-hench-2-zone-0638f6.md) | completed |

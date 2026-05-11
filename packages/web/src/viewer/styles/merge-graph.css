@@ -242,12 +242,25 @@
   bottom: var(--space-3);
   left: var(--space-3);
   display: flex;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: var(--space-1-5) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   z-index: 10;
+  align-items: center;
+  max-width: calc(100% - var(--space-6));
+}
+
+.mg-legend-title {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  white-space: nowrap;
+  margin-right: var(--space-1);
 }
 
 .mg-legend-item {
@@ -256,6 +269,7 @@
   gap: var(--space-1);
   font-size: var(--font-xs);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* ── SVG node styles (applied via inline attributes but documented here) ────── */
@@ -265,7 +279,11 @@
 .mg-node { cursor: pointer; }
 
 .mg-node.selected .mg-circle,
-.mg-node.selected .mg-diamond {
+.mg-node.selected .mg-diamond,
+.mg-node.selected .mg-square,
+.mg-node.selected .mg-trapezoid,
+.mg-node.selected .mg-triangle,
+.mg-node.selected .mg-shape {
   filter: drop-shadow(0 0 4px currentColor);
 }
 

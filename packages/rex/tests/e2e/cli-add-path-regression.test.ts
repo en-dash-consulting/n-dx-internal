@@ -72,15 +72,15 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(output);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist on disk
+    // A leaf epic (no children) is a bare `<slug>.md` file at the root.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
   });
 
   it("prints workspace-relative path for feature creation under epic", async () => {
@@ -96,17 +96,15 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(featureOutput);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // A leaf feature is a bare `<slug>.md` inside the epic's folder.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
-
-    // Path should indicate nesting under epic
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
     expect(addedToPath).toContain("platform");
     expect(addedToPath).toContain("authentication");
   });
@@ -132,17 +130,16 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
 
     const addedToPath = parseAddedToPath(taskOutput);
 
-    // Path must be workspace-relative
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // A leaf task is `<slug>.md` inside the feature folder; full ancestor
+    // chain (platform/authentication/<task>.md) is preserved on disk.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
-
-    // Path should indicate full nesting
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
     expect(addedToPath).toContain("platform");
     expect(addedToPath).toContain("authentication");
     expect(addedToPath).toContain("login");
@@ -182,12 +179,16 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
     expect(addedToPath).not.toMatch(/^\//);
     expect(addedToPath).not.toMatch(/^\.\//);
 
-    // Path must exist and be a directory
+    // Leaf subtasks (Rule 1b) are written as bare `<slug>.md` files inside
+    // their parent task folder, so the printed path should resolve to a
+    // file, not a directory.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
 
-    // Path should indicate full nesting
+    // Every PRD item gets its own folder under the new schema, so the path
+    // walks all four ancestors (platform → authentication → login → oauth).
     expect(addedToPath).toContain("platform");
     expect(addedToPath).toContain("authentication");
     expect(addedToPath).toContain("login");
@@ -222,10 +223,11 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
     expect(addedToPath).toMatch(PRD_TREE_PATH_PREFIX);
     expect(addedToPath).toContain("docker");
 
-    // Path must exist
+    // The leaf task is a bare `<slug>.md` file.
     const fullPath = join(tmpDir, addedToPath);
     const stats = await stat(fullPath);
-    expect(stats.isDirectory()).toBe(true);
+    expect(stats.isFile()).toBe(true);
+    expect(addedToPath.endsWith(".md")).toBe(true);
   });
 
   it("keeps consistent path format across all item levels", async () => {
@@ -263,12 +265,13 @@ describe("ndx add 'Added to:' path regression tests", { timeout: 30000 }, () => 
       await stat(fullPath); // Will throw if path doesn't exist
     }
 
-    // Verify path hierarchy: each level should nest under the previous
-    for (let i = 1; i < paths.length; i++) {
-      const parent = paths[i - 1];
-      const child = paths[i];
-      // Child path should start with parent path + slash
-      expect(child).toMatch(new RegExp(`^${parent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+    // Each child path must still descend from the tree root and contain the
+    // child's own slug. Strict prefix nesting (child startsWith parent)
+    // does NOT hold under single-child compaction: when parent gets a sole
+    // child, the parent's directory is collapsed and the child path no
+    // longer references it.
+    for (const p of paths) {
+      expect(p.startsWith(`.rex/${"prd_tree"}/`)).toBe(true);
     }
   });
 

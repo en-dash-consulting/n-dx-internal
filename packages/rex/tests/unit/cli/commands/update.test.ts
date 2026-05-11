@@ -415,43 +415,41 @@ describe("cmdUpdate", () => {
   // --- Folder tree persistence ---
 
   describe("folder tree persistence", () => {
-    it("writes folder tree after a status update", async () => {
+    it("writes leaf `<slug>.md` after a status update", async () => {
       await cmdUpdate(tmp, itemId, { status: "in_progress" });
 
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       expect(existsSync(treeRoot)).toBe(true);
-      const epicDir = join(treeRoot, slugify("Test item", itemId));
-      expect(existsSync(epicDir)).toBe(true);
-      const mdFile = readdirSync(epicDir).find((f) => f.endsWith(".md"))!;
-      const content = readFileSync(join(epicDir, mdFile), "utf-8");
+      // Leaf epic — bare `<slug>.md` at the tree root.
+      const leafFile = join(treeRoot, `${slugify("Test item", itemId)}.md`);
+      expect(existsSync(leafFile)).toBe(true);
+      const content = readFileSync(leafFile, "utf-8");
       expect(content).toContain("in_progress");
     });
 
-    it("writes folder tree after a title update", async () => {
+    it("writes leaf `<slug>.md` after a title update", async () => {
       await cmdUpdate(tmp, itemId, { title: "New title" });
 
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       expect(existsSync(treeRoot)).toBe(true);
-      const entries = readdirSync(treeRoot).filter((e) =>
-        statSync(join(treeRoot, e)).isDirectory(),
+      const mdFiles = readdirSync(treeRoot).filter(
+        (e) => e.endsWith(".md") && e !== "index.md",
       );
-      expect(entries.length).toBe(1);
-      const epicDir = join(treeRoot, entries[0]);
-      const mdFile = readdirSync(epicDir).find((f) => f.endsWith(".md"))!;
-      const content = readFileSync(join(epicDir, mdFile), "utf-8");
+      expect(mdFiles.length).toBe(1);
+      const content = readFileSync(join(treeRoot, mdFiles[0]), "utf-8");
       expect(content).toContain("New title");
     });
 
-    it("writes folder tree after deletion (removes epic folder)", async () => {
-      // First, write the tree by updating status
+    it("removes the leaf entry after deletion", async () => {
       await cmdUpdate(tmp, itemId, { status: "in_progress" });
       const treeRoot = join(tmp, ".rex", PRD_TREE_DIRNAME);
       expect(existsSync(treeRoot)).toBe(true);
 
-      // Deleting removes the item; the folder tree should have no subdirectories
       await cmdUpdate(tmp, itemId, { status: "deleted", force: "true" });
-      const entries = readdirSync(treeRoot).filter(e => statSync(join(treeRoot, e)).isDirectory());
-      expect(entries.length).toBe(0);
+      const remaining = readdirSync(treeRoot).filter(
+        (e) => e.endsWith(".md") && e !== "index.md",
+      );
+      expect(remaining.length).toBe(0);
     });
   });
 });

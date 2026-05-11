@@ -12,25 +12,8 @@ description: "- High coupling (0.6) — 1 imports target \"rex\""
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in rex-fix (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- High coupling (0.6) — 1 imports target "rex"
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in rex-fix: High coupling (0.6) — 1 imports target "rex" | task | completed | 2026-04-18 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-18T14:38:18.439Z
-- **Completed:** 2026-04-18T14:38:18.439Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in rex-fix: High coupling (0.6) — 1 imports target "rex"](./fix-observation-in-rex-fix-high-8bc532.md) | completed |

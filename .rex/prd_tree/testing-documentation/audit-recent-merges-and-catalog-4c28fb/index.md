@@ -10,24 +10,8 @@ acceptanceCriteria: []
 description: "Review merges from the past week to identify all user-facing behavior changes, then map each change to the documentation files that need updating. Produces a working list that drives the rest of the documentation work."
 ---
 
-# Audit Recent Merges and Catalog Documentation Gaps
+## Children
 
- [completed]
-
-## Summary
-
-Review merges from the past week to identify all user-facing behavior changes, then map each change to the documentation files that need updating. Produces a working list that drives the rest of the documentation work.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Audit past-week merges and produce a documentation delta report | task | completed | 2026-04-23 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-23T02:50:03.489Z
-- **Completed:** 2026-04-23T02:50:03.489Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Audit past-week merges and produce a documentation delta report](./audit-past-week-merges-and-292dff.md) | completed |

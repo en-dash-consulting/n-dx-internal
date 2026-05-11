@@ -12,25 +12,8 @@ description: "- File \"packages/web/src/server/routes-rex/analysis.ts\" is pinne
 recommendationMeta: "[object Object]"
 ---
 
-# Fix move-file in web-server (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Server Composition Root" but lives in packages/web/src/server/routes-rex/ — consider moving to packages/web/src/server/ to align physical location with architectural zone
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix move-file in web-server: File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Ser | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T02:07:29.050Z
-- **Completed:** 2026-04-14T02:07:29.050Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix move-file in web-server: File "packages/web/src/server/routes-rex/analysis.ts" is pinned to zone "Web Ser](./fix-move-file-in-web-server-645e4a.md) | completed |

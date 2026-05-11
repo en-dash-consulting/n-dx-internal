@@ -50,7 +50,7 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
     const envelope = createFullEnvelope();
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
-    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     // On non-Windows, system prompt is in --system-prompt arg
     if (process.platform !== "win32") {
@@ -67,7 +67,7 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
     if (process.platform === "win32") return;
 
     const envelope = createFullEnvelope();
-    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const sysIdx = config.args.indexOf("--system-prompt");
     const systemArg = config.args[sysIdx + 1] as string;
@@ -93,7 +93,7 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
     if (process.platform === "win32") return;
 
     const envelope = createMinimalEnvelope();
-    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const sysIdx = config.args.indexOf("--system-prompt");
     const systemArg = config.args[sysIdx + 1] as string;
@@ -104,7 +104,7 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
 
   it("model override is passed through correctly", () => {
     const envelope = createMinimalEnvelope();
-    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, "claude-opus-4");
+    const config = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, { model: "claude-opus-4" });
 
     expect(config.args).toContain("--model");
     expect(config.args).toContain("claude-opus-4");
@@ -116,7 +116,7 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
 describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
   it("buildSpawnConfig produces SYSTEM/TASK formatted prompt as last arg", () => {
     const envelope = createFullEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const lastArg = config.args[config.args.length - 1] as string;
     expect(lastArg).toContain("SYSTEM:");
@@ -125,7 +125,7 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
 
   it("SYSTEM section contains system + workflow content", () => {
     const envelope = createFullEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const lastArg = config.args[config.args.length - 1] as string;
 
@@ -140,7 +140,7 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
 
   it("TASK section contains brief, files, validation, completion content", () => {
     const envelope = createFullEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const lastArg = config.args[config.args.length - 1] as string;
 
@@ -158,7 +158,7 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
     const envelope = createFullEnvelope();
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
     const lastArg = config.args[config.args.length - 1] as string;
 
     const expected = `SYSTEM:\n${systemPrompt}\n\nTASK:\n${taskPrompt}`;
@@ -167,7 +167,7 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
 
   it("minimal envelope produces correct SYSTEM/TASK format", () => {
     const envelope = createMinimalEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const lastArg = config.args[config.args.length - 1] as string;
     expect(lastArg).toBe("SYSTEM:\nYou are Hench.\n\nTASK:\nFix the bug.");
@@ -175,14 +175,14 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
 
   it("stdinContent is null (Codex uses args, not stdin)", () => {
     const envelope = createMinimalEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     expect(config.stdinContent).toBeNull();
   });
 
   it("model override is passed through correctly", () => {
     const envelope = createMinimalEnvelope();
-    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, "gpt-5-codex");
+    const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, { model: "gpt-5-codex" });
 
     expect(config.args).toContain("-m");
     expect(config.args).toContain("gpt-5-codex");
@@ -371,10 +371,10 @@ describe("Cross-vendor parity: prompt delivery", () => {
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
     // Claude: system in args, task in stdin
-    const claudeConfig = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const claudeConfig = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     // Codex: both in args as SYSTEM:/TASK:
-    const codexConfig = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    const codexConfig = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     if (process.platform !== "win32") {
       const sysIdx = claudeConfig.args.indexOf("--system-prompt");
@@ -391,8 +391,8 @@ describe("Cross-vendor parity: prompt delivery", () => {
     const envelope = createFullEnvelope();
 
     // buildSpawnConfig doesn't affect the envelope — diagnostics should be the same
-    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
-    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, undefined);
+    claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
+    codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     const diags = extractPromptSectionDiagnostics(envelope);
 

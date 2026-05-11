@@ -9,25 +9,9 @@ completedAt: "2026-02-11T04:08:43.389Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision Import Graph Visualization Enhancement
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Graph Organization and Layout | task | completed | 2026-02-11 |
-| Interactive Graph Controls | task | completed | 2026-02-11 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-11T04:08:43.389Z
-- **Completed:** 2026-02-11T04:08:43.389Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Graph Organization and Layout](./graph-organization-and-layout.md) | completed |
+| [Interactive Graph Controls](./interactive-graph-controls.md) | completed |

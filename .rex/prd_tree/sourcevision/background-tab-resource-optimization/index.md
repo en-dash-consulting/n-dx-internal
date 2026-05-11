@@ -9,27 +9,11 @@ completedAt: "2026-02-27T03:28:22.003Z"
 acceptanceCriteria: []
 ---
 
-# Background Tab Resource Optimization
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Memory and DOM Optimization for Inactive Tabs | task | completed | 2026-02-27 |
-| Polling Suspension for Background Tabs | task | completed | 2026-02-26 |
-| Tab Activation Recovery and Synchronization | task | completed | 2026-02-26 |
-| Tab Visibility Detection and Control | task | completed | 2026-02-26 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-27T03:28:22.003Z
-- **Completed:** 2026-02-27T03:28:22.003Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Memory and DOM Optimization for Inactive Tabs](./memory-and-dom-optimization-for-b7889f.md) | completed |
+| [Polling Suspension for Background Tabs](./polling-suspension-for-background-tabs.md) | completed |
+| [Tab Activation Recovery and Synchronization](./tab-activation-recovery-and-0b6a0e.md) | completed |
+| [Tab Visibility Detection and Control](./tab-visibility-detection-and-control.md) | completed |

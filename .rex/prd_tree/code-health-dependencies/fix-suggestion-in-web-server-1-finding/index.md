@@ -12,25 +12,8 @@ description: "- Zone \"Web Server Composition Root\" (web-server) has catastroph
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in web-server (1 finding)
+## Children
 
-🔴 [completed]
-
-## Summary
-
-- Zone "Web Server Composition Root" (web-server) has catastrophic risk (score: 0.80, cohesion: 0.20, coupling: 0.80) — requires immediate architectural intervention
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in web-server: Zone "Web Server Composition Root" (web-server) has catastrophic risk (score: 0. | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** critical
-- **Level:** feature
-- **Started:** 2026-04-14T00:46:26.707Z
-- **Completed:** 2026-04-14T00:46:26.707Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in web-server: Zone "Web Server Composition Root" (web-server) has catastrophic risk (score: 0.](./fix-suggestion-in-web-server-bca365.md) | completed |

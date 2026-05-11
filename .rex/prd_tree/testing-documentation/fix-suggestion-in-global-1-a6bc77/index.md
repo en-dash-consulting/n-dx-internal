@@ -12,25 +12,8 @@ description: "- 4 zones exceed architectural risk thresholds (cohesion < 0.4, co
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in global (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- 4 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): rex, polling, web-unit, token — mandatory refactoring recommended before further development
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in global: 4 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): r | task | completed | 2026-04-13 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-13T21:59:29.365Z
-- **Completed:** 2026-04-13T21:59:29.365Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in global: 4 zones exceed architectural risk thresholds (cohesion < 0.4, coupling > 0.6): r](./fix-suggestion-in-global-4-88ecc1.md) | completed |

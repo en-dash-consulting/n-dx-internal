@@ -12,25 +12,8 @@ description: "- Zone \"rex-2\" has a numeric suffix indicating an overflow commu
 recommendationMeta: "[object Object]"
 ---
 
-# Fix suggestion in rex-2 (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Zone "rex-2" has a numeric suffix indicating an overflow community — pin its files to a named zone or merge with the base zone to eliminate the ambiguous ID
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix suggestion in rex-2: Zone "rex-2" has a numeric suffix indicating an overflow community — pin its fil | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T02:18:42.281Z
-- **Completed:** 2026-04-14T02:18:42.281Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix suggestion in rex-2: Zone "rex-2" has a numeric suffix indicating an overflow community — pin its fil](./fix-suggestion-in-rex-2-zone-cf1fe8.md) | completed |

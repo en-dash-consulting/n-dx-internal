@@ -12,25 +12,8 @@ description: "- Cohesion (0.4) and coupling (0.6) are both at warning thresholds
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in viewer-polling-engine (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Cohesion (0.4) and coupling (0.6) are both at warning thresholds; the three-file split across state, restart, and suspension suggests the zone may be at a natural boundary — add a barrel index.ts to make the public API explicit before adding more files.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in viewer-polling-engine: Cohesion (0.4) and coupling (0.6) are both at warning thresholds; the three-file | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T16:31:17.838Z
-- **Completed:** 2026-04-20T16:31:17.838Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in viewer-polling-engine: Cohesion (0.4) and coupling (0.6) are both at warning thresholds; the three-file](./fix-structural-in-viewer-94bc74.md) | completed |

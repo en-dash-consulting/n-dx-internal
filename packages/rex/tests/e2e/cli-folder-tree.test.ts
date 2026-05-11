@@ -68,11 +68,18 @@ async function listSubdirs(dir: string): Promise<string[]> {
 }
 
 /**
- * Find the markdown file that holds an item's content inside `dir` using the
- * same rule the production parser uses: prefer a single non-`index.md` markdown
- * file, otherwise fall back to `index.md`.
+ * Find the markdown file that holds an item folder's content inside `dir`.
+ * Mirrors the production parser: `index.md` is canonical for branch items;
+ * a legacy `<title>.md` is the fallback when `index.md` is absent.
  */
 async function discoverItemFile(dir: string): Promise<string | undefined> {
+  const indexPath = join(dir, "index.md");
+  try {
+    await stat(indexPath);
+    return indexPath;
+  } catch {
+    /* fall through to legacy fallback */
+  }
   let entries: string[];
   try {
     entries = await readdir(dir);
@@ -81,32 +88,58 @@ async function discoverItemFile(dir: string): Promise<string | undefined> {
   }
   const titleNamed = entries.filter((f) => f.endsWith(".md") && f !== "index.md");
   if (titleNamed.length === 1) return join(dir, titleNamed[0]);
-  const indexPath = join(dir, "index.md");
-  try {
-    await stat(indexPath);
-    return indexPath;
-  } catch {
-    return undefined;
-  }
-}
-
-/** Read the item markdown for the given directory. */
-async function readItemMd(dir: string): Promise<string> {
-  const path = await discoverItemFile(dir);
-  if (!path) throw new Error(`No item markdown file found in ${dir}`);
-  return readFile(path, "utf-8");
+  return undefined;
 }
 
 /**
- * Find the immediate subdirectory of `parent` whose item has the given id,
- * by reading the YAML frontmatter `id:` field.
+ * Read the item markdown for the given path. The path may be either a folder
+ * (branch item — read its `index.md`) or a bare `<slug>.md` file (leaf item).
+ */
+async function readItemMd(path: string): Promise<string> {
+  let isFile = false;
+  try {
+    isFile = (await stat(path)).isFile();
+  } catch {
+    /* fall through */
+  }
+  if (isFile) return readFile(path, "utf-8");
+  const itemPath = await discoverItemFile(path);
+  if (!itemPath) throw new Error(`No item markdown file found in ${path}`);
+  return readFile(itemPath, "utf-8");
+}
+
+/**
+ * Find the immediate child entry of `parent` whose item has the given id,
+ * by reading the YAML frontmatter `id:` field. Returns the folder name for
+ * branch items or the `<slug>.md` filename for leaf items, whichever shape
+ * the entry uses on disk.
  */
 async function findItemDir(parent: string, id: string): Promise<string | undefined> {
+  // Branch items: nested folder containing the item file.
   for (const sub of await listSubdirs(parent)) {
     const itemPath = await discoverItemFile(join(parent, sub));
     if (!itemPath) continue;
     const content = await readFile(itemPath, "utf-8");
     if (new RegExp(`^id:\\s*"?${id}"?\\s*$`, "m").test(content)) return sub;
+  }
+  // Leaf items: bare `<slug>.md` at this level.
+  let entries: string[];
+  try {
+    entries = await readdir(parent);
+  } catch {
+    return undefined;
+  }
+  for (const entry of entries) {
+    if (!entry.endsWith(".md") || entry === "index.md") continue;
+    const path = join(parent, entry);
+    try {
+      const s = await stat(path);
+      if (!s.isFile()) continue;
+    } catch {
+      continue;
+    }
+    const content = await readFile(path, "utf-8");
+    if (new RegExp(`^id:\\s*"?${id}"?\\s*$`, "m").test(content)) return entry;
   }
   return undefined;
 }
@@ -139,16 +172,16 @@ describe("rex CLI — folder-tree state after write commands", { timeout: 60_000
     await rm(tmpDir, { recursive: true, force: true });
   });
 
-  it("add epic creates an epic directory in .rex/prd_tree/", async () => {
+  it("add epic creates an epic entry in .rex/prd_tree/", async () => {
     const out = run(["add", "epic", tmpDir, "--title=Auth System", "--priority=high"]);
     const id = extractId(out);
 
-    const epicDirs = await listSubdirs(treeRoot);
-    expect(epicDirs.length).toBe(1);
-    const epicDir = await findItemDir(treeRoot, id);
-    expect(epicDir).toBeDefined();
+    // A leaf epic is a bare `<slug>.md` file at the tree root; a branch
+    // epic would be a folder. `findItemDir` returns either shape.
+    const epicEntry = await findItemDir(treeRoot, id);
+    expect(epicEntry).toBeDefined();
 
-    const indexMd = await readItemMd(join(treeRoot, epicDir!));
+    const indexMd = await readItemMd(join(treeRoot, epicEntry!));
     expect(indexMd).toContain(`"Auth System"`);
     expect(indexMd).toContain(`"epic"`);
     expect(indexMd).toContain(`"high"`);
@@ -181,6 +214,9 @@ describe("rex CLI — folder-tree state after write commands", { timeout: 60_000
     const featId = extractId(featOut);
     const taskOut = run(["add", "task", tmpDir, "--title=Task Alpha", `--parent=${featId}`, "--priority=high"]);
     const taskId = extractId(taskOut);
+    // Add a sibling task so the feature has 2 children and isn't collapsed by
+    // single-child compaction.
+    run(["add", "task", tmpDir, "--title=Task Beta", `--parent=${featId}`]);
 
     const epicDir = (await findItemDir(treeRoot, epicId))!;
     const featDir = (await findItemDir(join(treeRoot, epicDir), featId))!;
@@ -236,6 +272,10 @@ describe("rex CLI — folder-tree state after write commands", { timeout: 60_000
     const featId = extractId(featOut);
     const taskOut = run(["add", "task", tmpDir, "--title=Task", `--parent=${featId}`]);
     const taskId = extractId(taskOut);
+    // Add a sibling task so the feature is not single-child-compacted; the
+    // feature directory must exist for this test to verify subdirectory
+    // removal.
+    run(["add", "task", tmpDir, "--title=Sibling Task", `--parent=${featId}`]);
 
     const epicDir = (await findItemDir(treeRoot, epicId))!;
     const featDir = (await findItemDir(join(treeRoot, epicDir), featId))!;
@@ -272,15 +312,17 @@ describe("rex CLI — folder-tree state after write commands", { timeout: 60_000
     expect(await findItemDir(join(treeRoot, epic2Dir), featId)).toBeDefined();
   });
 
-  it("adding multiple epics creates one directory per epic", async () => {
+  it("adding multiple epics creates one entry per epic", async () => {
     const ids: string[] = [];
     for (const title of ["Alpha", "Beta", "Gamma"]) {
       const out = run(["add", "epic", tmpDir, `--title=${title}`]);
       ids.push(extractId(out));
     }
 
-    const epicDirs = await listSubdirs(treeRoot);
-    expect(epicDirs.length).toBe(3);
+    // Leaf epics are bare `<slug>.md` files at the tree root.
+    const entries = await readdir(treeRoot);
+    const leafFiles = entries.filter((e) => e.endsWith(".md") && e !== "index.md");
+    expect(leafFiles).toHaveLength(3);
     for (const id of ids) {
       expect(await findItemDir(treeRoot, id)).toBeDefined();
     }

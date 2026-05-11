@@ -12,25 +12,8 @@ description: "- 9 entry points — wide API surface, consider consolidating expo
 recommendationMeta: "[object Object]"
 ---
 
-# Fix observation in hench (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- 9 entry points — wide API surface, consider consolidating exports
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix observation in hench: 9 entry points — wide API surface, consider consolidating exports | task | completed | 2026-04-20 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-20T15:58:34.277Z
-- **Completed:** 2026-04-20T15:58:34.277Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix observation in hench: 9 entry points — wide API surface, consider consolidating exports](./fix-observation-in-hench-9-c44226.md) | completed |

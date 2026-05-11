@@ -9,25 +9,9 @@ completedAt: "2026-02-22T23:34:13.201Z"
 acceptanceCriteria: []
 ---
 
-# SourceVision PR Markdown Refresh Degraded-Mode Hardening
+## Children
 
- [completed]
-
-## Summary
-
-No summary provided.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| PR Markdown UI messaging and regression coverage | task | completed | 2026-02-22 |
-| Refresh endpoint degraded response parity | task | completed | 2026-02-22 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-02-22T23:34:13.201Z
-- **Completed:** 2026-02-22T23:34:13.201Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [PR Markdown UI messaging and regression coverage](./pr-markdown-ui-messaging-and-39cfec.md) | completed |
+| [Refresh endpoint degraded response parity](./refresh-endpoint-degraded-e228c8.md) | completed |

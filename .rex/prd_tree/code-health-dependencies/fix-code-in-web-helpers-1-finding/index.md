@@ -12,25 +12,8 @@ description: "- getLevelEmoji is imported as a runtime function from web-viewer'
 recommendationMeta: "[object Object]"
 ---
 
-# Fix code in web-helpers (1 finding)
+## Children
 
-🔴 [completed]
-
-## Summary
-
-- getLevelEmoji is imported as a runtime function from web-viewer's prd-tree/levels.ts — this cross-zone dependency cannot be eliminated by type-only import refactoring; the call site must be refactored (inject as prop or move getLevelEmoji to a shared location accessible without importing from web-viewer) before the zone-level cycle is broken.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix code in web-helpers: getLevelEmoji is imported as a runtime function from web-viewer's prd-tree/level | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** critical
-- **Level:** feature
-- **Started:** 2026-04-14T00:31:35.774Z
-- **Completed:** 2026-04-14T00:31:35.774Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix code in web-helpers: getLevelEmoji is imported as a runtime function from web-viewer's prd-tree/level](./fix-code-in-web-helpers-d51939.md) | completed |

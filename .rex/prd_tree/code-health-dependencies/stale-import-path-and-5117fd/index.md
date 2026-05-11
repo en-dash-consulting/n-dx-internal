@@ -10,24 +10,8 @@ acceptanceCriteria: []
 description: "Scan the codebase for imports referencing moved or renamed internal modules, deprecated Node.js built-in APIs, and outdated TypeScript path patterns, then apply all targeted fixes across all packages."
 ---
 
-# Stale Import Path and Deprecated Node.js API Cleanup
+## Children
 
- [completed]
-
-## Summary
-
-Scan the codebase for imports referencing moved or renamed internal modules, deprecated Node.js built-in APIs, and outdated TypeScript path patterns, then apply all targeted fixes across all packages.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Scan and fix stale import paths, deprecated Node.js APIs, and outdated module references across packages | task | completed | 2026-04-08 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-08T23:50:07.209Z
-- **Completed:** 2026-04-08T23:50:07.209Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Scan and fix stale import paths, deprecated Node.js APIs, and outdated module references across packages](./scan-and-fix-stale-import-paths-967804.md) | completed |

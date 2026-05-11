@@ -72,6 +72,7 @@ export const HenchConfigSchema = z.object({
   claudePath: z.string().optional(),
   rollbackOnFailure: z.boolean().optional(),
   autoCommit: z.boolean().optional(),
+  permissionMode: z.enum(["default", "acceptEdits", "bypassPermissions", "plan"]).optional(),
 });
 
 const RunStatusSchema = z.enum([

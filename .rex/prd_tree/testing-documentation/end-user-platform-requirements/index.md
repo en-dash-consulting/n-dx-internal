@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Surface clear, accurate OS and runtime version requirements so users know before installing whether their environment is supported."
 ---
 
-# End-User Platform Requirements
+## Children
 
- [completed]
-
-## Summary
-
-Surface clear, accurate OS and runtime version requirements so users know before installing whether their environment is supported.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Define and document supported OS matrix in README and docs | task | completed | 2026-04-19 |
-| Document Node.js and pnpm version prerequisites for end users | task | completed | 2026-04-19 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-19T04:42:32.885Z
-- **Completed:** 2026-04-19T04:42:32.885Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Define and document supported OS matrix in README and docs](./define-and-document-supported-b5b467.md) | completed |
+| [Document Node.js and pnpm version prerequisites for end users](./document-node-js-and-pnpm-ca9e53.md) | completed |

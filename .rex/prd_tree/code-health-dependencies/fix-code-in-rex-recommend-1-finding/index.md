@@ -12,25 +12,8 @@ description: "- Add unit tests for recommend/similarity.ts (140 lines, zero test
 recommendationMeta: "[object Object]"
 ---
 
-# Fix code in rex-recommend (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- Add unit tests for recommend/similarity.ts (140 lines, zero tests). At minimum, test the core similarity scoring function with known inputs and expected outputs, edge cases (empty inputs, exact duplicates, zero-similarity pairs). similarity.ts is the only substantial untested implementation file in the recommend zone and is on the critical path for recommendation quality — a logic error here produces incorrect recommendations with no test catching it.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix code in rex-recommend: Add unit tests for recommend/similarity.ts (140 lines, zero tests). At minimum,  | task | completed | 2026-04-14 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-14T01:14:13.523Z
-- **Completed:** 2026-04-14T01:14:13.523Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix code in rex-recommend: Add unit tests for recommend/similarity.ts (140 lines, zero tests). At minimum, ](./fix-code-in-rex-recommend-add-8d046a.md) | completed |

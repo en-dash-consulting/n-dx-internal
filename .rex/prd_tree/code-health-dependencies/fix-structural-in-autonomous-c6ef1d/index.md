@@ -12,25 +12,8 @@ description: "- No automated intra-zone boundary assertions exist yet; at 208 fi
 recommendationMeta: "[object Object]"
 ---
 
-# Fix structural in autonomous-agent-engine (1 finding)
+## Children
 
-🟠 [completed]
-
-## Summary
-
-- No automated intra-zone boundary assertions exist yet; at 208 files the zone is approaching the scale where sub-zone drift becomes difficult to detect without test-enforced checks.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Fix structural in autonomous-agent-engine: No automated intra-zone boundary assertions exist yet; at 208 files the zone is  | task | completed | 2026-04-18 |
-
-## Info
-
-- **Status:** completed
-- **Priority:** high
-- **Level:** feature
-- **Started:** 2026-04-18T15:04:20.413Z
-- **Completed:** 2026-04-18T15:04:20.413Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Fix structural in autonomous-agent-engine: No automated intra-zone boundary assertions exist yet; at 208 files the zone is ](./fix-structural-in-autonomous-593877.md) | completed |

@@ -10,25 +10,9 @@ acceptanceCriteria: []
 description: "Refocus smoke parity validation on standardized error semantics so failures remain easy to compare, diagnose, and fix regardless of operating system."
 ---
 
-# Cross-Platform Failure Diagnostics
+## Children
 
- [completed]
-
-## Summary
-
-Refocus smoke parity validation on standardized error semantics so failures remain easy to compare, diagnose, and fix regardless of operating system.
-
-## Progress
-
-| Child | Level | Status | Last Updated |
-|-------|-------|--------|--------------|
-| Document error code meanings and remediation expectations | task | completed | 2026-04-07 |
-| Refactor smoke parity checks to compare normalized error codes | task | completed | 2026-04-07 |
-
-## Info
-
-- **Status:** completed
-- **Level:** feature
-- **Started:** 2026-04-07T22:58:12.823Z
-- **Completed:** 2026-04-07T22:58:12.823Z
-- **Duration:** < 1m
+| Title | Status |
+|-------|--------|
+| [Document error code meanings and remediation expectations](./document-error-code-meanings-47b55b.md) | completed |
+| [Refactor smoke parity checks to compare normalized error codes](./refactor-smoke-parity-checks-to-0886fe.md) | completed |
