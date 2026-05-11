@@ -41,6 +41,13 @@ import { dirname, isAbsolute, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { runConfig, loadProjectConfig, repairProjectConfig } from "./config.js";
+import {
+  parseRecommendationsJson,
+  formatQueuedTaskSummary,
+  readSelfHealAutoConfirm,
+  resolveAutoConfirm,
+  runConfirmationPrompt,
+} from "./self-heal-confirm.js";
 import { resolveCommandTimeout, withCommandTimeout } from "./cli-timeout.js";
 import { runCI } from "./ci.js";
 import {
@@ -1735,6 +1742,11 @@ async function handleSelfHeal(rest) {
   // (or --claude-model/--codex-model) actually changes which model the agent uses.
   const modelFlags = extractModelFlags(rest);
 
+  // Pre-execution gate: --auto, --yes, or selfHeal.autoConfirm in .n-dx.json
+  // all bypass the interactive prompt. CLI flag wins over config.
+  const configAutoConfirm = readSelfHealAutoConfirm(dir);
+  const autoConfirmResolution = resolveAutoConfirm({ argv: rest, configAutoConfirm });
+
   const shTag = cyan("[self-heal]");
   console.log(`${shTag} starting ${bold(String(iterCount))} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : dim(" (excluding structural findings)")}`);
 
@@ -1790,6 +1802,44 @@ async function handleSelfHeal(rest) {
 
     console.log(`\n${shTag} step 2/5: rex recommend --actionable-only`);
     await runOrDie(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, dir]);
+
+    // Pre-execution approval gate (iteration 1 only): print the queued task
+    // list and require user confirmation before any PRD write or hench run.
+    // Declining exits non-zero before step 3 (`recommend --accept`) so the
+    // PRD remains unmodified.
+    if (i === 1) {
+      const { code: jsonCode, stdout: jsonOut } = await runCapture(
+        tools.rex,
+        ["recommend", "--actionable-only", ...structuralFlag, "--format=json", dir],
+      );
+      const summary = jsonCode === 0
+        ? parseRecommendationsJson(jsonOut)
+        : { tasks: [], totalFindings: 0 };
+      const summaryText = formatQueuedTaskSummary({
+        summary,
+        currentIteration: 1,
+        totalIterations: iterCount,
+      });
+
+      console.log(`\n${shTag} ${bold("pre-execution confirmation")}`);
+      const decision = await runConfirmationPrompt({
+        summaryText,
+        autoConfirm: autoConfirmResolution.autoConfirm,
+        isTTY: Boolean(process.stdin && process.stdin.isTTY),
+      });
+
+      if (decision.decision === "no-tty") {
+        // runConfirmationPrompt already wrote the explanatory message to stderr.
+        exitWithCleanup(1);
+      }
+      if (decision.decision === "decline") {
+        console.log(`\n${shTag} ${yellow("cancelled by user — no PRD writes or hench runs performed.")}`);
+        exitWithCleanup(1);
+      }
+      if (decision.decision === "auto" && autoConfirmResolution.source === "config") {
+        console.log(`${shTag} ${dim("(bypassed prompt via selfHeal.autoConfirm config)")}`);
+      }
+    }
 
     console.log(`\n${shTag} step 3/5: rex recommend --actionable-only --accept`);
     await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, dir]);
