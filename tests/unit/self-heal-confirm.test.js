@@ -306,3 +306,126 @@ describe("runConfirmationPrompt", () => {
     expect(result.decision).toBe("decline");
   });
 });
+
+// ── Prompt-gate matrix ────────────────────────────────────────────────────────
+//
+// Verify how `resolveAutoConfirm` + `runConfirmationPrompt` interact for the
+// four canonical bypass-source combinations: flag-only, config-only, both,
+// and neither. These regressions guard the precedence contract documented
+// in `ndx self-heal --help` (CLI flag wins; flag absence does not cancel
+// config=true; neither falls through to the prompt).
+
+function runGate({ argv, configAutoConfirm, isTTY, answer }) {
+  const resolution = resolveAutoConfirm({ argv, configAutoConfirm });
+  const stdout = captureStream();
+  const stderr = captureStream();
+  return runConfirmationPrompt({
+    summaryText: "QUEUED",
+    autoConfirm: resolution.autoConfirm,
+    isTTY,
+    streams: { stdout, stderr },
+    readlineFactory: answer === undefined
+      ? () => {
+          throw new Error("readline must not be created when bypassed");
+        }
+      : stubReadline(answer),
+  }).then((result) => ({ resolution, result, stdout, stderr }));
+}
+
+describe("prompt-gate combinations (flag × config)", () => {
+  it("flag-only: --auto with config=false bypasses prompt (source=flag)", async () => {
+    const { resolution, result } = await runGate({
+      argv: ["--auto"],
+      configAutoConfirm: false,
+      isTTY: true,
+    });
+    expect(resolution).toEqual({ autoConfirm: true, source: "flag" });
+    expect(result.decision).toBe("auto");
+  });
+
+  it("flag-only: --yes with config=false bypasses prompt (source=flag)", async () => {
+    const { resolution, result } = await runGate({
+      argv: ["--yes"],
+      configAutoConfirm: false,
+      isTTY: true,
+    });
+    expect(resolution).toEqual({ autoConfirm: true, source: "flag" });
+    expect(result.decision).toBe("auto");
+  });
+
+  it("config-only: no flag with config=true bypasses prompt (source=config)", async () => {
+    const { resolution, result } = await runGate({
+      argv: [],
+      configAutoConfirm: true,
+      isTTY: true,
+    });
+    expect(resolution).toEqual({ autoConfirm: true, source: "config" });
+    expect(result.decision).toBe("auto");
+  });
+
+  it("both-set: --auto with config=true bypasses prompt — flag wins for attribution", async () => {
+    const { resolution, result } = await runGate({
+      argv: ["--auto"],
+      configAutoConfirm: true,
+      isTTY: true,
+    });
+    // Flag takes precedence so the source is reported as "flag", letting the
+    // caller log/audit which signal triggered the bypass.
+    expect(resolution).toEqual({ autoConfirm: true, source: "flag" });
+    expect(result.decision).toBe("auto");
+  });
+
+  it("neither-set: TTY prompts and accepts on 'y'", async () => {
+    const { resolution, result } = await runGate({
+      argv: [],
+      configAutoConfirm: false,
+      isTTY: true,
+      answer: "y",
+    });
+    expect(resolution).toEqual({ autoConfirm: false, source: "none" });
+    expect(result.decision).toBe("accept");
+  });
+
+  it("neither-set: TTY prompts and declines on empty input", async () => {
+    const { resolution, result } = await runGate({
+      argv: [],
+      configAutoConfirm: false,
+      isTTY: true,
+      answer: "",
+    });
+    expect(resolution).toEqual({ autoConfirm: false, source: "none" });
+    expect(result.decision).toBe("decline");
+  });
+
+  it("neither-set: non-TTY fails fast with no stdin read", async () => {
+    const { resolution, result, stderr } = await runGate({
+      argv: [],
+      configAutoConfirm: false,
+      isTTY: false,
+    });
+    expect(resolution).toEqual({ autoConfirm: false, source: "none" });
+    expect(result.decision).toBe("no-tty");
+    expect(stderr.output()).toContain("--auto");
+    expect(stderr.output()).toContain("selfHeal.autoConfirm");
+  });
+
+  it("flag-only on non-TTY still bypasses (scheduled / CI invocation)", async () => {
+    const { resolution, result } = await runGate({
+      argv: ["--auto"],
+      configAutoConfirm: false,
+      isTTY: false,
+    });
+    expect(resolution).toEqual({ autoConfirm: true, source: "flag" });
+    expect(result.decision).toBe("auto");
+  });
+
+  it("config-only on non-TTY still bypasses (scheduled / CI invocation)", async () => {
+    const { resolution, result } = await runGate({
+      argv: [],
+      configAutoConfirm: true,
+      isTTY: false,
+    });
+    expect(resolution).toEqual({ autoConfirm: true, source: "config" });
+    expect(result.decision).toBe("auto");
+  });
+});

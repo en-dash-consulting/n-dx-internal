@@ -1113,6 +1113,57 @@ describe("n-dx config", () => {
     });
   });
 
+  // ── selfHeal.autoConfirm config ────────────────────────────────────────────
+
+  describe("selfHeal.autoConfirm config", () => {
+    it("sets selfHeal.autoConfirm to true in .n-dx.json", async () => {
+      const out = run(["selfHeal.autoConfirm", "true", tmpDir]);
+      expect(out).toContain("selfHeal.autoConfirm = true");
+
+      const config = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+      expect(config.selfHeal.autoConfirm).toBe(true);
+    });
+
+    it("sets selfHeal.autoConfirm to false in .n-dx.json", async () => {
+      run(["selfHeal.autoConfirm", "true", tmpDir]); // First set to true
+      const out = run(["selfHeal.autoConfirm", "false", tmpDir]);
+      expect(out).toContain("selfHeal.autoConfirm = false");
+
+      const config = JSON.parse(await readFile(join(tmpDir, ".n-dx.json"), "utf-8"));
+      expect(config.selfHeal.autoConfirm).toBe(false);
+    });
+
+    it("gets selfHeal.autoConfirm value", async () => {
+      run(["selfHeal.autoConfirm", "true", tmpDir]);
+      const out = run(["selfHeal.autoConfirm", tmpDir]);
+      expect(out.trim()).toBe("true");
+    });
+
+    it("rejects invalid boolean values", () => {
+      const stderr = runFail(["selfHeal.autoConfirm", "yes", tmpDir]);
+      expect(stderr).toContain("Expected \"true\" or \"false\"");
+    });
+
+    it("returns autoConfirm in JSON mode", async () => {
+      run(["selfHeal.autoConfirm", "true", tmpDir]);
+      const out = run(["selfHeal.autoConfirm", "--json", tmpDir]);
+      expect(JSON.parse(out)).toBe(true);
+    });
+
+    it("shows selfHeal.autoConfirm in --help text", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("selfHeal.autoConfirm");
+      expect(output).toContain("pre-execution");
+      expect(output).toContain("--auto");
+    });
+
+    it("includes examples for selfHeal.autoConfirm", () => {
+      const output = run(["--help"]);
+      expect(output).toContain("n-dx config selfHeal.autoConfirm true");
+      expect(output).toContain("n-dx config selfHeal.autoConfirm false");
+    });
+  });
+
   // ── Language config ────────────────────────────────────────────────────────
 
   describe("language config", () => {

@@ -1237,12 +1237,18 @@ const ORCHESTRATOR_HELP_DEFS = {
       "before iteration 1 and waits for y/N confirmation. Declining exits\n" +
       "non-zero before any PRD writes occur. Pass --auto / --yes, or set\n" +
       "`selfHeal.autoConfirm` to true in .n-dx.json, to bypass the prompt\n" +
-      "(required for non-TTY / CI invocations).",
+      "(required for non-TTY / CI invocations).\n\n" +
+      "Precedence: --auto / --yes on the command line always wins over the\n" +
+      "`selfHeal.autoConfirm` config value. A flag of true bypasses the\n" +
+      "prompt even when config is false, and config=true bypasses the\n" +
+      "prompt when no flag is passed. The two never conflict — both routes\n" +
+      "lead to the same auto-confirm behavior; the flag is just the\n" +
+      "per-invocation override.",
     usage: "ndx self-heal [N] [options] [dir]",
     options: [
       { flag: "--include-structural", description: "Include structural findings (excluded by default)" },
-      { flag: "--auto", description: "Skip the pre-execution confirmation prompt (unattended runs)" },
-      { flag: "--yes", description: "Skip the pre-execution prompt AND auto-confirm commits inside the hench loop" },
+      { flag: "--auto", description: "Skip the pre-execution confirmation prompt (overrides selfHeal.autoConfirm)" },
+      { flag: "--yes", description: "Skip the pre-execution prompt AND auto-confirm commits inside the hench loop (overrides selfHeal.autoConfirm)" },
     ],
     examples: [
       { command: "ndx self-heal 3 .", description: "Run 3 improvement iterations (prompts for confirmation)" },
@@ -1250,6 +1256,7 @@ const ORCHESTRATOR_HELP_DEFS = {
       { command: "ndx self-heal 5", description: "Run 5 iterations in current directory" },
       { command: "ndx self-heal 3 --yes .", description: "Unattended: skip prompt and auto-commit each task" },
       { command: "ndx self-heal --auto .", description: "Skip prompt; let inner hench loop ask its own questions" },
+      { command: "ndx config selfHeal.autoConfirm true", description: "Persistently bypass the prompt for every self-heal run" },
     ],
     related: ["plan", "work", "refresh"],
   },
