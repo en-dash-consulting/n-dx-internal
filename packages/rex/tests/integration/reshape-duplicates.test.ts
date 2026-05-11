@@ -3,10 +3,12 @@ import { join } from "node:path";
 import { mkdir, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { exec as foundationExec } from "@n-dx/llm-client";
 import { cmdReshape } from "../../src/cli/commands/reshape.js";
 import { resolveStore } from "../../src/store/index.js";
 import { toCanonicalJSON } from "../../src/core/canonical.js";
 import { parseFolderTree } from "../../src/store/folder-tree-parser.js";
+import { loadArchive } from "../../src/core/archive.js";
 import { SCHEMA_VERSION } from "../../src/schema/index.js";
 import type { PRDDocument, PRDItem } from "../../src/schema/index.js";
 
@@ -200,5 +202,99 @@ describe("reshape with cross-PRD duplicate detection", () => {
     // Legacy prd.json items should be in the map
     expect(fileOwnership.get("task1")).toBe("prd.json");
     expect(fileOwnership.get("task2")).toBe("prd_main_2024-01-01.json");
+  });
+
+  it("records merge audit trail with pre-reshape commit hash", async () => {
+    // Test the core reshape functionality with merge audit trail tracking
+    const { applyReshape } = await import("../../src/core/reshape.js");
+
+    // Create simple items to merge
+    const items: PRDItem[] = [
+      {
+        id: "epic-1",
+        title: "Authentication",
+        level: "epic",
+        status: "pending",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+        children: [
+          {
+            id: "task-old",
+            title: "Implement Auth",
+            level: "task",
+            status: "pending",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          },
+          {
+            id: "task-new",
+            title: "Implement User Auth",
+            level: "task",
+            status: "pending",
+            createdAt: "2024-01-05T00:00:00Z",
+            updatedAt: "2024-01-05T00:00:00Z",
+          },
+        ],
+      },
+    ];
+
+    // Create a merge proposal
+    const proposals = [
+      {
+        id: "merge-1",
+        action: {
+          action: "merge" as const,
+          survivorId: "task-new",
+          mergedIds: ["task-old"],
+          reason: "duplicate",
+          mergeReasoning: "task-old merged into task-new due to similarity",
+        },
+      },
+    ];
+
+    // Apply reshape and verify merge audit trail
+    const result = applyReshape(items, proposals);
+
+    // Verify merge audit trail was recorded
+    expect(result.mergeAuditTrail).toHaveLength(1);
+    const auditEntry = result.mergeAuditTrail[0];
+    expect(auditEntry.survivorId).toBe("task-new");
+    expect(auditEntry.mergedFromIds).toEqual(["task-old"]);
+    expect(auditEntry.reasoning).toBe("task-old merged into task-new due to similarity");
+  });
+
+  it("records 'no-git' when captureGitCommitHash fails", async () => {
+    const { captureGitCommitHash } = await import("../../src/core/git-utils.js");
+
+    // Call captureGitCommitHash in a directory that's not a git repo
+    const commit = await captureGitCommitHash(testDir);
+
+    // Should return 'no-git' since testDir is not a git repo
+    expect(commit).toBe("no-git");
+  });
+
+  it("captures valid git commit hash in a git repository", async () => {
+    const { captureGitCommitHash } = await import("../../src/core/git-utils.js");
+
+    // Initialize git repo
+    await foundationExec("git", ["init"], { cwd: testDir, timeout: 5000 });
+    await foundationExec("git", ["config", "user.email", "test@example.com"], { cwd: testDir, timeout: 5000 });
+    await foundationExec("git", ["config", "user.name", "Test User"], { cwd: testDir, timeout: 5000 });
+
+    // Create a file and commit it
+    await writeFile(join(testDir, "test.txt"), "test content");
+    await foundationExec("git", ["add", "test.txt"], { cwd: testDir, timeout: 5000 });
+    await foundationExec("git", ["commit", "-m", "test commit"], { cwd: testDir, timeout: 5000 });
+
+    // Get the expected commit hash
+    const expectedCommit = (await foundationExec("git", ["rev-parse", "HEAD"], { cwd: testDir, timeout: 5000 })).stdout?.trim();
+
+    // Call captureGitCommitHash
+    const commit = await captureGitCommitHash(testDir);
+
+    // Should return the actual commit hash
+    expect(commit).toBe(expectedCommit);
+    expect(commit).not.toBe("no-git");
+    expect(commit?.length).toBe(40); // SHA-1 hash length
   });
 });

@@ -30,6 +30,23 @@ export interface Archive {
   batches: ArchiveBatch[];
 }
 
+/**
+ * Entry for a single merge operation recorded in the archive.
+ * Captures the merge decision, participant IDs, and merge reasoning.
+ */
+export interface MergeAuditEntry {
+  /** ID of the item that survived the merge. */
+  survivorId: string;
+  /** IDs of items that were merged into the survivor (now archived). */
+  mergedFromIds: string[];
+  /** Reasoning for the merge: which fields were taken from which items. */
+  reasoning: string;
+  /** Pre-reshape git commit hash for rollback support. */
+  preReshapeCommit: string;
+  /** Timestamp of when the merge was archived. */
+  timestamp: string;
+}
+
 export interface ArchiveBatch {
   timestamp: string;
   source: "prune" | "reshape" | "reorganize";
@@ -38,6 +55,8 @@ export interface ArchiveBatch {
   reason?: string;
   /** Reshape/reorganize proposals that triggered this archival. */
   actions?: unknown[];
+  /** Merge audit trail for reshape operations (if source === 'reshape'). */
+  mergeAuditTrail?: MergeAuditEntry[];
 }
 
 // ── I/O ──────────────────────────────────────────────────────────────

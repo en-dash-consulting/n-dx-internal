@@ -164,6 +164,7 @@ export function detectCrossPRDDuplicates(
         survivorId: survivor.id,
         mergedIds: [loser.id],
         reason: "cross-prd-duplicate-sibling-merge",
+        mergeReasoning: `Detected cross-PRD duplicate: merged ${loser.id} into ${survivor.id} (same parent, high similarity)`,
       };
 
       const proposal: ReshapeProposal = {

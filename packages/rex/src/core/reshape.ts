@@ -26,6 +26,8 @@ export interface MergeAction {
   /** Optional updated description for the survivor. */
   description?: string;
   reason: string;
+  /** Detailed merge reasoning for audit trail: which fields taken from where. */
+  mergeReasoning?: string;
 }
 
 export interface UpdateAction {
@@ -84,12 +86,23 @@ export interface ReshapeProposal {
 
 // ── Apply result ──
 
+/**
+ * Single merge audit entry recorded during a reshape operation.
+ */
+export interface MergeAuditRecord {
+  survivorId: string;
+  mergedFromIds: string[];
+  reasoning: string;
+}
+
 export interface ReshapeResult {
   applied: ReshapeProposal[];
   /** IDs of items that were removed (for sync deletion tracking). */
   deletedIds: string[];
   /** Items that were archived (for archive persistence). */
   archivedItems: PRDItem[];
+  /** Audit trail of merges performed (for archive recording). */
+  mergeAuditTrail: MergeAuditRecord[];
   errors: Array<{ proposal: ReshapeProposal; error: string }>;
 }
 
@@ -139,6 +152,13 @@ function applyMerge(
       result.deletedIds.push(mergedId);
     }
   }
+
+  // Record merge in audit trail
+  result.mergeAuditTrail.push({
+    survivorId: action.survivorId,
+    mergedFromIds: action.mergedIds,
+    reasoning: action.mergeReasoning || action.reason || "merge",
+  });
 
   result.applied.push(proposal);
 }
@@ -263,6 +283,7 @@ export function applyReshape(
     applied: [],
     deletedIds: [],
     archivedItems: [],
+    mergeAuditTrail: [],
     errors: [],
   };
 
