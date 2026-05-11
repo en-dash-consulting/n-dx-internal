@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { writeFile } from "node:fs/promises";
-import { resolveStore } from "../../store/index.js";
+import { resolveStore, FileStore } from "../../store/index.js";
 import { applyReshape } from "../../core/reshape.js";
 import type { ReshapeProposal } from "../../core/reshape.js";
 import { toCanonicalJSON } from "../../core/canonical.js";
@@ -18,6 +18,7 @@ import { formatTokenUsage } from "./analyze.js";
 import { preflightBudgetCheck, formatBudgetWarnings } from "./token-format.js";
 import { classifyLLMError } from "../llm-error-classifier.js";
 import { getLLMVendor } from "../../analyze/reason.js";
+import { detectCrossPRDDuplicates } from "./reshape-detect-duplicates.js";
 import type { PRDItem } from "../../schema/index.js";
 
 export async function cmdReshape(
@@ -90,6 +91,11 @@ export async function cmdReshape(
 
   const docAfterCompaction = canonicalDoc;
 
+  // Load file ownership map for cross-file duplicate detection (FileStore feature)
+  const fileOwnership = store instanceof FileStore
+    ? await store.loadFileOwnership()
+    : new Map();
+
   // Load LLM config
   const llmConfig = await loadLLMConfig(rexDir);
   setLLMConfig(llmConfig);
@@ -130,6 +136,9 @@ export async function cmdReshape(
     }
   }
 
+  // Run cross-PRD duplicate detection pass
+  const duplicateProposals = detectCrossPRDDuplicates(docAfterCompaction.items, fileOwnership);
+
   // Get reshape proposals from LLM
   info("Analyzing PRD structure...");
   let proposals: ReshapeProposal[];
@@ -143,28 +152,31 @@ export async function cmdReshape(
     throw new CLIError(classified.message, classified.suggestion);
   }
 
+  // Combine duplicate proposals (first, highest confidence) with LLM proposals
+  const allProposals = [...duplicateProposals, ...proposals];
+
   // Show token usage
   const usageLine = formatTokenUsage(tokenUsage);
   if (usageLine) {
     info(`Token usage: ${usageLine}`);
   }
 
-  if (proposals.length === 0) {
+  if (allProposals.length === 0) {
     result("No reshape proposals — PRD structure looks good.");
     return;
   }
 
   // Display proposals
-  info(`\nFound ${proposals.length} reshape proposal${proposals.length === 1 ? "" : "s"}:\n`);
-  for (let i = 0; i < proposals.length; i++) {
-    info(`${i + 1}. ${formatReshapeProposal(proposals[i], docAfterCompaction.items)}`);
+  info(`\nFound ${allProposals.length} reshape proposal${allProposals.length === 1 ? "" : "s"}:\n`);
+  for (let i = 0; i < allProposals.length; i++) {
+    info(`${i + 1}. ${formatReshapeProposal(allProposals[i], docAfterCompaction.items)}`);
     info("");
   }
 
   if (flags.format === "json") {
     result(JSON.stringify({
       dryRun,
-      proposals: proposals.map((p) => ({
+      proposals: allProposals.map((p) => ({
         id: p.id,
         ...p.action,
       })),
@@ -174,16 +186,16 @@ export async function cmdReshape(
   }
 
   if (dryRun) {
-    result(`\n${proposals.length} proposal${proposals.length === 1 ? "" : "s"} (dry run — no changes made).`);
+    result(`\n${allProposals.length} proposal${allProposals.length === 1 ? "" : "s"} (dry run — no changes made).`);
     return;
   }
 
   // Determine which proposals to apply
   let accepted: ReshapeProposal[];
   if (accept) {
-    accepted = proposals;
+    accepted = allProposals;
   } else if (process.stdin.isTTY) {
-    accepted = await interactiveReview(proposals, docAfterCompaction.items);
+    accepted = await interactiveReview(allProposals, docAfterCompaction.items);
   } else {
     info("Proposals shown above. Run with --accept to apply, or use interactively in a TTY.");
     return;
