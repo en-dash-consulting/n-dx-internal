@@ -195,6 +195,8 @@ Follow `.rex/workflow.md` for task execution discipline. Key steps:
 
 The following skills are installed in `.agents/skills/`. Each skill directory contains a `SKILL.md` with detailed instructions.
 
+- **no-plan-mode** — Prevent plan-mode stalls in autonomous hench agent runs
+- **hench-run-loop-invariants** — Preserve Hench run-loop task repetition, completion, and advancement invariants
 - **ndx-plan** — Analyze the codebase and propose PRD updates
 - **ndx-status** — Show comprehensive project status combining PRD progress and codebase health
 - **ndx-capture** `[description]` — Capture a requirement, feature idea, or task from conversation context
