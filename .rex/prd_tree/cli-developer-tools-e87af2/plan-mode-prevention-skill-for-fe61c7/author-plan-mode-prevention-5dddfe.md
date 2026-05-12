@@ -2,13 +2,14 @@
 id: "5dddfe54-9bb7-4d15-bc22-f3d2ac2de893"
 level: "task"
 title: "Author plan-mode prevention skill definition with explicit no-plan-mode invariant"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "agent"
   - "skills"
   - "hench"
 source: "smart-add"
+startedAt: "2026-05-12T14:48:39.408Z"
 acceptanceCriteria:
   - "Skill file exists in the canonical skills location with a clear name, description, and trigger metadata"
   - "Skill body explicitly forbids entering plan mode, calling ExitPlanMode as a stall, or producing plan-only responses for execution tasks"

@@ -13,6 +13,6 @@ description: "Hench currently re-selects and re-works tasks that should already 
 | Title | Status |
 |-------|--------|
 | [Add Claude Code skill enforcing task-repetition and completion-advancement invariants](./add-claude-code-skill-enforcing-0b75c9.md) | pending |
-| [Exclude completed tasks from hench task selection across all selection paths](./exclude-completed-tasks-from-f2b6fb.md) | in_progress |
-| [Mark task completed and advance immediately on successful run completion](./mark-task-completed-and-advance-24913e.md) | pending |
-| [Track per-task attempt counts in hench run loop and force advancement after three repeats](./track-per-task-attempt-counts-af8e53.md) | pending |
+| [Exclude completed tasks from hench task selection across all selection paths](./exclude-completed-tasks-from-f2b6fb.md) | completed |
+| [Mark task completed and advance immediately on successful run completion](./mark-task-completed-and-advance-24913e.md) | completed |
+| [Track per-task attempt counts in hench run loop and force advancement after three repeats](./track-per-task-attempt-counts-af8e53.md) | completed |
