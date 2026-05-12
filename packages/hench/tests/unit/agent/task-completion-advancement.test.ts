@@ -168,10 +168,16 @@ describe("updateCompletedTaskStatus", () => {
 
     await updateCompletedTaskStatus(store, "task-1", run);
 
-    expect(appendLogSpy).toHaveBeenCalledOnce();
-    const call = appendLogSpy.mock.calls[0][0];
-    expect(call.event).toBe("task_completed");
-    expect(call.detail).toContain("Task completed successfully");
+    // appendLog is called twice: once for status_updated by toolRexUpdateStatus,
+    // once for task_completed by toolRexAppendLog in updateCompletedTaskStatus
+    expect(appendLogSpy).toHaveBeenCalledTimes(2);
+
+    // Verify the "task_completed" event is in one of the calls
+    const completionCall = appendLogSpy.mock.calls.find(
+      (call) => call[0].event === "task_completed"
+    );
+    expect(completionCall).toBeDefined();
+    expect(completionCall![0].detail).toContain("Task completed successfully");
   });
 
   it("catches errors and returns false without crashing", async () => {
