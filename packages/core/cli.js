@@ -393,6 +393,23 @@ async function flushAndExit(code = 0) {
 
 function run(script, args) {
   const scriptPath = isAbsolute(script) ? script : resolve(MONOREPO_ROOT, script);
+
+  // Build-artifact guard: when the resolved script is a packages/*/dist/* path
+  // (monorepo dev mode) and the file is missing, dist was wiped or never built.
+  // Surface an actionable error instead of letting Node throw MODULE_NOT_FOUND.
+  if (
+    scriptPath.startsWith(MONOREPO_ROOT) &&
+    /[/\\]packages[/\\][^/\\]+[/\\]dist[/\\]/.test(scriptPath) &&
+    !existsSync(scriptPath)
+  ) {
+    const rel = scriptPath.slice(MONOREPO_ROOT.length + 1);
+    console.error(`${red("Error:")} Build artifact missing: ${rel}`);
+    console.error(
+      "Hint: Run 'pnpm install' (or 'pnpm build') from the repo root to rebuild package dist directories.",
+    );
+    return Promise.resolve(1);
+  }
+
   return new Promise((res) => {
     const child = spawnTracked(process.execPath, [scriptPath, ...args], {
       stdio: "inherit",

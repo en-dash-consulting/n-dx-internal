@@ -11,6 +11,7 @@ import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../ana
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
+import { captureGitCommitHash } from "../../core/git-utils.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
@@ -91,6 +92,11 @@ export async function cmdReshape(
   }
 
   const docAfterCompaction = canonicalDoc;
+
+  // Load file ownership map for cross-file duplicate detection (FileStore feature)
+  const fileOwnership = store instanceof FileStore
+    ? await store.loadFileOwnership()
+    : new Map();
 
   // Load LLM config
   const llmConfig = await loadLLMConfig(rexDir);

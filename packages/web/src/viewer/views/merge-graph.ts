@@ -28,7 +28,6 @@ import { h, Fragment } from "preact";
 import { useState, useEffect, useMemo, useCallback, useRef } from "preact/hooks";
 import { usePanZoom } from "../hooks/index.js";
 import type { NavigateTo } from "../types.js";
-import { TaskDetail } from "../components/prd-tree/task-detail.js";
 import type { PRDItemData } from "../components/prd-tree/types.js";
 import { findItemById } from "../components/prd-tree/tree-utils.js";
 
@@ -67,6 +66,15 @@ interface PrdNode {
   parentId?: string;
   priority?: string;
   shape?: string;
+  /**
+   * Folder-tree slug chain for this item (`<epic>/<feature>/<task>`).
+   *
+   * Mirrors the on-disk path under `.rex/prd_tree/`. The graph hierarchy and
+   * sibling order are driven by this path, so the context graph echoes the
+   * dashboard's folder-tree view by construction. Click-through still uses
+   * `id` — `treePath` is purely a positional/identity hint.
+   */
+  treePath?: string;
 }
 
 interface MergeNode {
@@ -570,17 +578,168 @@ type SelectedNode =
   | { kind: "prd"; node: PrdNode; linkedMergeIds: string[] }
   | { kind: "merge"; node: MergeNode };
 
+const EMPTY_FIELD = "—"; // em dash
+
+/**
+ * Concise PRD front-matter summary card.
+ *
+ * Surfaces only the front-matter fields already present on a PRD item
+ * (title, status, priority, tags, level, branch). Missing/empty fields
+ * render as an em dash instead of being silently omitted, so users can
+ * tell "no value" apart from "field unsupported". Keeps to existing
+ * dashboard styling — no new schema is introduced.
+ *
+ * The origin section beneath the front-matter dl reports the introducing
+ * git commit for the PRD item — surfaces the SHA (with copy affordance),
+ * timestamp, author, and any `Co-Authored-By:` trailers. Loaded lazily by
+ * the parent view on click; this component renders the loading / ready /
+ * error / "no commit history" states uniformly.
+ */
+function PrdFrontMatterSummary({ item, fallback, level, origin, onClose }: {
+  item: PRDItemData | null;
+  fallback: { title: string; status: string; priority?: string };
+  level: string;
+  origin: OriginEntry | undefined;
+  onClose: () => void;
+}) {
+  const title = (item?.title ?? fallback.title).trim() || EMPTY_FIELD;
+  const status = item?.status ?? fallback.status;
+  const priority = item?.priority ?? fallback.priority;
+  const tags = item?.tags ?? [];
+
+  return h("div", { class: "mg-detail mg-detail-prd" },
+    h("div", { class: "mg-detail-header" },
+      h("span", { class: "mg-detail-title" }, level.toUpperCase()),
+      h("button", {
+        class: "mg-detail-close",
+        onClick: onClose,
+        "aria-label": "Close",
+      }, "×"),
+    ),
+    h("p", { class: "mg-detail-subject" }, title),
+    h("dl", { class: "mg-frontmatter" },
+      h("dt", null, "Status"),
+      h("dd", null,
+        h("span", {
+          class: "mg-frontmatter-status",
+          style: { color: STATUS_COLOR[status] ?? "inherit" },
+        }, status ? status.replace(/_/g, " ") : EMPTY_FIELD),
+      ),
+      h("dt", null, "Priority"),
+      h("dd", null, priority ? priority : EMPTY_FIELD),
+      h("dt", null, "Tags"),
+      h("dd", null,
+        tags.length === 0
+          ? h("span", { class: "mg-frontmatter-empty" }, EMPTY_FIELD)
+          : h("span", { class: "mg-frontmatter-tags" },
+              tags.map((t) =>
+                h("span", { key: t, class: "mg-frontmatter-tag" }, t),
+              ),
+            ),
+      ),
+    ),
+    h(PrdOriginSection, { origin }),
+  );
+}
+
+/**
+ * Origin (introducing-commit) section of the PRD detail panel.
+ *
+ * Renders four exclusive states keyed off the lazy lookup result:
+ *   - undefined / loading : single "Loading…" line
+ *   - ready, origin null  : "No commit history" (item not yet tracked in git)
+ *   - ready, origin set   : SHA (with copy button), timestamp, author + co-authors, subject
+ *   - error               : inline error message; never blocks the rest of the card
+ */
+function PrdOriginSection({ origin }: { origin: OriginEntry | undefined }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
+
+  if (!origin || origin.kind === "loading") {
+    return h("div", { class: "mg-origin mg-origin-loading" },
+      h("span", { class: "mg-origin-label" }, "Origin"),
+      h("span", { class: "mg-origin-status" }, "Loading…"),
+    );
+  }
+  if (origin.kind === "error") {
+    return h("div", { class: "mg-origin mg-origin-error" },
+      h("span", { class: "mg-origin-label" }, "Origin"),
+      h("span", { class: "mg-origin-status" }, "Lookup failed"),
+      h("span", { class: "mg-origin-error-detail", title: origin.message }, origin.message),
+    );
+  }
+  if (origin.origin === null) {
+    return h("div", { class: "mg-origin mg-origin-none" },
+      h("span", { class: "mg-origin-label" }, "Origin"),
+      h("span", { class: "mg-origin-status" }, "No commit history"),
+    );
+  }
+
+  const o = origin.origin;
+  const handleCopy = async () => {
+    const clip = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
+    if (!clip || typeof clip.writeText !== "function") {
+      console.warn("Clipboard API unavailable; cannot copy commit hash.");
+      return;
+    }
+    try {
+      await clip.writeText(o.sha);
+      setCopied(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.warn("Failed to copy commit hash:", err);
+    }
+  };
+
+  const coNames = o.coAuthors.map((c) => c.name).filter(Boolean).join(", ");
+  return h("div", { class: "mg-origin" },
+    h("span", { class: "mg-origin-label" }, "Origin"),
+    h("div", { class: "mg-origin-row" },
+      h("code", {
+        class: "mg-origin-sha",
+        title: o.sha,
+      }, o.shortSha),
+      h("button", {
+        type: "button",
+        class: `mg-origin-copy${copied ? " copied" : ""}`,
+        title: copied ? "Copied!" : "Copy full commit hash",
+        "aria-label": "Copy full commit hash",
+        "data-full-sha": o.sha,
+        onClick: handleCopy,
+      }, copied ? "✓" : "⧉"),
+      h("time", {
+        class: "mg-origin-time",
+        dateTime: o.createdAt,
+        title: o.createdAt,
+      }, formatMergeTimestamp(o.createdAt)),
+    ),
+    h("div", { class: "mg-origin-authors" },
+      h("span", { class: "mg-origin-author", title: o.authorEmail || EMPTY_FIELD },
+        o.author || EMPTY_FIELD),
+      coNames
+        ? h("span", { class: "mg-origin-coauthors", title: "Co-authors" },
+            ` · co-authored: ${coNames}`)
+        : null,
+    ),
+    o.subject
+      ? h("p", { class: "mg-origin-subject" }, o.subject)
+      : null,
+  );
+}
+
 /**
  * Custom detail panel for merge graph.
- * For PRD nodes, renders the full TaskDetail component (from tasks view).
- * For merge nodes, renders a custom summary.
- *
- * TaskDetail callbacks are stubbed to prevent errors when users interact,
- * but the merge-graph view doesn't support editing features.
+ * For PRD nodes, renders a concise front-matter summary card.
+ * For merge nodes, renders a custom file-change summary.
  */
-function DetailPanelContent({ selection, prdData, onClose }: {
+function DetailPanelContent({ selection, prdData, origin, onClose }: {
   selection: SelectedNode;
   prdData?: PRDItemData[] | null;
+  origin: OriginEntry | undefined;
   onClose: () => void;
 }) {
   if (selection.kind === "merge") {
@@ -624,33 +783,95 @@ function DetailPanelContent({ selection, prdData, onClose }: {
     );
   }
 
-  // For PRD nodes, render the full TaskDetail component
+  // PRD node: concise front-matter summary, sourced from PRD item when available.
   const pn = selection.node;
-  if (prdData) {
-    const item = findItemById(prdData, pn.id);
-    if (item) {
-      // Stub callbacks for TaskDetail (read-only mode in merge-graph context)
-      return h(TaskDetail, {
-        item,
-        allItems: prdData,
-        showTokenBudget: false,
-        // Stub callbacks to allow rendering without errors
-        // (editing is not supported in the merge-graph context)
-        onUpdate: undefined,
-        onNavigateToItem: undefined,
-        onExecuteTask: undefined,
-        onPrdChanged: undefined,
-        onAddChild: undefined,
-        onRemove: undefined,
-        navigateTo: undefined,
-      });
-    }
-  }
+  const item = prdData ? findItemById(prdData, pn.id) : null;
+  return h(PrdFrontMatterSummary, {
+    item,
+    fallback: { title: pn.title, status: pn.status, priority: pn.priority },
+    level: pn.level,
+    origin,
+    onClose,
+  });
+}
 
-  // Fallback: minimal PRD detail
-  return h("div", { class: "mg-detail" },
-    h("div", { class: "mg-detail-header" },
-      h("span", { class: "mg-detail-title" }, pn.level.toUpperCase()),
+// ── Merge metadata panel ──────────────────────────────────────────────────────
+
+/**
+ * Format an ISO timestamp for display in the metadata panel.
+ *
+ * Falls back to the raw string if the date is unparseable so the panel still
+ * surfaces something useful for diagnostics rather than rendering "Invalid Date".
+ */
+function formatMergeTimestamp(iso: string): string {
+  if (!iso) return EMPTY_FIELD;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString();
+}
+
+/**
+ * Resolve the merge nodes whose metadata should appear in the metadata panel
+ * for the current selection. PRD selections fan out to every linked merge
+ * (most-recent-first); merge selections show a single row.
+ *
+ * Pulls exclusively from `graph.nodes` — the same merge-history pipeline that
+ * powers the graph itself. No additional fetches are introduced.
+ */
+export function resolveMergeMetaForSelection(
+  graph: MergeGraph | null,
+  selection: SelectedNode | null,
+): MergeNode[] {
+  if (!graph || !selection) return [];
+  if (selection.kind === "merge") return [selection.node];
+  if (selection.linkedMergeIds.length === 0) return [];
+  const wanted = new Set(selection.linkedMergeIds);
+  return graph.nodes
+    .filter((n): n is MergeNode => n.kind === "merge" && wanted.has(n.id))
+    .sort((a, b) => b.mergedAt.localeCompare(a.mergedAt));
+}
+
+/**
+ * One row of merge metadata: timestamp, short SHA with copy affordance, author.
+ *
+ * The copy button writes the *full* SHA to the clipboard while the rendered
+ * label stays in short form. Failure (no clipboard API, permission denied) is
+ * logged and ignored — the panel itself stays usable.
+ */
+function MergeMetaRow({ merge }: { merge: MergeNode }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    const clip = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
+    if (!clip || typeof clip.writeText !== "function") {
+      console.warn("Clipboard API unavailable; cannot copy commit hash.");
+      return;
+    }
+    try {
+      await clip.writeText(merge.sha);
+      setCopied(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.warn("Failed to copy commit hash:", err);
+    }
+  }, [merge.sha]);
+
+  return h("div", { class: "mg-meta-row" },
+    h("time", {
+      class: "mg-meta-time",
+      dateTime: merge.mergedAt,
+      title: merge.mergedAt,
+    }, formatMergeTimestamp(merge.mergedAt)),
+    h("span", { class: "mg-meta-sha" },
+      h("code", { class: "mg-meta-sha-text", title: merge.sha }, merge.shortSha),
       h("button", {
         type: "button",
         class: `mg-meta-copy${copied ? " copied" : ""}`,
@@ -1016,7 +1237,9 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
     const linkedPrdIds = linkedEdges.map((e) => e.to);
     setSelected({ kind: "merge", node });
     setHighlightIds(new Set([node.id, ...linkedPrdIds]));
-  }, [graph, visiblePrdIds]);
+    const pos = positionByNodeId.get(node.id);
+    if (pos) recenter(pos);
+  }, [graph, visiblePrdIds, positionByNodeId, recenter]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   if (loading) {
@@ -1324,6 +1547,10 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
                 style: { opacity: isHighlighted ? 1 : 0.2 },
               },
                 ...renderNodeShape(n.shape, r, fill, isSelected),
+                // Label sits to the right of the shape on the same row — the
+                // compact folder-tree rhythm renders one indented line per
+                // node. Status is encoded by the glyph prefix
+                // (`shortStatus(n.status)`); shape encodes structural class.
                 h("text", {
                   x: r + 6,
                   y: 0,
@@ -1408,7 +1635,12 @@ export function MergeGraphView({ navigateTo }: MergeGraphViewProps) {
 
       // ── Detail panel ───────────────────────────────────────────────────────
       selected
-        ? h(DetailPanelContent, { selection: selected, prdData, onClose: clearSelection })
+        ? h(DetailPanelContent, {
+            selection: selected,
+            prdData,
+            origin: selected.kind === "prd" ? originByItemId.get(selected.node.id) : undefined,
+            onClose: clearSelection,
+          })
         : null,
     ),
   );
