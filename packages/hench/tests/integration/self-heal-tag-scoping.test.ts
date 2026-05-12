@@ -211,11 +211,10 @@ describe("self-heal tag scoping — integration", () => {
     expect(tagged).toBeDefined();
     expect(untagged).toBeDefined();
 
-    // The tagged task was selected and started (in_progress) by the iteration.
-    // In a non-git test environment the status does not advance to completed
-    // (commit staging and the commit-prompt gate are skipped), so in_progress
-    // is the correct expectation here.
-    expect(tagged!.status).toBe("in_progress");
+    // The tagged task was selected, run successfully, and status updated to completed
+    // immediately after test gate passes (before commit confirmation).
+    // This ensures the status is persisted before the next iteration's task selection.
+    expect(tagged!.status).toBe("completed");
 
     // The untagged task must be completely untouched.
     expect(untagged!.status).toBe("pending");
