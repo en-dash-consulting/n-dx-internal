@@ -11,7 +11,6 @@ import { setLLMConfig, setClaudeConfig, resolveConfiguredModel } from "../../ana
 import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
-import { captureGitCommitHash } from "../../core/git-utils.js";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
@@ -93,11 +92,6 @@ export async function cmdReshape(
 
   const docAfterCompaction = canonicalDoc;
 
-  // Load file ownership map for cross-file duplicate detection (FileStore feature)
-  const fileOwnership = store instanceof FileStore
-    ? await store.loadFileOwnership()
-    : new Map();
-
   // Load LLM config
   const llmConfig = await loadLLMConfig(rexDir);
   setLLMConfig(llmConfig);
@@ -169,9 +163,9 @@ export async function cmdReshape(
   }
 
   // Display proposals
-  info(`\nFound ${allProposals.length} reshape proposal${allProposals.length === 1 ? "" : "s"}:\n`);
-  for (let i = 0; i < allProposals.length; i++) {
-    info(`${i + 1}. ${formatReshapeProposal(allProposals[i], docAfterCompaction.items)}`);
+  info(`\nFound ${proposals.length} reshape proposal${proposals.length === 1 ? "" : "s"}:\n`);
+  for (let i = 0; i < proposals.length; i++) {
+    info(`${i + 1}. ${formatReshapeProposal(proposals[i], docAfterCompaction.items)}`);
     info("");
   }
 
@@ -197,7 +191,7 @@ export async function cmdReshape(
   if (accept) {
     accepted = allProposals;
   } else if (process.stdin.isTTY) {
-    accepted = await interactiveReview(allProposals, docAfterCompaction.items);
+    accepted = await interactiveReview(proposals, docAfterCompaction.items);
   } else {
     info("Proposals shown above. Run with --accept to apply, or use interactively in a TTY.");
     return;
@@ -213,12 +207,6 @@ export async function cmdReshape(
 
   // Apply accepted proposals
   const reshapeResult = applyReshape(docAfterCompaction.items, accepted);
-
-  // Report merge operations
-  for (const merge of reshapeResult.mergeAuditTrail) {
-    const oldIds = merge.mergedFromIds.join(", ");
-    info(`Merged ${oldIds} → ${merge.survivorId} — ${merge.reasoning}`);
-  }
 
   // Report errors
   for (const err of reshapeResult.errors) {

@@ -1742,11 +1742,6 @@ async function handleSelfHeal(rest) {
   // (or --claude-model/--codex-model) actually changes which model the agent uses.
   const modelFlags = extractModelFlags(rest);
 
-  // Pre-execution gate: --auto, --yes, or selfHeal.autoConfirm in .n-dx.json
-  // all bypass the interactive prompt. CLI flag wins over config.
-  const configAutoConfirm = readSelfHealAutoConfirm(dir);
-  const autoConfirmResolution = resolveAutoConfirm({ argv: rest, configAutoConfirm });
-
   const shTag = cyan("[self-heal]");
   console.log(`${shTag} starting ${bold(String(iterCount))} iteration${iterCount === 1 ? "" : "s"}${includeStructural ? "" : dim(" (excluding structural findings)")}`);
 

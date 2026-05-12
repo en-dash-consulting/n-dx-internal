@@ -609,28 +609,6 @@ function validateAutoFailover(value) {
 }
 
 /**
- * Validate selfHeal.autoConfirm.
- *
- * When true, `ndx self-heal` skips the pre-execution confirmation prompt
- * for every invocation. CLI flags (--auto, --yes) take precedence over
- * this setting.
- */
-function validateSelfHealAutoConfirm(value) {
-  if (typeof value !== "boolean") {
-    throw new Error(
-      `Invalid autoConfirm value. Expected "true" or "false", got "${value}"`,
-    );
-  }
-}
-
-/**
- * Validators for selfHeal.* config keys in .n-dx.json.
- */
-const SELF_HEAL_VALIDATORS = {
-  autoConfirm: validateSelfHealAutoConfirm,
-};
-
-/**
  * Validators for llm.* config keys in .n-dx.json.
  * Keys are setting paths relative to the llm section.
  */

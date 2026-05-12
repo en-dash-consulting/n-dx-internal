@@ -632,7 +632,7 @@ async function runOne(
   autonomous?: boolean,
   runNumber?: number,
   permissionMode?: PermissionMode,
-): Promise<{ status: string; taskTitle: string; selectedTaskId?: string }> {
+): Promise<{ status: string; taskTitle: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
   await assertSchemaCompatibility(store);

@@ -1,6 +1,8 @@
 # n-dx 
 [![Socket Badge](https://badge.socket.dev/npm/package/@n-dx/core/0.4.0)](https://badge.socket.dev/npm/package/@n-dx/core/0.4.0)
 
+[![Socket Badge](https://badge.socket.dev/npm/package/@n-dx/core/0.4.0)](https://badge.socket.dev/npm/package/@n-dx/core/0.4.0)
+
 AI-powered development toolkit. Analyze a codebase, build a PRD, execute tasks autonomously.
 
 | | | |
