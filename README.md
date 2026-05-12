@@ -301,6 +301,10 @@ A policy engine enforces per-minute rate limits on commands (60/min) and file wr
 
 All packages use only `prepare` scripts (TypeScript compilation). There are no `preinstall`, `postinstall`, or native code compilation steps.
 
+### Obfuscated code policy
+
+`pnpm security:obfuscation` scans repository source and installed `node_modules` packages for obfuscation patterns such as eval-packed payloads, generated `_0x` dispatcher clusters, encoded dynamic loaders, and JSFuck-style encodings. The check runs in CI, release, and local preflight so unreadable payloads cannot be introduced through source changes or dependency updates.
+
 ### Configuration
 
 Guard settings are loaded once per agent run and cannot be modified mid-execution. All defaults are restrictive — you can loosen them in `.hench/config.json` under `guard`, but the agent itself cannot write to that file.
