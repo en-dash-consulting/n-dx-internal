@@ -12,5 +12,5 @@ description: "Provide a reusable Claude Code skill that instructs LLM agents to 
 
 | Title | Status |
 |-------|--------|
-| [Author plan-mode prevention skill definition with explicit no-plan-mode invariant](./author-plan-mode-prevention-5dddfe.md) | in_progress |
-| [Wire plan-mode prevention skill into hench agent prompt assembly and add regression coverage](./wire-plan-mode-prevention-skill-e48bf6.md) | pending |
+| [Author plan-mode prevention skill definition with explicit no-plan-mode invariant](./author-plan-mode-prevention-5dddfe.md) | completed |
+| [Wire plan-mode prevention skill into hench agent prompt assembly and add regression coverage](./wire-plan-mode-prevention-skill-e48bf6.md) | in_progress |

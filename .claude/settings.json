@@ -31,7 +31,9 @@
       "mcp__rex__verify_criteria",
       "mcp__rex__get_capabilities", 
       "mcp__rex__facets",
-      "mcp__sourcevision__get_route_tree"
+      "mcp__sourcevision__get_route_tree",
+      "update_task_status",
+      "append_log"
     ]
   }
 }
