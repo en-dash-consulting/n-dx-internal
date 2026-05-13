@@ -2,7 +2,7 @@
 id: "e48bf63e-f27e-4a57-b092-620c98c4b456"
 level: "task"
 title: "Wire plan-mode prevention skill into hench agent prompt assembly and add regression coverage"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "agent"
@@ -10,6 +10,8 @@ tags:
   - "testing"
 source: "smart-add"
 startedAt: "2026-05-13T20:19:02.419Z"
+completedAt: "2026-05-13T20:29:00.859Z"
+endedAt: "2026-05-13T20:29:00.859Z"
 acceptanceCriteria:
   - "Hench agent prompt assembly includes the no-plan-mode skill for autonomous and acceptEdits-mode runs"
   - "Regression test fails if the skill is removed from the assembled skill list for autonomous runs"
