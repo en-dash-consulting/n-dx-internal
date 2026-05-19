@@ -37,6 +37,7 @@ import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
 import { hashPRD } from "../../core/pending-cache.js";
 import {
   matchProposalNodesToPRD,
+  matchProposalNodeToPRD,
   attachDuplicateReasonsToProposals,
   buildDuplicateOverrideMarkerIndex,
 } from "./smart-add-duplicates.js";
@@ -1290,6 +1291,56 @@ async function loadSmartAddContext(
   return { existing, parentLevel, itemFileMap };
 }
 
+/** A proposed container confidently maps to an existing epic/feature. */
+function isConfidentContainerMatch(
+  match: ProposalDuplicateMatch,
+  kind: "epic" | "feature",
+): boolean {
+  if (!match.duplicate || !match.matchedItem || match.matchedItem.level !== kind) {
+    return false;
+  }
+  // Title-based matches are reliable; for blended matches require a high score
+  // so we never fold a genuinely new epic into an unrelated existing one.
+  return (
+    match.reason === "exact_title" ||
+    match.reason === "semantic_title" ||
+    match.score >= 0.85
+  );
+}
+
+/**
+ * Auto-fill `existingId` on proposed epics/features that confidently match an
+ * existing PRD container, so `n-dx add` nests the new task under the existing
+ * epic/feature instead of creating a duplicate epic. The LLM is supposed to
+ * set `existingId` itself but is unreliable; this is the deterministic
+ * fallback. Conservative by design: respects an `existingId` the LLM already
+ * set, and only acts on high-confidence container matches.
+ */
+export function applySmartPlacement(proposals: Proposal[], existing: PRDItem[]): void {
+  if (existing.length === 0) return;
+  for (const p of proposals) {
+    if (!p.epic.existingId) {
+      const match = matchProposalNodeToPRD(
+        { key: "epic", kind: "epic", title: p.epic.title, description: p.epic.description },
+        existing,
+      );
+      if (isConfidentContainerMatch(match, "epic")) {
+        p.epic.existingId = match.matchedItem!.id;
+      }
+    }
+    for (const feature of p.features) {
+      if (feature.existingId) continue;
+      const match = matchProposalNodeToPRD(
+        { key: "feature", kind: "feature", title: feature.title, description: feature.description },
+        existing,
+      );
+      if (isConfidentContainerMatch(match, "feature")) {
+        feature.existingId = match.matchedItem!.id;
+      }
+    }
+  }
+}
+
 async function generateSmartAddProposals(params: {
   dir: string;
   existing: PRDItem[];
@@ -1317,6 +1368,7 @@ async function generateSmartAddProposals(params: {
         parentId,
       });
       const proposals = reasonResult.proposals;
+      if (!parentId) applySmartPlacement(proposals, existing);
       const method = reasonResult.tokenUsage.calls > 0
         ? `via LLM (${effectiveModel})`
         : "from file structure";
@@ -1344,6 +1396,7 @@ async function generateSmartAddProposals(params: {
       parentId,
     });
     const proposals = reasonResult.proposals;
+    if (!parentId) applySmartPlacement(proposals, existing);
     spinner?.stop(proposals.length > 0 ? `Generated ${proposals.length} proposal(s).` : undefined);
     return proposals;
   } catch (err) {
