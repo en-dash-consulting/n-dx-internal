@@ -565,7 +565,11 @@ async function handleSmartAddPreview(
     // Pass description via --description flag (not positional) to prevent any
     // stale UI text from being concatenated into the argument list.
     const description = String(input.text).trim();
-    const args = ["add", "--format=json", "--description", description];
+    // The dashboard preview is a draft the user reviews — `--fast` forces the
+    // vendor's light tier (e.g. haiku) so the CLI provider completes well
+    // within the timeout from a daemonized server. The user-driven CLI
+    // `n-dx add` keeps the configured top-tier model.
+    const args = ["add", "--format=json", "--fast", "--description", description];
     if (input.parentId) args.push("--parent", input.parentId);
     args.push(ctx.projectDir);
 

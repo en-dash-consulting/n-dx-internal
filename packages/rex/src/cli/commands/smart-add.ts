@@ -1220,6 +1220,22 @@ function emitPrdPaths(prdPaths: string[]): void {
   }
 }
 
+/**
+ * Resolve the vendor's light/fast tier model (haiku for claude,
+ * gpt-5.4-mini for codex) for `--fast`/preview smart-add runs where
+ * generation latency matters more than top-tier proposal quality.
+ */
+async function resolveLightSmartAddModel(dir: string): Promise<string | undefined> {
+  try {
+    const rexDir = join(dir, REX_DIR);
+    const llmConfig = await loadLLMConfig(rexDir);
+    const vendor = llmConfig.vendor ?? getLLMVendor() ?? "claude";
+    return resolveVendorModel(vendor, llmConfig, "light");
+  } catch {
+    return undefined;
+  }
+}
+
 async function resolveSmartAddModel(
   dir: string,
   requestedModel?: string,
@@ -1770,7 +1786,13 @@ export async function cmdSmartAdd(
     return;
   }
 
-  const model = await resolveSmartAddModel(dir, flags.model);
+  // `--fast` forces the light tier (e.g. haiku) — used by the web Quick Add
+  // preview where generation latency matters far more than top-tier quality.
+  // Explicit `--model` always wins.
+  const fast = flags.fast === "true" && !flags.model;
+  const model = fast
+    ? (await resolveLightSmartAddModel(dir)) ?? (await resolveSmartAddModel(dir, flags.model))
+    : await resolveSmartAddModel(dir, flags.model);
   const { existing, parentLevel, itemFileMap } = await loadSmartAddContext(dir, input.parentId);
   const proposals = await generateSmartAddProposals({
     dir,
