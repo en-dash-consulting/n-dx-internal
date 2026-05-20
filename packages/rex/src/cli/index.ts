@@ -12,10 +12,6 @@ import { join } from "node:path";
 
 suppressKnownDeprecations();
 
-if (process.env.NDX_TRACE_SPAWN || process.argv.includes("add")) {
-  process.stderr.write(`[rex] cli/index.js loaded argv=${JSON.stringify(process.argv.slice(2))}\n`);
-}
-
 /** Post-write health warning — lazy-loaded to avoid startup cost. */
 async function postWriteHealthWarning(dir: string, isJson: boolean): Promise<void> {
   try {
@@ -177,10 +173,7 @@ async function dispatchAdd(
         'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
       );
     }
-    process.stderr.write(`[rex] importing smart-add.js…\n`);
-    const importStart = Date.now();
     const { cmdSmartAdd } = await import("./commands/smart-add.js");
-    process.stderr.write(`[rex] smart-add.js imported in ${Date.now() - importStart}ms\n`);
     await cmdSmartAdd(dir, descriptions, flags, multiFlags);
     return;
   }
