@@ -177,7 +177,10 @@ async function dispatchAdd(
         'Usage: rex add <level> --title="..." or rex add "<description>" ["<desc2>" ...] or rex add --file=ideas.txt or echo "desc" | rex add',
       );
     }
+    process.stderr.write(`[rex] importing smart-add.js…\n`);
+    const importStart = Date.now();
     const { cmdSmartAdd } = await import("./commands/smart-add.js");
+    process.stderr.write(`[rex] smart-add.js imported in ${Date.now() - importStart}ms\n`);
     await cmdSmartAdd(dir, descriptions, flags, multiFlags);
     return;
   }
