@@ -1337,12 +1337,18 @@ export function applySmartPlacement(proposals: Proposal[], existing: PRDItem[]):
         { key: "epic", kind: "epic", title: p.epic.title, description: p.epic.description },
         existing,
       );
-      if (isContainerMatch(match, "epic")) {
+      const placed = isContainerMatch(match, "epic");
+      // Log every epic considered + its best candidate so misses are visible
+      // (and we can tune the threshold against real proposals).
+      process.stderr.write(
+        `[smart-add] epic "${p.epic.title}" -> ${
+          match.matchedItem
+            ? `best="${match.matchedItem.title}" reason=${match.reason} score=${match.score.toFixed(2)} placed=${placed}`
+            : `(no candidate; ${existing.length} existing items considered)`
+        }\n`,
+      );
+      if (placed) {
         p.epic.existingId = match.matchedItem!.id;
-        process.stderr.write(
-          `[smart-add] place epic "${p.epic.title}" -> existing "${match.matchedItem!.title}" ` +
-            `(reason=${match.reason} score=${match.score.toFixed(2)})\n`,
-        );
       }
     }
     for (const feature of p.features) {
@@ -1351,12 +1357,16 @@ export function applySmartPlacement(proposals: Proposal[], existing: PRDItem[]):
         { key: "feature", kind: "feature", title: feature.title, description: feature.description },
         existing,
       );
-      if (isContainerMatch(match, "feature")) {
+      const placed = isContainerMatch(match, "feature");
+      process.stderr.write(
+        `[smart-add] feature "${feature.title}" -> ${
+          match.matchedItem
+            ? `best="${match.matchedItem.title}" reason=${match.reason} score=${match.score.toFixed(2)} placed=${placed}`
+            : `(no candidate)`
+        }\n`,
+      );
+      if (placed) {
         feature.existingId = match.matchedItem!.id;
-        process.stderr.write(
-          `[smart-add] place feature "${feature.title}" -> existing "${match.matchedItem!.title}" ` +
-            `(reason=${match.reason} score=${match.score.toFixed(2)})\n`,
-        );
       }
     }
   }
