@@ -478,7 +478,15 @@ async function handleAcceptEditedProposals(
       let epicId: string;
       if (p.epic.existingId && knownIds.has(p.epic.existingId)) {
         epicId = p.epic.existingId;
+        console.log(`[accept-edited] reuse epic id=${epicId} title="${p.epic.title}"`);
       } else {
+        if (p.epic.existingId) {
+          console.log(
+            `[accept-edited] payload epic.existingId="${p.epic.existingId}" not found in PRD — creating new`,
+          );
+        } else {
+          console.log(`[accept-edited] no existingId for epic "${p.epic.title}" — creating new`);
+        }
         epicId = randomUUID();
         const epicItem: PRDItem = {
           id: epicId,
@@ -498,6 +506,7 @@ async function handleAcceptEditedProposals(
         let featureId: string;
         if (f.existingId && knownIds.has(f.existingId)) {
           featureId = f.existingId;
+          console.log(`[accept-edited] reuse feature id=${featureId} title="${f.title}"`);
         } else {
           featureId = randomUUID();
           const featureItem: PRDItem = {

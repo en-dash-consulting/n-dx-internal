@@ -734,16 +734,30 @@ describe("applySmartPlacement", () => {
     expect(proposals[0].features[0].existingId).toBeUndefined();
   });
 
-  it("respects an existingId the LLM already set", () => {
+  it("respects a valid existingId the LLM already set", () => {
     const proposals: Proposal[] = [
       {
-        epic: { title: "User Authentication", source: "smart-add", existingId: "epic-llm-chosen" },
+        epic: { title: "User Authentication", source: "smart-add", existingId: "epic-auth" },
         features: [],
       },
     ];
 
     applySmartPlacement(proposals, existing);
 
-    expect(proposals[0].epic.existingId).toBe("epic-llm-chosen");
+    expect(proposals[0].epic.existingId).toBe("epic-auth");
+  });
+
+  it("discards an LLM-hallucinated existingId that doesn't exist in the PRD", () => {
+    const proposals: Proposal[] = [
+      {
+        epic: { title: "User Authentication", source: "smart-add", existingId: "epic-hallucinated" },
+        features: [],
+      },
+    ];
+
+    applySmartPlacement(proposals, existing);
+
+    // Hallucinated id discarded; matcher then finds the real "User Authentication" epic by exact title.
+    expect(proposals[0].epic.existingId).toBe("epic-auth");
   });
 });
