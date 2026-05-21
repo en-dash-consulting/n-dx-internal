@@ -102,6 +102,18 @@ function classifyStderr(stderr: string): { reason: "auth" | "rate-limit" | "unkn
   return { reason: "unknown", retryable: isTransientError(stderr) };
 }
 
+function isDebugEnabled(): boolean {
+  const v = process.env.NDX_DEBUG_LLM ?? process.env.NDX_DEBUG;
+  return v === "1" || v === "true" || v === "yes";
+}
+
+/** Per-call spawn tracing — opt-in via NDX_DEBUG_LLM / NDX_DEBUG. */
+function debugLog(message: string): void {
+  if (isDebugEnabled()) {
+    process.stderr.write(`[ndx:llm:claude] ${message}\n`);
+  }
+}
+
 /**
  * Spawn the Claude CLI once and collect the result.
  */
@@ -123,9 +135,7 @@ function spawnOnce(
     // server is launched from within Claude Code).
     const { CLAUDECODE: _, ...cleanEnv } = process.env;
     const spawnStart = Date.now();
-    process.stderr.write(
-      `[cli-provider] spawn claude ${cliBinary} model=${request.model} promptBytes=${request.prompt.length}\n`,
-    );
+    debugLog(`spawn ${cliBinary} model=${request.model} promptBytes=${request.prompt.length}`);
     const proc = spawn(cliBinary, args, {
       stdio: ["pipe", "pipe", "pipe"],
       shell: process.platform === "win32",
@@ -143,8 +153,10 @@ function spawnOnce(
     // silence (the outer foundationExec timeout).
     const PER_CALL_TIMEOUT_MS = 90_000;
     const killTimer = setTimeout(() => {
+      // Always log — a hung CLI being force-killed is an exceptional event,
+      // not per-call noise.
       process.stderr.write(
-        `[cli-provider] claude hung past ${PER_CALL_TIMEOUT_MS / 1000}s — killing (stdout=${stdout.length}B, stderr=${stderr.length}B)\n`,
+        `[ndx:llm:claude] claude hung past ${PER_CALL_TIMEOUT_MS / 1000}s — killing (stdout=${stdout.length}B, stderr=${stderr.length}B)\n`,
       );
       proc.kill("SIGTERM");
       setTimeout(() => proc.kill("SIGKILL"), 2000).unref();
@@ -160,9 +172,7 @@ function spawnOnce(
 
     proc.on("close", () => {
       clearTimeout(killTimer);
-      process.stderr.write(
-        `[cli-provider] claude exited in ${Date.now() - spawnStart}ms (stdout=${stdout.length}B, stderr=${stderr.length}B)\n`,
-      );
+      debugLog(`claude exited in ${Date.now() - spawnStart}ms (stdout=${stdout.length}B, stderr=${stderr.length}B)`);
     });
 
     proc.on("error", (err) => {

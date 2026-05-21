@@ -1347,42 +1347,34 @@ export function applySmartPlacement(proposals: Proposal[], existing: PRDItem[]):
     // that don't exist in the PRD. Validate against the real id set; if it
     // doesn't resolve, clear and run our scorer so a real match can take over.
     if (p.epic.existingId && !knownIds.has(p.epic.existingId)) {
-      process.stderr.write(
-        `[smart-add] epic "${p.epic.title}" had LLM-hallucinated existingId="${p.epic.existingId}" — discarded\n`,
-      );
+      llmDebug(`epic "${p.epic.title}" had LLM-hallucinated existingId="${p.epic.existingId}" — discarded`);
       p.epic.existingId = undefined;
     }
     if (p.epic.existingId) {
-      process.stderr.write(
-        `[smart-add] epic "${p.epic.title}" honoring LLM existingId="${p.epic.existingId}" (title="${idToTitle.get(p.epic.existingId) ?? "?"}")\n`,
-      );
+      llmDebug(`epic "${p.epic.title}" honoring LLM existingId="${p.epic.existingId}" (title="${idToTitle.get(p.epic.existingId) ?? "?"}")`);
     } else {
       const match = matchProposalNodeToPRD(
         { key: "epic", kind: "epic", title: p.epic.title, description: p.epic.description },
         existing,
       );
       const placed = isContainerMatch(match, "epic");
-      process.stderr.write(
-        `[smart-add] epic "${p.epic.title}" -> ${
+      llmDebug(
+        `epic "${p.epic.title}" -> ${
           match.matchedItem
             ? `best="${match.matchedItem.title}" reason=${match.reason} score=${match.score.toFixed(2)} placed=${placed}`
             : `(no candidate; ${existing.length} existing items considered)`
-        }\n`,
+        }`,
       );
       if (placed) p.epic.existingId = match.matchedItem!.id;
     }
 
     for (const feature of p.features) {
       if (feature.existingId && !knownIds.has(feature.existingId)) {
-        process.stderr.write(
-          `[smart-add] feature "${feature.title}" had LLM-hallucinated existingId="${feature.existingId}" — discarded\n`,
-        );
+        llmDebug(`feature "${feature.title}" had LLM-hallucinated existingId="${feature.existingId}" — discarded`);
         feature.existingId = undefined;
       }
       if (feature.existingId) {
-        process.stderr.write(
-          `[smart-add] feature "${feature.title}" honoring LLM existingId="${feature.existingId}"\n`,
-        );
+        llmDebug(`feature "${feature.title}" honoring LLM existingId="${feature.existingId}"`);
         continue;
       }
       // Only auto-match a feature when its epic is also being nested into an
@@ -1395,12 +1387,12 @@ export function applySmartPlacement(proposals: Proposal[], existing: PRDItem[]):
         existing,
       );
       const placed = isContainerMatch(match, "feature");
-      process.stderr.write(
-        `[smart-add] feature "${feature.title}" -> ${
+      llmDebug(
+        `feature "${feature.title}" -> ${
           match.matchedItem
             ? `best="${match.matchedItem.title}" reason=${match.reason} score=${match.score.toFixed(2)} placed=${placed}`
             : `(no candidate)`
-        }\n`,
+        }`,
       );
       if (placed) feature.existingId = match.matchedItem!.id;
     }
