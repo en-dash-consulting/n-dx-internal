@@ -172,15 +172,6 @@ function panViewport(view: Viewport, dx: number, dy: number): Viewport {
   return { ...view, x: view.x + dx, y: view.y + dy };
 }
 
-function zoomViewport(view: Viewport, deltaY: number): Viewport {
-  return { ...view, k: clamp(view.k * (deltaY < 0 ? 1.12 : 0.88), 0.55, 2.6) };
-}
-
-function wheelViewport(view: Viewport, event: WheelEvent): Viewport {
-  if (event.ctrlKey || event.metaKey) return zoomViewport(view, event.deltaY);
-  return panViewport(view, -event.deltaX, -event.deltaY);
-}
-
 // Bounded zoom for the Codebase/Zone maps — not an infinite canvas.
 const MAP_ZOOM_MIN = 0.8;
 const MAP_ZOOM_MAX = 4;
@@ -363,6 +354,12 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [focusHistory, setFocusHistory] = useState<string[]>([]);
   const [focusHistoryIndex, setFocusHistoryIndex] = useState(-1);
+  // Hover-to-spotlight state for the File Street View graph. Hovering an
+  // edge highlights it + its endpoints; hovering a node highlights every
+  // edge touching it. Lets the user trace "what connects to what" when many
+  // routes cross visually.
+  const [hoverEdgeKey, setHoverEdgeKey] = useState<string | null>(null);
+  const [hoverGraphNode, setHoverGraphNode] = useState<string | null>(null);
 
   useEffect(() => () => {
     if (hoverCloseTimerRef.current) clearTimeout(hoverCloseTimerRef.current);
@@ -440,6 +437,23 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [streetViewMode, zoneFilter]);
+
+  // Click outside the File Street View shell closes it, mirroring the Escape
+  // shortcut. The dialog already fills the main content area, so anywhere
+  // outside graphPanelRef (sidebar, breadcrumb bar, detail panel) is "outside".
+  useEffect(() => {
+    if (streetViewMode !== "dialog") return;
+    const onDown = (event: MouseEvent) => {
+      const panel = graphPanelRef.current;
+      if (!panel) return;
+      const target = event.target as Node | null;
+      if (target && panel.contains(target)) return;
+      setStreetViewMode("closed");
+      setHoverPreviewFile(null);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [streetViewMode]);
 
   const subgraph = useMemo(() => {
     if (!imports || !focusFile || mode !== "file") return null;
@@ -663,7 +677,7 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
     const cy = event.clientY;
     if (event.ctrlKey || event.metaKey) {
       // Trackpad pinch / explicit zoom — anchor at the cursor.
-      const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const factor = event.deltaY < 0 ? 1.03 : 1 / 1.03;
       updateSurfaceView(surface, (view) => zoomMapToFocal(view, view.k * factor, cx, cy, svg));
     } else {
       const vb = svg.viewBox.baseVal;
@@ -1146,7 +1160,20 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
   const canGoBack = focusHistoryIndex > 0;
   const canGoForward = focusHistoryIndex >= 0 && focusHistoryIndex < focusHistory.length - 1;
 
-  const edgePaths: { d: string; cross: boolean; key: string; label?: string; labelX?: number; labelY?: number }[] = [];
+  const edgePaths: {
+    d: string;
+    cross: boolean;
+    key: string;
+    label?: string;
+    labelX?: number;
+    labelY?: number;
+    /** Source endpoint id (file path or pkg:NAME) — used for hover spotlight. */
+    fromId?: string;
+    /** Target endpoint id — used for hover spotlight. */
+    toId?: string;
+    /** Cross-zone pair label, if any — surfaced on hover even for non-rep edges. */
+    pairLabel?: string;
+  }[] = [];
   const kindOf = (id: string): NodeKind => nodeKindById.get(id) ?? "file";
 
   const svgW = svgDims.w;
@@ -1176,6 +1203,34 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
         edgeShift.set(idx, (k - (n - 1) / 2) * 10);
       });
     }
+
+    // Cross-zone label deduplication. Without this, three edges from
+    // UI Overlays → App-Core Bridge each carry the identical
+    // "UI Overlays -> App-Core Bridge" string and stack on top of each
+    // other in the diagram. Group by zone pair, pick one representative
+    // edge per group, and emit a single "(×N)" label at the average
+    // midpoint of the bundle.
+    const crossPairFirstIdx = new Map<string, number>();
+    const crossPairCount = new Map<string, number>();
+    const crossPairCentroid = new Map<string, { x: number; y: number; n: number }>();
+    edges.forEach((e, i) => {
+      if (!zones || !isCrossZoneEdge(e.from, e.to, zones)) return;
+      const fz = fileToZoneId(e.from, zones);
+      const tz = fileToZoneId(e.to, zones);
+      if (!fz || !tz) return;
+      const a = visualPosMap.get(e.from);
+      const b = visualPosMap.get(e.to);
+      if (!a || !b) return;
+      const key = `${fz}|${tz}`;
+      crossPairCount.set(key, (crossPairCount.get(key) ?? 0) + 1);
+      if (!crossPairFirstIdx.has(key)) crossPairFirstIdx.set(key, i);
+      const cur = crossPairCentroid.get(key) ?? { x: 0, y: 0, n: 0 };
+      cur.x += (a.x + b.x) / 2;
+      cur.y += (a.y + b.y) / 2;
+      cur.n += 1;
+      crossPairCentroid.set(key, cur);
+    });
+
     edges.forEach((e, i) => {
       const a = visualPosMap.get(e.from);
       const b = visualPosMap.get(e.to);
@@ -1186,13 +1241,33 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
       const toZone = fileToZoneId(e.to, zones);
       const cross = isCrossZoneEdge(e.from, e.to, zones);
       const shift = edgeShift.get(i) ?? 0;
+      const pairKey = cross && fromZone && toZone ? `${fromZone}|${toZone}` : null;
+      const isRep = pairKey !== null && crossPairFirstIdx.get(pairKey) === i;
+      const count = pairKey ? crossPairCount.get(pairKey) ?? 1 : 1;
+      const centroid = pairKey ? crossPairCentroid.get(pairKey) : null;
+      let labelX: number | undefined = (a.x + b.x) / 2 + shift;
+      let labelY: number | undefined = (a.y + b.y) / 2 - 8;
+      let label: string | undefined;
+      const pairLabel = cross && zones && fromZone && toZone
+        ? `${zoneDisplayName(zones, fromZone)} → ${zoneDisplayName(zones, toZone)}${count > 1 ? ` ×${count}` : ""}`
+        : undefined;
+      if (isRep && pairLabel) {
+        label = pairLabel;
+        if (centroid && centroid.n > 0) {
+          labelX = centroid.x / centroid.n;
+          labelY = centroid.y / centroid.n - 8;
+        }
+      }
       edgePaths.push({
         key: `${e.from}->${e.to}:${e.type}`,
         d: elbowPath(a.x + wFrom, a.y, b.x - wTo, b.y, shift),
         cross,
-        label: cross && zones && fromZone && toZone ? `${zoneDisplayName(zones, fromZone)} -> ${zoneDisplayName(zones, toZone)}` : undefined,
-        labelX: (a.x + b.x) / 2 + shift,
-        labelY: (a.y + b.y) / 2 - 8,
+        label,
+        labelX,
+        labelY,
+        fromId: e.from,
+        toId: e.to,
+        pairLabel,
       });
     });
   } else if (mode === "package" && packageSubgraph && focusPackage) {
@@ -1208,12 +1283,43 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
           key: `${f}->${pkgId}`,
           d: elbowPath(fp.x + wFile, fp.y, pkgPos.x - wPkg, pkgPos.y),
           cross: false,
+          fromId: f,
+          toId: pkgId,
         });
       }
     }
   }
   const graphEdgeCount = edgePaths.length;
   const graphCrossEdgeCount = edgePaths.filter((edge) => edge.cross).length;
+
+  // ── Hover spotlight: derive which edges/nodes to highlight or dim based on
+  // the current hoverEdgeKey / hoverGraphNode. Hovering an edge spotlights
+  // that single edge + its two endpoints; hovering a node spotlights every
+  // edge touching that node + the connected nodes. Other edges/nodes go to
+  // a muted state so the spotlighted set reads clearly through the visual
+  // crossings. Computed inline so it's always in sync with the edgePaths /
+  // hover state pair without an additional memo.
+  const hoverActive = hoverEdgeKey !== null || hoverGraphNode !== null;
+  const activeEdgeKeys = new Set<string>();
+  const highlightedNodeIds = new Set<string>();
+  if (hoverGraphNode) {
+    highlightedNodeIds.add(hoverGraphNode);
+    for (const ep of edgePaths) {
+      if (ep.fromId === hoverGraphNode || ep.toId === hoverGraphNode) {
+        activeEdgeKeys.add(ep.key);
+        if (ep.fromId) highlightedNodeIds.add(ep.fromId);
+        if (ep.toId) highlightedNodeIds.add(ep.toId);
+      }
+    }
+  }
+  if (hoverEdgeKey) {
+    activeEdgeKeys.add(hoverEdgeKey);
+    const hovered = edgePaths.find((ep) => ep.key === hoverEdgeKey);
+    if (hovered) {
+      if (hovered.fromId) highlightedNodeIds.add(hovered.fromId);
+      if (hovered.toId) highlightedNodeIds.add(hovered.toId);
+    }
+  }
 
   return h("div", {
     ref: pageRef,
@@ -1272,7 +1378,9 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
               }),
             ),
             h("span", { class: "ig-mini-current" },
-              activeZone ? `${activeZone.name} · ${activeZoneInbound} in / ${activeZoneOutbound} out` : "All zones",
+              activeZone
+                ? `${activeZone.name} · ${activeZone.files.length}${inventory ? `/${inventory.files.length}` : ""} files · ${activeZoneInternalEdges} internal · ${activeZoneInbound} in / ${activeZoneOutbound} out`
+                : "All zones",
             ),
           ),
         h("div", { class: `ig-scope-card${activeZone ? " ig-scope-card-filtered" : ""}` },
@@ -1399,24 +1507,69 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
         h("p", { class: "ig-kicker" }, activeZoneName ? "Map of Zone:" : "Map"),
         h("h2", { class: "ig-page-title" }, activeZoneName ? activeZoneName : "Codebase import map"),
       ),
-      h("div", { class: "ig-atlas-metrics", role: "list" },
-        h("div", { class: "ig-metric-tile", role: "listitem" },
-          h("span", { class: "ig-metric-value" }, fileCount.toLocaleString()),
-          h("span", { class: "ig-metric-label" }, "files"),
-        ),
-        h("div", { class: "ig-metric-tile", role: "listitem" },
-          h("span", { class: "ig-metric-value" }, summary.totalEdges.toLocaleString()),
-          h("span", { class: "ig-metric-label" }, "imports"),
-        ),
-        h("div", { class: "ig-metric-tile", role: "listitem" },
-          h("span", { class: "ig-metric-value" }, summary.totalExternal.toLocaleString()),
-          h("span", { class: "ig-metric-label" }, "packages"),
-        ),
-        h("div", { class: "ig-metric-tile", role: "listitem" },
-          h("span", { class: "ig-metric-value" }, zones ? zones.zones.length.toLocaleString() : "—"),
-          h("span", { class: "ig-metric-label" }, "zones"),
-        ),
-      ),
+      (() => {
+        if (activeZone && activeZoneFiles) {
+          // ── Per-zone metrics ──
+          // When a zone is selected, swap the project-total tiles for
+          // zone-scoped numbers so the hero stops misrepresenting "I'm zoomed
+          // into UI Overlays but the headline is still 102 project files".
+          // The neighbor-zone count covers both inbound and outbound
+          // partners; the package count is external imports touched by any
+          // file in this zone.
+          const zonePackages = imports
+            ? imports.external.filter((ext) => ext.importedBy.some((p) => activeZoneFiles.has(p))).length
+            : 0;
+          const neighborZoneIds = new Set<string>();
+          if (zones) {
+            for (const edge of imports?.edges ?? []) {
+              const fromIn = activeZoneFiles.has(edge.from);
+              const toIn = activeZoneFiles.has(edge.to);
+              if (fromIn === toIn) continue;
+              const otherFile = fromIn ? edge.to : edge.from;
+              const otherZone = fileToZoneId(otherFile, zones);
+              if (otherZone && otherZone !== activeZone.id) neighborZoneIds.add(otherZone);
+            }
+          }
+          return h("div", { class: "ig-atlas-metrics ig-atlas-metrics-zone", role: "list" },
+            h("div", { class: "ig-metric-tile", role: "listitem" },
+              h("span", { class: "ig-metric-value" },
+                `${activeZone.files.length.toLocaleString()}/${fileCount.toLocaleString()}`,
+              ),
+              h("span", { class: "ig-metric-label" }, "zone files"),
+            ),
+            h("div", { class: "ig-metric-tile", role: "listitem" },
+              h("span", { class: "ig-metric-value" }, activeZoneInternalEdges.toLocaleString()),
+              h("span", { class: "ig-metric-label" }, "internal imports"),
+            ),
+            h("div", { class: "ig-metric-tile", role: "listitem" },
+              h("span", { class: "ig-metric-value" }, zonePackages.toLocaleString()),
+              h("span", { class: "ig-metric-label" }, "packages used"),
+            ),
+            h("div", { class: "ig-metric-tile", role: "listitem" },
+              h("span", { class: "ig-metric-value" }, neighborZoneIds.size.toLocaleString()),
+              h("span", { class: "ig-metric-label" }, "neighbor zones"),
+            ),
+          );
+        }
+        return h("div", { class: "ig-atlas-metrics", role: "list" },
+          h("div", { class: "ig-metric-tile", role: "listitem" },
+            h("span", { class: "ig-metric-value" }, fileCount.toLocaleString()),
+            h("span", { class: "ig-metric-label" }, "files"),
+          ),
+          h("div", { class: "ig-metric-tile", role: "listitem" },
+            h("span", { class: "ig-metric-value" }, summary.totalEdges.toLocaleString()),
+            h("span", { class: "ig-metric-label" }, "imports"),
+          ),
+          h("div", { class: "ig-metric-tile", role: "listitem" },
+            h("span", { class: "ig-metric-value" }, summary.totalExternal.toLocaleString()),
+            h("span", { class: "ig-metric-label" }, "packages"),
+          ),
+          h("div", { class: "ig-metric-tile", role: "listitem" },
+            h("span", { class: "ig-metric-value" }, zones ? zones.zones.length.toLocaleString() : "—"),
+            h("span", { class: "ig-metric-label" }, "zones"),
+          ),
+        );
+      })(),
       activeZoneName
         ? null
         : h("div", { class: "ig-atlas-footer" },
@@ -1432,17 +1585,10 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
       h("section", { class: "ig-zone-overview ig-zone-minimap", "aria-label": activeZone ? `${activeZone.name} zone map` : "Zone map" },
         activeZone
           ? [
-              h("div", { class: "ig-zone-overview-head", key: "head" },
-                h("div", null,
-                  h("span", { class: "ig-zone-overview-kicker" }, "Zone map"),
-                  h("h3", null, activeZone.name),
-                ),
-                h("div", { class: "ig-zone-overview-stats" },
-                  h("span", null, `${activeZone.files.length} files`),
-                  h("span", null, `${activeZoneInternalEdges} internal imports`),
-                  h("span", null, `${activeZoneInbound} in / ${activeZoneOutbound} out`),
-                ),
-              ),
+              // Per-zone header removed: the zone name + file/import/in-out
+              // stats live in the scope-card up in the codebase-map section,
+              // so this view goes straight to the SVG to maximize map real
+              // estate and remove the redundancy.
               h("div", { class: "ig-zone-network", key: "network" },
                 h("svg", {
                   viewBox: `0 0 ${activeZoneNetworkW} ${activeZoneNetworkH}`,
@@ -1686,6 +1832,20 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
           h("div", { class: "ig-graph-title-block" },
             h("span", { class: "ig-graph-head-label" },
               streetViewMode === "dialog" ? "File street view" : "Dependency preview",
+              // Surface the focused file path inline next to the header so
+              // the user always knows what they're inspecting without
+              // hunting for the highlighted node.
+              streetViewMode === "dialog" && mode === "file" && focusFile
+                ? h("span", { class: "ig-graph-head-path", title: focusFile },
+                    " · ",
+                    h("code", null, focusFile),
+                  )
+                : streetViewMode === "dialog" && mode === "package" && focusPackage
+                  ? h("span", { class: "ig-graph-head-path", title: focusPackage },
+                      " · ",
+                      h("code", null, focusPackage),
+                    )
+                  : null,
             ),
             h("p", { class: "ig-graph-scope" },
               `${graphNodeCount} nodes · ${graphEdgeCount} imports shown · ${graphCrossEdgeCount} cross-boundary · ${graphScopeLabel}`,
@@ -1727,18 +1887,11 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
             onPointerMove: handlePointerMove,
             onPointerUp: endDrag,
             onPointerLeave: endDrag,
-            onWheel: (event: WheelEvent) => {
-              event.preventDefault();
-              setDepView((view) => wheelViewport(view, event));
-            },
+            onWheel: (event: WheelEvent) => handleSurfaceWheel("dep", event),
+            onTouchStart: (event: TouchEvent) => beginPinch("dep", event),
+            onTouchMove: movePinch,
+            onTouchEnd: endPinch,
           },
-            h("rect", {
-              class: "ig-svg-bg",
-              x: 0,
-              y: 0,
-              width: svgW,
-              height: svgH,
-            }),
             h("defs", null,
               h("marker", {
                 id: "ig-arrow",
@@ -1752,24 +1905,64 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
             ),
             h("g", { transform: `translate(${depView.x} ${depView.y}) scale(${depView.k})` },
               h("g", { class: "ig-edges" },
-                ...edgePaths.map((ep) =>
-                  h("path", {
+                ...edgePaths.map((ep) => {
+                  const isActive = activeEdgeKeys.has(ep.key);
+                  const dimmed = hoverActive && !isActive;
+                  const cls =
+                    `ig-edge${ep.cross ? " ig-edge-cross" : ""}` +
+                    (isActive ? " ig-edge-active" : "") +
+                    (dimmed ? " ig-edge-dim" : "");
+                  return h("g", {
                     key: ep.key,
-                    class: `ig-edge${ep.cross ? " ig-edge-cross" : ""}`,
-                    d: ep.d,
-                    "marker-end": "url(#ig-arrow)",
-                  }),
-                ),
+                    class: "ig-edge-group",
+                    onMouseEnter: () => setHoverEdgeKey(ep.key),
+                    onMouseLeave: () => setHoverEdgeKey((k) => (k === ep.key ? null : k)),
+                  },
+                    // Invisible wide hit target — makes the thin visible line
+                    // forgiving to hover with a mouse. Pointer events are
+                    // captured here; the visible path below stays
+                    // pointer-events:none via CSS so it doesn't steal hover.
+                    h("path", { class: "ig-edge-hit", d: ep.d }),
+                    h("path", {
+                      class: cls,
+                      d: ep.d,
+                      "marker-end": "url(#ig-arrow)",
+                    }),
+                  );
+                }),
               ),
               h("g", { class: "ig-edge-labels" },
-                ...edgePaths.filter((ep) => ep.label && ep.labelX !== undefined && ep.labelY !== undefined).map((ep) =>
-                  h("text", {
-                    key: `label-${ep.key}`,
-                    x: ep.labelX,
-                    y: ep.labelY,
-                    textAnchor: "middle",
-                  }, ep.label),
-                ),
+                ...edgePaths
+                  .filter((ep) => {
+                    if (ep.labelX === undefined || ep.labelY === undefined) return false;
+                    if (hoverEdgeKey) {
+                      // While hovering an edge, surface only THAT edge's
+                      // pair label — the others get out of the way so the
+                      // hovered connection reads cleanly.
+                      return ep.key === hoverEdgeKey && (ep.pairLabel ?? ep.label);
+                    }
+                    if (hoverGraphNode) {
+                      // While hovering a node, surface labels for every
+                      // edge touching it (rep or not), so the user sees
+                      // what each connection is.
+                      return activeEdgeKeys.has(ep.key) && (ep.pairLabel ?? ep.label);
+                    }
+                    // Default: representative cross-zone labels only.
+                    return Boolean(ep.label);
+                  })
+                  .map((ep) => {
+                    // When hovering, prefer the per-edge centroid (i.e. the
+                    // hovered edge's own midpoint) so the label sits over the
+                    // line the user is actually pointing at.
+                    const hovered = hoverEdgeKey === ep.key || (hoverGraphNode && activeEdgeKeys.has(ep.key));
+                    return h("text", {
+                      key: `label-${ep.key}`,
+                      class: `ig-edge-label${hovered ? " ig-edge-label-active" : ""}`,
+                      x: ep.labelX,
+                      y: ep.labelY,
+                      textAnchor: "middle",
+                    }, ep.pairLabel ?? ep.label);
+                  }),
               ),
               h("g", { class: "ig-nodes" },
                 ...(layoutNodes ?? []).map((n) => {
@@ -1785,11 +1978,22 @@ export function Graph({ data, selectedFile, selectedZone, navigateTo }: GraphPro
                         : n.label;
                   const labelText = truncateNodeLabel(n.label, n.kind);
                   const contextText = n.kind === "file" ? truncateNodeLabel(parentContext(n.id), "file") : "";
+                  const isHovered = hoverGraphNode === n.id;
+                  const isHighlighted = highlightedNodeIds.has(n.id);
+                  const isDimmed = hoverActive && !isHighlighted;
                   return h("g", {
                     key: n.id,
-                    class: `ig-node ig-node-${n.kind}${isCenter ? " ig-node-center" : ""}${isSel ? " ig-node-selected" : ""}`,
+                    class:
+                      `ig-node ig-node-${n.kind}` +
+                      (isCenter ? " ig-node-center" : "") +
+                      (isSel ? " ig-node-selected" : "") +
+                      (isHovered ? " ig-node-hover" : "") +
+                      (isHighlighted && !isHovered ? " ig-node-related" : "") +
+                      (isDimmed ? " ig-node-dim" : ""),
                     transform: `translate(${pos.x - w / 2},${pos.y - hgt / 2})`,
                     title: tip,
+                    onMouseEnter: () => setHoverGraphNode(n.id),
+                    onMouseLeave: () => setHoverGraphNode((cur) => (cur === n.id ? null : cur)),
                     onPointerDown: (ev: PointerEvent) => {
                       ev.stopPropagation();
                       (ev.currentTarget as Element).setPointerCapture?.(ev.pointerId);

@@ -5,13 +5,15 @@
  * Also handles meta-evaluation (pass 5+) which uses a single prompt.
  */
 
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { readFileSync, existsSync } from "node:fs";
 import type {
   Zone,
   ZoneCrossing,
   Zones,
   Finding,
   AnalyzeTokenUsage,
+  ProjectProfile,
 } from "../schema/index.js";
 
 import {
@@ -19,7 +21,7 @@ import {
   buildMetaPrompt,
 } from "./enrich-config.js";
 import type { PassConfig } from "./enrich-config.js";
-import { callClaude, ClaudeClientError } from "./claude-client.js";
+import { callClaude, resolveLightModel, ClaudeClientError } from "./claude-client.js";
 import { tryParseJSON, extractFindings, formatFileLabel, findPrevZone } from "./enrich-parsing.js";
 import { emptyAnalyzeTokenUsage, accumulateTokenUsage } from "./token-usage.js";
 import { startSpinner } from "../cli/output.js";
@@ -154,6 +156,7 @@ export async function enrichBatch(
   enrichedNames?: Map<string, string>,
   fileArchetypes?: Map<string, string | null>,
   hints?: string,
+  projectProfile?: ProjectProfile,
 ): Promise<BatchResult | null | { authError: true }> {
   const isFirstPass = passNumber === 1;
   const batchFiles = batchZones.reduce((sum, z) => sum + z.files.length, 0);
@@ -196,8 +199,8 @@ export async function enrichBatch(
       .join("\n");
 
     const prompt = isFirstPass
-      ? buildFirstPassPrompt(batchZones, config, otherContext, priorNames, crossingLines, globalPromptNote, passConfig, fileArchetypes, hints)
-      : buildLaterPassPrompt(batchZones, config, otherContext, crossingLines, passNumber, passConfig, previousZones, globalPromptNote, fileArchetypes, hints);
+      ? buildFirstPassPrompt(batchZones, config, otherContext, priorNames, crossingLines, globalPromptNote, passConfig, fileArchetypes, hints, projectProfile)
+      : buildLaterPassPrompt(batchZones, config, otherContext, crossingLines, passNumber, passConfig, previousZones, globalPromptNote, fileArchetypes, hints, projectProfile);
 
     const promptLevel = config.maxFiles >= 8 ? "full" : config.maxFiles > 0 ? "compact" : "minimal";
     const spinner = startSpinner(
@@ -206,7 +209,13 @@ export async function enrichBatch(
 
     let callText: string;
     try {
-      const callResult = await callClaude(prompt);
+      // Pass 1 is naming-dominant ("LLM zone naming + initial observations"
+      // per enrich-config.ts) — Haiku does this accurately and ~3× faster
+      // than Sonnet. Pass 2+ is analytical (cross-zone relationships,
+      // anti-patterns, suggestions) and stays on the standard model so
+      // finding quality doesn't regress.
+      const callModel = passNumber === 1 ? resolveLightModel() : undefined;
+      const callResult = await callClaude(prompt, callModel);
       accumulateTokenUsage(batchTokenUsage, callResult.tokenUsage);
       callText = callResult.text;
     } catch (err) {
@@ -320,6 +329,175 @@ interface AttemptConfig {
   maxCrossings: number;
 }
 
+/**
+ * Lines a leading-comment prefix is allowed to start with. Covers the
+ * documentation conventions of TS/JS/Swift/Rust/Python/Go/HTML/MD comment-only
+ * lines. A blank line is treated as part of the header so we don't truncate
+ * paragraph breaks inside a doc block.
+ */
+const COMMENT_PREFIXES = ["///", "//!", "//", "/**", "/*", "*", "*/", "#", "#!", "--", "<!--"];
+
+/**
+ * Extract the leading comment block of a file — i.e. the docstring the file's
+ * author wrote at the top to explain what it does. We stop at the first
+ * non-comment non-blank line and cap the output so we never blow the prompt.
+ *
+ * Returns `null` when the file has no leading comment block, so callers can
+ * skip emitting an empty header entry.
+ */
+function extractFileHeader(absPath: string, maxLines = 25, maxChars = 400): string | null {
+  if (!existsSync(absPath)) return null;
+  let content: string;
+  try {
+    content = readFileSync(absPath, "utf-8");
+  } catch {
+    return null;
+  }
+  const lines = content.split("\n", maxLines + 5);
+  const kept: string[] = [];
+  for (let i = 0; i < Math.min(lines.length, maxLines); i++) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+    // Skip a shebang on line 1.
+    if (i === 0 && trimmed.startsWith("#!")) {
+      kept.push(raw);
+      continue;
+    }
+    if (trimmed === "") {
+      // A blank line is acceptable as long as we've started a header — stop
+      // once we see a non-comment after that.
+      if (kept.length === 0) continue;
+      kept.push(raw);
+      continue;
+    }
+    if (!COMMENT_PREFIXES.some((p) => trimmed.startsWith(p))) {
+      break;
+    }
+    kept.push(raw);
+  }
+  // Trim trailing blanks.
+  while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
+  if (kept.length < 2) return null; // single-line headers are usually license/copyright, not useful context.
+  let joined = kept.join("\n");
+  if (joined.length > maxChars) joined = joined.slice(0, maxChars) + "\n  // …";
+  return joined;
+}
+
+/**
+ * Render a "File headers" section for the prompt — leading doc comments for
+ * the files in this batch. Bounds the total bytes so a giant batch can't
+ * inflate the prompt. Returns an empty string when no usable headers exist
+ * (so the prompt stays compact for projects without doc comments).
+ */
+function formatFileHeaders(
+  files: string[],
+  projectDir: string,
+  budgetBytes = 2500,
+): string {
+  const entries: string[] = [];
+  let used = 0;
+  for (const rel of files) {
+    if (used > budgetBytes) {
+      entries.push(`  - … (file-header budget exhausted; ${files.length - entries.length} files truncated)`);
+      break;
+    }
+    const header = extractFileHeader(join(projectDir, rel));
+    if (!header) continue;
+    const indented = header.split("\n").map((l) => `      ${l}`).join("\n");
+    const block = `  - ${rel}:\n${indented}`;
+    used += block.length;
+    entries.push(block);
+  }
+  if (entries.length === 0) return "";
+  return `\nFile headers (leading doc comments — treat these as authoritative about each file's purpose; DO NOT call a documented file "undocumented"):\n${entries.join("\n")}\n`;
+}
+
+/**
+ * Render a "Project shape" section for the LLM prompt that grounds the model
+ * in the repo's actual ecosystem. The model uses this to suppress
+ * recommendations that don't fit (e.g. don't recommend MVVM coordinators on a
+ * SwiftUI app, don't propose a VERSION file when release-please is wired,
+ * don't make structural calls when the import graph is absent/sparse).
+ */
+function formatProjectShape(p: ProjectProfile): string {
+  const lines: string[] = [];
+
+  const langLine = p.languages.length > 1
+    ? `${p.primaryLanguage} (also: ${p.languages.slice(1).join(", ")})`
+    : p.primaryLanguage;
+  lines.push(`Primary language: ${langLine}`);
+
+  if (p.frameworks.length > 0) {
+    lines.push(`Frameworks: ${p.frameworks.join(", ")}`);
+  }
+  if (p.releaseInfrastructure.length > 0) {
+    const kinds = p.releaseInfrastructure.map((r) => `${r.kind} (${r.evidence})`).join(", ");
+    lines.push(`Release infrastructure already present: ${kinds}`);
+  }
+  if (p.buildSurfaces.length > 0) {
+    lines.push(`Build surfaces: ${p.buildSurfaces.map((s) => s.path).join(", ")}`);
+  }
+  if (p.ciSurfaces.length > 0) {
+    lines.push(`CI surfaces: ${p.ciSurfaces.map((s) => s.path).join(", ")}`);
+  }
+  lines.push(`Import graph quality: ${p.importGraphQuality}`);
+
+  // Per-shape anti-recommendations the LLM should respect.
+  const guards: string[] = [];
+
+  if (p.importGraphQuality !== "rich") {
+    guards.push(
+      "Zones in this codebase were assembled from file-tree proximity (no usable import graph). " +
+      "DO NOT emit structural findings about zone boundaries, coupling, or refactor placement. " +
+      "Structural claims require a real import graph to be meaningful — focus instead on code-level " +
+      "observations grounded in the file contents themselves.",
+    );
+  }
+
+  if (p.releaseInfrastructure.length > 0) {
+    const kinds = p.releaseInfrastructure.map((r) => r.kind).join(", ");
+    guards.push(
+      `Version management is already handled by: ${kinds}. ` +
+      `DO NOT recommend introducing a VERSION file, a version constant, or a new release scheme — ` +
+      `that would create a competing source of truth.`,
+    );
+  }
+
+  const hasSwiftUI = p.frameworks.includes("swiftui");
+  if (hasSwiftUI) {
+    guards.push(
+      "This is a SwiftUI codebase. DO NOT recommend MVVM coordinator/view-model patterns transplanted " +
+      "from React/TS — SwiftUI's idiomatic state model is @State/@StateObject/@EnvironmentObject. " +
+      "DO NOT recommend introducing service protocols solely for testability; that is a Java/TS-era reflex " +
+      "and is rarely appropriate for an idiomatic SwiftUI app.",
+    );
+  }
+
+  if (
+    p.primaryLanguage !== "typescript" &&
+    p.primaryLanguage !== "javascript" &&
+    p.primaryLanguage !== "tsx" &&
+    p.primaryLanguage !== "jsx"
+  ) {
+    guards.push(
+      `This is a ${p.primaryLanguage} project, not TypeScript/JavaScript. ` +
+      `DO NOT propose JS/TS framework recommendations (e.g. Combine .replaceError/.catch on a sink whose ` +
+      `Failure is Never; React patterns; npm workflows). Code-level recommendations MUST be idiomatic for ${p.primaryLanguage}.`,
+    );
+  }
+
+  guards.push(
+    "Any finding that begins with a conditional like \"If X then Y\" is a hypothesis. " +
+    "Either confirm the hypothesis from the file contents you can see and rewrite it as a fact, or omit it.",
+  );
+
+  let block = `\nProject shape:\n${lines.map((l) => `  - ${l}`).join("\n")}`;
+  if (guards.length > 0) {
+    block += `\n\nHard constraints derived from the project shape:\n${guards.map((g) => `  - ${g}`).join("\n")}`;
+  }
+  return block + "\n";
+}
+
 function buildFirstPassPrompt(
   batchZones: Zone[],
   config: AttemptConfig,
@@ -330,14 +508,20 @@ function buildFirstPassPrompt(
   passConfig: PassConfig,
   fileArchetypes?: Map<string, string | null>,
   hints?: string,
+  projectProfile?: ProjectProfile,
 ): string {
+  const projectShape = projectProfile ? formatProjectShape(projectProfile) : "";
   if (config.maxFiles > 0) {
+    const sampledFiles: string[] = [];
     const zoneList = batchZones
       .map((z) => {
         const filesSample =
           z.files.length > config.maxFiles + 2
             ? [...z.files.slice(0, config.maxFiles), `... and ${z.files.length - config.maxFiles} more`]
             : z.files;
+        for (const f of filesSample) {
+          if (!f.startsWith("...") && !sampledFiles.includes(f)) sampledFiles.push(f);
+        }
         const entryLine = config.maxFiles >= 8
           ? `\n  entryPoints: ${z.entryPoints.map((f) => `"${f}"`).join(", ") || "none"}`
           : "";
@@ -345,12 +529,19 @@ function buildFirstPassPrompt(
       })
       .join("\n");
 
+    // Only include file-header excerpts on the full prompt; compact retries
+    // (config.maxFiles < 8) drop them to stay under context budgets.
+    const fileHeaders = projectProfile?.projectDir && config.maxFiles >= 8
+      ? formatFileHeaders(sampledFiles, projectProfile.projectDir)
+      : "";
+
     return `Analyze this codebase's zone structure. Each zone groups related files discovered by import-graph community detection.
 
 ${passConfig.focus}
-
+${projectShape}
 Zones:
 ${zoneList}
+${fileHeaders}
 ${otherContext}
 ${priorNames}${hints ? `\nProject context from the developer:\n${hints}\n` : ""}
 Cross-zone imports:
@@ -383,7 +574,7 @@ Return exactly ${batchZones.length} zone entries. Use finding types: ${passConfi
     .join("\n");
 
   return `Name these code zones. Each groups files by import structure.
-
+${projectShape}
 Zones:
 ${zoneList}
 ${otherContext}
@@ -405,7 +596,9 @@ function buildLaterPassPrompt(
   globalPromptNote: string,
   fileArchetypes?: Map<string, string | null>,
   hints?: string,
+  projectProfile?: ProjectProfile,
 ): string {
+  const projectShape = projectProfile ? formatProjectShape(projectProfile) : "";
   const prevZones = previousZones?.zones ?? [];
   const prevGlobal = previousZones?.insights ?? [];
 
@@ -426,7 +619,7 @@ function buildLaterPassPrompt(
       .join("\n");
 
     return `You previously analyzed this codebase. Here is the current state:
-
+${projectShape}
 Zones:
 ${zoneContext}
 ${otherContext}
