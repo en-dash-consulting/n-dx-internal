@@ -18,9 +18,6 @@ description: "Static analysis engine: file inventory, import graph, zone detecti
 | [Background Tab Resource Optimization](./background-tab-resource-optimization/index.md) | completed |
 | [Fix 1: Go Zone Edge Resolution](./fix-1-go-zone-edge-resolution/index.md) | completed |
 | [Fix 2: Mixed-Language Support](./fix-2-mixed-language-support/index.md) | completed |
-| [Fix observation in sourcevision-2 (1 finding)](./fix-observation-in-sourcevision-3f7352/index.md) | completed |
-| [Fix observation in sourcevision-cli (1 finding)](./fix-observation-in-sourcevision-6c79b3/index.md) | completed |
-| [Fix suggestion in polling (1 finding)](./fix-suggestion-in-polling-1-finding/index.md) | completed |
 | [Git Credential Helper Opt-In Recovery](./git-credential-helper-opt-in-recovery/index.md) | completed |
 | [Git-Independent PR Markdown Generation](./git-independent-pr-markdown-generation/index.md) | completed |
 | [Go Fixture Enhancement](./go-fixture-enhancement/index.md) | completed |
@@ -34,7 +31,6 @@ description: "Static analysis engine: file inventory, import graph, zone detecti
 | [PR Markdown View Toggle and Copy UX](./pr-markdown-view-toggle-and-copy-ux/index.md) | completed |
 | [Recursive zone architecture](./recursive-zone-architecture/index.md) | completed |
 | [Resolve critical SourceVision architectural findings](./resolve-critical-sourcevision-ecbbbb/index.md) | completed |
-| [SourceVision Findings Remediation](./sourcevision-findings-remediation/index.md) | completed |
 | [SourceVision Import Graph Visualization Enhancement](./sourcevision-import-graph-f5284d/index.md) | completed |
 | [SourceVision PR Markdown Quality & Manual Refresh](./sourcevision-pr-markdown-1c8695/index.md) | completed |
 | [SourceVision PR Markdown Artifact-Based Fallback Mode](./sourcevision-pr-markdown-5e3862/index.md) | completed |
