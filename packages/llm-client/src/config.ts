@@ -158,7 +158,7 @@ export const MODEL_COSTS: Readonly<
  */
 const MODEL_ALIASES: Record<string, string> = {
   sonnet: NEWEST_MODELS.claude,
-  opus: "claude-opus-4-7",
+  opus: "claude-opus-4-8",
   haiku: "claude-haiku-4-5",
 };
 
