@@ -1,6 +1,6 @@
 {
   "name": "@n-dx/core",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "publishConfig": {
     "access": "public"
   },
@@ -66,6 +66,8 @@
     "cli-timeout.js",
     "update-check.js",
     "pair-programming.js",
+    "readme-generator.js",
+    "git-preflight.js",
     "self-heal-confirm.js",
     "stale-check.js"
   ],
