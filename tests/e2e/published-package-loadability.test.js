@@ -114,12 +114,16 @@ describe("published-package loadability (pack + extract + import)", () => {
       let tmpRoot;
       let shippedFiles;
 
+      // `npm pack` can trigger a prepack build (npm doesn't always honor
+      // --ignore-scripts), and packing a large package's tarball is itself
+      // slow on cold CI runners — both exceed vitest's default 10s hook
+      // timeout. Give the pack+extract real headroom.
       beforeAll(() => {
         const result = packAndExtract(dir);
         extractDir = result.extractDir;
         tmpRoot = result.tmpRoot;
         shippedFiles = result.shippedFiles;
-      });
+      }, 120_000);
 
       afterAll(() => {
         if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true });
@@ -210,7 +214,7 @@ describe("published-package loadability (pack + extract + import)", () => {
       const result = packAndExtract(corePkg.dir);
       extractDir = result.extractDir;
       tmpRoot = result.tmpRoot;
-    });
+    }, 120_000);
 
     afterAll(() => {
       if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true });
