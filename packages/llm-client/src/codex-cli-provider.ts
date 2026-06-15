@@ -25,7 +25,7 @@ import type {
   CompletionResult,
 } from "./types.js";
 import { ClaudeClientError } from "./types.js";
-import type { CodexConfig } from "./llm-types.js";
+import { type CodexConfig, DEFAULT_LLM_RESPONSE_TIMEOUT_MS } from "./llm-types.js";
 import type { ExecutionPolicy, SandboxMode, ApprovalPolicy } from "./runtime-contract.js";
 import { DEFAULT_EXECUTION_POLICY } from "./runtime-contract.js";
 import { NEWEST_MODELS } from "./config.js";
@@ -73,6 +73,11 @@ export interface CodexCliProviderOptions {
    * When omitted, a default message is written to stderr.
    */
   onRetry?: (attempt: number, maxAttempts: number, delayMs: number) => void;
+  /**
+   * Per-request subprocess timeout in milliseconds.
+   * Defaults to {@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS} (5 minutes).
+   */
+  timeoutMs?: number;
 }
 
 // ── Policy flag compilation ──────────────────────────────────────────────
@@ -307,6 +312,7 @@ export function createCodexCliClient(options: CodexCliProviderOptions): ClaudeCl
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
   const onRetry = options.onRetry ?? defaultRateLimitOnRetry;
+  const resolvedTimeoutMs = options.timeoutMs ?? DEFAULT_LLM_RESPONSE_TIMEOUT_MS;
 
   return {
     mode: "cli",
@@ -316,6 +322,7 @@ export function createCodexCliClient(options: CodexCliProviderOptions): ClaudeCl
       const finalRequest: CompletionRequest = {
         ...request,
         model: request.model || defaultModel,
+        timeoutMs: request.timeoutMs ?? resolvedTimeoutMs,
       };
       let attemptedWithoutApiKey = false;
 

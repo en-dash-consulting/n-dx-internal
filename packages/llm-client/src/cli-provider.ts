@@ -37,6 +37,7 @@ import { ClaudeClientError } from "./types.js";
 import { resolveCliPath } from "./config.js";
 import { parseCliTokenUsage, parseStreamTokenUsage } from "./token-usage.js";
 import type { LLMProvider, ProviderInfo } from "./provider-interface.js";
+import { DEFAULT_LLM_RESPONSE_TIMEOUT_MS } from "./llm-types.js";
 
 /** Regex patterns for stderr content indicating a missing binary (Windows shell). */
 const NOT_FOUND_PATTERNS = /is not recognized as an internal or external command|cannot find the path|The system cannot find the file specified/i;
@@ -80,6 +81,12 @@ export interface CliProviderOptions extends ClaudeClientOptions {
    * When omitted, a default message is written to stderr.
    */
   onRetry?: (attempt: number, maxAttempts: number, delayMs: number) => void;
+  /**
+   * Per-spawn timeout in milliseconds.
+   * Overrides the `NDX_CLAUDE_PER_CALL_TIMEOUT_MS` environment variable and
+   * the built-in default ({@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS} — 5 minutes).
+   */
+  timeoutMs?: number;
 }
 
 /**
@@ -149,21 +156,18 @@ function spawnOnce(
     let stderr = "";
 
     // Per-call timeout — caps any single claude invocation so a stalled
-    // process surfaces as a clear, actionable error rather than 240s of
-    // silence (the outer foundationExec timeout). Configurable via
-    // NDX_CLAUDE_PER_CALL_TIMEOUT_MS so users with slower networks /
-    // larger prompts can extend it without code changes. Defaults bumped
-    // to 120s — 90s killed many legitimate-but-slow first-byte
-    // completions on full-prompt enrichment (claude buffers stdout fully
-    // so partial progress isn't visible).
+    // process surfaces as a clear, actionable error rather than silent hanging.
+    // Priority: request.timeoutMs (caller-supplied) > NDX_CLAUDE_PER_CALL_TIMEOUT_MS
+    // env var > DEFAULT_LLM_RESPONSE_TIMEOUT_MS (5-minute floor).
     const envTimeout = Number(process.env.NDX_CLAUDE_PER_CALL_TIMEOUT_MS);
+    const envTimeoutValid = Number.isFinite(envTimeout) && envTimeout >= 10_000;
     const PER_CALL_TIMEOUT_MS =
-      Number.isFinite(envTimeout) && envTimeout >= 10_000 ? envTimeout : 120_000;
+      request.timeoutMs ?? (envTimeoutValid ? envTimeout : DEFAULT_LLM_RESPONSE_TIMEOUT_MS);
     const killTimer = setTimeout(() => {
       // Always log — a hung CLI being force-killed is an exceptional event,
       // not per-call noise.
       process.stderr.write(
-        `[ndx:llm:claude] claude hung past ${PER_CALL_TIMEOUT_MS / 1000}s — killing (stdout=${stdout.length}B, stderr=${stderr.length}B)\n`,
+        `[ndx:llm:claude] claude hung past ${Math.round(PER_CALL_TIMEOUT_MS / 1000)}s — killing (stdout=${stdout.length}B, stderr=${stderr.length}B)\n`,
       );
       proc.kill("SIGTERM");
       setTimeout(() => proc.kill("SIGKILL"), 2000).unref();
@@ -353,6 +357,7 @@ export function createCliClient(options: CliProviderOptions): ClaudeClient & LLM
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxDelayMs = options.maxDelayMs ?? DEFAULT_MAX_DELAY_MS;
   const onRetry = options.onRetry ?? defaultRateLimitOnRetry;
+  const resolvedTimeoutMs = options.timeoutMs ?? DEFAULT_LLM_RESPONSE_TIMEOUT_MS;
 
   const info: ProviderInfo = {
     vendor: "claude",
@@ -373,7 +378,10 @@ export function createCliClient(options: CliProviderOptions): ClaudeClient & LLM
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-          return await spawnOnce(cliBinary, request);
+          return await spawnOnce(cliBinary, {
+            ...request,
+            timeoutMs: request.timeoutMs ?? resolvedTimeoutMs,
+          });
         } catch (err) {
           lastError = err as Error;
 

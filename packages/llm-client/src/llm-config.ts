@@ -90,6 +90,11 @@ function extractLLMConfig(root: Record<string, unknown>): LLMConfig {
   const rawTopLevelModel =
     typeof llm?.model === "string" && llm.model ? llm.model : undefined;
 
+  const responseTimeout =
+    typeof llm?.responseTimeout === "number" && llm.responseTimeout > 0
+      ? llm.responseTimeout
+      : undefined;
+
   const config: LLMConfig = {};
   if (llmVendor) config.vendor = llmVendor;
   if (rawTopLevelModel) {
@@ -103,6 +108,7 @@ function extractLLMConfig(root: Record<string, unknown>): LLMConfig {
   if (llmCodex) config.codex = llmCodex;
   if (llmGoogle) config.google = llmGoogle;
   if (autoFailover !== undefined) config.autoFailover = autoFailover;
+  if (responseTimeout !== undefined) config.responseTimeout = responseTimeout;
   return config;
 }
 

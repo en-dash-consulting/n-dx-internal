@@ -42,6 +42,7 @@ import {
   shouldAutoRetry,
   DEFAULT_AUTO_RETRY_THRESHOLD_MS,
 } from "./rate-limit.js";
+import { DEFAULT_LLM_RESPONSE_TIMEOUT_MS } from "./llm-types.js";
 
 const RETRY_STATUS_CODES = new Set([429, 500, 502, 503, 529]);
 const DEFAULT_MAX_RETRIES = 3;
@@ -95,6 +96,11 @@ export interface ApiProviderOptions extends ClaudeClientOptions {
    * When omitted, a default message is written to stderr.
    */
   onRetry?: (attempt: number, maxAttempts: number, delayMs: number) => void;
+  /**
+   * Per-request timeout in milliseconds.
+   * Defaults to {@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS} (5 minutes).
+   */
+  timeoutMs?: number;
 }
 
 /**
@@ -129,6 +135,7 @@ export function createApiClient(options: ApiProviderOptions): ClaudeClient & LLM
   const maxTokens = options.maxTokens ?? DEFAULT_MAX_TOKENS;
   const autoRetryThresholdMs = options.autoRetryThresholdMs ?? DEFAULT_AUTO_RETRY_THRESHOLD_MS;
   const onRetry = options.onRetry ?? defaultApiRateLimitOnRetry;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_LLM_RESPONSE_TIMEOUT_MS;
 
   const info: ProviderInfo = {
     vendor: "claude",
@@ -170,7 +177,7 @@ export function createApiClient(options: ApiProviderOptions): ClaudeClient & LLM
             model: resolveModel(request.model),
             max_tokens: maxTokens,
             messages: [{ role: "user", content: request.prompt }],
-          });
+          }, { timeout: timeoutMs });
 
           // Extract text from response blocks
           let text = "";

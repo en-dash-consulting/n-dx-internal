@@ -94,6 +94,15 @@ export interface GoogleConfig {
   oauth_credentials_path?: string;
 }
 
+/**
+ * Minimum default LLM response timeout (5 minutes in milliseconds).
+ *
+ * All vendor adapters (Claude, Codex, Google) use this as their floor when no
+ * explicit timeout is configured. Users can raise it via `llm.responseTimeout`
+ * in `.n-dx.json` — this constant is a default, not a cap.
+ */
+export const DEFAULT_LLM_RESPONSE_TIMEOUT_MS = 5 * 60 * 1000;
+
 /** Vendor-neutral config shape loaded from `.n-dx.json`. */
 export interface LLMConfig {
   /** Default vendor selected by the project. */
@@ -117,6 +126,16 @@ export interface LLMConfig {
    * Default: false (disabled for backward compatibility).
    */
   autoFailover?: boolean;
+  /**
+   * LLM response timeout for all vendor adapters, in milliseconds.
+   *
+   * Overrides the adapter's built-in default ({@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS}).
+   * Must be ≥ 1. The 5-minute constant is the floor for adapters — this field
+   * can raise it above the default but is not validated as a hard cap.
+   *
+   * @default 300_000 (5 minutes)
+   */
+  responseTimeout?: number;
 }
 
 /** Alias that preserves migration ergonomics for downstream packages. */

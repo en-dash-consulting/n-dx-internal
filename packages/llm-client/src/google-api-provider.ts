@@ -28,7 +28,7 @@
 import type { CompletionRequest, CompletionResult, TokenUsage } from "./types.js";
 import { ClaudeClientError } from "./types.js";
 import type { LLMProvider, ProviderAuthMode, ProviderInfo, StreamChunk } from "./provider-interface.js";
-import type { GoogleConfig } from "./llm-types.js";
+import { type GoogleConfig, DEFAULT_LLM_RESPONSE_TIMEOUT_MS } from "./llm-types.js";
 import type { GeminiFunctionDeclaration } from "./tool-schema.js";
 import { resolveGoogleOAuthToken, loadGoogleOAuthCredentials } from "./google-oauth.js";
 
@@ -61,6 +61,11 @@ export interface GoogleApiProviderOptions {
   baseDelayMs?: number;
   /** Maximum response tokens (default: 8192). */
   maxOutputTokens?: number;
+  /**
+   * Per-request timeout in milliseconds.
+   * Defaults to {@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS} (5 minutes).
+   */
+  timeoutMs?: number;
 }
 
 // ── Tool-calling types ──────────────────────────────────────────────────────
@@ -282,6 +287,19 @@ function resolveBaseUrl(googleConfig?: GoogleConfig): string {
 }
 
 /**
+ * Create an AbortSignal that fires after `timeoutMs` milliseconds.
+ *
+ * The underlying timer is unref'd so it does not keep the Node.js event loop
+ * alive if the fetch resolves before the timeout.
+ */
+function makeTimeoutSignal(timeoutMs: number): { signal: AbortSignal; clear: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  (timer as NodeJS.Timeout).unref?.();
+  return { signal: controller.signal, clear: () => clearTimeout(timer) };
+}
+
+/**
  * Extract text from a Gemini API response candidate array.
  *
  * Returns empty string when no candidates or parts are present.
@@ -373,6 +391,7 @@ export function createGoogleApiProvider(
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxOutputTokens = options.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_LLM_RESPONSE_TIMEOUT_MS;
 
   // Mutable mode tracks the active auth pathway after first resolution.
   // Starts as "api" (API key assumed); updated to "oauth" when OAuth is active.
@@ -479,13 +498,16 @@ export function createGoogleApiProvider(
       let lastError: Error | undefined;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const { signal, clear } = makeTimeoutSignal(timeoutMs);
         try {
           const auth = await resolveCurrentAuth();
           const response = await fetch(buildUrl(model, "generateContent", auth), {
             method: "POST",
             headers: buildHeaders(auth),
             body: buildToolBody(args),
+            signal,
           });
+          clear();
 
           if (!response.ok) {
             const body = await response.text();
@@ -544,8 +566,16 @@ export function createGoogleApiProvider(
 
           return { parts, functionCalls, text, finishReason, usage };
         } catch (err) {
+          clear();
           if (err instanceof ClaudeClientError) {
             throw err;
+          }
+          if (err instanceof Error && err.name === "AbortError") {
+            throw new ClaudeClientError(
+              `Gemini API timed out after ${timeoutMs}ms`,
+              "timeout",
+              true,
+            );
           }
           lastError = err as Error;
 
@@ -567,6 +597,7 @@ export function createGoogleApiProvider(
     },
 
     async validateAuth(): Promise<boolean> {
+      const { signal, clear } = makeTimeoutSignal(timeoutMs);
       try {
         const auth = await resolveCurrentAuth();
         const url = auth.method === "oauth"
@@ -575,7 +606,9 @@ export function createGoogleApiProvider(
         const response = await fetch(url, {
           method: "GET",
           headers: buildHeaders(auth),
+          signal,
         });
+        clear();
         if (response.status === 401 || response.status === 403) {
           return false;
         }
@@ -588,7 +621,15 @@ export function createGoogleApiProvider(
         }
         return true;
       } catch (err) {
+        clear();
         if (err instanceof ClaudeClientError) throw err;
+        if (err instanceof Error && err.name === "AbortError") {
+          throw new ClaudeClientError(
+            `Gemini API timed out after ${timeoutMs}ms`,
+            "timeout",
+            true,
+          );
+        }
         throw new ClaudeClientError(
           (err as Error).message,
           "unknown",
@@ -605,13 +646,16 @@ export function createGoogleApiProvider(
       let lastError: Error | undefined;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const { signal, clear } = makeTimeoutSignal(timeoutMs);
         try {
           const auth = await resolveCurrentAuth();
           const response = await fetch(buildUrl(model, "generateContent", auth), {
             method: "POST",
             headers: buildHeaders(auth),
             body: buildBody(request.prompt),
+            signal,
           });
+          clear();
 
           if (!response.ok) {
             const body = await response.text();
@@ -647,8 +691,16 @@ export function createGoogleApiProvider(
 
           return { text, tokenUsage };
         } catch (err) {
+          clear();
           if (err instanceof ClaudeClientError) {
             throw err;
+          }
+          if (err instanceof Error && err.name === "AbortError") {
+            throw new ClaudeClientError(
+              `Gemini API timed out after ${timeoutMs}ms`,
+              "timeout",
+              true,
+            );
           }
           lastError = err as Error;
 
@@ -673,12 +725,28 @@ export function createGoogleApiProvider(
       const model = request.model || defaultModel;
       validateGeminiModelId(model);
 
+      const { signal, clear: clearStreamTimeout } = makeTimeoutSignal(timeoutMs);
       const auth = await resolveCurrentAuth();
-      const response = await fetch(buildUrl(model, "streamGenerateContent", auth), {
-        method: "POST",
-        headers: buildHeaders(auth),
-        body: buildBody(request.prompt),
-      });
+      let response: Response;
+      try {
+        response = await fetch(buildUrl(model, "streamGenerateContent", auth), {
+          method: "POST",
+          headers: buildHeaders(auth),
+          body: buildBody(request.prompt),
+          signal,
+        });
+        clearStreamTimeout();
+      } catch (err) {
+        clearStreamTimeout();
+        if (err instanceof Error && err.name === "AbortError") {
+          throw new ClaudeClientError(
+            `Gemini API stream timed out after ${timeoutMs}ms`,
+            "timeout",
+            true,
+          );
+        }
+        throw err;
+      }
 
       if (!response.ok) {
         const body = await response.text();

@@ -81,10 +81,14 @@ export function detectLLMAuthMode(options: CreateLLMClientOptions): AuthMode {
  */
 export function createLLMClient(options: CreateLLMClientOptions): ClaudeClient {
   const vendor = resolveVendor(options);
+  // Propagate the project-configured response timeout to each adapter.
+  // Each adapter falls back to DEFAULT_LLM_RESPONSE_TIMEOUT_MS when undefined.
+  const configuredTimeoutMs = options.llmConfig?.responseTimeout;
 
   if (vendor === "codex") {
     return createCodexCliClient({
       codexConfig: options.llmConfig?.codex,
+      timeoutMs: configuredTimeoutMs,
     });
   }
 
@@ -94,6 +98,7 @@ export function createLLMClient(options: CreateLLMClientOptions): ClaudeClient {
     // ClaudeClient interface (both expose complete() and info).
     const googleProvider = createGoogleApiProvider({
       googleConfig: options.llmConfig?.google,
+      timeoutMs: configuredTimeoutMs,
     });
     // Cast is safe: ClaudeClient is structurally compatible with LLMProvider.complete()
     return googleProvider as unknown as ClaudeClient;
@@ -103,5 +108,6 @@ export function createLLMClient(options: CreateLLMClientOptions): ClaudeClient {
   return createClient({
     ...options,
     claudeConfig,
+    timeoutMs: configuredTimeoutMs,
   });
 }

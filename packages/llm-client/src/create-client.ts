@@ -42,6 +42,12 @@ export interface CreateClientOptions extends ClaudeClientOptions {
   api?: Omit<ApiProviderOptions, keyof ClaudeClientOptions>;
   /** CLI provider options (retries, delay, etc.). */
   cli?: Omit<CliProviderOptions, keyof ClaudeClientOptions>;
+  /**
+   * Per-request timeout in milliseconds, applied to both API and CLI providers.
+   * Defaults to {@link DEFAULT_LLM_RESPONSE_TIMEOUT_MS} inside each provider.
+   * Set here to propagate a single value to whichever provider is selected.
+   */
+  timeoutMs?: number;
 }
 
 /**
@@ -79,12 +85,14 @@ export function createClient(options: CreateClientOptions): ClaudeClient & LLMPr
   if (mode === "api") {
     return createApiClient({
       ...options,
+      timeoutMs: options.timeoutMs,
       ...(options.api ?? {}),
     });
   }
 
   return createCliClient({
     ...options,
+    timeoutMs: options.timeoutMs,
     ...(options.cli ?? {}),
   });
 }

@@ -119,6 +119,7 @@ export type {
   LLMClient,
   TaskWeight,
 } from "./llm-types.js";
+export { DEFAULT_LLM_RESPONSE_TIMEOUT_MS } from "./llm-types.js";
 
 // Types
 export type {
