@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   resolveInitLLMSelection,
   promptLLMSelection,
+  promptGoogleAuthMethod,
   isInteractiveTerminal,
   validateInitFlags,
   SUPPORTED_PROVIDERS,
@@ -1143,5 +1144,33 @@ describe("google provider", () => {
     const result = await promptLLMSelection(resolution);
     expect(result.model).toBe("gemini-2.5-pro");
     expect(result.modelSource).toBe("prompt");
+  });
+});
+
+// ── promptGoogleAuthMethod ───────────────────────────────────────────────────
+
+describe("promptGoogleAuthMethod", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns undefined in non-TTY environments (CI / piped input)", async () => {
+    // Test runner has no TTY — isInteractiveTerminal() returns false, so the
+    // function short-circuits and returns undefined without prompting.
+    const result = await promptGoogleAuthMethod();
+    expect(result).toBeUndefined();
+  });
+
+  it("returns undefined when CI env is set", async () => {
+    const origCI = process.env.CI;
+    process.env.CI = "true";
+    try {
+      // Even if somehow isTTY were true, CI flag must suppress the prompt.
+      const result = await promptGoogleAuthMethod();
+      expect(result).toBeUndefined();
+    } finally {
+      if (origCI === undefined) delete process.env.CI;
+      else process.env.CI = origCI;
+    }
   });
 });

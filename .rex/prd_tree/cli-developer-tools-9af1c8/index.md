@@ -2,9 +2,8 @@
 id: "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6"
 level: "epic"
 title: "CLI & Developer Tools"
-status: "completed"
+status: "pending"
 startedAt: "2026-04-02T17:55:36.327Z"
-completedAt: "2026-04-10T18:34:32.028Z"
 description: "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline."
 ---
 
@@ -40,3 +39,4 @@ description: "Command-line interface: error handling, validation, formatting, he
 | [Vendor-Agnostic Batch Execution in Self-Heal Loop](./vendor-agnostic-batch-execution-e0d222/index.md) | completed |
 | [Web UI Design and User Experience Enhancement](./web-ui-design-and-user-b1e130/index.md) | completed |
 | [Workflow Use Case Guides](./workflow-use-case-guides/index.md) | completed |
+| [Yellow Semantic Color Tokens for Warnings, Commands, and Remediation Flows](./yellow-semantic-color-tokens-1ebbdd/index.md) | pending |

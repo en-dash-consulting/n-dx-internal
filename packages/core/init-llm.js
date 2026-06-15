@@ -404,5 +404,42 @@ export function validateInitFlags({ provider, model, claudeModel, codexModel, go
   return { errors, warnings };
 }
 
+/**
+ * Prompt the user to choose an authentication method for Google.
+ *
+ * Shown during `ndx init` when Google is the selected provider.  The two
+ * options are presented as distinct choices so users know that OAuth is
+ * available alongside the traditional API key flow.
+ *
+ * Returns 'oauth', 'apikey', or undefined when the user cancels or the
+ * environment is non-interactive.
+ *
+ * @returns {Promise<'oauth'|'apikey'|undefined>}
+ */
+export async function promptGoogleAuthMethod() {
+  if (!isInteractiveTerminal()) return undefined;
+
+  try {
+    const { default: Enquirer } = await import("enquirer");
+    const enquirer = new Enquirer();
+
+    const response = await enquirer.prompt({
+      type: "select",
+      name: "authMethod",
+      message: "Select Google authentication method",
+      choices: [
+        { name: "oauth",   message: "Browser (OAuth)  — sign in with your Google account" },
+        { name: "apikey",  message: "API Key          — enter a Gemini API key" },
+      ],
+    });
+
+    return response.authMethod || undefined;
+  } catch (err) {
+    // Ctrl+C or Esc — treat as cancellation
+    if (err === "" || (err && err.message === "")) return undefined;
+    throw err;
+  }
+}
+
 export { SUPPORTED_PROVIDERS, PROVIDER_LABELS };
 export { LLM_MODEL_CATALOG, getModelsForVendor, getRecommendedModel } from "./llm-model-catalog.js";

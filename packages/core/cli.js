@@ -96,11 +96,12 @@ import {
   dim,
 } from "./cli-brand.js";
 import { runExport } from "./export.js";
-import { runGoogleOAuthFlow } from "./google-auth.js";
+import { runGoogleOAuthFlow, hasExistingGoogleOAuthCredentials } from "./google-auth.js";
 import {
   resolveInitLLMSelection,
   promptLLMSelection,
   validateInitFlags,
+  promptGoogleAuthMethod,
   SUPPORTED_PROVIDERS,
 } from "./init-llm.js";
 import {
@@ -1131,9 +1132,10 @@ async function runSubInitPhase(name, work, detail, quiet) {
  * @param {string} dir
  * @param {{ llmSkipped: boolean, selectedProvider: string|undefined,
  *   selectedModel: string|undefined, claudeModelFromFlag: string|undefined,
- *   codexModelFromFlag: string|undefined, googleModelFromFlag: string|undefined }} opts
+ *   codexModelFromFlag: string|undefined, googleModelFromFlag: string|undefined,
+ *   googleAuthMethod: 'oauth'|'apikey'|undefined }} opts
  */
-async function persistInitLLMConfig(dir, { llmSkipped, selectedProvider, selectedModel, claudeModelFromFlag, codexModelFromFlag, googleModelFromFlag, googleLightModelFromFlag }) {
+async function persistInitLLMConfig(dir, { llmSkipped, selectedProvider, selectedModel, claudeModelFromFlag, codexModelFromFlag, googleModelFromFlag, googleLightModelFromFlag, googleAuthMethod }) {
   if (!llmSkipped && selectedProvider) {
     const origLog = console.log;
     console.log = () => {};
@@ -1160,6 +1162,10 @@ async function persistInitLLMConfig(dir, { llmSkipped, selectedProvider, selecte
       // analysis/classification). Always persisted to llm.google.lightModel.
       if (googleLightModelFromFlag) {
         await runConfig(["llm.google.lightModel", googleLightModelFromFlag, dir]);
+      }
+      // Persist Google auth method when explicitly selected during init.
+      if (googleAuthMethod && selectedProvider === "google") {
+        await runConfig(["llm.google.authMethod", googleAuthMethod, dir]);
       }
     } finally {
       console.log = origLog;
@@ -1224,6 +1230,51 @@ function formatReadmeSummaryLines(result) {
   return [`  ${proposed} written — diff against ${existing} to merge.`];
 }
 
+/**
+ * Run the Google auth method step during `ndx init` for Google provider.
+ *
+ * Prompts the user to choose 'Browser (OAuth)' or 'API Key'.  If OAuth is
+ * selected and valid credentials already exist, prints a yellow confirmation
+ * and skips the browser flow.  If credentials are absent, launches the full
+ * OAuth browser flow.
+ *
+ * All user-action prompts and wait messages are yellow (via google-auth.js
+ * and the yellow() helper here).
+ *
+ * Returns the chosen auth method ('oauth' | 'apikey' | undefined).
+ *
+ * @param {object|undefined} googleConfig   llm.google from project config
+ * @returns {Promise<'oauth'|'apikey'|undefined>}
+ */
+async function handleGoogleInitAuthStep(googleConfig) {
+  const authMethod = await promptGoogleAuthMethod();
+  if (!authMethod) return undefined;
+
+  if (authMethod === "oauth") {
+    const credPath = googleConfig?.oauth_credentials_path;
+    const hasCredentials = await hasExistingGoogleOAuthCredentials(credPath);
+    if (hasCredentials) {
+      console.log(yellow("\n✓ Google OAuth credentials already exist — skipping browser flow."));
+      console.log(yellow("  Run 'ndx auth google' to re-authenticate.\n"));
+    } else {
+      try {
+        await runGoogleOAuthFlow({ googleConfig });
+      } catch (err) {
+        const msg = err.message ?? String(err);
+        if (err.isAuthConfig) {
+          console.error(yellow("Authentication setup required:"));
+          console.error(yellow(msg));
+        } else {
+          console.error(`Error: ${msg}`);
+        }
+        exitWithCleanup(1);
+      }
+    }
+  }
+
+  return authMethod;
+}
+
 async function handleInit(rest) {
   const { effectiveProvider, effectiveModel, claudeModelFromFlag, codexModelFromFlag, googleModelFromFlag, googleLightModelFromFlag, providerFromFlag } = parseInitFlagSet(rest);
 
@@ -1252,6 +1303,21 @@ async function handleInit(rest) {
     exitWithCleanup(1);
   }
 
+  // ── Google auth method step ────────────────────────────────────────────
+  // When Google is the selected provider, prompt for OAuth vs API Key before
+  // the main init phases begin.  In non-interactive environments (CI, piped
+  // input) this step is skipped and the auth method is left unset — the user
+  // can set it later with `ndx config llm.google.authMethod oauth|apikey`.
+  let googleAuthMethod;
+  if (selectedProvider === "google" && !llmSkipped && process.stdin.isTTY === true && !quiet) {
+    let googleConfig;
+    try {
+      const cfg = await loadProjectConfig(dir);
+      googleConfig = cfg?.llm?.google;
+    } catch { /* no project config yet — proceed with env-only resolution */ }
+    googleAuthMethod = await handleGoogleInitAuthStep(googleConfig);
+  }
+
   const svExists = existsSync(join(dir, ".sourcevision"));
   const rexExists = existsSync(join(dir, ".rex"));
   const henchExists = existsSync(join(dir, ".hench"));
@@ -1277,6 +1343,7 @@ async function handleInit(rest) {
         assistantEnabled,
         claudeModelFromFlag,
         codexModelFromFlag,
+        googleAuthMethod,
         llmSkipped,
         tools,
         runInitCapture,
@@ -1319,6 +1386,7 @@ async function handleInit(rest) {
   await persistInitLLMConfig(dir, {
     llmSkipped, selectedProvider, selectedModel: selection.model,
     claudeModelFromFlag, codexModelFromFlag, googleModelFromFlag, googleLightModelFromFlag,
+    googleAuthMethod,
   });
 
   try {

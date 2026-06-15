@@ -670,6 +670,19 @@ function validateGoogleApiKeyEnv(value) {
 }
 
 /**
+ * Validate llm.google.authMethod: 'oauth' or 'apikey'.
+ */
+export function validateGoogleAuthMethod(value) {
+  if (value !== "oauth" && value !== "apikey") {
+    throw new Error(
+      `Invalid value "${value}" for llm.google.authMethod. Expected "oauth" or "apikey".\n` +
+        "  oauth  — authenticate via browser-launch OAuth2 flow (run 'ndx auth google')\n" +
+        "  apikey — authenticate via a Gemini API key (set llm.google.api_key)",
+    );
+  }
+}
+
+/**
  * Validate CLI path by trying to run `<binary> --version`.
  * Returns { ok, version?, error? }.
  */
@@ -790,6 +803,7 @@ const LLM_VALIDATORS = {
   "google.model": validateGoogleModel,
   "google.lightModel": validateGoogleLightModel,
   "google.apiKeyEnv": validateGoogleApiKeyEnv,
+  "google.authMethod": validateGoogleAuthMethod,
   autoFailover: validateAutoFailover,
 };
 

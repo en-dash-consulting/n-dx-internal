@@ -374,4 +374,30 @@ describe("Google config validation gauntlet", () => {
       }
     });
   });
+
+  // ── validateGoogleAuthMethod ───────────────────────────────────────────────
+
+  describe("validateGoogleAuthMethod (llm.google.authMethod)", () => {
+    it("is exported from packages/core/config.js", async () => {
+      const mod = await import("../../packages/core/config.js");
+      expect(typeof mod.validateGoogleAuthMethod).toBe("function");
+    });
+
+    it("accepts 'oauth'", async () => {
+      const { validateGoogleAuthMethod } = await import("../../packages/core/config.js");
+      expect(() => validateGoogleAuthMethod("oauth")).not.toThrow();
+    });
+
+    it("accepts 'apikey'", async () => {
+      const { validateGoogleAuthMethod } = await import("../../packages/core/config.js");
+      expect(() => validateGoogleAuthMethod("apikey")).not.toThrow();
+    });
+
+    it("rejects any other string", async () => {
+      const { validateGoogleAuthMethod } = await import("../../packages/core/config.js");
+      expect(() => validateGoogleAuthMethod("browser")).toThrow(/oauth.*apikey/i);
+      expect(() => validateGoogleAuthMethod("key")).toThrow();
+      expect(() => validateGoogleAuthMethod("")).toThrow();
+    });
+  });
 });

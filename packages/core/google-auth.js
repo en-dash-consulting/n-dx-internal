@@ -24,7 +24,7 @@
 
 import { createServer } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { execFile } from "node:child_process";
@@ -336,6 +336,32 @@ function resolveClientCredentials(googleConfig) {
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Check whether valid Google OAuth credentials already exist on disk.
+ *
+ * Returns true when the credential file is present and contains the minimum
+ * required fields (access_token, refresh_token, client_id). Does NOT verify
+ * token validity — a stored but expired token still returns true because it
+ * can be refreshed silently at runtime.
+ *
+ * @param {string|undefined} credentialsPath
+ * @returns {Promise<boolean>}
+ */
+export async function hasExistingGoogleOAuthCredentials(credentialsPath) {
+  const filePath = resolveCredentialsPath(credentialsPath);
+  try {
+    const content = await readFile(filePath, "utf-8");
+    const parsed = JSON.parse(content);
+    return (
+      typeof parsed?.access_token === "string" &&
+      typeof parsed?.refresh_token === "string" &&
+      typeof parsed?.client_id === "string"
+    );
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Run the Google OAuth2 browser-launch authorization flow.

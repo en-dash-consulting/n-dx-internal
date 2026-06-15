@@ -1418,6 +1418,7 @@ export function formatMainHelp() {
 
   section("SETUP", [
     ["init [dir]", "Initialize project"],
+    ["auth <provider>", "Authenticate with an LLM provider (e.g. google)"],
     ["config [key] [value]", "View or edit settings"],
   ], pad);
 

@@ -201,6 +201,7 @@ function InitApp({
   claudeModelFromFlag,
   codexModelFromFlag,
   googleModelFromFlag,
+  googleAuthMethod,
   llmSkipped,
   tools,
   runInitCapture,
@@ -288,6 +289,9 @@ function InitApp({
         }
         if (googleModelFromFlag && provider !== "google") {
           await spawnAsync("node", [cliPath, "config", "llm.google.model", googleModelFromFlag, dir]);
+        }
+        if (googleAuthMethod && provider === "google") {
+          await spawnAsync("node", [cliPath, "config", "llm.google.authMethod", googleAuthMethod, dir]);
         }
       }
 
