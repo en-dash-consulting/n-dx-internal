@@ -85,6 +85,8 @@ export {
   colorDim,
   colorPending,
   colorPink,
+  // Short-form semantic helpers (yellow: user-action-required output)
+  cmd,
   // Canonical status→color map + helper (PRD statuses, run statuses, log-levels)
   STATUS_COLORS,
   colorStatus,

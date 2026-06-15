@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES } from "@n-dx/llm-client";
+import { CLI_ERROR_CODES, resetColorCache } from "@n-dx/llm-client";
 import { CLIError, formatCLIError, handleCLIError, requireHenchDir, requireClaudeCLI } from "../../../src/cli/errors.js";
 import { TaskNotActionableError } from "../../../src/agent/planning/brief.js";
 import { ClaudeClientError } from "../../../src/prd/llm-gateway.js";
@@ -285,5 +285,72 @@ describe("requireHenchDir", () => {
     } finally {
       rmSync(tmp, { recursive: true });
     }
+  });
+});
+
+// ── Yellow color regression tests ─────────────────────────────────────────────
+//
+// Verify that Hint lines render yellow in TTY mode (FORCE_COLOR=1) and
+// produce plain text in NO_COLOR mode.
+
+describe("formatCLIError — Hint line is yellow in TTY mode (FORCE_COLOR)", () => {
+  beforeEach(() => {
+    process.env.FORCE_COLOR = "1";
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.FORCE_COLOR;
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains ANSI yellow sequence when suggestion is present", () => {
+    const err = new CLIError("File missing", "Run ndx init first", CLI_ERROR_CODES.CONFIG_NOT_FOUND);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+  });
+
+  it("Hint line resets color after suggestion text", () => {
+    const err = new CLIError("File missing", "Run ndx init first", CLI_ERROR_CODES.CONFIG_NOT_FOUND);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[39m");
+  });
+
+  it("ClaudeClientError auth Hint renders yellow", () => {
+    const err = new ClaudeClientError("Error: invalid api key", "auth", false);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+  });
+
+  it("ENOENT .hench pattern hint renders yellow", () => {
+    const err = new Error("ENOENT: no such file, open '/tmp/.hench/config.json'");
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+    expect(hintLine).toContain("n-dx init");
+  });
+});
+
+describe("formatCLIError — Hint line is plain text in NO_COLOR mode", () => {
+  beforeEach(() => {
+    process.env.NO_COLOR = "1";
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.NO_COLOR;
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains no ANSI codes under NO_COLOR", () => {
+    const err = new CLIError("File missing", "Run ndx init first", CLI_ERROR_CODES.CONFIG_NOT_FOUND);
+    const result = formatCLIError(err);
+    expect(result).not.toContain("\x1b[");
+    expect(result).toContain("Hint: Run ndx init first");
   });
 });

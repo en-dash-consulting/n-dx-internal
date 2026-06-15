@@ -25,6 +25,7 @@ import {
   isExecutableOnPath,
   classifyVendorError,
   failureCategoryLabel,
+  colorWarn,
 } from "@n-dx/llm-client";
 import type { FailureCategory } from "@n-dx/llm-client";
 
@@ -172,7 +173,7 @@ const ERROR_HINTS: Array<[RegExp, CLIErrorCode, string, string]> = [
 function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string): string {
   let formatted = `Error: [${code}] ${message}`;
   if (suggestion) {
-    formatted += `\nHint: ${suggestion}`;
+    formatted += `\n${colorWarn(`Hint: ${suggestion}`)}`;
   }
   return formatted;
 }
@@ -225,7 +226,7 @@ export function formatCLIError(err: unknown): string {
     let msg = `Error [${label}]: ${err.message}`;
     const suggestion = CATEGORY_SUGGESTIONS[category];
     if (suggestion) {
-      msg += `\nHint: ${suggestion}`;
+      msg += `\n${colorWarn(`Hint: ${suggestion}`)}`;
     }
     return msg;
   }

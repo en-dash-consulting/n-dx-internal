@@ -2,13 +2,16 @@
 id: "4d1fa975-cea7-4436-9a19-aff1327fc548"
 level: "task"
 title: "Add regression and integration tests for Google OAuth flow, token refresh, and API-key fallback"
-status: "pending"
+status: "completed"
 priority: "medium"
 tags:
   - "auth"
   - "google"
   - "testing"
 source: "smart-add"
+startedAt: "2026-06-15T15:20:26.080Z"
+completedAt: "2026-06-15T15:24:36.470Z"
+endedAt: "2026-06-15T15:24:36.470Z"
 acceptanceCriteria:
   - "Unit tests cover token storage, load, and silent refresh logic without live network calls"
   - "Integration tests validate the full credential resolution order: OAuth > API key > error"

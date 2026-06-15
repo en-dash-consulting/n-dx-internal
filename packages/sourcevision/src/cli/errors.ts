@@ -11,6 +11,7 @@ import {
   CLI_ERROR_CODES,
   CLIError as BaseCLIError,
   type CLIErrorCode,
+  colorWarn,
 } from "@n-dx/llm-client";
 import { SV_DIR } from "./commands/constants.js";
 
@@ -73,7 +74,7 @@ const ERROR_HINTS: Array<[RegExp, CLIErrorCode, string, string]> = [
 function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string): string {
   let formatted = `Error: [${code}] ${message}`;
   if (suggestion) {
-    formatted += `\nHint: ${suggestion}`;
+    formatted += `\n${colorWarn(`Hint: ${suggestion}`)}`;
   }
   return formatted;
 }

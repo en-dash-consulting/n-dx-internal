@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES } from "@n-dx/llm-client";
+import { CLI_ERROR_CODES, resetColorCache } from "@n-dx/llm-client";
 import { CLIError, formatCLIError, handleCLIError, requireSvDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
@@ -116,5 +116,65 @@ describe("requireSvDir", () => {
     } finally {
       rmSync(tmp, { recursive: true });
     }
+  });
+});
+
+// ── Yellow color regression tests ─────────────────────────────────────────────
+//
+// Verify that Hint lines render yellow in TTY mode (FORCE_COLOR=1) and
+// produce plain text in NO_COLOR mode.
+
+describe("formatCLIError — Hint line is yellow in TTY mode (FORCE_COLOR)", () => {
+  beforeEach(() => {
+    process.env.FORCE_COLOR = "1";
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.FORCE_COLOR;
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains ANSI yellow sequence when suggestion is present", () => {
+    const err = new CLIError("File missing", "Run sourcevision init first", CLI_ERROR_CODES.DIRECTORY_NOT_FOUND);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+  });
+
+  it("Hint line resets color after suggestion text", () => {
+    const err = new CLIError("File missing", "Run sourcevision init first", CLI_ERROR_CODES.DIRECTORY_NOT_FOUND);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[39m");
+  });
+
+  it("ENOENT .sourcevision pattern hint renders yellow", () => {
+    const err = new Error("ENOENT: no such file, open '/tmp/.sourcevision/manifest.json'");
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+    expect(hintLine).toContain("n-dx init");
+  });
+});
+
+describe("formatCLIError — Hint line is plain text in NO_COLOR mode", () => {
+  beforeEach(() => {
+    process.env.NO_COLOR = "1";
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.NO_COLOR;
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains no ANSI codes under NO_COLOR", () => {
+    const err = new CLIError("File missing", "Run sourcevision init first", CLI_ERROR_CODES.DIRECTORY_NOT_FOUND);
+    const result = formatCLIError(err);
+    expect(result).not.toContain("\x1b[");
+    expect(result).toContain("Hint: Run sourcevision init first");
   });
 });

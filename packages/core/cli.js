@@ -212,6 +212,16 @@ function red(text) {
   return ansi("31", text, "39");
 }
 
+/** Warning text — yellow (user attention required). Alias for yellow(). */
+function warn(text) {
+  return yellow(text);
+}
+
+/** Command string the user should run — yellow (user action required). Alias for yellow(). */
+function cmd(text) {
+  return yellow(text);
+}
+
 suppressKnownDeprecations();
 
 /**
@@ -294,11 +304,11 @@ function formatError(err) {
   const errorLabel = red("Error:");
   // If the error already has a suggestion (e.g. from a CLIError-like object), use it
   if (err && err.suggestion) {
-    return `${errorLabel} ${message}\nHint: ${err.suggestion}`;
+    return `${errorLabel} ${message}\n${warn(`Hint: ${err.suggestion}`)}`;
   }
   for (const [pattern, suggestion] of ERROR_HINTS) {
     if (pattern.test(message)) {
-      return `${errorLabel} ${message}\nHint: ${suggestion}`;
+      return `${errorLabel} ${message}\n${warn(`Hint: ${suggestion}`)}`;
     }
   }
   return `${errorLabel} ${message}`;
@@ -414,7 +424,7 @@ function run(script, args) {
     const rel = scriptPath.slice(MONOREPO_ROOT.length + 1);
     console.error(`${red("Error:")} Build artifact missing: ${rel}`);
     console.error(
-      "Hint: Run 'pnpm install' (or 'pnpm build') from the repo root to rebuild package dist directories.",
+      warn("Hint: Run ") + cmd("pnpm install") + warn(" (or ") + cmd("pnpm build") + warn(") from the repo root to rebuild package dist directories."),
     );
     return Promise.resolve(1);
   }
@@ -650,7 +660,7 @@ function requireInit(dir, dirs) {
   const missing = dirs.filter((d) => !existsSync(join(dir, d)));
   if (missing.length > 0) {
     console.error(`Error: [${CLI_ERROR_CODES.NOT_INITIALIZED}] Missing ${missing.join(", ")} in ${dir}`);
-    console.error(`Hint: Run 'ndx init ${dir === process.cwd() ? "" : dir}' to set up the project.`.trimEnd());
+    console.error(warn(`Hint: Run 'ndx init${dir === process.cwd() ? "" : " " + dir}' to set up the project.`));
     exitWithCleanup(1);
   }
 }
@@ -937,8 +947,8 @@ function parseInitFlagSet(rest) {
     process.exit(1);
   }
 
-  for (const warn of validation.warnings) {
-    console.warn(`Warning: ${warn}`);
+  for (const w of validation.warnings) {
+    console.warn(yellow(`Warning: ${w}`));
   }
 
   // Validate --assistants= values early (value errors reported here; resolution happens later)
@@ -1535,7 +1545,7 @@ async function handleRefresh(rest) {
   } catch (err) {
     if (err instanceof RefreshPlanError) {
       console.error(`Error: ${err.message}`);
-      if (err.suggestion) console.error(`Hint: ${err.suggestion}`);
+      if (err.suggestion) console.error(warn(`Hint: ${err.suggestion}`));
       exitWithCleanup(1);
     }
     throw err;
@@ -1737,7 +1747,7 @@ async function handleWork(rest) {
     const vendor = readLLMVendor(dir);
     if (!vendor) {
       console.error("Error: No LLM vendor configured for this project.");
-      console.error("Hint: Run 'ndx config llm.vendor claude', 'ndx config llm.vendor codex', or 'ndx config llm.vendor google' to configure a vendor.");
+      console.error(warn("Hint: Run 'ndx config llm.vendor claude', 'ndx config llm.vendor codex', or 'ndx config llm.vendor google' to configure a vendor."));
       exitWithCleanup(1);
     }
   }
@@ -1939,7 +1949,7 @@ async function handleSelfHeal(rest) {
   const vendor = readLLMVendor(dir);
   if (!vendor && !captureOnly) {
     console.error("Error: No LLM vendor configured for this project.");
-    console.error("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor.");
+    console.error(warn("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor."));
     exitWithCleanup(1);
   }
 
@@ -2279,7 +2289,7 @@ async function handleShow(rest) {
 
 function handleRenamedCommand(oldName, newName, aliasName) {
   console.error(`Error: 'ndx ${oldName}' has been renamed.`);
-  console.error(`Use 'ndx ${newName}' (or the short alias 'ndx ${aliasName}') instead.`);
+  console.error(warn(`Use ${cmd(`ndx ${newName}`)} (or the short alias ${cmd(`ndx ${aliasName}`)}) instead.`));
   exitWithCleanup(1);
 }
 
@@ -2343,7 +2353,7 @@ async function handleAuth(rest) {
 
   console.error(`Error: Unknown auth provider '${provider}'.`);
   console.error("Supported providers: google");
-  console.error("Run 'ndx auth --help' for usage.");
+  console.error(warn("Run 'ndx auth --help' for usage."));
   exitWithCleanup(1);
 }
 
@@ -2372,7 +2382,7 @@ async function handlePairProgramming(rest) {
   const primaryVendor = readLLMVendor(dir);
   if (!isDryRun && !primaryVendor) {
     console.error("Error: No LLM vendor configured for this project.");
-    console.error("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor.");
+    console.error(warn("Hint: Run 'ndx config llm.vendor claude' or 'ndx config llm.vendor codex' to configure a vendor."));
     exitWithCleanup(1);
   }
 
@@ -2566,9 +2576,9 @@ function handleUnknownCommand(command) {
   const typoHint = formatTypoSuggestion(command, allCommands, "ndx ");
   console.error(`Error: [${CLI_ERROR_CODES.UNKNOWN_COMMAND}] Unknown command: ${command}`);
   if (typoHint) {
-    console.error(`Hint: ${typoHint}`);
+    console.error(warn(`Hint: ${typoHint}`));
   } else {
-    console.error("Hint: Run 'ndx --help' to see available commands, or 'ndx help <keyword>' to search.");
+    console.error(warn("Hint: Run 'ndx --help' to see available commands, or 'ndx help <keyword>' to search."));
   }
   exitWithCleanup(1);
 }

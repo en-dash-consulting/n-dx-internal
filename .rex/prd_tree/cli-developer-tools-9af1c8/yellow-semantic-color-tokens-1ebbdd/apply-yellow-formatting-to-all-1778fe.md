@@ -2,7 +2,7 @@
 id: "1778feb6-54d1-4c55-a774-bf33ce5d9319"
 level: "task"
 title: "Apply yellow formatting to all CLI warning messages, remediation hints, and recommended command strings across all packages"
-status: "pending"
+status: "completed"
 priority: "medium"
 tags:
   - "cli"
@@ -12,6 +12,9 @@ tags:
   - "sourcevision"
   - "hench"
 source: "smart-add"
+startedAt: "2026-06-15T15:25:30.738Z"
+completedAt: "2026-06-15T15:40:27.036Z"
+endedAt: "2026-06-15T15:40:27.036Z"
 acceptanceCriteria:
   - "All warning-level output lines across rex, sourcevision, hench, and ndx use the `warn()` color helper"
   - "All recommended command strings embedded in CLI output use the `cmd()` color helper and appear yellow"

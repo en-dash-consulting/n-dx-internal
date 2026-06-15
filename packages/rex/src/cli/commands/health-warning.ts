@@ -11,6 +11,7 @@
 import type { PRDStore } from "../../store/index.js";
 import type { StructureHealthThresholds } from "../../schema/index.js";
 import { checkStructureHealth } from "../../core/health.js";
+import { colorWarn, cmd } from "@n-dx/llm-client";
 
 /**
  * Check PRD structure health and print warnings to stderr.
@@ -31,14 +32,14 @@ export async function warnOnStructureDegradation(
 
     if (!result.healthy) {
       process.stderr.write("\n");
-      process.stderr.write("Structure warnings:\n");
+      process.stderr.write(colorWarn("Structure warnings:") + "\n");
       for (const w of result.warnings.slice(0, 5)) {
-        process.stderr.write(`  ⚠ ${w.message}\n`);
+        process.stderr.write(`  ${colorWarn(`⚠ ${w.message}`)}\n`);
       }
       if (result.warnings.length > 5) {
         process.stderr.write(`  ... and ${result.warnings.length - 5} more\n`);
       }
-      process.stderr.write("  Run 'ndx reshape' or 'ndx reorganize' to fix.\n");
+      process.stderr.write(`  ${cmd("ndx reshape")} or ${cmd("ndx reorganize")} to fix.\n`);
     }
   } catch {
     // Non-fatal — don't break the command if health check fails

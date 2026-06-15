@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES } from "@n-dx/llm-client";
+import { CLI_ERROR_CODES, resetColorCache } from "@n-dx/llm-client";
 import { CLIError, BudgetExceededError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
@@ -210,5 +210,68 @@ describe("requireRexDir", () => {
     } finally {
       rmSync(tmp, { recursive: true });
     }
+  });
+});
+
+// ── Yellow color regression tests ─────────────────────────────────────────────
+//
+// Verify that Hint lines render yellow in TTY mode (FORCE_COLOR=1) and
+// produce plain text in NO_COLOR mode. Tests exercise the colorWarn()
+// wrapping added to renderCLIError().
+
+describe("formatCLIError — Hint line is yellow in TTY mode (FORCE_COLOR)", () => {
+  beforeEach(() => {
+    process.env.FORCE_COLOR = "1";
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.FORCE_COLOR;
+    delete process.env.NO_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains ANSI yellow sequence when suggestion is present", () => {
+    const err = new CLIError("File missing", "Run init first", CLI_ERROR_CODES.PRD_NOT_FOUND);
+    const result = formatCLIError(err);
+    // Hint line must contain the ANSI yellow open code (\x1b[33m)
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+  });
+
+  it("Hint line resets color after the suggestion text", () => {
+    const err = new CLIError("File missing", "Run init first", CLI_ERROR_CODES.PRD_NOT_FOUND);
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    // Must end with a color reset to avoid bleed into subsequent output
+    expect(hintLine).toContain("\x1b[39m");
+  });
+
+  it("ENOENT pattern hint renders yellow", () => {
+    const err = new Error("ENOENT: no such file or directory, open '/tmp/.rex/prd.json'");
+    const result = formatCLIError(err);
+    const hintLine = result.split("\n")[1];
+    expect(hintLine).toContain("\x1b[33m");
+    expect(hintLine).toContain("n-dx init");
+  });
+});
+
+describe("formatCLIError — Hint line is plain text in NO_COLOR mode", () => {
+  beforeEach(() => {
+    process.env.NO_COLOR = "1";
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+  afterEach(() => {
+    delete process.env.NO_COLOR;
+    delete process.env.FORCE_COLOR;
+    resetColorCache();
+  });
+
+  it("Hint line contains no ANSI codes under NO_COLOR", () => {
+    const err = new CLIError("File missing", "Run init first", CLI_ERROR_CODES.PRD_NOT_FOUND);
+    const result = formatCLIError(err);
+    expect(result).not.toContain("\x1b[");
+    expect(result).toContain("Hint: Run init first");
   });
 });
