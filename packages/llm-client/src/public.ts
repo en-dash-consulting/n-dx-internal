@@ -411,10 +411,14 @@ export {
   colorInfo,
   colorDim,
   colorPink,
+  // Short-form semantic helpers (yellow: user-action-required output)
+  // Note: `warn` is intentionally omitted here — `output.ts` already exports a
+  // `warn(...args): void` console helper under the same name. Use `colorWarn()`
+  // from this module or import `warn` directly from `./help-format.js`.
+  cmd,
   // Canonical status→color map (PRD statuses + log-levels)
   STATUS_COLORS,
   colorStatus,
-  cmd,
   flag,
   sectionHeader,
   requiredParam,

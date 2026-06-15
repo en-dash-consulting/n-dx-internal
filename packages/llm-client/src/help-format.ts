@@ -8,14 +8,16 @@
  *
  * ### Status / severity (use these for CLI output)
  *
- * | Helper         | Color  | Meaning                        |
- * |----------------|--------|--------------------------------|
- * | colorSuccess   | Green  | completed / success            |
- * | colorError     | Red    | failure / error                |
- * | colorPending   | Yellow | in-progress / pending          |
- * | colorWarn      | Yellow | warning                        |
- * | colorInfo      | Cyan   | informational / secondary hint |
- * | colorDim       | Dim    | muted / de-emphasised text     |
+ * | Helper         | Color  | Meaning                                     |
+ * |----------------|--------|---------------------------------------------|
+ * | colorSuccess   | Green  | completed / success                         |
+ * | colorError     | Red    | failure / error                             |
+ * | colorPending   | Yellow | in-progress / pending                       |
+ * | colorWarn      | Yellow | warning (verbose form)                      |
+ * | warn           | Yellow | warning message (short alias for colorWarn) |
+ * | cmd            | Yellow | command string the user should run          |
+ * | colorInfo      | Cyan   | informational / secondary hint              |
+ * | colorDim       | Dim    | muted / de-emphasised text                  |
  *
  * ### Help formatting (use these for --help pages)
  *
@@ -28,6 +30,9 @@
  * | Optional params   | Dim    | [optional]                        |
  * | Descriptions      | (none) | Plain text for readability        |
  * | Dim / secondary   | Dim    | Hints, "See also", etc.          |
+ *
+ * Note: help-page command names are coloured cyan by internal helpers; the
+ * exported `cmd()` is reserved for user-facing remediation strings (yellow).
  *
  * @module @n-dx/llm-client/help-format
  */
@@ -173,6 +178,35 @@ export function colorPink(text: string): string {
   return magenta(text);
 }
 
+/**
+ * Format a warning message (yellow).
+ *
+ * Short alias for {@link colorWarn}. Use when the output signals something
+ * the user should pay attention to but that is not an error — e.g.
+ * "missing config file, falling back to defaults".
+ *
+ * Prefer `warn()` over `colorWarn()` for new code. Both render identically.
+ */
+export function warn(text: string): string {
+  return yellow(text);
+}
+
+/**
+ * Format a command string the user should run (yellow).
+ *
+ * Use for actionable remediation output — any time the CLI tells a user
+ * "run this command": `run ${cmd("ndx start .")}` or inline in a warning
+ * message. Yellow signals "user action required".
+ *
+ * **Semantic distinction from help-page formatters:**
+ * Help-page command names (in `formatHelp` / `formatUsage` output) are
+ * rendered cyan internally. This `cmd()` export is for *runtime* output
+ * where you are directing the user to execute a specific shell command.
+ */
+export function cmd(text: string): string {
+  return yellow(text);
+}
+
 // ── PRD status + log-level color map ────────────────────────────────────
 
 /**
@@ -237,12 +271,7 @@ export function colorStatus(status: string, text?: string): string {
   return colorFn(text ?? status);
 }
 
-// ── Semantic formatters ─────────────────────────────────────────────────
-
-/** Format a command name (cyan). */
-export function cmd(text: string): string {
-  return cyan(text);
-}
+// ── Help-page formatters ────────────────────────────────────────────────
 
 /** Format a flag/option name (yellow). */
 export function flag(text: string): string {
@@ -351,7 +380,7 @@ export function formatHelp(def: HelpDefinition): string {
   const lines: string[] = [];
 
   // ── Title line ──
-  lines.push(`${cmd(def.tool)} ${cmd(def.command)} ${dim("—")} ${def.summary}`);
+  lines.push(`${cyan(def.tool)} ${cyan(def.command)} ${dim("—")} ${def.summary}`);
   lines.push("");
 
   // ── Description ──
@@ -418,7 +447,7 @@ export function formatHelp(def: HelpDefinition): string {
     const pad = Math.max(maxCmdLen + 4, 36); // At least 36 chars
 
     for (const ex of def.examples) {
-      const cmdText = cmd(ex.command);
+      const cmdText = cyan(ex.command);
       const rawCmdLen = ex.command.length;
       const spacing = " ".repeat(Math.max(pad - rawCmdLen - 2, 2));
       lines.push(`  ${cmdText}${spacing}${dim(ex.description)}`);
@@ -429,7 +458,7 @@ export function formatHelp(def: HelpDefinition): string {
 
   // ── See also ──
   if (def.related && def.related.length > 0) {
-    const relatedStr = def.related.map((r) => cmd(`${def.tool} ${r}`)).join(dim(", "));
+    const relatedStr = def.related.map((r) => cyan(`${def.tool} ${r}`)).join(dim(", "));
     lines.push(dim("See also: ") + relatedStr);
   }
 
@@ -457,7 +486,7 @@ function highlightUsageLine(line: string): string {
   result = result.replace(/^(\S+)(\s+)(\S+)/, (_, tool, space, command) => {
     // Only colorize if the first word looks like a tool name
     if (/^(ndx|n-dx|rex|hench|sourcevision|sv|echo|cat)$/.test(tool)) {
-      return cmd(tool) + space + cmd(command);
+      return cyan(tool) + space + cyan(command);
     }
     return _;
   });
@@ -514,7 +543,7 @@ export function formatUsage(def: UsageDefinition): string {
     const pad = Math.max(maxNameLen + 4, 24);
 
     for (const item of section.items) {
-      const nameText = cmd(item.name);
+      const nameText = cyan(item.name);
       const rawNameLen = item.name.length;
       const spacing = " ".repeat(Math.max(pad - rawNameLen - 2, 2));
       lines.push(`  ${nameText}${spacing}${item.description}`);

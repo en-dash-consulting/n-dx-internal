@@ -32,6 +32,8 @@ import {
   colorInfo,
   colorDim,
   colorPink,
+  warn,
+  cmd,
   colorStatus,
 } from "../../src/help-format.js";
 
@@ -155,6 +157,8 @@ describe("semantic helpers — FORCE_COLOR reset regression", () => {
     ["colorInfo", colorInfo, "note"],
     ["colorDim", colorDim, "hint"],
     ["colorPink", colorPink, "─".repeat(20)],
+    ["warn", warn, "missing config"],
+    ["cmd", cmd, "ndx start ."],
   ];
 
   for (const [name, fn, sample] of SEMANTIC) {
@@ -197,6 +201,7 @@ describe("NO_COLOR path — all color functions return unmodified text", () => {
     ["colorSuccess", colorSuccess], ["colorError", colorError],
     ["colorWarn", colorWarn], ["colorPending", colorPending],
     ["colorInfo", colorInfo], ["colorDim", colorDim], ["colorPink", colorPink],
+    ["warn", warn], ["cmd", cmd],
   ];
 
   for (const [name, fn] of ALL) {

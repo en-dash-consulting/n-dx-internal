@@ -16,6 +16,7 @@ import {
   colorDim,
   STATUS_COLORS,
   colorStatus,
+  warn,
   cmd,
   flag,
   sectionHeader,
@@ -129,8 +130,12 @@ describe("help-format", () => {
   });
 
   describe("semantic formatters", () => {
-    it("cmd formats as cyan (passthrough in no-color)", () => {
-      expect(cmd("rex status")).toBe("rex status");
+    it("warn formats as yellow (passthrough in no-color)", () => {
+      expect(warn("something may be wrong")).toBe("something may be wrong");
+    });
+
+    it("cmd formats as yellow (passthrough in no-color)", () => {
+      expect(cmd("ndx start .")).toBe("ndx start .");
     });
 
     it("flag formats as yellow (passthrough in no-color)", () => {
@@ -147,6 +152,36 @@ describe("help-format", () => {
 
     it("optionalParam wraps in square brackets", () => {
       expect(optionalParam("dir")).toBe("[dir]");
+    });
+
+    describe("TTY mode (FORCE_COLOR)", () => {
+      beforeEach(() => {
+        delete process.env.NO_COLOR;
+        process.env.FORCE_COLOR = "1";
+        resetColorCache();
+      });
+
+      it("warn renders ANSI yellow (\\x1b[33m)", () => {
+        expect(warn("missing config")).toBe("\x1b[33mmissing config\x1b[39m");
+      });
+
+      it("cmd renders ANSI yellow (\\x1b[33m)", () => {
+        expect(cmd("ndx start .")).toBe("\x1b[33mndx start .\x1b[39m");
+      });
+
+      it("warn plain-text fallback: NO_COLOR suppresses color", () => {
+        process.env.NO_COLOR = "1";
+        delete process.env.FORCE_COLOR;
+        resetColorCache();
+        expect(warn("missing config")).toBe("missing config");
+      });
+
+      it("cmd plain-text fallback: NO_COLOR suppresses color", () => {
+        process.env.NO_COLOR = "1";
+        delete process.env.FORCE_COLOR;
+        resetColorCache();
+        expect(cmd("ndx start .")).toBe("ndx start .");
+      });
     });
   });
 
