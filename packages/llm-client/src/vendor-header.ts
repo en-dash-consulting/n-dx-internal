@@ -50,6 +50,14 @@ export interface VendorModelHeaderOptions {
    * When not provided, falls back to legacy format for backward compatibility.
    */
   tier?: TaskWeight;
+  /**
+   * Active authentication method for the current vendor.
+   *
+   * When set, appended to the header label so operators can see which
+   * credential pathway is active (e.g. "OAuth vs API key" for Google).
+   * Omitted for vendors where the auth method is implicit (e.g. Claude CLI).
+   */
+  authMethod?: "oauth" | "api-key";
 }
 
 /**
@@ -117,7 +125,8 @@ export function printVendorModelHeader(
         : ` from llm.${vendor}.model`;
   }
 
-  info(`${yellow(`Vendor: ${vendor}`)}  ${yellow(`Model: ${resolved}`)} (${label}${sourceSuffix})`);
+  const authSuffix = options?.authMethod ? `, auth: ${options.authMethod}` : "";
+  info(`${yellow(`Vendor: ${vendor}`)}  ${yellow(`Model: ${resolved}`)} (${label}${sourceSuffix}${authSuffix})`);
 
   if (options?.lastModel) {
     const resolvedLast = resolveModel(options.lastModel);

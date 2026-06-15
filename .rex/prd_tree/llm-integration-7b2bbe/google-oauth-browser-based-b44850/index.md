@@ -15,4 +15,4 @@ description: "Add a browser-launched OAuth2 local auth flow for Google's LLMs as
 | [Add regression and integration tests for Google OAuth flow, token refresh, and API-key fallback](./add-regression-and-integration-4d1fa9.md) | pending |
 | [Implement Google OAuth2 browser-launch flow with local token storage](./implement-google-oauth2-browser-0a2f65.md) | completed |
 | [Integrate Google OAuth flow into ndx init and ndx config with browser-launch UX](./integrate-google-oauth-flow-a85cb9.md) | completed |
-| [Wire Google OAuth credential detection into the Google vendor adapter with API-key fallback](./wire-google-oauth-credential-6b118c.md) | pending |
+| [Wire Google OAuth credential detection into the Google vendor adapter with API-key fallback](./wire-google-oauth-credential-6b118c.md) | completed |

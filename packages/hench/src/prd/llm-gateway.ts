@@ -61,6 +61,10 @@ export { suppressKnownDeprecations } from "@n-dx/llm-client";
 export { printVendorModelHeader } from "@n-dx/llm-client";
 export type { VendorModelHeaderOptions } from "@n-dx/llm-client";
 
+// ---- Google auth detection (for vendor header display) ----------------------
+export { detectGoogleAuthMethod } from "@n-dx/llm-client";
+export type { GoogleAuthResult } from "@n-dx/llm-client";
+
 // ---- CLI help formatting ----------------------------------------------------
 export { formatHelp, formatTypoSuggestion } from "@n-dx/llm-client";
 

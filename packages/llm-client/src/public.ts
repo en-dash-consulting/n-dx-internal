@@ -215,11 +215,14 @@ export type { OpenAiApiProviderOptions } from "./openai-api-provider.js";
 export {
   createGoogleApiProvider,
   resolveGoogleApiKey,
+  resolveGoogleAuth,
+  detectGoogleAuthMethod,
   parseGeminiTokenUsage,
   validateGeminiModelId,
 } from "./google-api-provider.js";
 export type {
   GoogleApiProviderOptions,
+  GoogleAuthResult,
   GeminiContent,
   GeminiPart,
   GeminiToolBlock,

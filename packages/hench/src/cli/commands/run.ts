@@ -19,7 +19,7 @@ import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output, setQuiet } from "../output.js";
 import { section } from "../../types/output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
-import { printVendorModelHeader, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor } from "../../prd/llm-gateway.js";
+import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor } from "../../prd/llm-gateway.js";
 import { ExecutionQueue } from "../../queue/execution-queue.js";
 import { formatQueueStatus } from "../../queue/format.js";
 import { resolveSchedulingPriority } from "../../queue/priority-scheduler.js";
@@ -899,10 +899,16 @@ export async function cmdRun(
   // Reads the most recent run artifact (if any) to detect model changes.
   const recentRuns = await listRuns(henchDir, 1);
   const lastRunModel = recentRuns[0]?.model;
+  // For Google vendor, detect active auth method (OAuth vs API key) so the
+  // header can show which credential pathway will be used.
+  const googleAuthMethod = llmVendor === "google"
+    ? await detectGoogleAuthMethod(llmConfig?.google).catch(() => undefined)
+    : undefined;
   printVendorModelHeader(llmVendor, llmConfig, {
     lastModel: lastRunModel ? resolveModel(lastRunModel) : undefined,
     resolvedModel,
     modelSource,
+    authMethod: googleAuthMethod,
   });
 
   // Suppress all informational output (including quota lines) in JSON mode,

@@ -27,9 +27,10 @@
 
 import type { CompletionRequest, CompletionResult, TokenUsage } from "./types.js";
 import { ClaudeClientError } from "./types.js";
-import type { LLMProvider, ProviderInfo, StreamChunk } from "./provider-interface.js";
+import type { LLMProvider, ProviderAuthMode, ProviderInfo, StreamChunk } from "./provider-interface.js";
 import type { GoogleConfig } from "./llm-types.js";
 import type { GeminiFunctionDeclaration } from "./tool-schema.js";
+import { resolveGoogleOAuthToken, loadGoogleOAuthCredentials } from "./google-oauth.js";
 
 const RETRY_STATUS_CODES = new Set([429, 500, 502, 503]);
 const DEFAULT_MAX_RETRIES = 3;
@@ -168,6 +169,94 @@ export function resolveGoogleApiKey(
   return googleConfig?.api_key ?? process.env[apiKeyEnv];
 }
 
+/**
+ * Result of Google auth resolution — the active authentication method and
+ * the token to use for API calls.
+ */
+export interface GoogleAuthResult {
+  /** Which authentication pathway is active for this call. */
+  method: "oauth" | "api-key";
+  /** The bearer token (OAuth) or API key to pass to the Gemini API. */
+  token: string;
+}
+
+/**
+ * Resolve active Google authentication — OAuth first, then API key.
+ *
+ * Resolution order:
+ * 1. OAuth bearer token (if `client_secret` is available and credentials exist)
+ * 2. API key from config (`googleConfig.api_key`)
+ * 3. API key from environment variable (default: `GEMINI_API_KEY`)
+ *
+ * When OAuth credentials are present but expired, a silent token refresh is
+ * attempted. If the refresh fails, the function falls back to the API key.
+ *
+ * @throws {ClaudeClientError} with reason `"auth"` when neither OAuth nor API
+ *   key resolves to a valid credential.
+ */
+export async function resolveGoogleAuth(
+  googleConfig?: GoogleConfig,
+  apiKeyEnv = "GEMINI_API_KEY",
+): Promise<GoogleAuthResult> {
+  // Try OAuth if client_secret is configured.
+  const clientSecret = googleConfig?.client_secret ?? process.env.GOOGLE_CLIENT_SECRET;
+  if (clientSecret) {
+    const credentialsPath = googleConfig?.oauth_credentials_path;
+    try {
+      const token = await resolveGoogleOAuthToken(clientSecret, credentialsPath);
+      if (token) {
+        return { method: "oauth", token };
+      }
+    } catch {
+      // OAuth attempt failed — fall through to API key.
+    }
+  }
+
+  // Fall back to API key.
+  const apiKey = resolveGoogleApiKey(googleConfig, apiKeyEnv);
+  if (apiKey) {
+    return { method: "api-key", token: apiKey };
+  }
+
+  throw new ClaudeClientError(
+    `Google authentication failed. Configure an API key via 'n-dx config llm.google.api_key <key>' ` +
+      `or the ${apiKeyEnv} environment variable, or authenticate with OAuth via 'ndx auth google'.`,
+    "auth",
+    false,
+  );
+}
+
+/**
+ * Detect the likely active Google authentication method without making network
+ * calls.
+ *
+ * Used to surface the auth method in the vendor header before the first API
+ * call. Returns `undefined` when no authentication is configured.
+ *
+ * Detection logic (no network calls, no token refresh):
+ * 1. If `client_secret` is available AND a credentials file exists → `"oauth"`
+ * 2. If an API key is available → `"api-key"`
+ * 3. Neither → `undefined`
+ */
+export async function detectGoogleAuthMethod(
+  googleConfig?: GoogleConfig,
+): Promise<"oauth" | "api-key" | undefined> {
+  const clientSecret = googleConfig?.client_secret ?? process.env.GOOGLE_CLIENT_SECRET;
+  if (clientSecret) {
+    const credentialsPath = googleConfig?.oauth_credentials_path;
+    const creds = await loadGoogleOAuthCredentials(credentialsPath);
+    if (creds) {
+      return "oauth";
+    }
+  }
+
+  const apiKeyEnv = googleConfig?.apiKeyEnv ?? "GEMINI_API_KEY";
+  const apiKey = resolveGoogleApiKey(googleConfig, apiKeyEnv);
+  if (apiKey) return "api-key";
+
+  return undefined;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 /** Classify an HTTP status code into an ErrorReason and throw. */
@@ -239,7 +328,19 @@ export function validateGeminiModelId(model: string): void {
  * Uses native `fetch` to call the Generative Language REST API.
  * Supports both blocking completions and streaming.
  *
- * @throws {ClaudeClientError} with reason "auth" if no API key is available.
+ * ## Authentication resolution order
+ *
+ * 1. **OAuth bearer token** — when `client_secret` is available (from
+ *    `googleConfig.client_secret` or `GOOGLE_CLIENT_SECRET` env var) and valid
+ *    credentials exist on disk. Expired tokens are refreshed automatically.
+ * 2. **API key** — from `googleConfig.api_key` or the configured env var
+ *    (default: `GEMINI_API_KEY`).
+ *
+ * Construction succeeds as long as either an API key or a `client_secret` is
+ * present. The actual credential is resolved on the first request.
+ *
+ * @throws {ClaudeClientError} with reason "auth" if neither an API key nor a
+ *   client_secret is configured at construction time.
  * @throws {ClaudeClientError} with reason "not-found" if the model ID is not a
  *   valid Gemini model (i.e., does not start with "gemini-").
  */
@@ -252,8 +353,11 @@ export function createGoogleApiProvider(
   // documentation and the config preflight check (runGoogleApiPreflight).
   const apiKeyEnv = options.apiKeyEnv ?? googleConfig?.apiKeyEnv ?? "GEMINI_API_KEY";
   const apiKey = resolveGoogleApiKey(googleConfig, apiKeyEnv);
+  const clientSecret = googleConfig?.client_secret ?? process.env.GOOGLE_CLIENT_SECRET;
 
-  if (!apiKey) {
+  // Require at least one auth mechanism at construction time so callers get a
+  // clear error before attempting any API calls.
+  if (!apiKey && !clientSecret) {
     throw new ClaudeClientError(
       `Google API key not found. Set it via 'n-dx config llm.google.api_key <key>' or the ${apiKeyEnv} environment variable.`,
       "auth",
@@ -270,7 +374,14 @@ export function createGoogleApiProvider(
   const baseDelayMs = options.baseDelayMs ?? DEFAULT_BASE_DELAY_MS;
   const maxOutputTokens = options.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
 
-  const info: ProviderInfo = {
+  // Mutable mode tracks the active auth pathway after first resolution.
+  // Starts as "api" (API key assumed); updated to "oauth" when OAuth is active.
+  const mutableInfo: {
+    vendor: "google";
+    mode: ProviderAuthMode;
+    model: string;
+    capabilities: ReadonlyArray<"streaming" | "function-calling">;
+  } = {
     vendor: "google",
     mode: "api",
     model: defaultModel,
@@ -278,13 +389,48 @@ export function createGoogleApiProvider(
   };
 
   /**
+   * Resolve the current auth credentials and update info.mode.
+   *
+   * Tries OAuth first (if client_secret is available), then falls back to the
+   * API key.
+   */
+  async function resolveCurrentAuth(): Promise<GoogleAuthResult> {
+    const result = await resolveGoogleAuth(googleConfig, apiKeyEnv);
+    mutableInfo.mode = result.method === "oauth" ? "oauth" : "api";
+    return result;
+  }
+
+  /**
    * Build the full request URL for a given model and action.
    *
-   * Appends the API key as a query parameter (required by the Gemini REST API).
+   * OAuth requests omit the `?key=` query parameter and authenticate via the
+   * `Authorization` header instead. API-key requests append `?key=<apiKey>`.
    */
-  function buildUrl(model: string, action: "generateContent" | "streamGenerateContent"): string {
-    const base = `${baseUrl}/models/${encodeURIComponent(model)}:${action}?key=${apiKey}`;
-    return action === "streamGenerateContent" ? `${base}&alt=sse` : base;
+  function buildUrl(
+    model: string,
+    action: "generateContent" | "streamGenerateContent",
+    auth: GoogleAuthResult,
+  ): string {
+    const modelPath = `${baseUrl}/models/${encodeURIComponent(model)}:${action}`;
+    if (auth.method === "oauth") {
+      return action === "streamGenerateContent" ? `${modelPath}?alt=sse` : modelPath;
+    }
+    const withKey = `${modelPath}?key=${auth.token}`;
+    return action === "streamGenerateContent" ? `${withKey}&alt=sse` : withKey;
+  }
+
+  /**
+   * Build HTTP headers for a request.
+   *
+   * OAuth requests include `Authorization: Bearer <token>`. API-key requests
+   * rely solely on the key embedded in the URL.
+   */
+  function buildHeaders(auth: GoogleAuthResult): Record<string, string> {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (auth.method === "oauth") {
+      headers["Authorization"] = `Bearer ${auth.token}`;
+    }
+    return headers;
   }
 
   /**
@@ -320,7 +466,9 @@ export function createGoogleApiProvider(
   }
 
   return {
-    info,
+    get info(): ProviderInfo {
+      return mutableInfo as ProviderInfo;
+    },
 
     async generateContentWithTools(
       args: GenerateContentWithToolsArgs,
@@ -332,9 +480,10 @@ export function createGoogleApiProvider(
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-          const response = await fetch(buildUrl(model, "generateContent"), {
+          const auth = await resolveCurrentAuth();
+          const response = await fetch(buildUrl(model, "generateContent", auth), {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: buildHeaders(auth),
             body: buildToolBody(args),
           });
 
@@ -419,8 +568,13 @@ export function createGoogleApiProvider(
 
     async validateAuth(): Promise<boolean> {
       try {
-        const response = await fetch(`${baseUrl}/models?key=${apiKey}`, {
+        const auth = await resolveCurrentAuth();
+        const url = auth.method === "oauth"
+          ? `${baseUrl}/models`
+          : `${baseUrl}/models?key=${auth.token}`;
+        const response = await fetch(url, {
           method: "GET",
+          headers: buildHeaders(auth),
         });
         if (response.status === 401 || response.status === 403) {
           return false;
@@ -452,9 +606,10 @@ export function createGoogleApiProvider(
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-          const response = await fetch(buildUrl(model, "generateContent"), {
+          const auth = await resolveCurrentAuth();
+          const response = await fetch(buildUrl(model, "generateContent", auth), {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: buildHeaders(auth),
             body: buildBody(request.prompt),
           });
 
@@ -518,9 +673,10 @@ export function createGoogleApiProvider(
       const model = request.model || defaultModel;
       validateGeminiModelId(model);
 
-      const response = await fetch(buildUrl(model, "streamGenerateContent"), {
+      const auth = await resolveCurrentAuth();
+      const response = await fetch(buildUrl(model, "streamGenerateContent", auth), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildHeaders(auth),
         body: buildBody(request.prompt),
       });
 
