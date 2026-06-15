@@ -72,6 +72,26 @@ export interface GoogleConfig {
    * Override to use a custom env var name (e.g. `"MY_GOOGLE_KEY"`).
    */
   apiKeyEnv?: string;
+  /**
+   * Google OAuth2 client ID for the installed-app credential flow.
+   * Required for `ndx auth google`. Obtain from Google Cloud Console
+   * under APIs & Services → Credentials → OAuth 2.0 Client IDs
+   * (Application type: Desktop app).
+   * Can also be supplied via the `GOOGLE_CLIENT_ID` environment variable.
+   */
+  client_id?: string;
+  /**
+   * Google OAuth2 client secret for the installed-app credential flow.
+   * Required for `ndx auth google` and automatic token refresh.
+   * Can also be supplied via the `GOOGLE_CLIENT_SECRET` environment variable.
+   */
+  client_secret?: string;
+  /**
+   * Override path for the OAuth2 credential file.
+   * Defaults to `~/.config/n-dx/google-credentials.json` (XDG-aware).
+   * Can also be set via the `GOOGLE_CREDENTIALS_PATH` environment variable.
+   */
+  oauth_credentials_path?: string;
 }
 
 /** Vendor-neutral config shape loaded from `.n-dx.json`. */

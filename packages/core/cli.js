@@ -96,6 +96,7 @@ import {
   dim,
 } from "./cli-brand.js";
 import { runExport } from "./export.js";
+import { runGoogleOAuthFlow } from "./google-auth.js";
 import {
   resolveInitLLMSelection,
   promptLLMSelection,
@@ -2214,6 +2215,70 @@ function handleRenamedCommand(oldName, newName, aliasName) {
   exitWithCleanup(1);
 }
 
+// ── Auth commands ─────────────────────────────────────────────────────────────
+
+/**
+ * Handle `ndx auth <provider>`.
+ *
+ * Currently supports: `google`
+ *
+ * Reads `llm.google` from the project config so the OAuth flow can pick up
+ * client_id / client_secret / oauth_credentials_path from .n-dx.json without
+ * requiring flags on every run.
+ *
+ * All user-action prompts, wait messages, and remediation hints are yellow.
+ */
+async function handleAuth(rest) {
+  const positionals = rest.filter((a) => !a.startsWith("-"));
+  const provider = positionals[0];
+
+  if (!provider || provider === "--help" || provider === "-h") {
+    console.log("Usage: ndx auth <provider> [dir]");
+    console.log("");
+    console.log("Providers:");
+    console.log("  google    Authenticate with Google (opens browser)");
+    console.log("");
+    console.log("Examples:");
+    console.log("  ndx auth google");
+    exitWithCleanup(0);
+    return;
+  }
+
+  if (provider === "google") {
+    // Load the project config to pick up llm.google.{client_id,client_secret,...}
+    const dir = resolveDir(rest);
+    let googleConfig;
+    try {
+      const { loadProjectConfig } = await import("./config.js");
+      const cfg = await loadProjectConfig(dir);
+      googleConfig = cfg?.llm?.google;
+    } catch {
+      // No project config — proceed with env-only resolution
+    }
+
+    try {
+      await runGoogleOAuthFlow({ googleConfig });
+    } catch (err) {
+      const msg = err.message ?? String(err);
+      // Config errors (missing client_id / secret) get yellow highlighting
+      if (err.isAuthConfig) {
+        console.error(yellow("Authentication setup required:"));
+        console.error(yellow(msg));
+      } else {
+        console.error(`Error: ${msg}`);
+      }
+      exitWithCleanup(1);
+    }
+    exitWithCleanup(0);
+    return;
+  }
+
+  console.error(`Error: Unknown auth provider '${provider}'.`);
+  console.error("Supported providers: google");
+  console.error("Run 'ndx auth --help' for usage.");
+  exitWithCleanup(1);
+}
+
 async function handlePairProgramming(rest) {
   const flags = extractFlags(rest);
   const positionals = rest.filter((a) => !a.startsWith("-"));
@@ -2476,6 +2541,7 @@ const COMMAND_DISPATCH = new Map([
   ["export",            handleExport],
   ["config",            handleConfig],
   ["self-heal",         handleSelfHeal],
+  ["auth",              handleAuth],
   // ── Delegated rex commands ──
   ["validate",          handleValidate],
   ["fix",               handleFix],

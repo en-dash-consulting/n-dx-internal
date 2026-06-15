@@ -228,6 +228,23 @@ export type {
   GenerateContentWithToolsArgs,
 } from "./google-api-provider.js";
 
+// Google OAuth2 credential management
+export {
+  GOOGLE_AUTH_URL,
+  GOOGLE_TOKEN_URL,
+  GOOGLE_OAUTH_SCOPES,
+  resolveGoogleCredentialsPath,
+  loadGoogleOAuthCredentials,
+  saveGoogleOAuthCredentials,
+  isAccessTokenValid,
+  refreshGoogleOAuthToken,
+  resolveGoogleOAuthToken,
+} from "./google-oauth.js";
+export type {
+  GoogleOAuthCredentials,
+  GoogleTokenResponse,
+} from "./google-oauth.js";
+
 // Factory
 export {
   createClient,

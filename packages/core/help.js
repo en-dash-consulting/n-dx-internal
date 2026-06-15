@@ -203,6 +203,13 @@ const COMMAND_REGISTRY = [
     related: ["plan", "work", "refresh"],
   },
   {
+    name: "auth",
+    category: "Orchestration",
+    summary: "Authenticate with an LLM provider (e.g. Google OAuth)",
+    keywords: ["auth", "authenticate", "google", "oauth", "credentials", "login", "token"],
+    related: ["init", "config"],
+  },
+  {
     name: "pair-programming",
     category: "Orchestration",
     summary: "Run agent then cross-vendor review (alias: bicker)",
@@ -1267,6 +1274,36 @@ const ORCHESTRATOR_HELP_DEFS = {
       { command: "ndx config selfHeal.autoConfirm true", description: "Persistently bypass the prompt for every self-heal run" },
     ],
     related: ["plan", "work", "refresh"],
+  },
+  auth: {
+    summary: "authenticate with an LLM provider",
+    description:
+      "Opens the system browser to authenticate with a supported LLM provider and\n" +
+      "persists the resulting credentials locally.  Currently supports Google OAuth2.\n\n" +
+      "Google OAuth2 flow:\n" +
+      "  1. Resolves client_id / client_secret from config or env vars.\n" +
+      "  2. Opens the default browser to Google's consent screen.\n" +
+      "  3. A localhost redirect server captures the authorization code.\n" +
+      "  4. The code is exchanged for access + refresh tokens (PKCE / S256).\n" +
+      "  5. Tokens are saved to ~/.config/n-dx/google-credentials.json (mode 0600).\n\n" +
+      "Tokens refresh automatically before API calls when they expire.\n" +
+      "The existing API key flow (GEMINI_API_KEY / llm.google.api_key) continues\n" +
+      "to work unchanged when no OAuth credentials are present.\n\n" +
+      "Required configuration (Google):\n" +
+      "  llm.google.client_id     OAuth2 client ID  (or GOOGLE_CLIENT_ID env var)\n" +
+      "  llm.google.client_secret OAuth2 client secret  (or GOOGLE_CLIENT_SECRET env var)\n\n" +
+      "Obtain a client ID at https://console.cloud.google.com/apis/credentials\n" +
+      "(Application type: Desktop app).",
+    usage: "ndx auth <provider> [dir]",
+    options: [
+      { flag: "google", description: "Authenticate with Google (Gemini / Vertex AI)" },
+    ],
+    examples: [
+      { command: "ndx auth google", description: "Authenticate with Google (opens browser)" },
+      { command: "ndx config llm.google.client_id <id>", description: "Set Google OAuth2 client ID" },
+      { command: "ndx config llm.google.client_secret <secret>", description: "Set Google OAuth2 client secret" },
+    ],
+    related: ["init", "config"],
   },
 };
 
