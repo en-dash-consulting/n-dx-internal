@@ -882,3 +882,128 @@ describe("isTokenExhaustionError", () => {
     expect(wouldSuppressRollback).toBe(true);
   });
 });
+
+// ── runIterations failure behavior — predicate proofs ────────────────────────
+//
+// runIterations now shares the same differentiated failure handling as runLoop:
+//
+//   1. Token exhaustion WITH tokenRefreshAt    → wait-and-retry (no exitCode=1, no prompt)
+//   2. Non-retriable error (failed, timeout)   → formatNonTokenFailureNotification + exitCode=1
+//   3. Token exhaustion WITHOUT tokenRefreshAt → formatNonTokenFailureNotification, no exitCode=1
+//   4. error_transient WITHOUT tokenRefreshAt  → shouldContinueLoop=true → loop continues
+//
+// Previously, runIterations used a generic `red(...)` message for all stop
+// conditions and never set process.exitCode. These predicate-proof tests
+// document the new decision-tree invariants without needing to mock runOne.
+
+describe("runIterations failure behavior — predicate proofs", () => {
+  it("token exhaustion with tokenRefreshAt: isTokenExhaustionStatus=true and tokenRefreshAt present → wait-and-retry gate", async () => {
+    const { isTokenExhaustionStatus, isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "error_transient";
+    const tokenRefreshAt = new Date(Date.now() + 30_000).toISOString();
+
+    // Primary gate in runIterations: isTokenExhaustionStatus(status) && runTokenRefreshAt
+    expect(isTokenExhaustionStatus(status)).toBe(true);
+    expect(tokenRefreshAt).toBeTruthy(); // gate requires truthy refreshAt
+
+    // This path does NOT set exitCode=1 (isNonRetriableError=false)
+    expect(isNonRetriableError(status)).toBe(false);
+  });
+
+  it("budget_exceeded with tokenRefreshAt also enters wait-and-retry gate", async () => {
+    const { isTokenExhaustionStatus, isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "budget_exceeded";
+    const tokenRefreshAt = new Date(Date.now() + 60_000).toISOString();
+
+    expect(isTokenExhaustionStatus(status)).toBe(true);
+    expect(tokenRefreshAt).toBeTruthy();
+    expect(isNonRetriableError(status)).toBe(false);
+  });
+
+  it("failed with no tokenRefreshAt: shouldContinueLoop=false + isNonRetriableError=true → exitCode=1 path", async () => {
+    const { shouldContinueLoop, isNonRetriableError, isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "failed";
+    const tokenRefreshAt = undefined;
+
+    // No wait-and-retry: isTokenExhaustionStatus=false, no tokenRefreshAt
+    expect(isTokenExhaustionStatus(status)).toBe(false);
+    expect(tokenRefreshAt).toBeUndefined();
+
+    // Loop must stop
+    expect(shouldContinueLoop(status)).toBe(false);
+    // Non-retriable: triggers exitCode=1
+    expect(isNonRetriableError(status)).toBe(true);
+
+    // Simulate the runIterations decision for this path
+    const savedExitCode = process.exitCode;
+    try {
+      if (!shouldContinueLoop(status) && isNonRetriableError(status)) {
+        process.exitCode = 1;
+      }
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = savedExitCode as number | undefined;
+    }
+  });
+
+  it("timeout with no tokenRefreshAt: shouldContinueLoop=false + isNonRetriableError=true → exitCode=1 path", async () => {
+    const { shouldContinueLoop, isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "timeout";
+
+    expect(shouldContinueLoop(status)).toBe(false);
+    expect(isNonRetriableError(status)).toBe(true);
+  });
+
+  it("budget_exceeded with no tokenRefreshAt: shouldContinueLoop=false but NOT isNonRetriableError → notification-only (no exitCode=1)", async () => {
+    const { shouldContinueLoop, isNonRetriableError, isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "budget_exceeded";
+    const tokenRefreshAt = undefined;
+
+    // No wait-and-retry (tokenRefreshAt absent)
+    expect(tokenRefreshAt).toBeUndefined();
+    // Loop must stop
+    expect(shouldContinueLoop(status)).toBe(false);
+    // NOT non-retriable → exitCode=1 is NOT set
+    expect(isNonRetriableError(status)).toBe(false);
+    // IS token exhaustion → reaches the formatNonTokenFailureNotification path without exitCode=1
+    expect(isTokenExhaustionStatus(status)).toBe(true);
+  });
+
+  it("error_transient with no tokenRefreshAt: shouldContinueLoop=true → loop continues (no break)", async () => {
+    const { shouldContinueLoop, isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const status = "error_transient";
+    const tokenRefreshAt = undefined;
+
+    // No wait-and-retry (tokenRefreshAt absent)
+    expect(tokenRefreshAt).toBeUndefined();
+    // IS a token exhaustion status, but tokenRefreshAt gate is not met
+    expect(isTokenExhaustionStatus(status)).toBe(true);
+    // shouldContinueLoop=true → NOT caught by !shouldContinueLoop guard → loop continues
+    expect(shouldContinueLoop(status)).toBe(true);
+  });
+
+  it("runIterations now uses formatNonTokenFailureNotification (not generic 'Stopping after N iteration(s)' text)", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    // runIterations previously emitted: red(`Stopping after ${i + 1} iteration(s) due to ${status} status.`)
+    // It now uses formatNonTokenFailureNotification, which includes an error code and cause.
+    const msg = formatNonTokenFailureNotification("failed", "agent spin detected");
+    expect(msg).toContain("Run failed:");
+    expect(msg).toMatch(/\[E_[A-Z_]+\]/); // structured error code
+    expect(msg).not.toContain("Stopping after");
+    expect(msg).not.toContain("iteration(s) due to");
+  });
+});

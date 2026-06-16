@@ -1392,12 +1392,28 @@ async function runIterations(
   // The inner agentLoop also registers its own handler (which sets cancelled=true),
   // but that runs after this one. promptRollbackOnInterrupt suspends all listeners
   // (including the inner one) while the prompt is open.
+  //
+  // During a token-replenishment wait there is nothing to roll back — the run
+  // terminated cleanly due to quota exhaustion. The abort controller lets the
+  // SIGINT handler unblock waitForTokenRefresh without showing the prompt.
+  const ac = new AbortController();
   let sigintFired = false;
+  // True while waitForTokenRefresh is active; used to suppress the rollback
+  // prompt if Ctrl+C fires during the wait.
+  let isInTokenWait = false;
+
   const onSignal = () => {
     if (sigintFired) {
       process.exit(1);
     }
     sigintFired = true;
+    ac.abort(); // interrupt any active token-refresh wait
+    // During a token-replenishment wait there is nothing to roll back —
+    // the run terminated cleanly due to quota, so skip the rollback prompt.
+    if (isInTokenWait) {
+      process.exit(1);
+      return;
+    }
     void promptRollbackOnInterrupt().then(async (doRollback) => {
       if (doRollback) {
         try { await revertChanges(dir); } catch { /* best-effort */ }
@@ -1434,7 +1450,13 @@ async function runIterations(
         ? new Set([...stuckIds, ...forcedExclusionIds])
         : forcedExclusionIds;
 
-      const { status, selectedTaskId } = await runOne(
+      const {
+        status,
+        selectedTaskId,
+        error: runError,
+        changedFileCount: runChangedFileCount,
+        tokenRefreshAt: runTokenRefreshAt,
+      } = await runOne(
         dir, henchDir, rexDir, provider,
         // Only use the explicit taskId for the first iteration;
         // subsequent iterations autoselect the next task
@@ -1467,17 +1489,66 @@ async function runIterations(
       // Emit quota log line(s) at the inter-run boundary.
       await emitQuotaLog();
 
-      if (status === "error_transient") {
-        info(`\n${colorWarn(`Transient error on iteration ${i + 1}, continuing to next task...`)}`);
-        continue;
-      }
-
-      if (status === "failed" || status === "timeout" || status === "budget_exceeded") {
-        info(`\n${red(`Stopping after ${i + 1} iteration(s) due to ${status} status.`)}`);
+      // Token exhaustion with a known refresh time: suspend until quota resets,
+      // issue exactly one retry, emit outcome notification, and exit iterations.
+      if (isTokenExhaustionStatus(status) && runTokenRefreshAt) {
+        const refreshDate = new Date(runTokenRefreshAt);
+        isInTokenWait = true;
+        const completed_ = await waitForTokenRefresh(refreshDate, ac.signal);
+        isInTokenWait = false;
+        if (!completed_) {
+          // Interrupted by Ctrl+C during wait
+          info("\nToken-refresh wait interrupted by user — stopping.");
+          break;
+        }
+        // Retry once (regardless of outcome, iterations exit after the retry)
+        let retryResult: Awaited<ReturnType<typeof runOne>>;
+        try {
+          retryResult = await runOne(
+            dir, henchDir, rexDir, provider,
+            undefined, // autoselect (same task will be picked — still pending)
+            dryRun, model, spawnModel, maxTurns, tokenBudget,
+            review,
+            undefined,
+            epicId,
+            tags,
+            undefined,
+            rollbackOnFailure,
+            yes,
+            extraContext,
+            autonomous,
+            undefined,
+            permissionMode,
+          );
+        } catch (retryErr) {
+          const msg = (retryErr as Error).message ?? String(retryErr);
+          info(`\n${formatTokenRefreshRetryOutcome("failed", msg)}`);
+          break;
+        }
+        info(`\n${formatTokenRefreshRetryOutcome(retryResult.status, retryResult.error)}`);
         break;
       }
 
+      if (!shouldContinueLoop(status)) {
+        if (isNonRetriableError(status)) {
+          // Non-retriable hard failure: terminate with structured notification
+          // and non-zero exit code.
+          info(`\n${formatNonTokenFailureNotification(status, runError, runChangedFileCount)}`);
+          process.exitCode = 1;
+          break;
+        }
+        // Token exhaustion without refresh timestamp: notify and stop.
+        if (isTokenExhaustionStatus(status)) {
+          info(`\n${formatNonTokenFailureNotification(status, runError, runChangedFileCount)}`);
+          break;
+        }
+      }
+
       if (dryRun) break;
+
+      if (status === "error_transient") {
+        info(`\n${colorWarn(`Transient error on iteration ${i + 1}, continuing to next task...`)}`);
+      }
     }
   } finally {
     process.removeListener("SIGINT", onSignal);

@@ -2,9 +2,10 @@
 id: "4fc05c48-48b0-4da3-8126-4fa237b924d9"
 level: "epic"
 title: "Hench"
-status: "pending"
+status: "completed"
 startedAt: "2026-03-26T15:22:13.999Z"
-endedAt: "2026-05-27T18:40:09.125Z"
+completedAt: "2026-06-16T22:13:52.656Z"
+endedAt: "2026-06-16T22:13:52.656Z"
 description: "Autonomous agent: picks rex tasks, builds briefs with codebase context, runs an LLM tool-use loop to implement them, records runs. Supports sequential execution, concurrency management, and resource monitoring."
 ---
 
@@ -39,5 +40,5 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 | [Run Failure Recovery and Rollback](./run-failure-recovery-and-rollback/index.md) | completed |
 | [Run Loop Cancellation and Iteration Visibility Refinements](./run-loop-cancellation-and-3e4e10/index.md) | completed |
 | [Sequential Epic Execution](./sequential-epic-execution/index.md) | completed |
-| [Token Exhaustion Wait-and-Retry and Ctrl+C-Only Rollback Prompt](./token-exhaustion-wait-and-retry-5268fd/index.md) | pending |
+| [Token Exhaustion Wait-and-Retry and Ctrl+C-Only Rollback Prompt](./token-exhaustion-wait-and-retry-5268fd/index.md) | completed |
 | [Web UI: Reorganize around SourceVision / Rex / Hench sections](./web-ui-reorganize-around-d5ad6f/index.md) | completed |
