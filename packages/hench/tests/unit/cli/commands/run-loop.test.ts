@@ -15,6 +15,52 @@ import { initConfig } from "../../../../src/store/config.js";
 // We'll test the extracted loop helpers directly rather than cmdRun
 // to avoid needing to mock the full agent/CLI stack.
 
+// ── Non-retriable error classification ───────────────────────────────────────
+
+describe("isNonRetriableError", () => {
+  it("returns true for failed", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("failed")).toBe(true);
+  });
+
+  it("returns true for timeout", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("timeout")).toBe(true);
+  });
+
+  it("returns false for budget_exceeded (retriable)", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("budget_exceeded")).toBe(false);
+  });
+
+  it("returns false for error_transient (retriable)", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("error_transient")).toBe(false);
+  });
+
+  it("returns false for completed", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("completed")).toBe(false);
+  });
+
+  it("returns false for cancelled", async () => {
+    const { isNonRetriableError } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isNonRetriableError("cancelled")).toBe(false);
+  });
+});
+
 // ── Non-token error classification and notification ───────────────────────────
 
 describe("isTokenExhaustionStatus", () => {
@@ -127,6 +173,39 @@ describe("formatNonTokenFailureNotification", () => {
     );
     const msg = formatNonTokenFailureNotification("failed", "invalid api key");
     expect(msg).toContain("[E_AUTH_FAILURE]");
+  });
+
+  it("includes changed-file count when changedFileCount > 0", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "agent error", 7);
+    expect(msg).toContain("7 files changed");
+  });
+
+  it("uses singular form for changedFileCount === 1", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "agent error", 1);
+    expect(msg).toContain("1 file changed");
+    expect(msg).not.toContain("1 files");
+  });
+
+  it("omits file count when changedFileCount is 0", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "agent error", 0);
+    expect(msg).not.toContain("changed");
+  });
+
+  it("omits file count when changedFileCount is undefined (backward compat)", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "agent error");
+    expect(msg).not.toContain("changed");
   });
 });
 

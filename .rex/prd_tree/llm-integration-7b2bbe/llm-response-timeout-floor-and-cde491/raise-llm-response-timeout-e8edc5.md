@@ -1,0 +1,25 @@
+---
+id: "e8edc56d-df30-4c86-8283-2dd05be7959c"
+level: "task"
+title: "Raise LLM response timeout defaults to 5-minute minimum across all vendor adapters"
+status: "completed"
+priority: "critical"
+tags:
+  - "timeouts"
+  - "llm"
+  - "claude"
+  - "codex"
+  - "google"
+  - "config"
+source: "smart-add"
+startedAt: "2026-06-15T22:28:01.514Z"
+completedAt: "2026-06-15T22:45:55.044Z"
+endedAt: "2026-06-15T22:45:55.044Z"
+acceptanceCriteria:
+  - "All three vendor adapters (Claude, Codex, Google) use a minimum 5-minute default for LLM response timeouts"
+  - "The default is expressed as a named constant in llm-client, not as a magic number inline"
+  - "llm.responseTimeout field exists in .n-dx.json schema with a 300-second (5-minute) default"
+  - "Each adapter reads its timeout from the resolved config value, falling back to the named constant"
+  - "Unit tests assert that the 5-minute default is applied when no config override is present for each of the three adapters"
+description: "Review every vendor adapter in @n-dx/llm-client (Claude, Codex, Google) for their HTTP or subprocess timeout configuration. Express the minimum as a shared named constant (e.g. DEFAULT_LLM_RESPONSE_TIMEOUT_MS = 5 * 60 * 1000) in llm-client. Raise any adapter below this floor to the constant default. Wire adapters to read from llm.responseTimeout in .n-dx.json so users can override upward — the 5-minute value is the default, not a cap."
+---

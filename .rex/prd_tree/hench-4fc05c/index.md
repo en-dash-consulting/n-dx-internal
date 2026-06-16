@@ -17,7 +17,7 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 | [Branch Work System of Record](./branch-work-system-of-record/index.md) | completed |
 | [Commit Approval Bypass for Autonomous Runs](./commit-approval-bypass-for-3ca4d0/index.md) | completed |
 | [Ctrl-C Interrupt Rollback Prompt Coordination](./ctrl-c-interrupt-rollback-469c79/index.md) | completed |
-| [Disable Code Rollback on Run Failure with Cancel-and-Notify Semantics](./disable-code-rollback-on-run-7357d7/index.md) | pending |
+| [Disable Code Rollback on Run Failure with Cancel-and-Notify Semantics](./disable-code-rollback-on-run-7357d7/index.md) | completed |
 | [Enforce Plan-to-Execution Continuity in Hench Runs](./enforce-plan-to-execution-e08fe0/index.md) | completed |
 | [Feature 1: Go-Aware Archetype System](./feature-1-go-aware-archetype-system/index.md) | completed |
 | [Feature 2: Go Server Route Detection](./feature-2-go-server-route-detection/index.md) | completed |

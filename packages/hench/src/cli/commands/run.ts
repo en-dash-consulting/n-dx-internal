@@ -153,6 +153,23 @@ export function isTokenExhaustionStatus(status: string): boolean {
 }
 
 /**
+ * Returns true when the run status indicates a non-retriable hard failure that
+ * should terminate the loop immediately. Non-retriable errors are hard failures
+ * that are not expected to resolve on retry: agent failure and turn-limit timeout.
+ *
+ * Retriable errors (budget_exceeded, error_transient) are explicitly excluded:
+ * they are handled by the token-exhaustion path and stuck-task detection.
+ *
+ * Centralized here and reused across all loop modes (runLoop, runEpicByEpic,
+ * runIterations) to ensure consistent classification.
+ *
+ * Exported for testing.
+ */
+export function isNonRetriableError(status: string): boolean {
+  return status === "failed" || status === "timeout";
+}
+
+/**
  * Derive a structured error code key from a run status and optional error text.
  * Maps `timeout` → E_TIMEOUT, then checks common patterns in the error text,
  * falling back to E_UNKNOWN for unrecognised failures.
@@ -174,20 +191,28 @@ function deriveNonTokenErrorCode(status: string, errorText?: string): string {
  * Format a user-facing error notification for a non-token run failure.
  *
  * Derives the structured error code from the run status and optional error
- * text, then renders a single-line `[CODE] cause` summary in red.
- * Called by runLoop() when a non-token hard failure terminates the loop.
+ * text, then renders a single-line `[CODE] cause` summary in red. When
+ * `changedFileCount` is provided and > 0, the count is appended so the
+ * operator knows how much work was left uncommitted in the failed run.
+ *
+ * Called by runLoop() and runEpicByEpic() when a non-retriable failure
+ * terminates the loop.
  *
  * Exported for testing — verifies error code derivation and message format.
  */
 export function formatNonTokenFailureNotification(
   status: string,
   errorText?: string,
+  changedFileCount?: number,
 ): string {
   const code = deriveNonTokenErrorCode(status, errorText);
   const cause = errorText
     ? errorText.slice(0, 120).replace(/\n/g, " ").trimEnd()
     : `run ${status}`;
-  return red(`Run failed: [${code}] ${cause}`);
+  const filesSuffix = changedFileCount != null && changedFileCount > 0
+    ? ` · ${changedFileCount} file${changedFileCount === 1 ? "" : "s"} changed`
+    : "";
+  return red(`Run failed: [${code}] ${cause}${filesSuffix}`);
 }
 
 /**
@@ -612,6 +637,16 @@ async function selectTask(
 // ---------------------------------------------------------------------------
 
 /**
+ * Count the number of non-metadata files changed during a run.
+ * Used to include the changed-file count in terminal failure notifications.
+ */
+function countChangedFiles(toolCalls: ToolCallRecord[]): number {
+  const classified = classifyChangedFiles(toolCalls);
+  classified.delete("metadata");
+  return [...classified.values()].reduce((sum, files) => sum + files.length, 0);
+}
+
+/**
  * Detect whether any tool calls include PRD status updates (rex_update).
  */
 function hasPrdStatusUpdate(toolCalls: ToolCallRecord[]): boolean {
@@ -687,7 +722,7 @@ async function runOne(
   autonomous?: boolean,
   runNumber?: number,
   permissionMode?: PermissionMode,
-): Promise<{ status: string; taskTitle: string; selectedTaskId?: string; error?: string }> {
+): Promise<{ status: string; taskTitle: string; selectedTaskId?: string; error?: string; changedFileCount: number }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
   await assertSchemaCompatibility(store);
@@ -799,7 +834,7 @@ async function runOne(
     output(`\n${red("Error:")} ${run.error}`);
   }
 
-  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId, error: run.error };
+  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId, error: run.error, changedFileCount: countChangedFiles(run.toolCalls) };
 }
 
 // ---------------------------------------------------------------------------
@@ -1412,6 +1447,7 @@ async function runLoop(
 
       let status: string;
       let runError: string | undefined;
+      let runChangedFileCount = 0;
       try {
         // Resolve scheduling priority from task metadata before enqueuing.
         // This lets high-priority tasks bypass normal queue position.
@@ -1449,6 +1485,7 @@ async function runLoop(
           );
           status = result.status;
           runError = result.error;
+          runChangedFileCount = result.changedFileCount;
 
           // Track consecutive failures for 3-strike auto-cancel.
           // Uses isFailureStatus (not !shouldContinueLoop) so that
@@ -1515,12 +1552,11 @@ async function runLoop(
       }
 
       if (!shouldContinueLoop(status)) {
-        if (!isTokenExhaustionStatus(status)) {
-          // Non-token hard failure: terminate the loop immediately,
-          // emit a structured error notification, and signal non-zero exit.
-          // The rollback prompt is suppressed (auto-rollback already ran
-          // inside finalizeRun for non-token failures).
-          info(`\n${formatNonTokenFailureNotification(status, runError)}`);
+        if (isNonRetriableError(status)) {
+          // Non-retriable hard failure: terminate the loop immediately,
+          // emit a structured error notification (with changed-file count),
+          // and signal non-zero exit.
+          info(`\n${formatNonTokenFailureNotification(status, runError, runChangedFileCount)}`);
           process.exitCode = 1;
           break;
         }
@@ -1723,6 +1759,8 @@ async function runEpicByEpic(
         const stuckIds = await loadStuckTaskIds(henchDir, maxFailedAttempts);
 
         let status: string;
+        let epicRunError: string | undefined;
+        let epicChangedFileCount = 0;
         try {
           // Resolve scheduling priority from task metadata before enqueuing.
           // This lets high-priority tasks bypass normal queue position.
@@ -1751,6 +1789,8 @@ async function runEpicByEpic(
               permissionMode,
             );
             status = result.status;
+            epicRunError = result.error;
+            epicChangedFileCount = result.changedFileCount;
           } finally {
             // Release the queue slot after the task completes
             if (queue) queue.release();
@@ -1761,6 +1801,16 @@ async function runEpicByEpic(
             break;
           }
           throw err;
+        }
+
+        // Non-retriable hard failure: terminate inner loop and all remaining epics.
+        // Emit a structured notification (with changed-file count) and exit non-zero.
+        if (isNonRetriableError(status)) {
+          info(`\n${formatNonTokenFailureNotification(status, epicRunError, epicChangedFileCount)}`);
+          process.exitCode = 1;
+          stopping = true;
+          tasksFailed++;
+          break;
         }
 
         // Emit quota log line(s) at the inter-run boundary.
