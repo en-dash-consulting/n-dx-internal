@@ -2,7 +2,7 @@
 id: "c4ac8fba-58e2-4f61-9465-d87953fabcba"
 level: "task"
 title: "Restrict rollback prompt to Ctrl+C interrupts with Y/n confirmation and immediate cancel on any other input"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "hench"
@@ -10,6 +10,9 @@ tags:
   - "ux"
   - "signal-handling"
 source: "smart-add"
+startedAt: "2026-06-16T21:23:14.925Z"
+completedAt: "2026-06-16T21:49:34.063Z"
+endedAt: "2026-06-16T21:49:34.063Z"
 acceptanceCriteria:
   - "First Ctrl+C during a hench run shows the rollback Y/n prompt and does not auto-cancel"
   - "Entering 'Y' or 'y' triggers the existing rollback path and exits"
