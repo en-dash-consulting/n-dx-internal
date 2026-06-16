@@ -40,12 +40,17 @@ export interface LlmConfigResponse {
   legacyClaude: VendorConfig;
   /** Enable automatic failover on model/vendor errors. */
   autoFailover?: boolean;
+  /**
+   * LLM API response timeout in milliseconds.
+   * Default: 300000 (5 minutes). Absent when unset (callers use the default).
+   */
+  responseTimeout?: number;
 }
 
 /** Shape expected by PUT /api/llm/config. */
 interface LlmConfigPutBody {
-  /** Dot-path → string, boolean, or null value. */
-  changes: Record<string, string | boolean | null>;
+  /** Dot-path → string, boolean, number, or null value. */
+  changes: Record<string, string | boolean | number | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -63,6 +68,7 @@ const VALID_PATHS = new Set([
   "llm.codex.model",
   "llm.codex.lightModel",
   "llm.autoFailover",
+  "llm.responseTimeout",
   "claude.model",
   "claude.lightModel",
 ]);
@@ -146,6 +152,11 @@ function extractLlmConfig(projectDir: string): LlmConfigResponse {
     result.autoFailover = llm["autoFailover"];
   }
 
+  const rt = llm["responseTimeout"];
+  if (typeof rt === "number" && rt > 0) {
+    result.responseTimeout = rt;
+  }
+
   return result;
 }
 
@@ -186,10 +197,15 @@ export async function handleLlmRoute(
           errorResponse(res, 400, `Unknown LLM config path: "${path}". Valid paths: ${[...VALID_PATHS].join(", ")}`);
           return true;
         }
-        // autoFailover accepts boolean values; other paths accept strings
+        // autoFailover accepts boolean; responseTimeout accepts positive number; others accept strings
         if (path === "llm.autoFailover") {
           if (value !== null && typeof value !== "boolean") {
             errorResponse(res, 400, `Value for "${path}" must be a boolean or null, got ${typeof value}`);
+            return true;
+          }
+        } else if (path === "llm.responseTimeout") {
+          if (value !== null && (typeof value !== "number" || !Number.isFinite(value) || value <= 0)) {
+            errorResponse(res, 400, `Value for "llm.responseTimeout" must be a positive number (milliseconds) or null, got ${JSON.stringify(value)}`);
             return true;
           }
         } else {

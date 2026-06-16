@@ -27,6 +27,8 @@ interface LlmConfigResponse {
   codex: VendorConfig;
   legacyClaude: VendorConfig;
   autoFailover?: boolean;
+  /** LLM API response timeout in milliseconds. Absent when unset (adapters use the 300 000 ms default). */
+  responseTimeout?: number;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────
@@ -166,6 +168,47 @@ function ToggleField({
   );
 }
 
+function NumericField({
+  fieldKey,
+  label,
+  description,
+  value,
+  placeholder,
+  error,
+  onChange,
+  dirty,
+}: {
+  fieldKey: string;
+  label: string;
+  description: string;
+  value: string;
+  placeholder: string;
+  error: string | null;
+  onChange: (key: string, v: string) => void;
+  dirty: boolean;
+}) {
+  return h("div", { class: `llm-field${dirty ? " llm-field-dirty" : ""}${error ? " llm-field-error" : ""}` },
+    h("label", { class: "llm-field-label", htmlFor: fieldKey },
+      label,
+      dirty ? h("span", { class: "llm-dirty-indicator" }, " •") : null,
+    ),
+    h("p", { class: "llm-field-desc" }, description),
+    h("div", { class: "llm-field-row" },
+      h("input", {
+        id: fieldKey,
+        type: "number",
+        class: "llm-text-input",
+        value,
+        placeholder,
+        min: "1",
+        step: "1",
+        onInput: (e: Event) => onChange(fieldKey, (e.target as HTMLInputElement).value),
+      }),
+    ),
+    error ? h("p", { class: "llm-field-error-msg", role: "alert" }, error) : null,
+  );
+}
+
 function VendorSection({
   vendorId,
   config,
@@ -237,6 +280,8 @@ export function LlmProviderView() {
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   // Pending toggle edits: fieldKey → boolean value
   const [editToggles, setEditToggles] = useState<Record<string, boolean>>({});
+  // Pending numeric edits: fieldKey → raw string (seconds)
+  const [editNumeric, setEditNumeric] = useState<Record<string, string>>({});
   // Vendor selection may differ from saved
   const [pendingVendor, setPendingVendor] = useState<string | null | undefined>(undefined);
 
@@ -281,6 +326,10 @@ export function LlmProviderView() {
     setEditToggles((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  const handleNumericChange = useCallback((key: string, value: string) => {
+    setEditNumeric((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   // Compute dirty set
   const dirtyKeys = new Set<string>();
   if (data) {
@@ -304,13 +353,39 @@ export function LlmProviderView() {
     if (editToggles.autoFailover !== saved) dirtyToggles.add("autoFailover");
   }
 
-  const hasPendingChanges = dirtyKeys.size > 0 || vendorDirty || dirtyToggles.size > 0;
+  // Derive timeout display value (seconds) and dirty/error state
+  const DEFAULT_TIMEOUT_SECONDS = 300;
+  const savedTimeoutSeconds =
+    data?.responseTimeout != null ? data.responseTimeout / 1000 : undefined;
+  const rawTimeout = editNumeric["llm.responseTimeout"];
+  const timeoutDisplayValue =
+    rawTimeout !== undefined
+      ? rawTimeout
+      : savedTimeoutSeconds !== undefined
+        ? String(savedTimeoutSeconds)
+        : "";
+  const parsedTimeoutSeconds =
+    rawTimeout !== undefined ? Number(rawTimeout) : undefined;
+  const timeoutValidationError =
+    rawTimeout !== undefined &&
+    rawTimeout.trim() !== "" &&
+    (!Number.isFinite(parsedTimeoutSeconds) || (parsedTimeoutSeconds as number) <= 0)
+      ? "Timeout must be a positive number of seconds."
+      : null;
+  const timeoutDirty =
+    rawTimeout !== undefined &&
+    rawTimeout.trim() !== "" &&
+    !timeoutValidationError &&
+    parsedTimeoutSeconds !== savedTimeoutSeconds;
+
+  const hasPendingChanges =
+    dirtyKeys.size > 0 || vendorDirty || dirtyToggles.size > 0 || timeoutDirty;
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     setError(null);
     try {
-      const changes: Record<string, string | null | boolean> = {};
+      const changes: Record<string, string | null | boolean | number> = {};
 
       if (vendorDirty) {
         changes["llm.vendor"] = pendingVendor;
@@ -329,6 +404,10 @@ export function LlmProviderView() {
         }
       }
 
+      if (timeoutDirty && parsedTimeoutSeconds != null) {
+        changes["llm.responseTimeout"] = parsedTimeoutSeconds * 1000;
+      }
+
       const res = await fetch("/api/llm/config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -345,6 +424,7 @@ export function LlmProviderView() {
       setData(json.config);
       setEditValues({});
       setEditToggles({});
+      setEditNumeric({});
       setPendingVendor(undefined);
 
       setToast("LLM settings saved");
@@ -355,11 +435,12 @@ export function LlmProviderView() {
     } finally {
       setSaving(false);
     }
-  }, [vendorDirty, pendingVendor, dirtyKeys, dirtyToggles, editValues, editToggles]);
+  }, [vendorDirty, pendingVendor, dirtyKeys, dirtyToggles, editValues, editToggles, timeoutDirty, parsedTimeoutSeconds]);
 
   const handleDiscard = useCallback(() => {
     setEditValues({});
     setEditToggles({});
+    setEditNumeric({});
     setPendingVendor(undefined);
     setError(null);
   }, []);
@@ -431,6 +512,16 @@ export function LlmProviderView() {
         onChange: handleToggleChange,
         dirty: dirtyToggles.has("autoFailover"),
       }),
+      h(NumericField, {
+        fieldKey: "llm.responseTimeout",
+        label: "LLM Response Timeout (seconds)",
+        description: `Maximum time to wait for an LLM API response. Default: ${DEFAULT_TIMEOUT_SECONDS} seconds (5 minutes). Increase for tasks with large context windows; decrease to surface slow API responses faster.`,
+        value: timeoutDisplayValue,
+        placeholder: String(DEFAULT_TIMEOUT_SECONDS),
+        error: timeoutValidationError,
+        onChange: handleNumericChange,
+        dirty: timeoutDirty,
+      }),
     ),
 
     // ── Per-vendor model sections
@@ -472,7 +563,10 @@ export function LlmProviderView() {
     hasPendingChanges
       ? h("div", { class: "llm-save-bar" },
           h("span", { class: "llm-save-bar-hint" },
-            `${dirtyKeys.size + dirtyToggles.size + (vendorDirty ? 1 : 0)} unsaved change${dirtyKeys.size + dirtyToggles.size + (vendorDirty ? 1 : 0) === 1 ? "" : "s"}`,
+            (() => {
+              const n = dirtyKeys.size + dirtyToggles.size + (vendorDirty ? 1 : 0) + (timeoutDirty ? 1 : 0);
+              return `${n} unsaved change${n === 1 ? "" : "s"}`;
+            })(),
           ),
           h("button", {
             class: "llm-btn llm-btn-secondary",
