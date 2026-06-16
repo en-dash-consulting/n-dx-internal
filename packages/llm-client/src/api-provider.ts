@@ -187,6 +187,16 @@ export function createApiClient(options: ApiProviderOptions): ClaudeClient & LLM
             }
           }
 
+          // Detect null/empty response — surface as a distinct error code
+          // rather than silently returning empty string to callers.
+          if (!text) {
+            throw new ClaudeClientError(
+              "Null or empty response — the LLM returned no text content",
+              "unknown",
+              true,
+            );
+          }
+
           const tokenUsage = parseApiTokenUsage(
             response.usage as unknown as Record<string, unknown>,
           );

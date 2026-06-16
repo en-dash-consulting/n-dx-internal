@@ -67,6 +67,7 @@ import type { PromptSectionDiagnostic, PersistedRuntimeEvent } from "../../schem
 import { handlePlanModeStall, formatPlanModeAppendix } from "./plan-mode-prompt.js";
 import { startCommitMsgWatcher } from "./commit-msg-watcher.js";
 import type { CommitMsgWatcher } from "./commit-msg-watcher.js";
+import { extractRefreshAt } from "../../prd/llm-gateway.js";
 
 // ── normalizeCodexResponse ────────────────────────────────────────────────
 
@@ -1093,6 +1094,16 @@ async function processErrorResult(ctx: ErrorContext): Promise<ErrorAction> {
   run.status = "error_transient";
   run.summary = result.summary;
   run.error = result.error;
+
+  // Capture token-quota refresh time for text-based retry-after patterns.
+  // Wraps the string error in a synthetic Error so extractRefreshAt can match
+  // patterns like "retry after 47 seconds" present in CLI stderr output.
+  if (result.error) {
+    const refreshAt = extractRefreshAt(new Error(result.error));
+    if (refreshAt) {
+      run.tokenRefreshAt = refreshAt.toISOString();
+    }
+  }
 
   await handleRunFailure(
     store, taskId, "pending", "task_transient_exhausted",

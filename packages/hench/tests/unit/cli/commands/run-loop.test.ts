@@ -652,3 +652,129 @@ describe("attempt tracking in run loops", () => {
     expect(excludeIds.has("task-2")).toBe(false);
   });
 });
+
+// ── token-exhaustion wait-and-retry helpers ──────────────────────────────────
+//
+// Tests for `waitForTokenRefresh` and `formatTokenRefreshRetryOutcome`, both
+// exported from run.ts for testing.  These helpers implement the single
+// wait-and-retry cycle that fires when the inner loop encounters a
+// budget_exceeded / error_transient status and a Retry-After timestamp is
+// available.
+//
+// Acceptance criteria verified:
+//   - No real waiting when the refresh window has already elapsed
+//   - AbortSignal (Ctrl-C) interrupts the wait and returns false
+//   - Full-countdown path returns true when the clock advances past the window
+//   - formatTokenRefreshRetryOutcome formats success and failure messages
+
+describe("formatTokenRefreshRetryOutcome", () => {
+  it("returns success text when status is 'completed'", async () => {
+    const { formatTokenRefreshRetryOutcome } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatTokenRefreshRetryOutcome("completed");
+    expect(msg).toContain("Token-refresh retry succeeded");
+    expect(msg).toContain("exiting cleanly");
+  });
+
+  it("uses run status as cause when no errorText is provided", async () => {
+    const { formatTokenRefreshRetryOutcome } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatTokenRefreshRetryOutcome("budget_exceeded");
+    expect(msg).toContain("Token-refresh retry failed");
+    expect(msg).toContain("run budget_exceeded");
+  });
+
+  it("embeds provided errorText in the failure message", async () => {
+    const { formatTokenRefreshRetryOutcome } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatTokenRefreshRetryOutcome(
+      "failed",
+      "Quota exceeded for the current billing period",
+    );
+    expect(msg).toContain("Token-refresh retry failed");
+    expect(msg).toContain("Quota exceeded for the current billing period");
+  });
+
+  it("replaces newlines in errorText with spaces", async () => {
+    const { formatTokenRefreshRetryOutcome } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatTokenRefreshRetryOutcome("failed", "line one\nline two");
+    expect(msg).not.toContain("\n");
+    expect(msg).toContain("line one line two");
+  });
+
+  it("truncates errorText to at most 120 characters", async () => {
+    const { formatTokenRefreshRetryOutcome } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const longError = "z".repeat(200);
+    const msg = formatTokenRefreshRetryOutcome("failed", longError);
+    // The first 120 'z' characters must appear in the message
+    expect(msg).toContain("z".repeat(120));
+    // The 121st 'z' and beyond should be absent (truncated before reaching the suffix)
+    expect(msg).not.toContain("z".repeat(121));
+  });
+});
+
+describe("waitForTokenRefresh", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns true immediately when refreshAt + 1000ms has already elapsed", async () => {
+    const { waitForTokenRefresh } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    // refreshAt 2s in the past → targetMs = refreshAt + 1000ms ≈ now - 1000ms → elapsed
+    const past = new Date(Date.now() - 2_000);
+    const result = await waitForTokenRefresh(past);
+    expect(result).toBe(true);
+  });
+
+  it("returns false when AbortSignal is already aborted before the wait begins", async () => {
+    const { waitForTokenRefresh } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const ac = new AbortController();
+    ac.abort(); // already aborted before we even start
+    const future = new Date(Date.now() + 30_000);
+    const result = await waitForTokenRefresh(future, ac.signal);
+    expect(result).toBe(false);
+  });
+
+  it("returns false when AbortSignal fires during the countdown", async () => {
+    vi.useFakeTimers();
+    const { waitForTokenRefresh } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const ac = new AbortController();
+    // refreshAt 30s from fake-now → targetMs = fake-now + 31 000ms
+    const future = new Date(Date.now() + 30_000);
+    const waitPromise = waitForTokenRefresh(future, ac.signal);
+    // Abort while the inner loopPause is pending.  The abort listener on
+    // loopPause resolves the promise immediately; the async chain then checks
+    // signal.aborted and returns false.
+    ac.abort();
+    const result = await waitPromise;
+    expect(result).toBe(false);
+  });
+
+  it("returns true after the full countdown window has elapsed", async () => {
+    vi.useFakeTimers();
+    const { waitForTokenRefresh } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    // refreshAt 9s from fake-now → targetMs = fake-now + 10 000ms, remainingMs = 10 000.
+    // The countdown loop fires twice (COUNTDOWN_UPDATE_INTERVAL_MS = 5 000ms each).
+    const future = new Date(Date.now() + 9_000);
+    const waitPromise = waitForTokenRefresh(future);
+    // Advance fake clock past the full 10s window so both loopPause timers fire.
+    await vi.advanceTimersByTimeAsync(10_100);
+    const result = await waitPromise;
+    expect(result).toBe(true);
+  });
+});

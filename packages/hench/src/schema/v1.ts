@@ -730,6 +730,16 @@ export interface RunRecord {
    */
   weight?: string;
   retryAttempts?: number;
+  /**
+   * ISO timestamp of the token-quota refresh time, extracted from a rate-limit
+   * or quota-exceeded error response. Set when the inner loop encounters an
+   * insufficient-token error and the error payload includes a Retry-After or
+   * equivalent indicator. Used by the outer run loop to schedule the single
+   * wait-and-retry before exiting.
+   *
+   * v1 additive field — old records without this field load normally.
+   */
+  tokenRefreshAt?: string;
   /** Structured metadata derived from tool calls at run finalization. */
   structuredSummary?: RunSummaryData;
   /** Memory usage statistics captured during the run. */

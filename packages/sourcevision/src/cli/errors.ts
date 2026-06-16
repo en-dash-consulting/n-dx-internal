@@ -14,6 +14,7 @@ import {
   colorWarn,
   isVerbose,
   formatVerboseLLMErrorDetails,
+  mapCLICodeToErrorEntry,
 } from "@n-dx/llm-client";
 import { SV_DIR } from "./commands/constants.js";
 
@@ -74,7 +75,12 @@ const ERROR_HINTS: Array<[RegExp, CLIErrorCode, string, string]> = [
 ];
 
 function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string): string {
-  let formatted = `Error: [${code}] ${message}`;
+  const errorEntry = mapCLICodeToErrorEntry(code);
+  // Use E_* key for LLM-specific codes that map to a distinct entry.
+  // Fall back to the original NDX_CLI_* code when the mapping returns E_UNKNOWN —
+  // preserving more specific, backward-compatible error display for non-LLM errors.
+  const displayKey = errorEntry.key !== "E_UNKNOWN" ? errorEntry.key : code;
+  let formatted = `Error: [${displayKey}] ${message}`;
   if (suggestion) {
     formatted += `\n${colorWarn(`Hint: ${suggestion}`)}`;
   }

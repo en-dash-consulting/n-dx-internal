@@ -97,6 +97,21 @@ export { CLIError, ClaudeClientError, CLI_ERROR_CODES } from "@n-dx/llm-client";
 export { classifyLLMError } from "@n-dx/llm-client";
 export type { CLIErrorCode, LLMErrorCategory, LLMErrorClassification } from "@n-dx/llm-client";
 
+// ---- Structured error code registry ----------------------------------------
+export {
+  E_TIMEOUT,
+  E_MALFORMED_RESPONSE,
+  E_NULL_RESPONSE,
+  E_AUTH_FAILURE,
+  E_NETWORK_ERROR,
+  E_UNKNOWN,
+  mapFailureCategoryToErrorEntry,
+} from "@n-dx/llm-client";
+export type { ErrorCodeEntry } from "@n-dx/llm-client";
+
+// ---- Rate-limit / token-quota utilities ------------------------------------
+export { extractRefreshAt, formatRetryCountdown } from "@n-dx/llm-client";
+
 // ---- Process execution ------------------------------------------------------
 export {
   exec,

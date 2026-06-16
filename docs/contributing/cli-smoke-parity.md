@@ -75,6 +75,7 @@ The table below is the maintained reference for exported `CLI_ERROR_CODES`. Test
 | `NDX_CLI_MEMORY_THRESHOLD` | Execution was blocked because memory pressure crossed the configured threshold. | Yes | Free resources, adjust the threshold, or reduce workload size. |
 | `NDX_CLI_NETWORK_ERROR` | A network-level failure prevented reaching the LLM API (DNS, connection refused, fetch failed). | Yes | Check internet connectivity and retry. |
 | `NDX_CLI_NOT_INITIALIZED` | The target workspace is missing required n-dx initialization state. | Yes | Run the relevant init command for the workspace, then retry. |
+| `NDX_CLI_NULL_RESPONSE` | The LLM returned a null or empty response body where text content was required. | Yes | Retry the command. If the issue persists, try a different model. |
 | `NDX_CLI_PERMISSION_DENIED` | The process lacks permission to read, write, or execute a required resource. | Yes | Fix filesystem or process permissions and rerun. |
 | `NDX_CLI_PRD_NOT_FOUND` | The expected PRD file or PRD root could not be found. | Yes | Point the command at the correct PRD or create the missing artifact. |
 | `NDX_CLI_RESOURCE_NOT_FOUND` | A requested named resource does not exist. | Yes | Verify the identifier and rerun against an existing resource. |

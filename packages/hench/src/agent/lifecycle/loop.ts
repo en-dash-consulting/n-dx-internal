@@ -14,7 +14,7 @@ import {
   resolveApiKey,
   resolveLLMVendor,
 } from "../../store/project-config.js";
-import { resolveModel, defaultRegistry, DEFAULT_EXECUTION_POLICY, classifyLLMError, getNextFailoverAttempt } from "../../prd/llm-gateway.js";
+import { resolveModel, defaultRegistry, DEFAULT_EXECUTION_POLICY, classifyLLMError, getNextFailoverAttempt, extractRefreshAt } from "../../prd/llm-gateway.js";
 import type {
   LLMProvider,
   GeminiToolProvider,
@@ -977,6 +977,13 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
     run.status = "failed";
     run.error = (err as Error).message;
     console.error(`[Error] ${run.error}`);
+
+    // Capture token-quota refresh time for rate-limit / quota-exceeded errors.
+    // The outer run loop uses this to schedule a single wait-and-retry.
+    const refreshAt = extractRefreshAt(err);
+    if (refreshAt) {
+      run.tokenRefreshAt = refreshAt.toISOString();
+    }
 
     await handleRunFailure(store, taskId, "deferred", "task_failed", run.error);
   } finally {

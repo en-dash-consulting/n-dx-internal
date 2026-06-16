@@ -163,7 +163,13 @@ function spawnOnce(
     const envTimeoutValid = Number.isFinite(envTimeout) && envTimeout >= 10_000;
     const PER_CALL_TIMEOUT_MS =
       request.timeoutMs ?? (envTimeoutValid ? envTimeout : DEFAULT_LLM_RESPONSE_TIMEOUT_MS);
+
+    // Set when the kill timer fires so the close handler can distinguish a
+    // timeout kill from a natural non-zero exit.
+    let killedByTimeout = false;
+
     const killTimer = setTimeout(() => {
+      killedByTimeout = true;
       // Always log — a hung CLI being force-killed is an exceptional event,
       // not per-call noise.
       process.stderr.write(
@@ -204,6 +210,17 @@ function spawnOnce(
         } else {
           resolve(parseStreamOutput(stdout));
         }
+        return;
+      }
+
+      // When the kill timer fired, produce a typed timeout error so callers
+      // can classify it as E_TIMEOUT rather than a generic unknown failure.
+      if (killedByTimeout) {
+        reject(new ClaudeClientError(
+          `LLM request timed out after ${Math.round(PER_CALL_TIMEOUT_MS / 1000)}s`,
+          "timeout",
+          true,
+        ));
         return;
       }
 

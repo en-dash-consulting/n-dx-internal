@@ -2,13 +2,14 @@
 id: "6339469e-655f-437e-a806-53b9799d14dc"
 level: "task"
 title: "Implement idle wait-until-refresh and single-retry loop exit for token exhaustion"
-status: "pending"
+status: "in_progress"
 priority: "high"
 tags:
   - "hench"
   - "token-exhaustion"
   - "run-loop"
 source: "smart-add"
+startedAt: "2026-06-16T21:06:45.429Z"
 acceptanceCriteria:
   - "No LLM API calls are issued between the token-exhaustion error and the single retry"
   - "Wait duration is computed as `refreshAt + 1000 ms - Date.now()`; a countdown message is shown to the user during the wait"

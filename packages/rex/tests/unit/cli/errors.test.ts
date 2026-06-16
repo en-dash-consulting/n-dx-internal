@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES, resetColorCache, setVerbose } from "@n-dx/llm-client";
+import { CLI_ERROR_CODES, resetColorCache, setVerbose, E_TIMEOUT } from "@n-dx/llm-client";
 import { CLIError, BudgetExceededError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
@@ -179,7 +179,8 @@ describe("formatCLIError — verbose mode", () => {
     setVerbose(true);
     const err = new CLIError("timed out", "retry the request", CLI_ERROR_CODES.TIMEOUT);
     const result = formatCLIError(err);
-    expect(result).toContain(`[${CLI_ERROR_CODES.TIMEOUT}]`);
+    // TIMEOUT maps to E_TIMEOUT via mapCLICodeToErrorEntry
+    expect(result).toContain(`[${E_TIMEOUT.key}]`);
     expect(result).toContain("Stack trace:");
   });
 

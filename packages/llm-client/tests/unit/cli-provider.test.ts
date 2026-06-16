@@ -185,6 +185,46 @@ describe("createCliClient — stdout error envelope", () => {
   });
 });
 
+describe("createCliClient — kill-timer timeout", () => {
+  function writeFakeCli(body: string): { dir: string; path: string } {
+    const dir = mkdtempSync(join(tmpdir(), "claude-fake-timeout-"));
+    const path = join(dir, "claude");
+    writeFileSync(path, body, { mode: 0o755 });
+    chmodSync(path, 0o755);
+    return { dir, path };
+  }
+
+  it("throws ClaudeClientError with reason 'timeout' when kill timer fires", async () => {
+    // Node.js script that reads stdin then hangs with a timer — no subprocess
+    // children are spawned, so SIGTERM closes all stdio pipes immediately and
+    // proc.on("close") fires. A shell script using `sleep 60` would spawn a
+    // subprocess that inherits the pipes, keeping them open after the shell is
+    // killed and preventing the close event from firing.
+    const { dir, path } = writeFakeCli(
+      "#!/usr/bin/env node\n" +
+      "process.stdin.on('data', () => {});\n" +
+      "process.stdin.on('end', () => { setInterval(() => {}, 1e8); });\n",
+    );
+
+    try {
+      const client = createCliClient({
+        claudeConfig: { cli_path: path },
+        maxRetries: 0,
+        timeoutMs: 200,  // very short to make the test fast
+      });
+      await expect(
+        client.complete({ prompt: "test", model: "claude-sonnet-4-6" }),
+      ).rejects.toMatchObject({
+        reason: "timeout",
+        retryable: true,
+        message: expect.stringContaining("timed out after"),
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 10_000);
+});
+
 describe("createCliClient — LLMProvider interface", () => {
   it("returns an object satisfying the LLMProvider interface", () => {
     const client = createCliClient({ claudeConfig: {} });

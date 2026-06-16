@@ -19,7 +19,7 @@ import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output, setQuiet } from "../output.js";
 import { section } from "../../types/output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
-import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor, E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE, E_AUTH_FAILURE, E_NETWORK_ERROR, E_UNKNOWN } from "../../prd/llm-gateway.js";
+import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor, E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE, E_AUTH_FAILURE, E_NETWORK_ERROR, E_UNKNOWN, formatRetryCountdown } from "../../prd/llm-gateway.js";
 import { ExecutionQueue } from "../../queue/execution-queue.js";
 import { formatQueueStatus } from "../../queue/format.js";
 import { resolveSchedulingPriority } from "../../queue/priority-scheduler.js";
@@ -419,6 +419,80 @@ export function loopPause(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Token-exhaustion wait countdown
+// ---------------------------------------------------------------------------
+
+/**
+ * Countdown interval in milliseconds — update the user every 5 s so long
+ * waits are not silent.
+ */
+const COUNTDOWN_UPDATE_INTERVAL_MS = 5_000;
+
+/**
+ * Wait until `refreshAt + 1000 ms` with periodic countdown messages.
+ *
+ * Emits an initial "waiting Xs" message then updates every
+ * COUNTDOWN_UPDATE_INTERVAL_MS until the wait completes or the signal fires.
+ * When the AbortSignal fires, the wait ends immediately (Ctrl-C path).
+ *
+ * Returns `true` when the full wait completed, `false` when interrupted.
+ *
+ * Exported for testing.
+ */
+export async function waitForTokenRefresh(
+  refreshAt: Date,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  // Add 1 s buffer as required by the spec
+  const targetMs = refreshAt.getTime() + 1_000;
+  const remainingMs = targetMs - Date.now();
+
+  if (remainingMs <= 0) return true;
+
+  const totalSeconds = Math.ceil(remainingMs / 1_000);
+  info(colorWarn(`\nToken quota exhausted — waiting ${formatRetryCountdown(totalSeconds)} for quota reset before retrying…`));
+
+  let elapsed = 0;
+  while (elapsed < remainingMs) {
+    if (signal?.aborted) return false;
+
+    const step = Math.min(COUNTDOWN_UPDATE_INTERVAL_MS, remainingMs - elapsed);
+    await loopPause(step, signal);
+
+    if (signal?.aborted) return false;
+
+    elapsed += step;
+    const secondsLeft = Math.ceil((remainingMs - elapsed) / 1_000);
+    if (secondsLeft > 0) {
+      info(colorWarn(`  … ${formatRetryCountdown(secondsLeft)} remaining`));
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Format the outcome notification for a token-exhaustion single retry.
+ *
+ * - On success: green "✓ Token-refresh retry succeeded — run loop exiting cleanly."
+ * - On failure: red "✗ Token-refresh retry failed: <cause> — run loop exiting."
+ *
+ * Exported for testing.
+ */
+export function formatTokenRefreshRetryOutcome(
+  status: string,
+  errorText?: string,
+): string {
+  if (status === "completed") {
+    return green("✓ Token-refresh retry succeeded — run loop exiting cleanly.");
+  }
+  const cause = errorText
+    ? errorText.slice(0, 120).replace(/\n/g, " ").trimEnd()
+    : `run ${status}`;
+  return red(`✗ Token-refresh retry failed: ${cause} — run loop exiting.`);
+}
+
+// ---------------------------------------------------------------------------
 // Quota log helper (exported for testing)
 // ---------------------------------------------------------------------------
 
@@ -722,7 +796,7 @@ async function runOne(
   autonomous?: boolean,
   runNumber?: number,
   permissionMode?: PermissionMode,
-): Promise<{ status: string; taskTitle: string; selectedTaskId?: string; error?: string; changedFileCount: number }> {
+): Promise<{ status: string; taskTitle: string; selectedTaskId?: string; error?: string; changedFileCount: number; tokenRefreshAt?: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
   await assertSchemaCompatibility(store);
@@ -834,7 +908,7 @@ async function runOne(
     output(`\n${red("Error:")} ${run.error}`);
   }
 
-  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId, error: run.error, changedFileCount: countChangedFiles(run.toolCalls) };
+  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId, error: run.error, changedFileCount: countChangedFiles(run.toolCalls), tokenRefreshAt: run.tokenRefreshAt };
 }
 
 // ---------------------------------------------------------------------------
@@ -1448,6 +1522,7 @@ async function runLoop(
       let status: string;
       let runError: string | undefined;
       let runChangedFileCount = 0;
+      let runTokenRefreshAt: string | undefined;
       try {
         // Resolve scheduling priority from task metadata before enqueuing.
         // This lets high-priority tasks bypass normal queue position.
@@ -1486,14 +1561,17 @@ async function runLoop(
           status = result.status;
           runError = result.error;
           runChangedFileCount = result.changedFileCount;
+          runTokenRefreshAt = result.tokenRefreshAt;
 
           // Track consecutive failures for 3-strike auto-cancel.
           // Uses isFailureStatus (not !shouldContinueLoop) so that
           // error_transient and cancelled — which keep the loop iterating —
           // still count toward the threshold instead of resetting the counter.
-          if (isFailureStatus(status)) {
+          // Token-exhaustion runs that will be retried via waitForTokenRefresh
+          // are not counted here — the loop breaks immediately after the retry.
+          if (isFailureStatus(status) && !runTokenRefreshAt) {
             consecutiveFailureCounter.recordFailure(result.selectedTaskId || "unknown");
-          } else {
+          } else if (!runTokenRefreshAt) {
             consecutiveFailureCounter.recordSuccess();
           }
 
@@ -1544,6 +1622,45 @@ async function runLoop(
       // Emit quota log line(s) at the inter-run boundary.
       await emitQuotaLog();
 
+      // Token-exhaustion with a known refresh time: suspend until quota resets,
+      // issue exactly one retry, emit outcome notification, and exit the loop.
+      // No consecutive-failure counter is incremented for the wait period.
+      if (isTokenExhaustionStatus(status) && runTokenRefreshAt) {
+        const refreshDate = new Date(runTokenRefreshAt);
+        const completed_ = await waitForTokenRefresh(refreshDate, ac.signal);
+        if (!completed_) {
+          // Interrupted by Ctrl-C during wait
+          info("\nToken-refresh wait interrupted by user — exiting loop.");
+          break;
+        }
+        // Retry once (regardless of outcome, loop exits after)
+        let retryResult: Awaited<ReturnType<typeof runOne>>;
+        try {
+          retryResult = await runOne(
+            dir, henchDir, rexDir, provider,
+            undefined, // autoselect (same task will be picked — still pending)
+            dryRun, model, spawnModel, maxTurns, tokenBudget,
+            review,
+            undefined,
+            epicId,
+            tags,
+            undefined,
+            rollbackOnFailure,
+            yes,
+            extraContext,
+            autonomous,
+            completed + 1,
+            permissionMode,
+          );
+        } catch (retryErr) {
+          const msg = (retryErr as Error).message ?? String(retryErr);
+          info(`\n${formatTokenRefreshRetryOutcome("failed", msg)}`);
+          break;
+        }
+        info(`\n${formatTokenRefreshRetryOutcome(retryResult.status, retryResult.error)}`);
+        break;
+      }
+
       // Check for 3-strike auto-cancel on consecutive failures
       if (consecutiveFailureCounter.shouldCancel()) {
         const cancelMessage = consecutiveFailureCounter.getCancellationMessage();
@@ -1560,8 +1677,12 @@ async function runLoop(
           process.exitCode = 1;
           break;
         }
-        // Token/rate-limit failures: the stuck-task mechanism handles retries.
-        info(`\n${red(`Task failed (${status}), will skip if stuck on next iteration...`)}`);
+        // Token exhaustion without refresh timestamp: treat as non-retriable,
+        // delegate to the same notification path as hard failures.
+        if (isTokenExhaustionStatus(status)) {
+          info(`\n${formatNonTokenFailureNotification(status, runError, runChangedFileCount)}`);
+          break;
+        }
       }
 
       if (dryRun) {
