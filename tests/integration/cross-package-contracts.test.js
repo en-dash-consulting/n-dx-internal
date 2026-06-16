@@ -263,6 +263,8 @@ describe("hench → llm-client gateway contract", () => {
     "formatUsage",
     "classifyLLMError",
     "getNextFailoverAttempt",
+    "extractRefreshAt",
+    "formatRetryCountdown",
     "detectGoogleAuthMethod",
     "cmd",
   ];
@@ -614,7 +616,8 @@ describe("gateway export auto-detection", () => {
         "mapApprovalToCodexFlag", "toAnthropicToolDef", "toAnthropicToolDefs",
         "toOpenAiToolDef", "toOpenAiToolDefs", "toGeminiFunctionDeclaration",
         "toGeminiFunctionDeclarations", "ProviderRegistry", "defaultRegistry",
-        "classifyLLMError", "getNextFailoverAttempt", "detectGoogleAuthMethod",
+        "classifyLLMError", "getNextFailoverAttempt", "extractRefreshAt",
+        "formatRetryCountdown", "detectGoogleAuthMethod",
         "mapFailureCategoryToErrorEntry"],
       ...["PROJECT_DIRS", "NEWEST_MODELS", "TIER_MODELS", "GOOGLE_MODELS",
         "VENDOR_CONTEXT_CHAR_LIMITS",

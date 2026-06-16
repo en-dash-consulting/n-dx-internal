@@ -28,6 +28,8 @@ import { ProcessLimiter } from "../../process/limiter.js";
 import { MemoryThrottle } from "../../process/memory-throttle.js";
 import { checkQuotaRemaining, formatQuotaLog } from "../../quota/index.js";
 import { formatTokenReport } from "../token-logging.js";
+import { promptRollbackOnInterrupt } from "../../agent/lifecycle/shared.js";
+import { revertChanges } from "../../agent/analysis/review.js";
 
 // ---------------------------------------------------------------------------
 // Attempt tracking (per-task within a single run invocation)
@@ -1365,74 +1367,99 @@ async function runIterations(
   autonomous?: boolean,
   permissionMode?: PermissionMode,
 ): Promise<void> {
+  // SIGINT handler: show rollback Y/n prompt on first Ctrl+C.
+  // The inner agentLoop also registers its own handler (which sets cancelled=true),
+  // but that runs after this one. promptRollbackOnInterrupt suspends all listeners
+  // (including the inner one) while the prompt is open.
+  let sigintFired = false;
+  const onSignal = () => {
+    if (sigintFired) {
+      process.exit(1);
+    }
+    sigintFired = true;
+    void promptRollbackOnInterrupt().then(async (doRollback) => {
+      if (doRollback) {
+        try { await revertChanges(dir); } catch { /* best-effort */ }
+        process.exit(0);
+      } else {
+        process.exit(1);
+      }
+    }).catch(() => process.exit(1));
+  };
+  process.on("SIGINT", onSignal);
+
   // Track attempt counts per task ID within this run invocation
   const attemptTracker = createAttemptTracker();
   // Tasks excluded from selection due to reaching 3 attempts
   const forcedExclusionIds = new Set<string>();
 
-  for (let i = 0; i < iterations; i++) {
-    // Banner between iterations: printed before iteration i+1 starts,
-    // i.e. after iteration i's commit and run summary have been rendered.
-    // Not emitted before the first iteration (i === 0).
-    if (i > 0) {
-      info(`\n${formatIterationBanner(i + 1, iterations)}`);
-    }
-
-    // For autoselected iterations, skip stuck tasks
-    const isAutoselect = i > 0 || !taskId;
-    const stuckIds = isAutoselect
-      ? await loadStuckTaskIds(henchDir, maxFailedAttempts)
-      : undefined;
-
-    // Combine stuck tasks with tasks that reached max attempts
-    const combinedExcludedIds = stuckIds
-      ? new Set([...stuckIds, ...forcedExclusionIds])
-      : forcedExclusionIds;
-
-    const { status, selectedTaskId } = await runOne(
-      dir, henchDir, rexDir, provider,
-      // Only use the explicit taskId for the first iteration;
-      // subsequent iterations autoselect the next task
-      i === 0 ? taskId : undefined,
-      dryRun, model, spawnModel, maxTurns, tokenBudget,
-      review,
-      combinedExcludedIds,
-      epicId,
-      tags,
-      undefined,
-      rollbackOnFailure,
-      yes,
-      extraContext,
-      autonomous,
-      undefined,
-      permissionMode,
-    );
-
-    // Track attempt count for the selected task
-    if (selectedTaskId) {
-      const attemptCount = attemptTracker.incrementAndGetCount(selectedTaskId);
-      if (attemptCount >= 3 && !forcedExclusionIds.has(selectedTaskId)) {
-        forcedExclusionIds.add(selectedTaskId);
-        // Note: taskTitle would be in the original runOne result, not in status
-        // We could enhance this later, but for now we just log the taskId
-        info(`\n${colorWarn(`Forced advancement: task "${selectedTaskId}" has reached 3 attempts in this run. Excluding from next iteration.`)}`);
+  try {
+    for (let i = 0; i < iterations; i++) {
+      // Banner between iterations: printed before iteration i+1 starts,
+      // i.e. after iteration i's commit and run summary have been rendered.
+      // Not emitted before the first iteration (i === 0).
+      if (i > 0) {
+        info(`\n${formatIterationBanner(i + 1, iterations)}`);
       }
+
+      // For autoselected iterations, skip stuck tasks
+      const isAutoselect = i > 0 || !taskId;
+      const stuckIds = isAutoselect
+        ? await loadStuckTaskIds(henchDir, maxFailedAttempts)
+        : undefined;
+
+      // Combine stuck tasks with tasks that reached max attempts
+      const combinedExcludedIds = stuckIds
+        ? new Set([...stuckIds, ...forcedExclusionIds])
+        : forcedExclusionIds;
+
+      const { status, selectedTaskId } = await runOne(
+        dir, henchDir, rexDir, provider,
+        // Only use the explicit taskId for the first iteration;
+        // subsequent iterations autoselect the next task
+        i === 0 ? taskId : undefined,
+        dryRun, model, spawnModel, maxTurns, tokenBudget,
+        review,
+        combinedExcludedIds,
+        epicId,
+        tags,
+        undefined,
+        rollbackOnFailure,
+        yes,
+        extraContext,
+        autonomous,
+        undefined,
+        permissionMode,
+      );
+
+      // Track attempt count for the selected task
+      if (selectedTaskId) {
+        const attemptCount = attemptTracker.incrementAndGetCount(selectedTaskId);
+        if (attemptCount >= 3 && !forcedExclusionIds.has(selectedTaskId)) {
+          forcedExclusionIds.add(selectedTaskId);
+          // Note: taskTitle would be in the original runOne result, not in status
+          // We could enhance this later, but for now we just log the taskId
+          info(`\n${colorWarn(`Forced advancement: task "${selectedTaskId}" has reached 3 attempts in this run. Excluding from next iteration.`)}`);
+        }
+      }
+
+      // Emit quota log line(s) at the inter-run boundary.
+      await emitQuotaLog();
+
+      if (status === "error_transient") {
+        info(`\n${colorWarn(`Transient error on iteration ${i + 1}, continuing to next task...`)}`);
+        continue;
+      }
+
+      if (status === "failed" || status === "timeout" || status === "budget_exceeded") {
+        info(`\n${red(`Stopping after ${i + 1} iteration(s) due to ${status} status.`)}`);
+        break;
+      }
+
+      if (dryRun) break;
     }
-
-    // Emit quota log line(s) at the inter-run boundary.
-    await emitQuotaLog();
-
-    if (status === "error_transient") {
-      info(`\n${colorWarn(`Transient error on iteration ${i + 1}, continuing to next task...`)}`);
-      continue;
-    }
-
-    if (status === "failed" || status === "timeout" || status === "budget_exceeded") {
-      info(`\n${red(`Stopping after ${i + 1} iteration(s) due to ${status} status.`)}`);
-      break;
-    }
-
-    if (dryRun) break;
+  } finally {
+    process.removeListener("SIGINT", onSignal);
   }
 }
 
@@ -1470,13 +1497,26 @@ async function runLoop(
 
   const onSignal = () => {
     if (stopping) {
-      // Second Ctrl-C: force exit
+      // Second Ctrl+C before the prompt is ready — force exit immediately.
+      // (Once the prompt is active, promptRollbackOnInterrupt installs its own
+      //  force-exit handler and this path is unreachable.)
       process.exit(1);
     }
     stopping = true;
     ac.abort();
     if (queue) queue.drain();
-    info("\nReceived interrupt — finishing current task then stopping…");
+
+    // Show the rollback prompt. Any non-Y input exits immediately without
+    // rollback. Y triggers revertChanges() then exits. Second Ctrl+C while
+    // the prompt is open force-exits via promptRollbackOnInterrupt's own handler.
+    void promptRollbackOnInterrupt().then(async (doRollback) => {
+      if (doRollback) {
+        try { await revertChanges(dir); } catch { /* best-effort */ }
+        process.exit(0);
+      } else {
+        process.exit(1);
+      }
+    }).catch(() => process.exit(1));
   };
 
   process.on("SIGINT", onSignal);
@@ -1785,7 +1825,15 @@ async function runEpicByEpic(
     stopping = true;
     ac.abort();
     if (queue) queue.drain();
-    info("\nReceived interrupt — finishing current task then stopping…");
+
+    void promptRollbackOnInterrupt().then(async (doRollback) => {
+      if (doRollback) {
+        try { await revertChanges(dir); } catch { /* best-effort */ }
+        process.exit(0);
+      } else {
+        process.exit(1);
+      }
+    }).catch(() => process.exit(1));
   };
 
   process.on("SIGINT", onSignal);

@@ -781,6 +781,65 @@ const PENDING_COMMIT_FILE = ".hench-commit-msg.txt";
  * @returns         true on accept (empty input, 'y', 'yes');
  *                  false on explicit decline or Ctrl-C cancellation.
  */
+/**
+ * Show the Ctrl+C rollback Y/n prompt on first interrupt.
+ *
+ * - 'Y' or 'y' → resolves `true`  (caller should rollback then exit)
+ * - Any other input (empty enter, 'n', …) → resolves `false` (caller exits immediately)
+ * - Second Ctrl+C while the prompt is open → `process.exit(1)` (force exit)
+ *
+ * Suspends ALL currently-registered SIGINT handlers for the duration of the
+ * prompt so that the second-Ctrl-C path is governed only by the force-exit
+ * handler installed here. Handlers are restored before the promise settles
+ * as a defensive cleanup step (callers are expected to call `process.exit()`
+ * immediately after resolving).
+ *
+ * Exported so the outer run-loop SIGINT handlers in `run.ts` can invoke it.
+ */
+export async function promptRollbackOnInterrupt(): Promise<boolean> {
+  const { createInterface } = await import("node:readline");
+
+  const savedListeners = process.listeners("SIGINT") as Array<(...args: unknown[]) => void>;
+  for (const listener of savedListeners) {
+    process.removeListener("SIGINT", listener);
+  }
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+  return new Promise<boolean>((resolve) => {
+    let settled = false;
+
+    // Second Ctrl+C while the prompt is open → force exit immediately
+    const onInterrupt = (): void => {
+      if (settled) return;
+      settled = true;
+      rl.close();
+      process.exit(1);
+    };
+
+    const finish = (value: boolean): void => {
+      if (settled) return;
+      settled = true;
+      process.removeListener("SIGINT", onInterrupt);
+      rl.removeListener("SIGINT", onInterrupt);
+      rl.close();
+      for (const listener of savedListeners) {
+        process.on("SIGINT", listener);
+      }
+      resolve(value);
+    };
+
+    process.on("SIGINT", onInterrupt);
+    rl.on("SIGINT", onInterrupt);
+
+    rl.question("\nRollback uncommitted changes? [Y/n] ", (answer) => {
+      // Only 'Y' or 'y' triggers rollback; everything else (empty, 'n', etc.) cancels
+      const trimmed = answer.trim().toLowerCase();
+      finish(trimmed === "y");
+    });
+  });
+}
+
 async function askYesNoWithSuspendedSigint(question: string): Promise<boolean> {
   const { createInterface } = await import("node:readline");
 
