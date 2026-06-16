@@ -134,6 +134,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Run unit tests
+        run: pnpm -r run test
+
       - name: Collect normalized smoke artifact
         run: node scripts/cli-smoke-parity.mjs collect --output ndx-cli-smoke-macos.json
 

@@ -28,6 +28,8 @@ import {
   colorWarn,
   mapCLICodeToErrorEntry,
   mapFailureCategoryToErrorEntry,
+  isVerbose,
+  formatVerboseLLMErrorDetails,
 } from "@n-dx/llm-client";
 import type { FailureCategory } from "@n-dx/llm-client";
 
@@ -230,7 +232,12 @@ export function formatCLIError(err: unknown): string {
     const code = "code" in err && typeof err.code === "string"
       ? err.code as CLIErrorCode
       : CLI_ERROR_CODES.GENERIC;
-    return renderCLIError(code, err.message, err.suggestion);
+    const base = renderCLIError(code, err.message, err.suggestion);
+    if (isVerbose()) {
+      const details = formatVerboseLLMErrorDetails(err);
+      return details ? `${base}\n${details}` : base;
+    }
+    return base;
   }
 
   // ClaudeClientError (from Claude/Codex providers) — classify into taxonomy
@@ -238,11 +245,15 @@ export function formatCLIError(err: unknown): string {
     const category = classifyVendorError(err);
     const entry = mapFailureCategoryToErrorEntry(category);
     const suggestion = CATEGORY_SUGGESTIONS[category];
-    let msg = `Error: [${entry.key}] ${err.message}`;
+    let base = `Error: [${entry.key}] ${err.message}`;
     if (suggestion) {
-      msg += `\n${colorWarn(`Hint: ${suggestion}`)}`;
+      base += `\n${colorWarn(`Hint: ${suggestion}`)}`;
     }
-    return msg;
+    if (isVerbose()) {
+      const details = formatVerboseLLMErrorDetails(err);
+      return details ? `${base}\n${details}` : base;
+    }
+    return base;
   }
 
   const message = err instanceof Error ? err.message : String(err);
@@ -251,12 +262,22 @@ export function formatCLIError(err: unknown): string {
   for (const [pattern, code, friendly, suggestion] of ERROR_HINTS) {
     if (pattern.test(message)) {
       const displayMsg = friendly || message;
-      return renderCLIError(code, displayMsg, suggestion);
+      const base = renderCLIError(code, displayMsg, suggestion);
+      if (isVerbose() && err instanceof Error) {
+        const details = formatVerboseLLMErrorDetails(err);
+        return details ? `${base}\n${details}` : base;
+      }
+      return base;
     }
   }
 
-  // Generic fallback — show the message, never the stack
-  return renderCLIError(CLI_ERROR_CODES.GENERIC, message);
+  // Generic fallback — show the message, suppress stack unless verbose
+  const base = renderCLIError(CLI_ERROR_CODES.GENERIC, message);
+  if (isVerbose() && err instanceof Error) {
+    const details = formatVerboseLLMErrorDetails(err);
+    return details ? `${base}\n${details}` : base;
+  }
+  return base;
 }
 
 /**

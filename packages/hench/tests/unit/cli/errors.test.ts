@@ -6,11 +6,13 @@ import { tmpdir } from "node:os";
 import {
   CLI_ERROR_CODES,
   resetColorCache,
+  setVerbose,
   E_AUTH_FAILURE,
   E_RATE_LIMIT,
   E_TIMEOUT,
   E_UNKNOWN,
   E_NULL_RESPONSE,
+  E_MALFORMED_RESPONSE,
 } from "@n-dx/llm-client";
 import { CLIError, formatCLIError, handleCLIError, requireHenchDir, requireClaudeCLI } from "../../../src/cli/errors.js";
 import { TaskNotActionableError } from "../../../src/agent/planning/brief.js";
@@ -140,6 +142,14 @@ describe("formatCLIError", () => {
     const result = formatCLIError(err);
     expect(result).toContain(`[${E_NULL_RESPONSE.key}]`);
     expect(result).toContain("Hint:");
+  });
+
+  it("formats malformed-response ClaudeClientError with E_MALFORMED_RESPONSE code", () => {
+    // ClaudeClientError with reason "unknown" + malformed message falls through
+    // to VENDOR_ERROR_PATTERNS which classifies "unexpected token" as malformed_output.
+    const err = new ClaudeClientError("unexpected token in JSON response from LLM", "unknown", false);
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${E_MALFORMED_RESPONSE.key}]`);
   });
 
   // ── Codex-specific error patterns ──
@@ -303,6 +313,87 @@ describe("requireHenchDir", () => {
     } finally {
       rmSync(tmp, { recursive: true });
     }
+  });
+});
+
+// ── Verbose mode paired assertions ────────────────────────────────────────────
+//
+// For each LLM error scenario (E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE)
+// verify that:
+//   • Default (non-verbose) run: only the error code + message + optional hint.
+//   • --verbose run: additional diagnostic lines are present (raw response + stack trace).
+//
+// These tests run in CI on both macOS and Linux.
+
+describe("formatCLIError — verbose mode paired assertions", () => {
+  afterEach(() => {
+    setVerbose(false);
+  });
+
+  // ── E_TIMEOUT ──────────────────────────────────────────────────────────────
+
+  it("E_TIMEOUT default: no additional diagnostic lines", () => {
+    const err = new ClaudeClientError("codex exec timed out after 30000ms", "timeout", true);
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${E_TIMEOUT.key}]`);
+    expect(result).not.toContain("Raw response:");
+    expect(result).not.toContain("Stack trace:");
+  });
+
+  it("E_TIMEOUT verbose: additional lines absent in default run are present", () => {
+    setVerbose(true);
+    const err = new ClaudeClientError("codex exec timed out after 30000ms", "timeout", true);
+    const defaultResult = (() => { setVerbose(false); const r = formatCLIError(err); setVerbose(true); return r; })();
+    const verboseResult = formatCLIError(err);
+    // verbose output must be strictly longer
+    expect(verboseResult.length).toBeGreaterThan(defaultResult.length);
+    // verbose output contains additional diagnostic lines
+    expect(verboseResult).toContain("Raw response:");
+    expect(verboseResult).toContain("Stack trace:");
+    // error code is still present
+    expect(verboseResult).toContain(`[${E_TIMEOUT.key}]`);
+  });
+
+  // ── E_MALFORMED_RESPONSE ───────────────────────────────────────────────────
+
+  it("E_MALFORMED_RESPONSE default: no additional diagnostic lines", () => {
+    const err = new ClaudeClientError("unexpected token in JSON response from LLM", "unknown", false);
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${E_MALFORMED_RESPONSE.key}]`);
+    expect(result).not.toContain("Raw response:");
+    expect(result).not.toContain("Stack trace:");
+  });
+
+  it("E_MALFORMED_RESPONSE verbose: additional lines absent in default run are present", () => {
+    setVerbose(true);
+    const err = new ClaudeClientError("unexpected token in JSON response from LLM", "unknown", false);
+    const defaultResult = (() => { setVerbose(false); const r = formatCLIError(err); setVerbose(true); return r; })();
+    const verboseResult = formatCLIError(err);
+    expect(verboseResult.length).toBeGreaterThan(defaultResult.length);
+    expect(verboseResult).toContain("Raw response:");
+    expect(verboseResult).toContain("Stack trace:");
+    expect(verboseResult).toContain(`[${E_MALFORMED_RESPONSE.key}]`);
+  });
+
+  // ── E_NULL_RESPONSE ────────────────────────────────────────────────────────
+
+  it("E_NULL_RESPONSE default: no additional diagnostic lines", () => {
+    const err = new Error("Null or empty response — the LLM returned no text content");
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${E_NULL_RESPONSE.key}]`);
+    expect(result).not.toContain("Raw response:");
+    expect(result).not.toContain("Stack trace:");
+  });
+
+  it("E_NULL_RESPONSE verbose: additional lines absent in default run are present", () => {
+    setVerbose(true);
+    const err = new Error("Null or empty response — the LLM returned no text content");
+    const defaultResult = (() => { setVerbose(false); const r = formatCLIError(err); setVerbose(true); return r; })();
+    const verboseResult = formatCLIError(err);
+    expect(verboseResult.length).toBeGreaterThan(defaultResult.length);
+    expect(verboseResult).toContain("Raw response:");
+    expect(verboseResult).toContain("Stack trace:");
+    expect(verboseResult).toContain(`[${E_NULL_RESPONSE.key}]`);
   });
 });
 
