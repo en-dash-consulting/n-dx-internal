@@ -2,7 +2,7 @@
 id: "d5fa88af-6823-47da-b3f4-6c4ce0fce62d"
 level: "task"
 title: "Write regression tests for default error code emission across all major error categories"
-status: "pending"
+status: "completed"
 priority: "medium"
 tags:
   - "cli"
@@ -10,6 +10,9 @@ tags:
   - "testing"
   - "dx"
 source: "smart-add"
+startedAt: "2026-06-16T19:20:55.649Z"
+completedAt: "2026-06-16T19:28:46.532Z"
+endedAt: "2026-06-16T19:28:46.532Z"
 acceptanceCriteria:
   - "Test for E_TIMEOUT: mocked timeout scenario produces '[E_TIMEOUT]' in output"
   - "Test for E_MALFORMED_RESPONSE: mocked bad LLM JSON produces '[E_MALFORMED_RESPONSE]' in output"
