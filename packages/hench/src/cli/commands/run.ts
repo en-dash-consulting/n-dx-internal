@@ -19,7 +19,7 @@ import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output, setQuiet } from "../output.js";
 import { section } from "../../types/output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
-import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor } from "../../prd/llm-gateway.js";
+import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor, E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE, E_AUTH_FAILURE, E_NETWORK_ERROR, E_UNKNOWN } from "../../prd/llm-gateway.js";
 import { ExecutionQueue } from "../../queue/execution-queue.js";
 import { formatQueueStatus } from "../../queue/format.js";
 import { resolveSchedulingPriority } from "../../queue/priority-scheduler.js";
@@ -136,6 +136,58 @@ export function formatRunSuccessMessage(text: string): string {
  */
 export function formatLoopIterationSeparator(): string {
   return colorWarn("─".repeat(60));
+}
+
+/**
+ * Returns true when the run status indicates a token-exhaustion or rate-limit
+ * condition. These statuses are handled differently from hard failures:
+ * the loop waits for token replenishment rather than terminating.
+ *
+ * Returns false for non-token hard failures (failed, timeout) which should
+ * terminate the loop immediately with a clear error notification.
+ *
+ * Exported for testing.
+ */
+export function isTokenExhaustionStatus(status: string): boolean {
+  return status === "budget_exceeded" || status === "error_transient";
+}
+
+/**
+ * Derive a structured error code key from a run status and optional error text.
+ * Maps `timeout` → E_TIMEOUT, then checks common patterns in the error text,
+ * falling back to E_UNKNOWN for unrecognised failures.
+ *
+ * @internal Used by formatNonTokenFailureNotification.
+ */
+function deriveNonTokenErrorCode(status: string, errorText?: string): string {
+  if (status === "timeout") return E_TIMEOUT.key;
+  if (errorText) {
+    if (/malformed|invalid json|parse error|unexpected token/i.test(errorText)) return E_MALFORMED_RESPONSE.key;
+    if (/null.*response|empty.*response/i.test(errorText)) return E_NULL_RESPONSE.key;
+    if (/auth|api key|credential/i.test(errorText)) return E_AUTH_FAILURE.key;
+    if (/network|ECONNRESET|ECONNREFUSED|socket hang up/i.test(errorText)) return E_NETWORK_ERROR.key;
+  }
+  return E_UNKNOWN.key;
+}
+
+/**
+ * Format a user-facing error notification for a non-token run failure.
+ *
+ * Derives the structured error code from the run status and optional error
+ * text, then renders a single-line `[CODE] cause` summary in red.
+ * Called by runLoop() when a non-token hard failure terminates the loop.
+ *
+ * Exported for testing — verifies error code derivation and message format.
+ */
+export function formatNonTokenFailureNotification(
+  status: string,
+  errorText?: string,
+): string {
+  const code = deriveNonTokenErrorCode(status, errorText);
+  const cause = errorText
+    ? errorText.slice(0, 120).replace(/\n/g, " ").trimEnd()
+    : `run ${status}`;
+  return red(`Run failed: [${code}] ${cause}`);
 }
 
 /**
@@ -635,7 +687,7 @@ async function runOne(
   autonomous?: boolean,
   runNumber?: number,
   permissionMode?: PermissionMode,
-): Promise<{ status: string; taskTitle: string; selectedTaskId?: string }> {
+): Promise<{ status: string; taskTitle: string; selectedTaskId?: string; error?: string }> {
   const config = await loadConfig(henchDir);
   const store = await resolveStore(rexDir);
   await assertSchemaCompatibility(store);
@@ -747,7 +799,7 @@ async function runOne(
     output(`\n${red("Error:")} ${run.error}`);
   }
 
-  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId };
+  return { status: run.status, taskTitle: run.taskTitle, selectedTaskId: run.taskId, error: run.error };
 }
 
 // ---------------------------------------------------------------------------
@@ -918,7 +970,12 @@ export async function cmdRun(
   const provider = (flags.provider as "cli" | "api") ?? config.provider;
   const dryRun = flags["dry-run"] === "true";
   const review = flags.review === "true";
-  // --no-rollback always wins; otherwise read config (defaults to true).
+  // --no-rollback is deprecated: automatic git rollback on failure has been removed.
+  // Failed and cancelled runs now preserve the working tree unchanged.
+  // The flag is accepted but has no effect; emit a deprecation notice when used.
+  if (flags["no-rollback"] === "true") {
+    info("⚠ --no-rollback is deprecated and has no effect. Working tree is always preserved on failure.");
+  }
   const rollbackOnFailure = flags["no-rollback"] === "true" ? false : (config.rollbackOnFailure ?? true);
   // --yes suppresses the interactive confirmation prompt before rollback.
   const yes = flags["yes"] === "true";
@@ -1354,6 +1411,7 @@ async function runLoop(
         : undefined;
 
       let status: string;
+      let runError: string | undefined;
       try {
         // Resolve scheduling priority from task metadata before enqueuing.
         // This lets high-priority tasks bypass normal queue position.
@@ -1390,6 +1448,7 @@ async function runLoop(
             permissionMode,
           );
           status = result.status;
+          runError = result.error;
 
           // Track consecutive failures for 3-strike auto-cancel.
           // Uses isFailureStatus (not !shouldContinueLoop) so that
@@ -1456,8 +1515,16 @@ async function runLoop(
       }
 
       if (!shouldContinueLoop(status)) {
-        // In loop mode, hard failures don't stop the loop — the stuck
-        // task will be detected and skipped on the next iteration.
+        if (!isTokenExhaustionStatus(status)) {
+          // Non-token hard failure: terminate the loop immediately,
+          // emit a structured error notification, and signal non-zero exit.
+          // The rollback prompt is suppressed (auto-rollback already ran
+          // inside finalizeRun for non-token failures).
+          info(`\n${formatNonTokenFailureNotification(status, runError)}`);
+          process.exitCode = 1;
+          break;
+        }
+        // Token/rate-limit failures: the stuck-task mechanism handles retries.
         info(`\n${red(`Task failed (${status}), will skip if stuck on next iteration...`)}`);
       }
 

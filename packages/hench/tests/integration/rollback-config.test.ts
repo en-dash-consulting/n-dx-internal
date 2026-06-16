@@ -5,21 +5,22 @@ import { tmpdir } from "node:os";
 import { promisify } from "node:util";
 import { exec as execCb } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { initConfig, saveConfig } from "../../src/store/config.js";
+import { initConfig, saveConfig, loadConfig } from "../../src/store/config.js";
 import type { RunRecord } from "../../src/schema/index.js";
 
 const execAsync = promisify(execCb);
 
 /**
- * Integration tests for the hench.rollbackOnFailure config key and
- * confirmation UX (CI auto-confirm / --yes flag).
+ * Working-tree preservation tests for the deprecated rollbackOnFailure config key.
  *
- * These tests verify:
- *  1. hench.rollbackOnFailure=false in config prevents rollback without --no-rollback flag
- *  2. hench.rollbackOnFailure=true in config (default) causes rollback
- *  3. --no-rollback (rollbackOnFailure=false arg) overrides config=true
- *  4. In non-TTY environments (CI), rollback proceeds without a confirmation prompt
- *  5. When yes=true, rollback proceeds without a confirmation prompt
+ * Automatic git rollback on run failure has been removed. The rollbackOnFailure
+ * config key and --no-rollback flag are now no-ops. These tests assert that:
+ *
+ *  1. Working tree is always preserved on failure regardless of rollbackOnFailure
+ *  2. Setting rollbackOnFailure=true in config has no effect (deprecated no-op)
+ *  3. Setting rollbackOnFailure=false in config has no effect (always no-op)
+ *  4. yes=true has no effect on working-tree preservation (never did rollback anyway)
+ *  5. PRD task status reset still works correctly on failure (unrelated to rollback)
  */
 
 async function setupGitRepo(dir: string): Promise<void> {
@@ -49,7 +50,7 @@ function buildMinimalRun(status: RunRecord["status"]): RunRecord {
   };
 }
 
-describe("rollbackOnFailure config key", () => {
+describe("rollbackOnFailure config key (deprecated — no-op)", () => {
   let projectDir: string;
   let henchDir: string;
 
@@ -70,11 +71,10 @@ describe("rollbackOnFailure config key", () => {
     await rm(projectDir, { recursive: true, force: true });
   });
 
-  it("does not roll back when config.rollbackOnFailure=false (no --no-rollback flag needed)", async () => {
+  it("preserves working tree when config.rollbackOnFailure=false (no-op, was never rollback)", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    // Set rollbackOnFailure=false in the hench config (simulates .n-dx.json override)
-    const config = await import("../../src/store/config.js").then((m) => m.loadConfig(henchDir));
+    const config = await loadConfig(henchDir);
     await saveConfig(henchDir, { ...config, rollbackOnFailure: false });
 
     const originalContent = "console.log('original');\n";
@@ -84,47 +84,46 @@ describe("rollbackOnFailure config key", () => {
 
     const run = buildMinimalRun("failed");
 
-    // rollbackOnFailure=false — matches config value, no --no-rollback flag required
     await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: false });
 
     const fileContent = await readFile(join(projectDir, "src.ts"), "utf-8");
     expect(fileContent).toBe(modifiedContent);
   });
 
-  it("rolls back when config.rollbackOnFailure is true (explicit)", async () => {
+  it("preserves working tree when rollbackOnFailure=true (deprecated no-op)", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    const originalContent = "export const x = 1;\n";
-    await makeInitialCommit(projectDir, "lib.ts", originalContent);
-    await writeFile(join(projectDir, "lib.ts"), "export const x = 999;\n", "utf-8");
+    const modifiedContent = "export const x = 999;\n";
+    await makeInitialCommit(projectDir, "lib.ts", "export const x = 1;\n");
+    await writeFile(join(projectDir, "lib.ts"), modifiedContent, "utf-8");
 
     const run = buildMinimalRun("failed");
 
-    // Config key = true → rollback occurs
+    // rollbackOnFailure=true is now a deprecated no-op — working tree must not change
     await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
 
     const content = await readFile(join(projectDir, "lib.ts"), "utf-8");
-    expect(content).toBe(originalContent);
+    expect(content).toBe(modifiedContent);
   });
 
-  it("rolls back when rollbackOnFailure is omitted (default true)", async () => {
+  it("preserves working tree when rollbackOnFailure is omitted (always no-op)", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    const originalContent = "export const a = 1;\n";
-    await makeInitialCommit(projectDir, "lib.ts", originalContent);
-    await writeFile(join(projectDir, "lib.ts"), "export const a = 999;\n", "utf-8");
+    const modifiedContent = "export const a = 999;\n";
+    await makeInitialCommit(projectDir, "lib.ts", "export const a = 1;\n");
+    await writeFile(join(projectDir, "lib.ts"), modifiedContent, "utf-8");
 
     const run = buildMinimalRun("failed");
 
-    // No rollbackOnFailure → defaults to true
+    // No rollbackOnFailure argument — default behavior preserves the working tree
     await finalizeRun({ run, henchDir, projectDir });
 
     const content = await readFile(join(projectDir, "lib.ts"), "utf-8");
-    expect(content).toBe(originalContent);
+    expect(content).toBe(modifiedContent);
   });
 });
 
-describe("CI auto-confirm (non-TTY rollback)", () => {
+describe("non-TTY / CI environment working-tree preservation", () => {
   let projectDir: string;
   let henchDir: string;
 
@@ -145,16 +144,17 @@ describe("CI auto-confirm (non-TTY rollback)", () => {
     await rm(projectDir, { recursive: true, force: true });
   });
 
-  it("rolls back without prompting in non-TTY environment (CI mode)", async () => {
+  it("preserves working tree in non-TTY environment (CI mode)", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
     // In test environments process.stdin.isTTY is always false (non-interactive).
-    // This simulates CI where rollback should proceed automatically without a prompt.
+    // Rollback has been removed; this test verifies finalization still completes
+    // cleanly in CI without hanging on any interactive prompt.
     expect(process.stdin.isTTY).toBeFalsy();
 
-    const originalContent = "export const ci = true;\n";
-    await makeInitialCommit(projectDir, "ci.ts", originalContent);
-    await writeFile(join(projectDir, "ci.ts"), "export const ci = false;\n", "utf-8");
+    const modifiedContent = "export const ci = false;\n";
+    await makeInitialCommit(projectDir, "ci.ts", "export const ci = true;\n");
+    await writeFile(join(projectDir, "ci.ts"), modifiedContent, "utf-8");
 
     const run = buildMinimalRun("failed");
 
@@ -162,31 +162,31 @@ describe("CI auto-confirm (non-TTY rollback)", () => {
     await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
 
     const content = await readFile(join(projectDir, "ci.ts"), "utf-8");
-    expect(content).toBe(originalContent);
+    expect(content).toBe(modifiedContent);
   });
 
-  it("rolls back without prompting when yes=true (--yes flag equivalent)", async () => {
+  it("preserves working tree when yes=true (--yes flag)", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    const originalContent = "export const prompted = false;\n";
-    await makeInitialCommit(projectDir, "flag.ts", originalContent);
-    await writeFile(join(projectDir, "flag.ts"), "export const prompted = true;\n", "utf-8");
+    const modifiedContent = "export const prompted = true;\n";
+    await makeInitialCommit(projectDir, "flag.ts", "export const prompted = false;\n");
+    await writeFile(join(projectDir, "flag.ts"), modifiedContent, "utf-8");
 
     const run = buildMinimalRun("failed");
 
-    // yes=true → skip confirmation prompt even if stdin were a TTY
+    // yes=true — working tree must still be preserved (rollback is gone)
     await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true, yes: true });
 
     const content = await readFile(join(projectDir, "flag.ts"), "utf-8");
-    expect(content).toBe(originalContent);
+    expect(content).toBe(modifiedContent);
   });
 
-  it("leaves files unchanged and still resets PRD when rollbackOnFailure=false with yes=true", async () => {
+  it("preserves working tree and resets PRD task status on failure", async () => {
     const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    const originalContent = "export const kept = true;\n";
-    await makeInitialCommit(projectDir, "kept.ts", originalContent);
-    await writeFile(join(projectDir, "kept.ts"), "export const kept = false;\n", "utf-8");
+    const modifiedContent = "export const kept = false;\n";
+    await makeInitialCommit(projectDir, "kept.ts", "export const kept = true;\n");
+    await writeFile(join(projectDir, "kept.ts"), modifiedContent, "utf-8");
 
     // Build a minimal mock PRD store to verify PRD status reset
     let currentStatus: string = "in_progress";
@@ -214,14 +214,13 @@ describe("CI auto-confirm (non-TTY rollback)", () => {
 
     const run = buildMinimalRun("failed");
 
-    // --no-rollback (rollbackOnFailure=false) + yes=true
     await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: false, yes: true, store });
 
-    // File changes NOT reverted (--no-rollback)
+    // Working tree is always preserved (rollback is gone)
     const content = await readFile(join(projectDir, "kept.ts"), "utf-8");
-    expect(content).toBe("export const kept = false;\n");
+    expect(content).toBe(modifiedContent);
 
-    // PRD status IS reset regardless of rollback setting
+    // PRD status IS reset to "pending" regardless of rollback setting
     expect(currentStatus).toBe("pending");
   });
 });

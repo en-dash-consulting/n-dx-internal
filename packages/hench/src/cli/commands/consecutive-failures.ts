@@ -15,10 +15,8 @@
 /**
  * Run statuses that count as a failure for the consecutive-failure counter.
  *
- * Aligned with `FAILURE_STATUSES` in `agent/lifecycle/shared.ts` (the rollback
- * gate). Both predicates answer "did this run end in failure?" — they must
- * agree, otherwise a status can be rolled back but still reset the counter
- * (or vice versa).
+ * Aligned with `FAILURE_STATUSES` in `agent/lifecycle/shared.ts` (the PRD
+ * task-reset gate). Both sets answer "did this run end in failure?".
  *
  * `error_transient` and `cancelled` belong here even though `shouldContinueLoop`
  * keeps iterating on them: the loop continues so a different task can be tried,

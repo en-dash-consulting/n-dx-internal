@@ -132,9 +132,9 @@ export interface HenchConfig {
   /** Discovered claude CLI path, persisted by ndx init to avoid re-discovery on every run. */
   claudePath?: string;
   /**
-   * Automatically revert uncommitted file changes when a run fails.
-   * Default: true. Set to false to keep changes in place on failure (equivalent to --no-rollback).
-   * The --no-rollback CLI flag always overrides this setting for a single run.
+   * @deprecated No-op. Automatic git rollback on failure has been removed.
+   * Failed and cancelled runs preserve the working tree unchanged.
+   * This field is kept in the schema for backward compatibility; it has no effect.
    */
   rollbackOnFailure?: boolean;
   /**

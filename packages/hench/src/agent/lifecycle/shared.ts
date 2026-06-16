@@ -99,13 +99,15 @@ export interface SharedLoopOptions {
   /** Run records for computing prior attempts when task is auto-selected. */
   runHistory?: RunRecord[];
   /**
-   * Automatically revert uncommitted file changes on run failure.
-   * Default: true. Pass false (via --no-rollback) to leave changes in place.
+   * @deprecated No-op. Automatic git rollback on failure has been removed.
+   * Failed and cancelled runs preserve the working tree unchanged.
+   * Accepted for backward compatibility; has no effect.
    */
   rollbackOnFailure?: boolean;
   /**
-   * Skip the interactive rollback confirmation prompt and proceed automatically.
-   * Set when --yes is passed or when the caller knows it is running non-interactively.
+   * Skip interactive confirmation prompts and proceed automatically.
+   * Governs the commit approval prompt (formerly also the rollback prompt).
+   * Set when --yes is passed or when running non-interactively.
    */
   yes?: boolean;
   /**
@@ -706,13 +708,15 @@ export interface FinalizeRunOptions {
   /** Whether in self-heal mode (triggers mandatory test gate). */
   selfHeal?: boolean;
   /**
-   * Automatically revert uncommitted file changes on run failure.
-   * Default: true. Pass false (via --no-rollback) to leave changes in place.
+   * @deprecated No-op. Automatic git rollback on failure has been removed.
+   * Failed and cancelled runs preserve the working tree unchanged.
+   * Accepted for backward compatibility; has no effect.
    */
   rollbackOnFailure?: boolean;
   /**
-   * Skip the interactive rollback confirmation prompt and proceed automatically.
-   * Set when --yes is passed or when the caller knows it is running non-interactively.
+   * Skip interactive confirmation prompts and proceed automatically.
+   * Governs the commit approval prompt (formerly also the rollback prompt).
+   * Set when --yes is passed or when running non-interactively.
    */
   yes?: boolean;
   /**
@@ -724,8 +728,7 @@ export interface FinalizeRunOptions {
   /**
    * PRD store used to reset task status to pending on failure.
    * When provided, if the run fails and the task is still in_progress,
-   * it is reset to pending so it reappears as actionable. This occurs
-   * independently of rollbackOnFailure.
+   * it is reset to pending so it reappears as actionable.
    */
   store?: PRDStore;
   /**
@@ -748,28 +751,18 @@ export interface FinalizeRunOptions {
 }
 
 // ---------------------------------------------------------------------------
-// Git rollback helpers
+// Run status helpers
 // ---------------------------------------------------------------------------
 
 /** Run statuses that indicate the run ended in failure. */
 const FAILURE_STATUSES = new Set(["failed", "timeout", "budget_exceeded", "error_transient", "cancelled"]);
 
-/**
- * Return the list of entries reported by `git status --porcelain`.
- * Each non-blank line represents a modified, staged, or untracked path.
- * Returns an empty array when the working tree is clean or git is unavailable.
- */
-async function listDirtyPaths(projectDir: string): Promise<string[]> {
-  try {
-    const output = await execStdout("git", ["status", "--porcelain"], {
-      cwd: projectDir,
-      timeout: 15_000,
-    });
-    return output.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
-}
+// ---------------------------------------------------------------------------
+// Pending-commit prompt helpers
+// ---------------------------------------------------------------------------
+
+/** Project-root sentinel where the agent writes its proposed commit message. */
+const PENDING_COMMIT_FILE = ".hench-commit-msg.txt";
 
 /**
  * Run an interactive y/n readline prompt with the outer SIGINT handlers
@@ -777,35 +770,20 @@ async function listDirtyPaths(projectDir: string): Promise<string[]> {
  *
  * The run-loop in `run.ts` registers a SIGINT handler that calls
  * `process.exit(1)` on a second Ctrl-C. Without suspension that handler
- * would kill the process while the user is answering a rollback or
- * commit prompt. This helper snapshots the existing SIGINT listeners,
- * removes them while the readline is open, and restores them on exit.
+ * would kill the process while the user is answering a commit prompt.
+ * This helper snapshots the existing SIGINT listeners, removes them while
+ * the readline is open, and restores them on exit.
  *
- * By default, a Ctrl-C received during the prompt is treated as "cancel
- * cleanly — decline": the readline closes and the promise resolves with
- * `false`. Rollback confirmation uses a stricter policy: the first
- * Ctrl-C is absorbed with a visible hint, and a second Ctrl-C exits.
+ * A Ctrl-C received during the prompt is treated as "decline": the
+ * readline closes and the promise resolves with `false`.
  *
  * @param question  The question to display (with trailing space).
  * @returns         true on accept (empty input, 'y', 'yes');
  *                  false on explicit decline or Ctrl-C cancellation.
  */
-interface AskYesNoOptions {
-  interruptMode?: "decline" | "hold-then-exit";
-}
-
-const ROLLBACK_INTERRUPT_HINT = "Press Ctrl+C again to abort the rollback prompt and exit.";
-
-async function askYesNoWithSuspendedSigint(
-  question: string,
-  options: AskYesNoOptions = {},
-): Promise<boolean> {
+async function askYesNoWithSuspendedSigint(question: string): Promise<boolean> {
   const { createInterface } = await import("node:readline");
-  const interruptMode = options.interruptMode ?? "decline";
 
-  // Snapshot any existing SIGINT listeners — typically the run-loop's
-  // force-exit handler from run.ts — and remove them before opening the
-  // prompt so Ctrl-C does not bypass the question.
   const savedListeners = process.listeners("SIGINT") as Array<(...args: unknown[]) => void>;
   for (const listener of savedListeners) {
     process.removeListener("SIGINT", listener);
@@ -815,27 +793,7 @@ async function askYesNoWithSuspendedSigint(
 
   return new Promise<boolean>((resolve) => {
     let settled = false;
-    let interruptCount = 0;
-    let secondInterruptArmed = false;
     const onInterrupt = (): void => {
-      if (interruptMode === "hold-then-exit") {
-        interruptCount++;
-        if (interruptCount === 1) {
-          info(`\n${ROLLBACK_INTERRUPT_HINT}`);
-          queueMicrotask(() => {
-            secondInterruptArmed = true;
-          });
-          return;
-        }
-        if (!secondInterruptArmed) {
-          return;
-        }
-
-        info("\nAborting rollback prompt.");
-        const exitProcess = process.exit as (code?: number) => void;
-        exitProcess(1);
-      }
-
       finish(false);
     };
 
@@ -845,8 +803,6 @@ async function askYesNoWithSuspendedSigint(
       process.removeListener("SIGINT", onInterrupt);
       rl.removeListener("SIGINT", onInterrupt);
       rl.close();
-      // Restore the outer SIGINT listeners exactly as they were so the
-      // run-loop reclaims ownership of Ctrl-C after the prompt closes.
       for (const listener of savedListeners) {
         process.on("SIGINT", listener);
       }
@@ -854,9 +810,6 @@ async function askYesNoWithSuspendedSigint(
     };
 
     process.on("SIGINT", onInterrupt);
-    // Some terminals surface Ctrl-C via readline's own SIGINT event in
-    // TTY raw mode — listen on both surfaces so any delivery channel
-    // unblocks the prompt cleanly.
     rl.on("SIGINT", onInterrupt);
 
     rl.question(question, (answer) => {
@@ -866,61 +819,7 @@ async function askYesNoWithSuspendedSigint(
   });
 }
 
-/**
- * Ask the user to confirm rollback via stdin (TTY only).
- * Returns true when the user accepts (empty input or 'y'/'yes').
- * The first Ctrl-C prints a hint and keeps the prompt open; a second
- * Ctrl-C aborts the prompt and exits.
- */
-async function promptRollbackConfirm(count: number): Promise<boolean> {
-  return askYesNoWithSuspendedSigint(
-    `\nRoll back ${count} uncommitted file(s)? [Y/n] `,
-    { interruptMode: "hold-then-exit" },
-  );
-}
-
-/**
- * Revert all uncommitted changes introduced during the run.
- * Skips silently when the working tree is already clean.
- *
- * In interactive TTY mode (stdin is a terminal and --yes was not passed),
- * prompts the user to confirm before reverting.
- * In non-interactive mode (CI, pipe, or --yes) proceeds without a prompt.
- *
- * Prints the number of reverted paths on completion.
- */
-async function performRollbackIfNeeded(projectDir: string, yes?: boolean): Promise<void> {
-  const dirtyPaths = await listDirtyPaths(projectDir);
-  if (dirtyPaths.length === 0) {
-    return;
-  }
-
-  // Prompt only in interactive TTY sessions where --yes was not supplied.
-  const isInteractive = Boolean(process.stdin.isTTY) && !yes;
-  if (isInteractive) {
-    const confirmed = await promptRollbackConfirm(dirtyPaths.length);
-    if (!confirmed) {
-      info(`Rollback skipped — ${dirtyPaths.length} file(s) left unchanged.`);
-      return;
-    }
-  }
-
-  info(`\nRolling back ${dirtyPaths.length} uncommitted file(s) after failed run…`);
-  await revertChanges(projectDir);
-  info(`Rollback complete — ${dirtyPaths.length} file(s) reverted.`);
-}
-
-// ---------------------------------------------------------------------------
-// Pending-commit prompt helpers
-// ---------------------------------------------------------------------------
-
-/** Project-root sentinel where the agent writes its proposed commit message. */
-const PENDING_COMMIT_FILE = ".hench-commit-msg.txt";
-
 async function promptCommitConfirm(fileCount: number): Promise<boolean> {
-  // Uses the same SIGINT-suspension shim as the rollback prompt so a
-  // Ctrl-C while the user is answering does not trigger the outer
-  // run-loop's force-exit handler.
   return askYesNoWithSuspendedSigint(
     `\nCommit ${fileCount} staged file(s) with the above message? [Y/n] `,
   );
@@ -1302,9 +1201,6 @@ export async function performCommitPromptIfNeeded(
  * Only resets when the task is still in_progress — specific failure handlers
  * (e.g. handleRunFailure) may have already moved it to pending or deferred,
  * in which case this is a no-op.
- *
- * Runs independently of rollbackOnFailure so the PRD is always cleaned up
- * even when git rollback is suppressed with --no-rollback.
  */
 async function resetInProgressTaskIfFailed(
   store: PRDStore,
@@ -1574,15 +1470,8 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
     opts.commitWatcher,
   );
 
-  // Rollback uncommitted changes when the run failed (unless suppressed).
-  // Runs after test gates so the working tree reflects the agent's final state.
-  // Skips silently when nothing is dirty (no-op for already-clean trees).
-  if (opts.rollbackOnFailure !== false && FAILURE_STATUSES.has(run.status)) {
-    await performRollbackIfNeeded(projectDir, opts.yes);
-  }
-
   // Reset task to pending when run failed and task is still in_progress.
-  // Runs independently of rollbackOnFailure — PRD cleanup always occurs.
+  // PRD cleanup always occurs regardless of working tree state.
   // A no-op when a specific failure handler already moved the task to
   // pending or deferred.
   if (opts.store) {

@@ -11,14 +11,16 @@ import type { RunRecord } from "../../src/schema/index.js";
 const execAsync = promisify(execCb);
 
 /**
- * Integration tests for the SIGINT-suspension shim around the rollback
- * and commit-approval prompts.
+ * Integration tests for SIGINT handling during interactive prompts.
  *
- * The run-loop in `packages/hench/src/cli/commands/run.ts` registers a
- * SIGINT handler that calls `process.exit(1)` on a second Ctrl-C. The
- * rollback prompt holds the first Ctrl-C so the user can still answer,
- * then exits cleanly only if Ctrl-C is pressed again while the prompt is
- * still open.
+ * Automatic git rollback on run failure has been removed. Failed/cancelled runs
+ * no longer open a readline prompt asking whether to roll back. This file now
+ * verifies:
+ *
+ *  1. No readline prompt is opened on failed or cancelled runs — SIGINT handlers
+ *     are never suspended by finalization on failure paths.
+ *  2. The commit-approval prompt still correctly suspends SIGINT so the user can
+ *     answer without the second Ctrl-C killing the process.
  */
 
 async function setupGitRepo(dir: string): Promise<void> {
@@ -33,20 +35,13 @@ async function makeInitialCommit(dir: string, file: string, content: string): Pr
   await execAsync('git commit -m "initial"', { cwd: dir });
 }
 
-/**
- * Build a cancelled run (Ctrl+C path).
- *
- * The rollback prompt only appears for `cancelled` status — non-token hard
- * failures (failed, timeout) auto-rollback silently without prompting. Tests
- * for the SIGINT-suspension shim must use `cancelled` to trigger the prompt.
- */
-function buildCancelledRun(): RunRecord {
+function buildMinimalRun(status: RunRecord["status"]): RunRecord {
   return {
     id: randomUUID(),
     taskId: "task-1",
     taskTitle: "Test task",
     startedAt: new Date().toISOString(),
-    status: "cancelled",
+    status,
     turns: 3,
     tokenUsage: { input: 100, output: 50 },
     turnTokenUsage: [],
@@ -56,18 +51,7 @@ function buildCancelledRun(): RunRecord {
 }
 
 function buildCompletedRun(): RunRecord {
-  return {
-    id: randomUUID(),
-    taskId: "task-1",
-    taskTitle: "Test task",
-    startedAt: new Date().toISOString(),
-    status: "completed",
-    turns: 3,
-    tokenUsage: { input: 100, output: 50 },
-    turnTokenUsage: [],
-    toolCalls: [],
-    model: "test-model",
-  };
+  return buildMinimalRun("completed");
 }
 
 interface FakeReadlineHandle {
@@ -177,283 +161,90 @@ describe("prompt SIGINT suspension", () => {
     await rm(projectDir, { recursive: true, force: true });
   });
 
-  it("detaches and restores outer SIGINT listeners around the rollback prompt", async () => {
+  it("does not open a readline prompt on failed run (no rollback prompt)", async () => {
+    // Automatic rollback has been removed. finalizeRun must complete without
+    // ever creating a readline interface on a failed run.
     const { fakes } = installFakeReadline();
     vi.resetModules();
 
     await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
     await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
 
-    // Simulate the run-loop's force-exit handler from run.ts by
-    // registering a marker listener. The prompt must detach it while
-    // open and restore it exactly after the prompt closes.
+    const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
+
+    const run = buildMinimalRun("failed");
+    await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
+
+    // No readline interface must have been created.
+    expect(fakes).toHaveLength(0);
+  });
+
+  it("does not open a readline prompt on cancelled run (no rollback prompt)", async () => {
+    // Cancelled runs previously opened a y/n rollback prompt. That prompt
+    // is gone — finalizeRun must complete immediately with no readline open.
+    const { fakes } = installFakeReadline();
+    vi.resetModules();
+
+    await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
+    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
+
+    const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
+
+    const run = buildMinimalRun("cancelled");
+    await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
+
+    // No readline interface must have been created.
+    expect(fakes).toHaveLength(0);
+  });
+
+  it("does not suspend SIGINT handlers on cancelled run", async () => {
+    // Previously finalizeRun on a cancelled run suspended SIGINT while the
+    // rollback prompt was open. Now finalization must complete without ever
+    // removing SIGINT listeners.
+    const { fakes } = installFakeReadline();
+    vi.resetModules();
+
+    await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
+    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
+
     const priorListeners = detachExistingSigintListeners();
     const outerHandler = vi.fn();
     process.on("SIGINT", outerHandler);
 
     try {
-      const { finalizeRun } = await import(
-        "../../src/agent/lifecycle/shared.js"
-      );
+      const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-      const run = buildCancelledRun();
-      const finalizePromise = finalizeRun({
-        run,
-        henchDir,
-        projectDir,
-        rollbackOnFailure: true,
-      });
+      const run = buildMinimalRun("cancelled");
+      await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
 
-      // Give the async prompt setup a tick to open.
-      await waitForFakePrompt(fakes);
-
-      expect(fakes).toHaveLength(1);
-      // Outer handler is suspended while the prompt is visible.
-      expect(process.listeners("SIGINT")).not.toContain(outerHandler);
-
-      // Simulate the user declining the rollback.
-      fakes[0].answer("n");
-      await finalizePromise;
-
-      // Outer handler is re-attached after the prompt closes and the
-      // user's answer was delivered without any SIGINT activity.
+      // Outer handler must still be registered (never suspended).
       expect(process.listeners("SIGINT")).toContain(outerHandler);
-      expect(outerHandler).not.toHaveBeenCalled();
-      expect(fakes[0].closed).toBe(true);
-
-      // Decline path leaves the working tree dirty.
-      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
-      expect(content).toBe("export const x = 999;\n");
+      // No readline prompt opened.
+      expect(fakes).toHaveLength(0);
     } finally {
       restoreSigintListeners(priorListeners);
     }
   });
 
-  it("holds the first Ctrl-C during the rollback prompt and keeps the prompt answerable", async () => {
+  it("preserves working tree on cancelled run (no rollback prompt)", async () => {
+    // Verify that cancellation leaves the file as the agent left it —
+    // no readline prompt AND no git revert.
     const { fakes } = installFakeReadline();
     vi.resetModules();
 
     await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
-    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
+    const modifiedContent = "export const x = 999;\n";
+    await writeFile(join(projectDir, "src.ts"), modifiedContent, "utf-8");
 
-    const priorListeners = detachExistingSigintListeners();
-    const outerHandler = vi.fn();
-    process.on("SIGINT", outerHandler);
+    const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
 
-    try {
-      const { finalizeRun } = await import(
-        "../../src/agent/lifecycle/shared.js"
-      );
+    const run = buildMinimalRun("cancelled");
+    await finalizeRun({ run, henchDir, projectDir, rollbackOnFailure: true });
 
-      const run = buildCancelledRun();
-      const finalizePromise = finalizeRun({
-        run,
-        henchDir,
-        projectDir,
-        rollbackOnFailure: true,
-      });
+    expect(fakes).toHaveLength(0);
 
-      await waitForFakePrompt(fakes);
-      expect(fakes).toHaveLength(1);
-
-      // Emit a process-level SIGINT while the prompt is visible. The
-      // outer handler has been detached, so only the rollback prompt's
-      // internal handler fires. The first interrupt is held: it prints a
-      // hint, does not close the prompt, and does not answer for the user.
-      process.emit("SIGINT");
-
-      expect(outerHandler).not.toHaveBeenCalled();
-      expect(fakes[0].closed).toBe(false);
-      const output = vi.mocked(console.log).mock.calls.flat().join("\n");
-      expect(output).toContain("Press Ctrl+C again to abort the rollback prompt and exit.");
-
-      // The user can still deliberately accept the rollback after the
-      // first Ctrl-C. This proves the first signal was not treated as a
-      // decline.
-      fakes[0].answer("y");
-      await finalizePromise;
-
-      expect(outerHandler).not.toHaveBeenCalled();
-      expect(fakes[0].closed).toBe(true);
-
-      // Accept path still reverts the modified file.
-      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
-      expect(content).toBe("export const x = 1;\n");
-    } finally {
-      restoreSigintListeners(priorListeners);
-    }
-  });
-
-  it("exits cleanly without rollback when a second Ctrl-C arrives during the rollback prompt", async () => {
-    // Reproduces the original bug scenario as closely as possible: the
-    // run-loop in `run.ts` registers a handler that calls
-    // `process.exit(1)` on a second Ctrl-C. The first Ctrl-C is assumed
-    // to have already ended the run (the run arrives here in a failed
-    // state and enters the rollback path). The outer handler stays
-    // registered unless something detaches it — without the suspension
-    // shim, the second Ctrl-C delivered while the rollback prompt is
-    // open would immediately kill the process before the user can
-    // answer.
-    const { fakes } = installFakeReadline();
-    vi.resetModules();
-
-    await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
-    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
-
-    // Spy on process.exit so the assertion can state the behavior in
-    // the exact language of the acceptance criterion.
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(((_code?: number) => undefined) as never);
-
-    const priorListeners = detachExistingSigintListeners();
-    // Install a handler with the force-exit shape used by run.ts's
-    // second-Ctrl-C branch. The test asserts this never fires while the
-    // prompt is open — the suspension shim must detach it first.
-    const outerForceExit = vi.fn(() => {
-      process.exit(1);
-    });
-    process.on("SIGINT", outerForceExit);
-
-    try {
-      const { finalizeRun } = await import(
-        "../../src/agent/lifecycle/shared.js"
-      );
-
-      const run = buildCancelledRun();
-      const finalizePromise = finalizeRun({
-        run,
-        henchDir,
-        projectDir,
-        rollbackOnFailure: true,
-      });
-
-      // Let the prompt open.
-      await waitForFakePrompt(fakes);
-      expect(fakes).toHaveLength(1);
-      // Precondition: the outer force-exit handler is detached while
-      // the prompt is open.
-      expect(process.listeners("SIGINT")).not.toContain(outerForceExit);
-
-      // Deliver the "second" Ctrl-C. The first one is the signal that
-      // ended the run and opened the prompt in the first place.
-      process.emit("SIGINT");
-      expect(fakes[0].closed).toBe(false);
-
-      await Promise.resolve();
-      process.emit("SIGINT");
-      await finalizePromise;
-
-      // Core criterion: only the prompt's second Ctrl-C branch exits; the
-      // detached outer force-exit handler is never invoked.
-      expect(exitSpy).toHaveBeenCalledWith(1);
-      expect(outerForceExit).not.toHaveBeenCalled();
-      // The readline interface completed cleanly — it was closed by the
-      // prompt's second-interrupt branch, and the finalizeRun promise
-      // resolved without rejection when process.exit was mocked.
-      expect(fakes[0].closed).toBe(true);
-      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
-      expect(content).toBe("export const x = 999;\n");
-      // And the outer handler is reinstalled exactly once so subsequent
-      // Ctrl-C handling is uninterrupted.
-      const restored = (process.listeners("SIGINT") as Array<(...a: unknown[]) => void>).filter(
-        (l) => l === outerForceExit,
-      );
-      expect(restored).toHaveLength(1);
-    } finally {
-      restoreSigintListeners(priorListeners);
-      exitSpy.mockRestore();
-    }
-  });
-
-  it("also holds the first Ctrl-C when SIGINT is delivered via readline's own event", async () => {
-    // Some terminals deliver Ctrl-C through the readline surface instead
-    // of (or in addition to) the process-level signal. The prompt
-    // listens on both so either delivery channel uses the same hold
-    // behavior.
-    const { fakes } = installFakeReadline();
-    vi.resetModules();
-
-    await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
-    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
-
-    const priorListeners = detachExistingSigintListeners();
-    const outerHandler = vi.fn();
-    process.on("SIGINT", outerHandler);
-
-    try {
-      const { finalizeRun } = await import(
-        "../../src/agent/lifecycle/shared.js"
-      );
-
-      const run = buildCancelledRun();
-      const finalizePromise = finalizeRun({
-        run,
-        henchDir,
-        projectDir,
-        rollbackOnFailure: true,
-      });
-
-      await waitForFakePrompt(fakes);
-      expect(fakes).toHaveLength(1);
-
-      fakes[0].emitRlSigint();
-
-      expect(outerHandler).not.toHaveBeenCalled();
-      expect(fakes[0].closed).toBe(false);
-      const output = vi.mocked(console.log).mock.calls.flat().join("\n");
-      expect(output).toContain("Press Ctrl+C again to abort the rollback prompt and exit.");
-
-      fakes[0].answer("n");
-      await finalizePromise;
-
-      expect(outerHandler).not.toHaveBeenCalled();
-      expect(fakes[0].closed).toBe(true);
-    } finally {
-      restoreSigintListeners(priorListeners);
-    }
-  });
-
-  it("still performs rollback when the user accepts the prompt", async () => {
-    const { fakes } = installFakeReadline();
-    vi.resetModules();
-
-    await makeInitialCommit(projectDir, "src.ts", "export const x = 1;\n");
-    await writeFile(join(projectDir, "src.ts"), "export const x = 999;\n", "utf-8");
-
-    const priorListeners = detachExistingSigintListeners();
-    const outerHandler = vi.fn();
-    process.on("SIGINT", outerHandler);
-
-    try {
-      const { finalizeRun } = await import(
-        "../../src/agent/lifecycle/shared.js"
-      );
-
-      const run = buildCancelledRun();
-      const finalizePromise = finalizeRun({
-        run,
-        henchDir,
-        projectDir,
-        rollbackOnFailure: true,
-      });
-
-      await waitForFakePrompt(fakes);
-      expect(fakes).toHaveLength(1);
-
-      // Accept the rollback.
-      fakes[0].answer("y");
-      await finalizePromise;
-
-      expect(process.listeners("SIGINT")).toContain(outerHandler);
-      expect(outerHandler).not.toHaveBeenCalled();
-
-      // Accept path reverts the modified file back to the committed version.
-      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
-      expect(content).toBe("export const x = 1;\n");
-    } finally {
-      restoreSigintListeners(priorListeners);
-    }
+    const content = await readFile(join(projectDir, "src.ts"), "utf-8");
+    expect(content).toBe(modifiedContent);
   });
 
   it("applies the same SIGINT suspension to the commit-approval prompt", async () => {
