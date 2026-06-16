@@ -2,7 +2,7 @@
 id: "1ae99d42-2a44-466f-8054-c03ca6a07bed"
 level: "task"
 title: "Suppress rollback prompt on insufficient-token errors and emit single token-replenishment wait message"
-status: "in_progress"
+status: "completed"
 priority: "high"
 tags:
   - "hench"
