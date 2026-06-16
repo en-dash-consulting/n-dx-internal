@@ -11,7 +11,7 @@ describe("n-dx delegation commands", () => {
     });
 
     it("delegates 'sourcevision' with unknown command shows help hint", () => {
-      const { stderr } = runFail(["sourcevision", "--unknown"]);
+      const { stderr } = runFail(["sourcevision", "--verbose", "--unknown"]);
       expect(stderr).toContain("Unknown");
     });
   });
@@ -30,7 +30,7 @@ describe("n-dx delegation commands", () => {
     });
 
     it("sv with unknown command shows help hint", () => {
-      const { stderr } = runFail(["sv", "--unknown"]);
+      const { stderr } = runFail(["sv", "--verbose", "--unknown"]);
       expect(stderr).toContain("Unknown");
     });
   });

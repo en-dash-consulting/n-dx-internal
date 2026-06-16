@@ -334,6 +334,13 @@ let pendingUpdateCheck = null;
 let updateCheckQuiet = false;
 
 /**
+ * True when the user passed --verbose.
+ * In verbose mode, spawned child process stderr is captured and printed inline
+ * when the child exits non-zero, rather than being passed through via stdio inherit.
+ */
+let verboseMode = false;
+
+/**
  * Stale-check result set before command dispatch.
  * null = check not run (init/help/version commands, or quiet mode).
  * @type {import("./stale-check.js").StaleDetail[] | null}
@@ -427,6 +434,26 @@ function run(script, args) {
       warn("Hint: Run ") + cmd("pnpm install") + warn(" (or ") + cmd("pnpm build") + warn(") from the repo root to rebuild package dist directories."),
     );
     return Promise.resolve(1);
+  }
+
+  // In verbose mode, capture child stderr and print it inline when the child
+  // exits non-zero.  In non-verbose mode, stderr is passed through directly
+  // via stdio inherit so the sub-command's output appears in real time.
+  if (verboseMode) {
+    return new Promise((res) => {
+      const child = spawnTracked(process.execPath, [scriptPath, ...args], {
+        stdio: ["inherit", "inherit", "pipe"],
+      });
+      let stderrCapture = "";
+      child.stderr.on("data", (chunk) => { stderrCapture += chunk; });
+      child.on("close", (code) => {
+        const exitCode = code ?? 1;
+        if (exitCode !== 0 && stderrCapture.trim()) {
+          process.stderr.write(`${red("[verbose]")} child stderr (exit ${exitCode}):\n${stderrCapture.trim()}\n`);
+        }
+        res(exitCode);
+      });
+    });
   }
 
   return new Promise((res) => {
@@ -2707,6 +2734,7 @@ async function main() {
   // The check runs as a background Promise concurrently with command
   // execution; flushAndExit() races it against a 500 ms timeout.
   updateCheckQuiet = rest.some((a) => a === "--quiet" || a === "-q");
+  verboseMode = rest.some((a) => a === "--verbose");
   if (!updateCheckQuiet) {
     try {
       const { version: currentVersion } = JSON.parse(
