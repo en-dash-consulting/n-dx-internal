@@ -709,7 +709,7 @@ export async function agentLoop(opts: AgentLoopOptions): Promise<AgentLoopResult
   const { brief, taskId, briefText, systemPrompt } = await prepareBrief(
     store, config, opts.taskId,
     { excludeTaskIds: opts.excludeTaskIds, epicId: opts.epicId, tags: opts.tags },
-    { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory },
+    { priorAttempts: opts.priorAttempts, runHistory: opts.runHistory, autonomous: opts.autonomous },
     opts.extraContext,
   );
 

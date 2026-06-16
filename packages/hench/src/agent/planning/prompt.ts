@@ -4,6 +4,45 @@ import { createPromptEnvelope } from "../../prd/llm-gateway.js";
 import { buildBriefSections } from "./brief.js";
 
 // ---------------------------------------------------------------------------
+// No-plan-mode skill
+// ---------------------------------------------------------------------------
+
+/**
+ * Full no-plan-mode guidance embedded in the system prompt for autonomous and
+ * acceptEdits-mode runs. Mirrors the /no-plan-mode skill definition so the
+ * invariant is authoritative even when the skill file is not on disk.
+ *
+ * REGRESSION CANARY — the regression tests in prompt.test.ts assert that key
+ * phrases from this constant appear in the assembled prompt for autonomous
+ * runs. Do not remove or silently empty this constant without updating those
+ * tests and the acceptance criteria in the PRD.
+ */
+export const NO_PLAN_MODE_SKILL = `## Plan Mode Invariant
+
+When working on an execution task (within a hench agent run), you MUST NOT:
+
+1. **Enter plan mode** — Do not call \`EnterPlanMode\` or produce plan-only responses. Hench runs expect direct implementation.
+2. **Call ExitPlanMode as a stall tactic** — Do not use \`ExitPlanMode\` as a way to pause execution waiting for user input.
+3. **Produce plan-only outputs** — Do not respond with plans, design documents, or implementation outlines instead of actual code changes.
+
+**If you need to make a decision:** Make it based on existing code patterns, architecture guidelines (CLAUDE.md), and project conventions. Document your choice via \`append_log\`.
+**If you're uncertain:** Read CLAUDE.md, search the codebase for similar patterns, and proceed with the most consistent approach. Do not stall.
+**If the task is genuinely ambiguous:** Complete what you can, document the ambiguity in \`append_log\`, and mark the task as completed. The next session can refine the work.`;
+
+/**
+ * Options that control how the system prompt is assembled.
+ */
+export interface PromptBuildOptions {
+  /**
+   * When true (autonomous run: --auto, --loop, --epic-by-epic), the full
+   * NO_PLAN_MODE_SKILL text is embedded in the system prompt. This is the
+   * primary regression-guard signal — the acceptance test asserts this flag
+   * triggers skill inclusion.
+   */
+  autonomous?: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // Go-specific prompt context
 // ---------------------------------------------------------------------------
 
@@ -51,6 +90,7 @@ function buildGoLanguageContext(): string {
 export function buildSystemPrompt(
   project: TaskBriefProject,
   config: HenchConfig,
+  opts?: PromptBuildOptions,
 ): string {
   const lines: string[] = [];
   const isCli = config.provider === "cli";
@@ -136,9 +176,16 @@ export function buildSystemPrompt(
   lines.push("- If you're stuck after 3 attempts at the same problem, log what you tried and move on.\n");
 
   if (isCli) {
-    lines.push("## Plan Mode Invariant");
-    lines.push("Do not enter plan mode. Do not call ExitPlanMode. Do not produce plan-only responses.");
-    lines.push("If you have a plan, execute it. If uncertain, read the codebase and proceed with the most consistent approach.\n");
+    if (opts?.autonomous) {
+      // Autonomous run: embed the full no-plan-mode skill so the invariant is
+      // authoritative even when the skill file is absent from the project.
+      lines.push(NO_PLAN_MODE_SKILL);
+      lines.push("");
+    } else {
+      lines.push("## Plan Mode Invariant");
+      lines.push("Do not enter plan mode. Do not call ExitPlanMode. Do not produce plan-only responses.");
+      lines.push("If you have a plan, execute it. If uncertain, read the codebase and proceed with the most consistent approach.\n");
+    }
   }
 
   if (!isCli) {
@@ -180,8 +227,9 @@ export function buildPromptEnvelope(
   brief: TaskBrief,
   config: HenchConfig,
   extraContext?: string,
+  opts?: PromptBuildOptions,
 ): PromptEnvelope {
-  const systemContent = buildSystemPrompt(brief.project, config);
+  const systemContent = buildSystemPrompt(brief.project, config, opts);
   const briefSections = buildBriefSections(brief);
 
   return createPromptEnvelope([

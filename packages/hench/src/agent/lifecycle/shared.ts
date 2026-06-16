@@ -23,6 +23,7 @@ import { SystemMemoryMonitor } from "../../process/memory-monitor.js";
 import { assembleTaskBrief, formatTaskBrief } from "../planning/brief.js";
 import type { AssembleBriefOptions } from "../planning/brief.js";
 import { buildSystemPrompt, buildPromptEnvelope } from "../planning/prompt.js";
+import type { PromptBuildOptions } from "../planning/prompt.js";
 import type { PromptEnvelope } from "../../prd/llm-gateway.js";
 import { saveRun } from "../../store/runs.js";
 import { persistRunLog } from "../../store/run-log.js";
@@ -146,6 +147,12 @@ export interface PrepareBriefDisplayOptions {
   priorAttempts?: PriorAttemptInfo;
   /** Run records for computing prior attempts when task is auto-selected. */
   runHistory?: RunRecord[];
+  /**
+   * When true, embeds the full no-plan-mode skill in the assembled system
+   * prompt. Set for autonomous runs (--auto/--loop/--epic-by-epic) so the
+   * agent receives the authoritative invariant even without the skill file.
+   */
+  autonomous?: boolean;
 }
 
 /**
@@ -165,8 +172,9 @@ export async function prepareBrief(
 ): Promise<PreparedBrief> {
   const { brief, taskId: resolvedTaskId } = await assembleTaskBrief(store, taskId, options);
   const briefText = formatTaskBrief(brief);
-  const systemPrompt = buildSystemPrompt(brief.project, config);
-  const envelope = buildPromptEnvelope(brief, config, extraContext);
+  const promptBuildOpts: PromptBuildOptions = { autonomous: displayOptions?.autonomous };
+  const systemPrompt = buildSystemPrompt(brief.project, config, promptBuildOpts);
+  const envelope = buildPromptEnvelope(brief, config, extraContext, promptBuildOpts);
 
   const reason: SelectionReason = taskId ? "explicit" : "auto";
 

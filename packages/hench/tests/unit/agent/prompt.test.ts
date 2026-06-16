@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt } from "../../../src/agent/planning/prompt.js";
+import { buildSystemPrompt, NO_PLAN_MODE_SKILL } from "../../../src/agent/planning/prompt.js";
 import { DEFAULT_HENCH_CONFIG } from "../../../src/schema/v1.js";
 import type { TaskBriefProject } from "../../../src/schema/v1.js";
 
@@ -57,6 +57,51 @@ describe("buildSystemPrompt", () => {
       const config = { ...DEFAULT_HENCH_CONFIG(), provider: "api" as const };
       const prompt = buildSystemPrompt(project, config);
       expect(prompt).not.toContain("Plan Mode Invariant");
+    });
+  });
+
+  // ── No-plan-mode skill regression (autonomous runs) ─────────────────────────
+  // REGRESSION CANARY: These tests fail if the NO_PLAN_MODE_SKILL constant is
+  // removed from the autonomous run prompt or if opts.autonomous is no longer
+  // threaded into buildSystemPrompt. Do NOT skip or weaken them.
+  describe("no-plan-mode skill for autonomous runs", () => {
+    it("autonomous CLI run includes full NO_PLAN_MODE_SKILL content", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "cli" as const };
+      const prompt = buildSystemPrompt(project, config, { autonomous: true });
+      // Verify the full skill constant is embedded verbatim
+      expect(prompt).toContain(NO_PLAN_MODE_SKILL);
+    });
+
+    it("autonomous run includes EnterPlanMode prohibition", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "cli" as const };
+      const prompt = buildSystemPrompt(project, config, { autonomous: true });
+      expect(prompt).toContain("EnterPlanMode");
+      expect(prompt).toContain("ExitPlanMode");
+    });
+
+    it("autonomous run includes 'what to do instead' guidance", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "cli" as const };
+      const prompt = buildSystemPrompt(project, config, { autonomous: true });
+      // The skill includes guidance for uncertain scenarios
+      expect(prompt).toContain("append_log");
+      expect(prompt).toContain("most consistent approach");
+    });
+
+    it("non-autonomous CLI run uses brief invariant, not full skill", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "cli" as const };
+      const prompt = buildSystemPrompt(project, config);
+      // Basic invariant is present
+      expect(prompt).toContain("Plan Mode Invariant");
+      expect(prompt).toContain("ExitPlanMode");
+      // But the extended 'what to do instead' guidance is absent
+      expect(prompt).not.toContain("EnterPlanMode");
+    });
+
+    it("autonomous flag has no effect on API provider (no plan-mode section)", () => {
+      const config = { ...DEFAULT_HENCH_CONFIG(), provider: "api" as const };
+      const prompt = buildSystemPrompt(project, config, { autonomous: true });
+      expect(prompt).not.toContain("Plan Mode Invariant");
+      expect(prompt).not.toContain("EnterPlanMode");
     });
   });
 

@@ -73,7 +73,8 @@ export {
 export type { AssembleBriefOptions, ActionableTask } from "./planning/brief.js";
 
 // System prompt + prompt envelope
-export { buildSystemPrompt, buildPromptEnvelope } from "./planning/prompt.js";
+export { buildSystemPrompt, buildPromptEnvelope, NO_PLAN_MODE_SKILL } from "./planning/prompt.js";
+export type { PromptBuildOptions } from "./planning/prompt.js";
 
 // ── Analysis ──
 // Re-exported from analysis barrel (review, summary, stuck, spin, adaptive, workflow)

@@ -2,9 +2,8 @@
 id: "9af1c83c-cf4d-4f8f-b343-6857cb6b66a6"
 level: "epic"
 title: "CLI & Developer Tools"
-status: "completed"
+status: "pending"
 startedAt: "2026-04-02T17:55:36.327Z"
-completedAt: "2026-06-15T15:40:31.762Z"
 endedAt: "2026-06-15T15:40:31.762Z"
 description: "Command-line interface: error handling, validation, formatting, help navigation, command aliases, configuration management, and CI pipeline."
 ---
@@ -36,9 +35,12 @@ description: "Command-line interface: error handling, validation, formatting, he
 | [Self-Heal Scoped Task Selection and Auto-Termination](./self-heal-scoped-task-selection-ae2813/index.md) | completed |
 | [Self-Heal Tag Attribution on Created PRD Items](./self-heal-tag-attribution-on-2e184c/index.md) | completed |
 | [Shared Unit Test Utilities](./shared-unit-test-utilities/index.md) | completed |
+| [Structured Error Code Taxonomy and Cross-Package Classification](./structured-error-code-taxonomy-8631f3/index.md) | pending |
 | [Suppress DEP0040 punycode Deprecation Warning in CLI Output](./suppress-dep0040-punycode-9aaa6f/index.md) | completed |
 | [Test Suite Validation Gate and Remediation Loop](./test-suite-validation-gate-and-0cae57/index.md) | completed |
+| [Universal Timeout Editability Audit and Remediation](./universal-timeout-editability-c1a552/index.md) | pending |
 | [Vendor-Agnostic Batch Execution in Self-Heal Loop](./vendor-agnostic-batch-execution-e0d222/index.md) | completed |
+| [Verbose Diagnostic Output Mode Across All Commands](./verbose-diagnostic-output-mode-d6847c/index.md) | pending |
 | [Web UI Design and User Experience Enhancement](./web-ui-design-and-user-b1e130/index.md) | completed |
 | [Workflow Use Case Guides](./workflow-use-case-guides/index.md) | completed |
 | [Yellow Semantic Color Tokens for Warnings, Commands, and Remediation Flows](./yellow-semantic-color-tokens-1ebbdd/index.md) | completed |
