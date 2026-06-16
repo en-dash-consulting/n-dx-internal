@@ -88,4 +88,16 @@ describe("repairProjectConfig", () => {
     // Byte-for-byte identical — we didn't touch the file.
     expect(after).toBe(before);
   });
+
+  it("coerces llm.responseTimeout stored as a string to a number", async () => {
+    await writeConfig({ llm: { responseTimeout: "600000" } });
+    const { repairs } = await repairProjectConfig(dir);
+
+    expect(repairs).toEqual([
+      { path: "llm.responseTimeout", from: "600000", to: 600000 },
+    ]);
+    const after = await readConfig();
+    expect(after.llm.responseTimeout).toBe(600000);
+    expect(typeof after.llm.responseTimeout).toBe("number");
+  });
 });

@@ -264,6 +264,7 @@ describe("hench → llm-client gateway contract", () => {
     "classifyLLMError",
     "getNextFailoverAttempt",
     "detectGoogleAuthMethod",
+    "cmd",
   ];
 
   const GATEWAY_CLASSES = ["CLIError", "ClaudeClientError", "ProcessPool", "ProcessLimitError"];
@@ -597,7 +598,7 @@ describe("gateway export auto-detection", () => {
         "setQuiet", "isQuiet", "info", "result", "warn", "suppressKnownDeprecations",
         "printVendorModelHeader", "isColorEnabled", "bold", "dim", "cyan", "yellow",
         "green", "red", "magenta", "colorSuccess", "colorWarn", "colorInfo",
-        "colorDim", "colorPending", "colorPink", "STATUS_COLORS", "colorStatus",
+        "colorDim", "colorPending", "colorPink", "cmd", "STATUS_COLORS", "colorStatus",
         "formatHelp", "formatTypoSuggestion",
         "CLIError", "ClaudeClientError", "CLI_ERROR_CODES",
         "exec", "execStdout", "execShellCmd", "getCurrentHead", "getCurrentBranch",

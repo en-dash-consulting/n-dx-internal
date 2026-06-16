@@ -174,6 +174,7 @@ export async function loadProjectConfig(dir) {
 const NUMERIC_CONFIG_PATHS = [
   "cli.timeoutMs",
   "cli.timeouts.*",
+  "llm.responseTimeout",
   "web.port",
 ];
 
@@ -721,6 +722,19 @@ const CLI_TIMEOUT_DEFAULTS = {
 };
 
 /**
+ * Default LLM response timeout in milliseconds (5 minutes).
+ * Matches the DEFAULT_LLM_RESPONSE_TIMEOUT_MS constant in llm-client — kept in sync manually.
+ */
+const LLM_RESPONSE_TIMEOUT_DEFAULT_MS = 300000;
+
+/**
+ * Known llm section keys with defaults, used by handleGet to show defaults for unset keys.
+ */
+const LLM_TIMEOUT_DEFAULTS = {
+  responseTimeout: LLM_RESPONSE_TIMEOUT_DEFAULT_MS,
+};
+
+/**
  * Validate a CLI timeout value: must be a non-negative finite number.
  * Zero is valid and means "no timeout".
  * Exported for unit testing.
@@ -734,6 +748,24 @@ export function validateTimeoutMs(value) {
   if (value < 0) {
     throw new Error(
       `Timeout must be a non-negative number (0 = no timeout). Got: ${value}`,
+    );
+  }
+}
+
+/**
+ * Validate llm.responseTimeout: must be a positive finite number.
+ * Unlike CLI timeouts, 0 is not meaningful for LLM response timeouts.
+ * Exported for unit testing.
+ */
+export function validateResponseTimeoutMs(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `LLM response timeout must be a number in milliseconds. Got: ${JSON.stringify(value)}`,
+    );
+  }
+  if (value <= 0) {
+    throw new Error(
+      `LLM response timeout must be a positive number (> 0). Got: ${value}`,
     );
   }
 }
@@ -805,6 +837,7 @@ const LLM_VALIDATORS = {
   "google.apiKeyEnv": validateGoogleApiKeyEnv,
   "google.authMethod": validateGoogleAuthMethod,
   autoFailover: validateAutoFailover,
+  responseTimeout: validateResponseTimeoutMs,
 };
 
 /**
@@ -1215,6 +1248,12 @@ LLM vendor settings (.n-dx.json / .n-dx.local.json — preferred for multi-vendo
                                     When true, hench retries failed runs on fallback models
                                     before surfacing the original error. Disabled by default
                                     to preserve existing behavior.
+  llm.responseTimeout      number    LLM API response timeout in milliseconds.
+                                    Default: 300000 (5 minutes). All vendor adapters (Claude API,
+                                    Codex CLI, Google Gemini) use this as their response timeout.
+                                    Increase for very long-running tasks; decrease to surface slow
+                                    API responses faster. Must be a positive integer (> 0).
+                                    Example: n-dx config llm.responseTimeout 600000
 
 Claude preflight error codes:
   NDX_CLAUDE_PREFLIGHT_NOT_INSTALLED  Claude CLI is not installed; install it before retrying
@@ -1862,6 +1901,9 @@ function handleGet(keyArg, configs, flags) {
 function getProjectKeyDefault(pkg, settingPath) {
   if (pkg === "cli" && settingPath in CLI_TIMEOUT_DEFAULTS) {
     return CLI_TIMEOUT_DEFAULTS[settingPath];
+  }
+  if (pkg === "llm" && settingPath in LLM_TIMEOUT_DEFAULTS) {
+    return LLM_TIMEOUT_DEFAULTS[settingPath];
   }
   return null;
 }
