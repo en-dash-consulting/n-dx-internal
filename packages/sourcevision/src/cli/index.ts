@@ -25,7 +25,7 @@ import { cmdGitCredentialHelper } from "./commands/git-credential-helper.js";
 import { cmdPrMarkdown } from "./commands/pr-markdown.js";
 import { cmdWorkspace } from "./commands/workspace.js";
 import { CLIError, handleCLIError, requireSvDir } from "./errors.js";
-import { setQuiet } from "./output.js";
+import { setQuiet, setVerbose } from "./output.js";
 import { CLI_ERROR_CODES, formatTypoSuggestion, suppressKnownDeprecations } from "@n-dx/llm-client";
 
 suppressKnownDeprecations();
@@ -37,6 +37,7 @@ const command = args[0];
 
 let port = 3117;
 let quiet = false;
+let verbose = false;
 let help = false;
 let outputPath: string | undefined;
 const passthrough: string[] = [];
@@ -48,6 +49,8 @@ for (const a of args.slice(1)) {
     outputPath = a.split("=").slice(1).join("=");
   } else if (a === "--quiet" || a === "-q") {
     quiet = true;
+  } else if (a === "--verbose") {
+    verbose = true;
   } else if (a === "--help" || a === "-h") {
     help = true;
   } else if (a.startsWith("--phase=") || a.startsWith("--only=") || a === "--fast" || a === "--full" || a === "--deep") {
@@ -56,6 +59,7 @@ for (const a of args.slice(1)) {
 }
 
 setQuiet(quiet);
+setVerbose(verbose);
 
 // First non-flag arg after command is the target dir
 const targetArg = args.slice(1).find((a) => !a.startsWith("-"));

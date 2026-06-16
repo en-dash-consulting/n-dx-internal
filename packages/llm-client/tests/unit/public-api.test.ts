@@ -148,6 +148,8 @@ import {
   // output.ts
   setQuiet,
   isQuiet,
+  setVerbose,
+  isVerbose,
   info,
   result,
   // vendor-header.ts
@@ -427,6 +429,14 @@ describe("public API — utility exports", () => {
 
   it("exports isQuiet as a function", () => {
     expect(typeof isQuiet).toBe("function");
+  });
+
+  it("exports setVerbose as a function", () => {
+    expect(typeof setVerbose).toBe("function");
+  });
+
+  it("exports isVerbose as a function", () => {
+    expect(typeof isVerbose).toBe("function");
   });
 
   it("exports info as a function", () => {

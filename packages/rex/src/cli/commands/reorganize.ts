@@ -17,9 +17,9 @@ import { appendArchiveBatch } from "../../core/archive.js";
 import { REX_DIR } from "./constants.js";
 import { parseIntList } from "../parse-utils.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
-import { info, warn, result, startSpinner } from "../output.js";
+import { info, warn, result, startSpinner, isVerbose } from "../output.js";
 import { loadClaudeConfig, loadLLMConfig } from "../../store/project-config.js";
-import { printVendorModelHeader } from "@n-dx/llm-client";
+import { printVendorModelHeader, formatVerboseLLMErrorDetails } from "@n-dx/llm-client";
 import { preflightBudgetCheck, formatBudgetWarnings } from "./token-format.js";
 import { classifyLLMError } from "../llm-error-classifier.js";
 
@@ -91,6 +91,11 @@ async function runLlmAnalysis(
       spinner.stop("LLM analysis failed.");
       warn(`Error: ${classified.message}`);
       warn(`Hint: ${classified.suggestion}`);
+      if (isVerbose()) {
+        const errObj = err instanceof Error ? err : new Error(String(err));
+        const details = formatVerboseLLMErrorDetails(errObj);
+        if (details) warn(details);
+      }
       return [];
     }
   } catch (err) {

@@ -384,3 +384,39 @@ export function classifyLLMError(
     code: CLI_ERROR_CODES.GENERIC,
   };
 }
+
+/**
+ * Build the verbose diagnostic appendix for a classified LLM error.
+ *
+ * Returns a multi-line string with:
+ * - The raw error message / response body excerpt (max 2000 chars).
+ *   For API errors this contains `"<Vendor> API error <NNN>: {body}"`,
+ *   which embeds both the HTTP status code and the raw response body.
+ * - The full stack trace from `err.stack`.
+ *
+ * Returns an empty string when `err` carries no additional detail beyond
+ * what the classifier already surfaced.
+ *
+ * Call only when `isVerbose()` is true; the caller is responsible for gating.
+ */
+export function formatVerboseLLMErrorDetails(err: Error): string {
+  const MAX_BODY_LEN = 2000;
+  const lines: string[] = [];
+
+  // Raw response body / full error message
+  const rawMsg = err.message ?? "";
+  if (rawMsg) {
+    const excerpt =
+      rawMsg.length > MAX_BODY_LEN
+        ? `${rawMsg.slice(0, MAX_BODY_LEN)}…`
+        : rawMsg;
+    lines.push("Raw response:", excerpt);
+  }
+
+  // Full stack trace
+  if (err.stack) {
+    lines.push("Stack trace:", err.stack);
+  }
+
+  return lines.join("\n");
+}

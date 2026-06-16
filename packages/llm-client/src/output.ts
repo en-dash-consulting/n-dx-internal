@@ -24,6 +24,22 @@ export function isQuiet(): boolean {
   return _quiet;
 }
 
+let _verbose = false;
+
+/**
+ * Enable or disable verbose mode. Call once at CLI entry when `--verbose` is
+ * detected. In verbose mode, classified LLM errors also emit the raw response
+ * body (up to 2000 chars), the full stack trace, and HTTP metadata.
+ */
+export function setVerbose(verbose: boolean): void {
+  _verbose = verbose;
+}
+
+/** Returns true when verbose mode is active. */
+export function isVerbose(): boolean {
+  return _verbose;
+}
+
 /**
  * Print informational output. Suppressed in quiet mode.
  * Use for progress messages, hints, decorative output.

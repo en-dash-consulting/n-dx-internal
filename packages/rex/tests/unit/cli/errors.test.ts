@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { join } from "node:path";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES, resetColorCache } from "@n-dx/llm-client";
+import { CLI_ERROR_CODES, resetColorCache, setVerbose } from "@n-dx/llm-client";
 import { CLIError, BudgetExceededError, formatCLIError, handleCLIError, requireRexDir } from "../../../src/cli/errors.js";
 
 describe("CLIError", () => {
@@ -133,6 +133,62 @@ describe("formatCLIError", () => {
     const result = formatCLIError(err);
     expect(result).toBe(`Error: [${CLI_ERROR_CODES.GENERIC}] some weird internal error`);
     expect(result).not.toContain("Hint:");
+  });
+});
+
+describe("formatCLIError — verbose mode", () => {
+  afterEach(() => {
+    setVerbose(false);
+  });
+
+  it("suppresses stack trace in non-verbose mode", () => {
+    const err = new Error("api call failed");
+    const result = formatCLIError(err);
+    expect(result).not.toContain("Stack trace:");
+    expect(result).not.toContain("at ");
+  });
+
+  it("appends stack trace in verbose mode", () => {
+    setVerbose(true);
+    const err = new Error("api call failed");
+    const result = formatCLIError(err);
+    expect(result).toContain("Stack trace:");
+    expect(result).toContain("Error: api call failed");
+  });
+
+  it("appends raw response body in verbose mode", () => {
+    setVerbose(true);
+    const err = new Error("Claude API error 429: {\"error\":\"rate limit\"}");
+    const result = formatCLIError(err);
+    expect(result).toContain("Raw response:");
+    expect(result).toContain("rate limit");
+  });
+
+  it("verbose output appended after main error line", () => {
+    setVerbose(true);
+    const err = new Error("api error");
+    const result = formatCLIError(err);
+    const lines = result.split("\n");
+    // First line is the error summary
+    expect(lines[0]).toContain(`[${CLI_ERROR_CODES.GENERIC}]`);
+    // Verbose details appear on subsequent lines
+    expect(result).toContain("Stack trace:");
+  });
+
+  it("appends verbose details to CLIError in verbose mode", () => {
+    setVerbose(true);
+    const err = new CLIError("timed out", "retry the request", CLI_ERROR_CODES.TIMEOUT);
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${CLI_ERROR_CODES.TIMEOUT}]`);
+    expect(result).toContain("Stack trace:");
+  });
+
+  it("non-Error values do not trigger verbose details even in verbose mode", () => {
+    setVerbose(true);
+    const result = formatCLIError("plain string error");
+    // Plain strings aren't Error instances — no stack trace possible
+    expect(result).toBe(`Error: [${CLI_ERROR_CODES.GENERIC}] plain string error`);
+    expect(result).not.toContain("Stack trace:");
   });
 });
 

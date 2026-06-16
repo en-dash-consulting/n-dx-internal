@@ -12,6 +12,8 @@ import {
   CLIError as BaseCLIError,
   type CLIErrorCode,
   colorWarn,
+  isVerbose,
+  formatVerboseLLMErrorDetails,
 } from "@n-dx/llm-client";
 import { SV_DIR } from "./commands/constants.js";
 
@@ -81,12 +83,17 @@ function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string
 
 /**
  * Format an error for CLI output. Returns lines to print to stderr.
- * Never includes stack traces in the output.
+ * Stack traces and raw response bodies are suppressed unless verbose mode is active.
  */
 export function formatCLIError(err: unknown): string {
   // CLIError — already user-friendly
   if (err instanceof CLIError) {
-    return renderCLIError(err.code, err.message, err.suggestion);
+    const base = renderCLIError(err.code, err.message, err.suggestion);
+    if (isVerbose() && err instanceof Error) {
+      const details = formatVerboseLLMErrorDetails(err);
+      return details ? `${base}\n${details}` : base;
+    }
+    return base;
   }
 
   const message = err instanceof Error ? err.message : String(err);
@@ -95,12 +102,22 @@ export function formatCLIError(err: unknown): string {
   for (const [pattern, code, friendly, suggestion] of ERROR_HINTS) {
     if (pattern.test(message)) {
       const displayMsg = friendly || message;
-      return renderCLIError(code, displayMsg, suggestion);
+      const base = renderCLIError(code, displayMsg, suggestion);
+      if (isVerbose() && err instanceof Error) {
+        const details = formatVerboseLLMErrorDetails(err);
+        return details ? `${base}\n${details}` : base;
+      }
+      return base;
     }
   }
 
-  // Generic fallback — show the message, never the stack
-  return renderCLIError(CLI_ERROR_CODES.GENERIC, message);
+  // Generic fallback — show the message, suppress stack unless verbose
+  const base = renderCLIError(CLI_ERROR_CODES.GENERIC, message);
+  if (isVerbose() && err instanceof Error) {
+    const details = formatVerboseLLMErrorDetails(err);
+    return details ? `${base}\n${details}` : base;
+  }
+  return base;
 }
 
 /**

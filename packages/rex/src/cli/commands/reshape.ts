@@ -12,10 +12,10 @@ import { loadLLMConfig, loadClaudeConfig } from "../../store/project-config.js";
 import { migrateToFolderPerTask } from "../../core/folder-per-task-migration.js";
 import { snapshotPRDTree, pruneBackups } from "../../core/backup-snapshots.js";
 import { captureGitCommitHash } from "../../core/git-utils.js";
-import { printVendorModelHeader } from "@n-dx/llm-client";
+import { printVendorModelHeader, formatVerboseLLMErrorDetails } from "@n-dx/llm-client";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
-import { info, warn, result } from "../output.js";
+import { info, warn, result, isVerbose } from "../output.js";
 import { formatTokenUsage } from "./analyze.js";
 import { preflightBudgetCheck, formatBudgetWarnings } from "./token-format.js";
 import { classifyLLMError } from "../llm-error-classifier.js";
@@ -174,6 +174,11 @@ async function _cmdReshapeCore(
     tokenUsage = reshapeResult.tokenUsage;
   } catch (err) {
     const classified = classifyLLMError(err instanceof Error ? err : new Error(String(err)), vendor, "analyze PRD structure");
+    if (isVerbose()) {
+      const errObj = err instanceof Error ? err : new Error(String(err));
+      const details = formatVerboseLLMErrorDetails(errObj);
+      if (details) warn(details);
+    }
     throw new CLIError(classified.message, classified.suggestion, classified.code);
   }
 
@@ -310,6 +315,11 @@ async function _cmdReshapeCore(
         warn(
           `  Warning: could not rename grouped children for "${groupAction.containerTitle}": ${classified.message}`,
         );
+        if (isVerbose()) {
+          const errObj = err instanceof Error ? err : new Error(String(err));
+          const details = formatVerboseLLMErrorDetails(errObj);
+          if (details) warn(details);
+        }
       }
     }
   }

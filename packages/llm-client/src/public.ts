@@ -303,10 +303,12 @@ export {
   mergeWithOverrides,
 } from "./project-config.js";
 
-// CLI output control (quiet mode)
+// CLI output control (quiet mode + verbose mode)
 export {
   setQuiet,
   isQuiet,
+  setVerbose,
+  isVerbose,
   info,
   result,
   warn,
@@ -389,6 +391,7 @@ export { suppressKnownDeprecations } from "./suppress-deprecations.js";
 export {
   classifyLLMError,
   extractProviderDetail,
+  formatVerboseLLMErrorDetails,
 } from "./llm-error-classifier.js";
 export type {
   LLMErrorCategory,

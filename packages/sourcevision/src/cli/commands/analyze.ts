@@ -22,7 +22,7 @@ import {resolve, join} from "node:path";import {
 import { CLIError } from "../errors.js";
 import { cmdInit } from "./init.js";
 import { info } from "../output.js";
-import { loadLLMConfig, printVendorModelHeader, resolveVendorModel, bold, dim, green, cyan, classifyLLMError, warn } from "@n-dx/llm-client";
+import { loadLLMConfig, printVendorModelHeader, resolveVendorModel, bold, dim, green, cyan, classifyLLMError, warn, isVerbose, formatVerboseLLMErrorDetails } from "@n-dx/llm-client";
 import type { RiskJustificationEntry, ZoneType } from "../sourcevision-core.js";
 import {
   runInventoryPhase,
@@ -168,6 +168,10 @@ async function executePhases(ctx: AnalyzeContext, filter: PhaseFilter, extraArgs
         if (classified.category !== "unknown") {
           console.error(`  Phase ${err.phase} failed: ${classified.message}`);
           warn(`  Hint: ${classified.suggestion}`);
+          if (isVerbose()) {
+            const details = formatVerboseLLMErrorDetails(new Error(err.reason));
+            if (details) warn(details);
+          }
         } else {
           console.error(`  Phase ${err.phase} failed: ${err.reason}`);
         }
@@ -181,6 +185,10 @@ async function executePhases(ctx: AnalyzeContext, filter: PhaseFilter, extraArgs
         if (classified.category !== "unknown") {
           console.error(`  Phase ${phase} failed: ${classified.message}`);
           warn(`  Hint: ${classified.suggestion}`);
+          if (isVerbose()) {
+            const details = formatVerboseLLMErrorDetails(errObj);
+            if (details) warn(details);
+          }
           if (critical && filter.type === "all") process.exit(1);
           if (!critical && filter.type !== "all") process.exit(1);
         } else {

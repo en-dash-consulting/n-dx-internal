@@ -12,10 +12,11 @@ import {ARCHIVE_FILE, loadArchive} from "../../core/archive.js";import {  hashPR
 } from "../../core/pending-cache.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError, BudgetExceededError } from "../errors.js";
-import { info, warn, result } from "../output.js";
+import { info, warn, result, isVerbose } from "../output.js";
 import { formatTokenUsage } from "./analyze.js";
 import { preflightBudgetCheck, formatBudgetWarnings } from "./token-format.js";
 import { classifyLLMError } from "../llm-error-classifier.js";
+import { formatVerboseLLMErrorDetails } from "@n-dx/llm-client";
 import { printVendorModelHeader } from "@n-dx/llm-client";
 import type { PRDItem } from "../../schema/index.js";
 import { getLevelEmoji, formatLevelSummary as formatLevels } from "../../schema/index.js";
@@ -223,6 +224,11 @@ export async function cmdPrune(
           );
           warn(`\nConsolidation preview failed: ${classified.message}`);
           warn(`Hint: ${classified.suggestion}`);
+          if (isVerbose()) {
+            const errObj = err instanceof Error ? err : new Error(String(err));
+            const details = formatVerboseLLMErrorDetails(errObj);
+            if (details) warn(details);
+          }
         }
       }
     }
@@ -507,6 +513,11 @@ async function consolidateAfterPrune(
     );
     warn(`\nConsolidation failed: ${classified.message}`);
     warn(`Hint: ${classified.suggestion}`);
+    if (isVerbose()) {
+      const errObj = err instanceof Error ? err : new Error(String(err));
+      const details = formatVerboseLLMErrorDetails(errObj);
+      if (details) warn(details);
+    }
     return undefined;
   }
 }
@@ -596,6 +607,11 @@ async function smartPrune(
       });
     } catch (err) {
       const classified = classifyLLMError(err instanceof Error ? err : new Error(String(err)), vendor, "identify prune candidates");
+      if (isVerbose()) {
+        const errObj = err instanceof Error ? err : new Error(String(err));
+        const details = formatVerboseLLMErrorDetails(errObj);
+        if (details) warn(details);
+      }
       throw new CLIError(classified.message, classified.suggestion, classified.code);
     }
     proposals = reshapeResult.proposals;

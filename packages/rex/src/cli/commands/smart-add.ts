@@ -18,7 +18,7 @@ import { cascadeParentReset } from "../../core/parent-reset.js";
 import { REX_DIR } from "./constants.js";
 import { CLIError } from "../errors.js";
 import { classifyLLMError } from "../llm-error-classifier.js";
-import { info, warn, result, startSpinner } from "../output.js";
+import { info, warn, result, startSpinner, isVerbose } from "../output.js";
 import {
   reasonFromDescriptions,
   reasonFromIdeasFile,
@@ -42,7 +42,7 @@ import {
 } from "./smart-add-duplicates.js";
 import type { ProposalDuplicateMatch, ItemFileMap } from "./smart-add-duplicates.js";
 import type { LLMVendor, LLMConfig, CLIErrorCode } from "@n-dx/llm-client";
-import { printVendorModelHeader, resolveVendorModel } from "@n-dx/llm-client";
+import { printVendorModelHeader, resolveVendorModel, formatVerboseLLMErrorDetails } from "@n-dx/llm-client";
 import { formatTaskLoE, formatTaskLoERationale } from "./format-loe.js";
 import { resolveVendorCompatibleRexModel } from "../model-resolution.js";
 
@@ -1438,6 +1438,11 @@ async function generateSmartAddProposals(params: {
     } catch (err) {
       spinner?.stop();
       const classified = classifySmartAddError(err as Error, "file", getLLMVendor() ?? "claude");
+      if (isVerbose()) {
+        const errObj = err instanceof Error ? err : new Error(String(err));
+        const details = formatVerboseLLMErrorDetails(errObj);
+        if (details) warn(details);
+      }
       throw new CLIError(classified.message, classified.suggestion, classified.code);
     }
   }
@@ -1463,6 +1468,11 @@ async function generateSmartAddProposals(params: {
   } catch (err) {
     spinner?.stop();
     const classified = classifySmartAddError(err as Error, "description", getLLMVendor() ?? "claude");
+    if (isVerbose()) {
+      const errObj = err instanceof Error ? err : new Error(String(err));
+      const details = formatVerboseLLMErrorDetails(errObj);
+      if (details) warn(details);
+    }
     throw new CLIError(classified.message, classified.suggestion, classified.code);
   }
 }
@@ -1593,6 +1603,11 @@ async function runInteractiveSmartAddApproval(params: {
         const classified = classifySmartAddError(err as Error, "description");
         info(`Granularity adjustment failed: ${classified.message}`);
         info("Original proposals unchanged.");
+        if (isVerbose()) {
+          const errObj = err instanceof Error ? err : new Error(String(err));
+          const details = formatVerboseLLMErrorDetails(errObj);
+          if (details) warn(details);
+        }
       }
       continue;
     }

@@ -14,7 +14,7 @@
  */
 
 // Re-export shared foundation primitives.
-export { setQuiet, isQuiet, info, result, warn } from "@n-dx/llm-client";
+export { setQuiet, isQuiet, setVerbose, isVerbose, info, result, warn } from "@n-dx/llm-client";
 
 import ora from "ora";
 import { isQuiet, info } from "@n-dx/llm-client";

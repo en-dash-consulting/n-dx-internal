@@ -2,7 +2,7 @@
 id: "abeb1d27-778a-47b4-b020-d77b562d93f4"
 level: "task"
 title: "Implement verbose LLM error output including raw response body excerpt and stack trace"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "cli"
@@ -10,6 +10,9 @@ tags:
   - "dx"
   - "verbose"
 source: "smart-add"
+startedAt: "2026-06-16T13:52:42.523Z"
+completedAt: "2026-06-16T14:10:02.160Z"
+endedAt: "2026-06-16T14:10:02.160Z"
 acceptanceCriteria:
   - "On a classified error (e.g. E_MALFORMED_RESPONSE), --verbose appends the raw response body or a truncated excerpt (max 2000 chars) after the error line"
   - "Stack traces appear in verbose mode and are suppressed in non-verbose mode"

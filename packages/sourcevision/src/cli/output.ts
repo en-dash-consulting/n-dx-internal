@@ -6,7 +6,7 @@
  * their import paths while consolidating the implementation.
  */
 
-export { setQuiet, isQuiet, info, result } from "@n-dx/llm-client";
+export { setQuiet, isQuiet, setVerbose, isVerbose, info, result } from "@n-dx/llm-client";
 
 import { isQuiet, info } from "@n-dx/llm-client";
 import ora from "ora";

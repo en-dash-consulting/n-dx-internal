@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import {
   classifyLLMError,
   extractProviderDetail,
+  formatVerboseLLMErrorDetails,
   type LLMErrorCategory,
   type LLMErrorClassification,
   type LLMErrorContext,
@@ -385,5 +386,48 @@ describe("extractProviderDetail", () => {
 
   it("returns empty string for empty input", () => {
     expect(extractProviderDetail("")).toBe("");
+  });
+});
+
+describe("formatVerboseLLMErrorDetails", () => {
+  it("includes raw message in output", () => {
+    const err = new Error("Google API error 429: {\"error\":{\"message\":\"quota exceeded\"}}");
+    const out = formatVerboseLLMErrorDetails(err);
+    expect(out).toContain("Raw response:");
+    expect(out).toContain("quota exceeded");
+  });
+
+  it("includes stack trace in output", () => {
+    const err = new Error("something went wrong");
+    const out = formatVerboseLLMErrorDetails(err);
+    expect(out).toContain("Stack trace:");
+    expect(out).toContain("Error: something went wrong");
+  });
+
+  it("truncates raw message at 2000 chars", () => {
+    const longMessage = "x".repeat(3000);
+    const err = new Error(longMessage);
+    const out = formatVerboseLLMErrorDetails(err);
+    // The raw excerpt in the output should be truncated
+    const rawSection = out.split("Stack trace:")[0];
+    expect(rawSection).toContain("…");
+    // The raw portion (after "Raw response:\n") must not exceed 2001 chars (2000 + ellipsis)
+    const rawBody = rawSection.replace("Raw response:\n", "");
+    expect(rawBody.trim().length).toBeLessThanOrEqual(2001);
+  });
+
+  it("returns empty string for error with no message and no stack", () => {
+    const err = Object.create(Error.prototype) as Error;
+    Object.defineProperty(err, "message", { value: "", writable: false });
+    Object.defineProperty(err, "stack", { value: undefined, writable: false });
+    const out = formatVerboseLLMErrorDetails(err);
+    expect(out).toBe("");
+  });
+
+  it("includes HTTP status embedded in error message", () => {
+    const err = new Error("Claude API error 503: Service Unavailable");
+    const out = formatVerboseLLMErrorDetails(err);
+    expect(out).toContain("503");
+    expect(out).toContain("Service Unavailable");
   });
 });
