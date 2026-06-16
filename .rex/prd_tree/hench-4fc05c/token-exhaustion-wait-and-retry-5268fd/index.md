@@ -16,4 +16,4 @@ description: "Replace the current automatic rollback prompt on run failure with 
 | [Extract token-refresh timestamp from insufficient-token API error responses](./extract-token-refresh-timestamp-abff44.md) | completed |
 | [Implement idle wait-until-refresh and single-retry loop exit for token exhaustion](./implement-idle-wait-until-633946.md) | completed |
 | [Restrict rollback prompt to Ctrl+C interrupts with Y/n confirmation and immediate cancel on any other input](./restrict-rollback-prompt-to-c4ac8f.md) | completed |
-| [Suppress rollback prompt on insufficient-token errors and emit single token-replenishment wait message](./suppress-rollback-prompt-on-1ae99d.md) | pending |
+| [Suppress rollback prompt on insufficient-token errors and emit single token-replenishment wait message](./suppress-rollback-prompt-on-1ae99d.md) | in_progress |

@@ -19,7 +19,7 @@ import { CLIError, EpicNotFoundError, requireLLMCLI } from "../errors.js";
 import { info, result as output, setQuiet } from "../output.js";
 import { section } from "../../types/output.js";
 import { loadLLMConfig, resolveLLMVendor, resolveVendorCliPath } from "../../store/project-config.js";
-import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor, E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE, E_AUTH_FAILURE, E_NETWORK_ERROR, E_UNKNOWN, formatRetryCountdown } from "../../prd/llm-gateway.js";
+import { printVendorModelHeader, detectGoogleAuthMethod, resolveModel, resolveVendorModel, bold, green, red, colorStatus, colorSuccess, colorWarn, colorPink, isColorEnabled, isModelCompatibleWithVendor, E_TIMEOUT, E_MALFORMED_RESPONSE, E_NULL_RESPONSE, E_AUTH_FAILURE, E_NETWORK_ERROR, E_UNKNOWN, formatRetryCountdown, classifyLLMError } from "../../prd/llm-gateway.js";
 import { ExecutionQueue } from "../../queue/execution-queue.js";
 import { formatQueueStatus } from "../../queue/format.js";
 import { resolveSchedulingPriority } from "../../queue/priority-scheduler.js";
@@ -152,6 +152,27 @@ export function formatLoopIterationSeparator(): string {
  */
 export function isTokenExhaustionStatus(status: string): boolean {
   return status === "budget_exceeded" || status === "error_transient";
+}
+
+/**
+ * Returns true when the error text indicates a token-exhaustion (rate-limit or
+ * quota-exceeded) failure as classified by the shared LLM error classifier.
+ *
+ * Reuses classifyLLMError so the detection logic is consistent across Claude,
+ * Codex, and Google vendors with no duplicated pattern-matching.
+ *
+ * Exported for testing.
+ */
+export function isTokenExhaustionError(
+  errorText: string | undefined,
+  vendor = "claude",
+): boolean {
+  if (!errorText) return false;
+  const classification = classifyLLMError(
+    new Error(errorText),
+    vendor as "claude" | "codex" | "google",
+  );
+  return classification.category === "rate-limit" || classification.category === "budget";
 }
 
 /**
@@ -1494,6 +1515,11 @@ async function runLoop(
   // Graceful shutdown via SIGINT (Ctrl-C)
   const ac = new AbortController();
   let stopping = false;
+  // True while waitForTokenRefresh is active. The SIGINT handler uses this to
+  // suppress the rollback prompt: when the loop is waiting for token quota to
+  // reset there is nothing to roll back (the last run terminated cleanly due to
+  // quota exhaustion, not a code-level failure).
+  let isInTokenWait = false;
 
   const onSignal = () => {
     if (stopping) {
@@ -1505,6 +1531,14 @@ async function runLoop(
     stopping = true;
     ac.abort();
     if (queue) queue.drain();
+
+    // During a token-replenishment wait the abort signal above is enough to
+    // unblock waitForTokenRefresh; there is nothing to roll back (the run
+    // terminated cleanly due to quota), so skip the rollback prompt entirely.
+    if (isInTokenWait) {
+      process.exit(1);
+      return;
+    }
 
     // Show the rollback prompt. Any non-Y input exits immediately without
     // rollback. Y triggers revertChanges() then exits. Second Ctrl+C while
@@ -1667,7 +1701,9 @@ async function runLoop(
       // No consecutive-failure counter is incremented for the wait period.
       if (isTokenExhaustionStatus(status) && runTokenRefreshAt) {
         const refreshDate = new Date(runTokenRefreshAt);
+        isInTokenWait = true;
         const completed_ = await waitForTokenRefresh(refreshDate, ac.signal);
+        isInTokenWait = false;
         if (!completed_) {
           // Interrupted by Ctrl-C during wait
           info("\nToken-refresh wait interrupted by user — exiting loop.");
