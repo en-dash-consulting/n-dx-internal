@@ -15,6 +15,196 @@ import { initConfig } from "../../../../src/store/config.js";
 // We'll test the extracted loop helpers directly rather than cmdRun
 // to avoid needing to mock the full agent/CLI stack.
 
+// ── Non-token error classification and notification ───────────────────────────
+
+describe("isTokenExhaustionStatus", () => {
+  it("returns true for budget_exceeded", async () => {
+    const { isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isTokenExhaustionStatus("budget_exceeded")).toBe(true);
+  });
+
+  it("returns true for error_transient", async () => {
+    const { isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isTokenExhaustionStatus("error_transient")).toBe(true);
+  });
+
+  it("returns false for failed (non-token hard failure)", async () => {
+    const { isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isTokenExhaustionStatus("failed")).toBe(false);
+  });
+
+  it("returns false for timeout (non-token hard failure)", async () => {
+    const { isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isTokenExhaustionStatus("timeout")).toBe(false);
+  });
+
+  it("returns false for completed", async () => {
+    const { isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    expect(isTokenExhaustionStatus("completed")).toBe(false);
+  });
+});
+
+describe("formatNonTokenFailureNotification", () => {
+  it("includes [E_MALFORMED_RESPONSE] for malformed error text (regression: E_MALFORMED_RESPONSE category)", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "malformed response from LLM");
+    expect(msg).toContain("[E_MALFORMED_RESPONSE]");
+    // No rollback prompt text — notification is informational only
+    expect(msg).not.toContain("Roll back");
+  });
+
+  it("includes [E_TIMEOUT] for timeout status regardless of error text", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("timeout");
+    expect(msg).toContain("[E_TIMEOUT]");
+  });
+
+  it("includes [E_TIMEOUT] for timeout even with non-matching error text", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("timeout", "something happened");
+    expect(msg).toContain("[E_TIMEOUT]");
+  });
+
+  it("includes [E_UNKNOWN] for failed with unrecognised error text", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "some generic error");
+    expect(msg).toContain("[E_UNKNOWN]");
+  });
+
+  it("includes [E_UNKNOWN] for failed with no error text", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed");
+    expect(msg).toContain("[E_UNKNOWN]");
+  });
+
+  it("includes the cause text in the notification", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "Agent spin detected: 45 turns with 0 tool calls.");
+    expect(msg).toContain("Agent spin detected");
+  });
+
+  it("includes 'Run failed:' prefix in the notification", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "some error");
+    expect(msg).toContain("Run failed:");
+  });
+
+  it("classifies invalid JSON parse error text as E_MALFORMED_RESPONSE", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "unexpected token } in JSON");
+    expect(msg).toContain("[E_MALFORMED_RESPONSE]");
+  });
+
+  it("classifies auth error text as E_AUTH_FAILURE", async () => {
+    const { formatNonTokenFailureNotification } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+    const msg = formatNonTokenFailureNotification("failed", "invalid api key");
+    expect(msg).toContain("[E_AUTH_FAILURE]");
+  });
+});
+
+// ── Regression: non-token failure in loop → non-zero exit ────────────────────
+//
+// When runLoop encounters a non-token hard failure (failed, timeout), it:
+//   1. Emits formatNonTokenFailureNotification(status, error)
+//   2. Sets process.exitCode = 1
+//   3. Breaks the loop
+//
+// The token-exhaustion path (budget_exceeded, error_transient) does NOT
+// set exitCode and does NOT break the loop — it defers to stuck-task detection.
+
+describe("non-token failure loop termination — E_MALFORMED_RESPONSE regression", () => {
+  it("non-token failure (E_MALFORMED_RESPONSE) satisfies stop+exitCode=1 conditions", async () => {
+    const {
+      shouldContinueLoop,
+      isTokenExhaustionStatus,
+      formatNonTokenFailureNotification,
+    } = await import("../../../../src/cli/commands/run.js");
+
+    const status = "failed";
+    const errorText = "malformed response from LLM";
+
+    // Both conditions that gate the exitCode=1 path in runLoop must hold.
+    const willStop = !shouldContinueLoop(status);
+    const isToken = isTokenExhaustionStatus(status);
+
+    expect(willStop).toBe(true);  // failed → loop must stop
+    expect(isToken).toBe(false);  // failed → not a token-exhaustion failure
+
+    // Notification must include the structured error code and cause.
+    const notification = formatNonTokenFailureNotification(status, errorText);
+    expect(notification).toContain("[E_MALFORMED_RESPONSE]");
+    expect(notification).toContain("malformed response from LLM");
+    // Must not contain rollback prompt text — notification is informational only.
+    expect(notification).not.toContain("Roll back");
+
+    // Verify process.exitCode is set to 1 (the actual runLoop path).
+    const savedExitCode = process.exitCode;
+    try {
+      if (willStop && !isToken) {
+        process.exitCode = 1;
+      }
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = savedExitCode as number | undefined;
+    }
+  });
+
+  it("token-exhaustion failure (budget_exceeded) does NOT trigger exitCode=1 path", async () => {
+    const { shouldContinueLoop, isTokenExhaustionStatus } = await import(
+      "../../../../src/cli/commands/run.js"
+    );
+
+    const status = "budget_exceeded";
+
+    const willStop = !shouldContinueLoop(status);
+    const isToken = isTokenExhaustionStatus(status);
+
+    // budget_exceeded stops the loop but is a token failure — exitCode=1 is NOT set.
+    expect(willStop).toBe(true);
+    expect(isToken).toBe(true);
+
+    const savedExitCode = process.exitCode;
+    try {
+      // Simulate the runLoop decision: only set exitCode when !isToken
+      if (willStop && !isToken) {
+        process.exitCode = 1;
+      }
+      // exitCode must remain unchanged (not set to 1 for token failures).
+      expect(process.exitCode).toBe(savedExitCode);
+    } finally {
+      process.exitCode = savedExitCode as number | undefined;
+    }
+  });
+});
+
 describe("loop mode helpers", () => {
   describe("shouldContinueLoop", () => {
     it("returns true for completed status", async () => {

@@ -33,13 +33,20 @@ async function makeInitialCommit(dir: string, file: string, content: string): Pr
   await execAsync('git commit -m "initial"', { cwd: dir });
 }
 
-function buildFailedRun(): RunRecord {
+/**
+ * Build a cancelled run (Ctrl+C path).
+ *
+ * The rollback prompt only appears for `cancelled` status — non-token hard
+ * failures (failed, timeout) auto-rollback silently without prompting. Tests
+ * for the SIGINT-suspension shim must use `cancelled` to trigger the prompt.
+ */
+function buildCancelledRun(): RunRecord {
   return {
     id: randomUUID(),
     taskId: "task-1",
     taskTitle: "Test task",
     startedAt: new Date().toISOString(),
-    status: "failed",
+    status: "cancelled",
     turns: 3,
     tokenUsage: { input: 100, output: 50 },
     turnTokenUsage: [],
@@ -189,7 +196,7 @@ describe("prompt SIGINT suspension", () => {
         "../../src/agent/lifecycle/shared.js"
       );
 
-      const run = buildFailedRun();
+      const run = buildCancelledRun();
       const finalizePromise = finalizeRun({
         run,
         henchDir,
@@ -238,7 +245,7 @@ describe("prompt SIGINT suspension", () => {
         "../../src/agent/lifecycle/shared.js"
       );
 
-      const run = buildFailedRun();
+      const run = buildCancelledRun();
       const finalizePromise = finalizeRun({
         run,
         henchDir,
@@ -313,7 +320,7 @@ describe("prompt SIGINT suspension", () => {
         "../../src/agent/lifecycle/shared.js"
       );
 
-      const run = buildFailedRun();
+      const run = buildCancelledRun();
       const finalizePromise = finalizeRun({
         run,
         henchDir,
@@ -379,7 +386,7 @@ describe("prompt SIGINT suspension", () => {
         "../../src/agent/lifecycle/shared.js"
       );
 
-      const run = buildFailedRun();
+      const run = buildCancelledRun();
       const finalizePromise = finalizeRun({
         run,
         henchDir,
@@ -423,7 +430,7 @@ describe("prompt SIGINT suspension", () => {
         "../../src/agent/lifecycle/shared.js"
       );
 
-      const run = buildFailedRun();
+      const run = buildCancelledRun();
       const finalizePromise = finalizeRun({
         run,
         henchDir,

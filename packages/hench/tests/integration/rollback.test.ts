@@ -302,4 +302,107 @@ describe("finalizeRun git rollback", () => {
     const content = await readFile(join(projectDir, "lib.ts"), "utf-8");
     expect(content).toBe(modifiedContent);
   });
+
+  // ── Regression: non-token hard failures bypass the rollback prompt ────────
+  //
+  // Non-token hard failures (failed, timeout) must auto-rollback without
+  // showing the interactive rollback confirmation dialog. The prompt only
+  // appears for Ctrl+C cancellations (cancelled status).
+  //
+  // Implementation: finalizeRun passes `yes=true` to performRollbackIfNeeded
+  // when `isNonTokenHardFailure` is true (status === "failed" || "timeout").
+  // This suppresses readline regardless of process.stdin.isTTY.
+  //
+  // The behavioral test: with process.stdin.isTTY=true, finalizeRun must
+  // resolve promptly (no readline call would hang). The rollback must happen.
+
+  it("auto-rollbacks without prompt for non-token hard failure (E_MALFORMED_RESPONSE / failed)", async () => {
+    // A failed run with malformed-response error (E_MALFORMED_RESPONSE category)
+    // must roll back automatically and resolve immediately — no interactive prompt.
+    const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
+
+    const originalContent = "export const malformed = 1;\n";
+    const modifiedContent = "export const malformed = 999;\n";
+
+    await makeInitialCommit(projectDir, "src.ts", originalContent);
+    await writeFile(join(projectDir, "src.ts"), modifiedContent, "utf-8");
+
+    const run = buildMinimalRun("failed");
+    run.error = "malformed response from LLM";
+
+    // Simulate an interactive terminal. For cancelled status this would block
+    // on a readline prompt; for failed (non-token) it must not block at all.
+    const isTTYDescriptor = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");
+    Object.defineProperty(process.stdin, "isTTY", {
+      value: true,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      // Must resolve promptly — no readline wait.
+      await finalizeRun({
+        run,
+        henchDir,
+        projectDir,
+        rollbackOnFailure: true,
+      });
+
+      // Rollback must have happened (file reverted to committed state).
+      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
+      expect(content).toBe(originalContent);
+    } finally {
+      if (isTTYDescriptor) {
+        Object.defineProperty(process.stdin, "isTTY", isTTYDescriptor);
+      } else {
+        Object.defineProperty(process.stdin, "isTTY", {
+          value: undefined,
+          configurable: true,
+          writable: true,
+        });
+      }
+    }
+  });
+
+  it("auto-rollbacks without prompt for non-token hard failure (timeout)", async () => {
+    const { finalizeRun } = await import("../../src/agent/lifecycle/shared.js");
+
+    const originalContent = "export const to = 1;\n";
+    const modifiedContent = "export const to = 999;\n";
+
+    await makeInitialCommit(projectDir, "src.ts", originalContent);
+    await writeFile(join(projectDir, "src.ts"), modifiedContent, "utf-8");
+
+    const run = buildMinimalRun("timeout");
+    run.error = "Exceeded max turns (20)";
+
+    const isTTYDescriptor = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");
+    Object.defineProperty(process.stdin, "isTTY", {
+      value: true,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      await finalizeRun({
+        run,
+        henchDir,
+        projectDir,
+        rollbackOnFailure: true,
+      });
+
+      const content = await readFile(join(projectDir, "src.ts"), "utf-8");
+      expect(content).toBe(originalContent);
+    } finally {
+      if (isTTYDescriptor) {
+        Object.defineProperty(process.stdin, "isTTY", isTTYDescriptor);
+      } else {
+        Object.defineProperty(process.stdin, "isTTY", {
+          value: undefined,
+          configurable: true,
+          writable: true,
+        });
+      }
+    }
+  });
 });

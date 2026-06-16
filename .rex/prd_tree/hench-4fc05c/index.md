@@ -2,9 +2,8 @@
 id: "4fc05c48-48b0-4da3-8126-4fa237b924d9"
 level: "epic"
 title: "Hench"
-status: "completed"
+status: "pending"
 startedAt: "2026-03-26T15:22:13.999Z"
-completedAt: "2026-05-27T18:40:09.125Z"
 endedAt: "2026-05-27T18:40:09.125Z"
 description: "Autonomous agent: picks rex tasks, builds briefs with codebase context, runs an LLM tool-use loop to implement them, records runs. Supports sequential execution, concurrency management, and resource monitoring."
 ---
@@ -18,6 +17,7 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 | [Branch Work System of Record](./branch-work-system-of-record/index.md) | completed |
 | [Commit Approval Bypass for Autonomous Runs](./commit-approval-bypass-for-3ca4d0/index.md) | completed |
 | [Ctrl-C Interrupt Rollback Prompt Coordination](./ctrl-c-interrupt-rollback-469c79/index.md) | completed |
+| [Disable Code Rollback on Run Failure with Cancel-and-Notify Semantics](./disable-code-rollback-on-run-7357d7/index.md) | pending |
 | [Enforce Plan-to-Execution Continuity in Hench Runs](./enforce-plan-to-execution-e08fe0/index.md) | completed |
 | [Feature 1: Go-Aware Archetype System](./feature-1-go-aware-archetype-system/index.md) | completed |
 | [Feature 2: Go Server Route Detection](./feature-2-go-server-route-detection/index.md) | completed |
@@ -39,4 +39,5 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 | [Run Failure Recovery and Rollback](./run-failure-recovery-and-rollback/index.md) | completed |
 | [Run Loop Cancellation and Iteration Visibility Refinements](./run-loop-cancellation-and-3e4e10/index.md) | completed |
 | [Sequential Epic Execution](./sequential-epic-execution/index.md) | completed |
+| [Token Exhaustion Wait-and-Retry and Ctrl+C-Only Rollback Prompt](./token-exhaustion-wait-and-retry-5268fd/index.md) | pending |
 | [Web UI: Reorganize around SourceVision / Rex / Hench sections](./web-ui-reorganize-around-d5ad6f/index.md) | completed |
