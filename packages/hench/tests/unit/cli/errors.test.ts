@@ -3,7 +3,15 @@ import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CLI_ERROR_CODES, resetColorCache } from "@n-dx/llm-client";
+import {
+  CLI_ERROR_CODES,
+  resetColorCache,
+  E_AUTH_FAILURE,
+  E_RATE_LIMIT,
+  E_TIMEOUT,
+  E_UNKNOWN,
+  E_NULL_RESPONSE,
+} from "@n-dx/llm-client";
 import { CLIError, formatCLIError, handleCLIError, requireHenchDir, requireClaudeCLI } from "../../../src/cli/errors.js";
 import { TaskNotActionableError } from "../../../src/agent/planning/brief.js";
 import { ClaudeClientError } from "../../../src/prd/llm-gateway.js";
@@ -62,10 +70,12 @@ describe("formatCLIError", () => {
     expect(result).toContain("Hint:");
   });
 
-  it("matches ANTHROPIC_API_KEY pattern", () => {
+  it("matches ANTHROPIC_API_KEY pattern and emits E_AUTH_FAILURE code", () => {
+    // NDX_CLI_API_KEY_MISSING maps to E_AUTH_FAILURE via mapCLICodeToErrorEntry,
+    // so the display key is E_AUTH_FAILURE rather than the raw NDX_CLI code.
     const err = new Error("Missing ANTHROPIC_API_KEY environment variable");
     const result = formatCLIError(err);
-    expect(result).toContain(`[${CLI_ERROR_CODES.API_KEY_MISSING}]`);
+    expect(result).toContain("[E_AUTH_FAILURE]");
     expect(result).toContain("API key not configured");
     expect(result).toContain("Hint:");
   });
@@ -95,33 +105,41 @@ describe("formatCLIError", () => {
 
   // ── Vendor-neutral ClaudeClientError formatting ──
 
-  it("formats ClaudeClientError with auth reason using category label", () => {
+  it("formats ClaudeClientError with auth reason using E_AUTH_FAILURE code", () => {
     const err = new ClaudeClientError("Error: invalid api key", "auth", false);
     const result = formatCLIError(err);
-    expect(result).toContain("[authentication failure]");
+    expect(result).toContain(`[${E_AUTH_FAILURE.key}]`);
     expect(result).toContain("invalid api key");
     expect(result).toContain("Hint:");
   });
 
-  it("formats ClaudeClientError with rate-limit reason using category label", () => {
+  it("formats ClaudeClientError with rate-limit reason using E_RATE_LIMIT code", () => {
     const err = new ClaudeClientError("429 Too Many Requests", "rate-limit", true);
     const result = formatCLIError(err);
-    expect(result).toContain("[rate limit exceeded]");
+    expect(result).toContain(`[${E_RATE_LIMIT.key}]`);
     expect(result).toContain("Hint:");
   });
 
-  it("formats ClaudeClientError with timeout reason using category label", () => {
+  it("formats ClaudeClientError with timeout reason using E_TIMEOUT code", () => {
     const err = new ClaudeClientError("codex exec timed out after 30000ms", "timeout", true);
     const result = formatCLIError(err);
-    expect(result).toContain("[operation timed out]");
+    expect(result).toContain(`[${E_TIMEOUT.key}]`);
     expect(result).toContain("Hint:");
   });
 
-  it("formats ClaudeClientError with unknown reason without hint", () => {
+  it("formats ClaudeClientError with unknown reason using E_UNKNOWN code without hint", () => {
     const err = new ClaudeClientError("something unexpected", "unknown", false);
     const result = formatCLIError(err);
-    expect(result).toContain("[unexpected error]");
+    expect(result).toContain(`[${E_UNKNOWN.key}]`);
     expect(result).not.toContain("Hint:");
+  });
+
+  it("formats null-response via ERROR_HINTS with E_NULL_RESPONSE code", () => {
+    // Simulates what api-provider.ts throws when LLM returns empty text
+    const err = new Error("Null or empty response — the LLM returned no text content");
+    const result = formatCLIError(err);
+    expect(result).toContain(`[${E_NULL_RESPONSE.key}]`);
+    expect(result).toContain("Hint:");
   });
 
   // ── Codex-specific error patterns ──
@@ -319,9 +337,10 @@ describe("formatCLIError — Hint line is yellow in TTY mode (FORCE_COLOR)", () 
     expect(hintLine).toContain("\x1b[39m");
   });
 
-  it("ClaudeClientError auth Hint renders yellow", () => {
+  it("ClaudeClientError auth hint renders yellow with E_AUTH_FAILURE code", () => {
     const err = new ClaudeClientError("Error: invalid api key", "auth", false);
     const result = formatCLIError(err);
+    expect(result).toContain(`[${E_AUTH_FAILURE.key}]`);
     const hintLine = result.split("\n")[1];
     expect(hintLine).toContain("\x1b[33m");
   });

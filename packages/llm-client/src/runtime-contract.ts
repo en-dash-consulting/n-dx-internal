@@ -222,6 +222,7 @@ export type FailureCategory =
   | "completion_rejected"
   | "budget_exceeded"
   | "spin_detected"
+  | "null_response"
   | "malformed_output"
   | "mcp_unavailable"
   | "transient_exhausted"
@@ -308,6 +309,7 @@ export const ALL_FAILURE_CATEGORIES: ReadonlyArray<FailureCategory> = [
   "completion_rejected",
   "budget_exceeded",
   "spin_detected",
+  "null_response",
   "malformed_output",
   "mcp_unavailable",
   "transient_exhausted",
@@ -441,6 +443,9 @@ const VENDOR_ERROR_PATTERNS: ReadonlyArray<readonly [RegExp, FailureCategory]> =
   // Budget
   [/budget.exceeded|spending limit|token limit reached/i, "budget_exceeded"],
 
+  // Null / empty LLM response (must precede not_found — "not found" is too broad)
+  [/null or empty response|empty output|no text content/i, "null_response"],
+
   // Not found (CLI binary, model, endpoint)
   [/not found|ENOENT|\b404\b/i, "not_found"],
 
@@ -455,18 +460,24 @@ const VENDOR_ERROR_PATTERNS: ReadonlyArray<readonly [RegExp, FailureCategory]> =
  * Classify an arbitrary error into the shared {@link FailureCategory} taxonomy.
  *
  * Classification strategy (in priority order):
- * 1. {@link ClaudeClientError} — uses the existing `reason` field via
- *    {@link mapErrorReasonToFailureCategory}.
- * 2. Error message pattern matching — vendor-agnostic regex patterns.
- * 3. Fallback — `"unknown"`.
+ * 1. {@link ClaudeClientError} with a non-generic reason — uses the `reason`
+ *    field via {@link mapErrorReasonToFailureCategory}.
+ * 2. {@link ClaudeClientError} with reason `"unknown"` / `"cli"` — falls through
+ *    to message-pattern matching so null-response and malformed-output errors
+ *    produced by providers with a generic reason still get a distinct code.
+ * 3. Error message pattern matching — vendor-agnostic regex patterns.
+ * 4. Fallback — `"unknown"`.
  *
  * This is the single entry point for user-facing error classification.
  * Both Claude and Codex error paths should converge here.
  */
 export function classifyVendorError(err: unknown): FailureCategory {
-  // ClaudeClientError already carries a classified reason
   if (err instanceof ClaudeClientError) {
-    return mapErrorReasonToFailureCategory(err.reason);
+    const fromReason = mapErrorReasonToFailureCategory(err.reason);
+    // Only trust the reason field when it narrows to a specific category.
+    // "unknown" means the provider couldn't classify — fall through to
+    // message-pattern matching to surface null-response / malformed-output.
+    if (fromReason !== "unknown") return fromReason;
   }
 
   const message = err instanceof Error ? err.message : String(err);
@@ -503,6 +514,8 @@ export function failureCategoryLabel(category: FailureCategory): string {
       return "token budget exceeded";
     case "spin_detected":
       return "agent loop detected";
+    case "null_response":
+      return "null or empty response";
     case "malformed_output":
       return "malformed output";
     case "mcp_unavailable":

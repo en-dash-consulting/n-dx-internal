@@ -309,7 +309,7 @@ describe("cross-vendor failure classification parity", () => {
   });
 
   it("ALL_FAILURE_CATEGORIES covers every FailureCategory", () => {
-    expect(ALL_FAILURE_CATEGORIES).toHaveLength(11);
+    expect(ALL_FAILURE_CATEGORIES).toHaveLength(12);
   });
 
   it("hench run failure reasons map to normalized categories", () => {

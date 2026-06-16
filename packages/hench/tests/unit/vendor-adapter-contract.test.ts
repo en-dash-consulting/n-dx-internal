@@ -699,8 +699,8 @@ describe("vendor adapter contract: FailureCategory mapping", () => {
     }
   });
 
-  it("ALL_FAILURE_CATEGORIES is exhaustive (11 categories)", () => {
-    expect(ALL_FAILURE_CATEGORIES).toHaveLength(11);
+  it("ALL_FAILURE_CATEGORIES is exhaustive (12 categories)", () => {
+    expect(ALL_FAILURE_CATEGORIES).toHaveLength(12);
     const expectedCategories: FailureCategory[] = [
       "auth",
       "not_found",
@@ -709,6 +709,7 @@ describe("vendor adapter contract: FailureCategory mapping", () => {
       "completion_rejected",
       "budget_exceeded",
       "spin_detected",
+      "null_response",
       "malformed_output",
       "mcp_unavailable",
       "transient_exhausted",

@@ -368,16 +368,17 @@ describe("FailureCategory", () => {
       "completion_rejected",
       "budget_exceeded",
       "spin_detected",
+      "null_response",
       "malformed_output",
       "mcp_unavailable",
       "transient_exhausted",
       "unknown",
     ];
-    expect(categories).toHaveLength(11);
+    expect(categories).toHaveLength(12);
   });
 
   it("ALL_FAILURE_CATEGORIES contains every category", () => {
-    expect(ALL_FAILURE_CATEGORIES).toHaveLength(11);
+    expect(ALL_FAILURE_CATEGORIES).toHaveLength(12);
     expect(ALL_FAILURE_CATEGORIES).toContain("auth");
     expect(ALL_FAILURE_CATEGORIES).toContain("not_found");
     expect(ALL_FAILURE_CATEGORIES).toContain("timeout");
@@ -385,6 +386,7 @@ describe("FailureCategory", () => {
     expect(ALL_FAILURE_CATEGORIES).toContain("completion_rejected");
     expect(ALL_FAILURE_CATEGORIES).toContain("budget_exceeded");
     expect(ALL_FAILURE_CATEGORIES).toContain("spin_detected");
+    expect(ALL_FAILURE_CATEGORIES).toContain("null_response");
     expect(ALL_FAILURE_CATEGORIES).toContain("malformed_output");
     expect(ALL_FAILURE_CATEGORIES).toContain("mcp_unavailable");
     expect(ALL_FAILURE_CATEGORIES).toContain("transient_exhausted");
@@ -539,9 +541,37 @@ describe("classifyVendorError", () => {
     expect(classifyVendorError(err)).toBe("not_found");
   });
 
-  it("classifies ClaudeClientError with unknown reason", () => {
+  it("classifies ClaudeClientError with unknown reason and generic message → unknown", () => {
     const err = new ClaudeClientError("something broke", "unknown", false);
     expect(classifyVendorError(err)).toBe("unknown");
+  });
+
+  it("classifies ClaudeClientError(unknown) with null-response message → null_response", () => {
+    // api-provider throws with reason "unknown" for null responses; classifyVendorError
+    // falls through to message patterns when reason maps to "unknown".
+    const err = new ClaudeClientError(
+      "Null or empty response — the LLM returned no text content",
+      "unknown",
+      true,
+    );
+    expect(classifyVendorError(err)).toBe("null_response");
+  });
+
+  it("classifies ClaudeClientError(unknown) with empty-output message → null_response", () => {
+    // codex-cli-provider throws with reason "unknown" for empty output.
+    const err = new ClaudeClientError("codex exec produced empty output", "unknown", true);
+    expect(classifyVendorError(err)).toBe("null_response");
+  });
+
+  it("classifies ClaudeClientError(unknown) with no text content → null_response", () => {
+    const err = new ClaudeClientError("no text content returned", "unknown", true);
+    expect(classifyVendorError(err)).toBe("null_response");
+  });
+
+  it("does not override specific ClaudeClientError reasons with message patterns", () => {
+    // A timeout error whose message happens to contain "null" should still be timeout.
+    const err = new ClaudeClientError("timeout waiting for null response", "timeout", true);
+    expect(classifyVendorError(err)).toBe("timeout");
   });
 
   it("classifies plain Error with auth pattern", () => {
@@ -584,6 +614,11 @@ describe("classifyVendorError", () => {
     expect(classifyVendorError(new Error("ENOENT: no such file"))).toBe("not_found");
   });
 
+  it("classifies plain Error with null-response patterns", () => {
+    expect(classifyVendorError(new Error("null or empty response from LLM"))).toBe("null_response");
+    expect(classifyVendorError(new Error("empty output from codex exec"))).toBe("null_response");
+  });
+
   it("classifies plain Error with malformed output pattern", () => {
     expect(classifyVendorError(new Error("Unexpected token < in JSON"))).toBe("malformed_output");
   });
@@ -623,6 +658,7 @@ describe("failureCategoryLabel", () => {
     expect(failureCategoryLabel("rate_limit")).toBe("rate limit exceeded");
     expect(failureCategoryLabel("timeout")).toBe("operation timed out");
     expect(failureCategoryLabel("not_found")).toBe("resource not found");
+    expect(failureCategoryLabel("null_response")).toBe("null or empty response");
     expect(failureCategoryLabel("unknown")).toBe("unexpected error");
   });
 });

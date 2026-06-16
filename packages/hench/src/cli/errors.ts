@@ -26,6 +26,8 @@ import {
   classifyVendorError,
   failureCategoryLabel,
   colorWarn,
+  mapCLICodeToErrorEntry,
+  mapFailureCategoryToErrorEntry,
 } from "@n-dx/llm-client";
 import type { FailureCategory } from "@n-dx/llm-client";
 
@@ -78,6 +80,12 @@ export class EpicNotFoundError extends CLIError {
  * (auth, rate-limit, timeout), use {@link classifyVendorError} instead.
  */
 const ERROR_HINTS: Array<[RegExp, CLIErrorCode, string, string]> = [
+  [
+    /null or empty response/i,
+    CLI_ERROR_CODES.NULL_RESPONSE,
+    "The LLM returned a null or empty response.",
+    "Retry the command. If the problem persists, try a different model with --model.",
+  ],
   [
     /System memory usage.*exceeds rejection threshold/,
     CLI_ERROR_CODES.MEMORY_THRESHOLD,
@@ -171,7 +179,12 @@ const ERROR_HINTS: Array<[RegExp, CLIErrorCode, string, string]> = [
 ];
 
 function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string): string {
-  let formatted = `Error: [${code}] ${message}`;
+  const errorEntry = mapCLICodeToErrorEntry(code);
+  // Use E_* key for LLM-specific codes that map to a distinct entry.
+  // Fall back to the original NDX_CLI_* code when the mapping returns E_UNKNOWN —
+  // preserving more specific, backward-compatible error display for non-LLM errors.
+  const displayKey = errorEntry.key !== "E_UNKNOWN" ? errorEntry.key : code;
+  let formatted = `Error: [${displayKey}] ${message}`;
   if (suggestion) {
     formatted += `\n${colorWarn(`Hint: ${suggestion}`)}`;
   }
@@ -189,6 +202,7 @@ function renderCLIError(code: CLIErrorCode, message: string, suggestion?: string
  */
 const CATEGORY_SUGGESTIONS: Partial<Record<FailureCategory, string>> = {
   auth: "Check your API key configuration: n-dx config",
+  null_response: "The LLM returned no content. Retry the command. If the problem persists, try a different model with --model.",
   rate_limit: "Wait a moment and try again, or reduce concurrency.",
   timeout: "The operation timed out. Try increasing the timeout or simplifying the task.",
   budget_exceeded: "Token budget exhausted. Increase with: n-dx config hench.tokenBudget <number>",
@@ -222,9 +236,9 @@ export function formatCLIError(err: unknown): string {
   // ClaudeClientError (from Claude/Codex providers) — classify into taxonomy
   if (err instanceof ClaudeClientError) {
     const category = classifyVendorError(err);
-    const label = failureCategoryLabel(category);
-    let msg = `Error [${label}]: ${err.message}`;
+    const entry = mapFailureCategoryToErrorEntry(category);
     const suggestion = CATEGORY_SUGGESTIONS[category];
+    let msg = `Error: [${entry.key}] ${err.message}`;
     if (suggestion) {
       msg += `\n${colorWarn(`Hint: ${suggestion}`)}`;
     }

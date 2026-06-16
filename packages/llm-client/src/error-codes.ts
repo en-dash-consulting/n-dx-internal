@@ -121,3 +121,74 @@ export const ERROR_CODE_REGISTRY: Readonly<Record<string, ErrorCodeEntry>> = {
   [E_BUDGET_EXCEEDED.key]: E_BUDGET_EXCEEDED,
   [E_UNKNOWN.key]: E_UNKNOWN,
 } as const;
+
+/**
+ * Map a stable CLI error code (NDX_CLI_*) to the corresponding
+ * {@link ErrorCodeEntry} from the shared registry.
+ *
+ * Used by CLI error formatters to emit the human-readable E_* prefix
+ * (e.g. `[E_TIMEOUT]`) rather than the internal NDX_CLI_* string.
+ *
+ * Only LLM-specific codes are mapped to distinct E_* entries. Non-LLM
+ * codes (filesystem, config, init) return {@link E_UNKNOWN} so that
+ * callers can fall back to displaying the original NDX_CLI_* code and
+ * preserve backward-compatible, information-rich error output.
+ *
+ * Note: `NDX_CLI_JSON_PARSE_FAILED` is intentionally excluded — it is
+ * used for config-file parsing errors (not LLM response parsing) and
+ * falls through to E_UNKNOWN so the original code is preserved in output.
+ * Wire E_PARSE_ERROR to a dedicated LLM JSON-parsing scenario if needed.
+ */
+export function mapCLICodeToErrorEntry(code: string): ErrorCodeEntry {
+  switch (code) {
+    case "NDX_CLI_TIMEOUT":
+      return E_TIMEOUT;
+    case "NDX_CLI_LLM_RATE_LIMITED":
+      return E_RATE_LIMIT;
+    case "NDX_CLI_AUTH_FAILED":
+    case "NDX_CLI_API_KEY_MISSING":
+      return E_AUTH_FAILURE;
+    case "NDX_CLI_NETWORK_ERROR":
+      return E_NETWORK_ERROR;
+    case "NDX_CLI_BUDGET_EXCEEDED":
+      return E_BUDGET_EXCEEDED;
+    case "NDX_CLI_NULL_RESPONSE":
+      return E_NULL_RESPONSE;
+    default:
+      return E_UNKNOWN;
+  }
+}
+
+/**
+ * Map a {@link FailureCategory} string to the corresponding
+ * {@link ErrorCodeEntry} from the shared registry.
+ *
+ * Accepts a plain string so the caller does not need to import the
+ * `FailureCategory` type from `runtime-contract.ts` — avoiding a
+ * module-graph dependency between `error-codes.ts` and `runtime-contract.ts`.
+ * Unknown categories fall back to {@link E_UNKNOWN}.
+ */
+export function mapFailureCategoryToErrorEntry(category: string): ErrorCodeEntry {
+  switch (category) {
+    case "auth":
+      return E_AUTH_FAILURE;
+    case "timeout":
+      return E_TIMEOUT;
+    case "rate_limit":
+      return E_RATE_LIMIT;
+    case "budget_exceeded":
+      return E_BUDGET_EXCEEDED;
+    case "null_response":
+      return E_NULL_RESPONSE;
+    case "malformed_output":
+      return E_MALFORMED_RESPONSE;
+    case "not_found":
+    case "spin_detected":
+    case "completion_rejected":
+    case "mcp_unavailable":
+    case "transient_exhausted":
+    case "unknown":
+    default:
+      return E_UNKNOWN;
+  }
+}
