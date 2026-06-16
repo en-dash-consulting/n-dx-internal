@@ -56,6 +56,11 @@ describe("buildRefreshPlan", () => {
     ]);
   });
 
+  it("accepts --verbose without error and includes it in analyzeFlags", () => {
+    const plan = buildRefreshPlan(["--verbose"]);
+    expect(plan.analyzeFlags).toContain("--verbose");
+  });
+
   it("rejects --ui-only and --data-only together with actionable guidance", () => {
     try {
       buildRefreshPlan(["--ui-only", "--data-only"]);

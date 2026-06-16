@@ -1,4 +1,4 @@
-const ALLOWED_REFRESH_FLAGS = new Set(["--ui-only", "--data-only", "--pr-markdown", "--no-build", "--quiet", "-q", "--fast"]);
+const ALLOWED_REFRESH_FLAGS = new Set(["--ui-only", "--data-only", "--pr-markdown", "--no-build", "--quiet", "-q", "--fast", "--verbose"]);
 
 export class RefreshPlanError extends Error {
   constructor(message, suggestion) {
@@ -26,10 +26,11 @@ export function buildRefreshPlan(flags) {
   const noBuild = flags.includes("--no-build");
   const quietFlags = flags.filter((f) => f === "--quiet" || f === "-q");
   const fast = flags.includes("--fast");
+  const verbose = flags.includes("--verbose");
   // Flags forwarded to `sourcevision analyze`: quiet flags plus optional --fast
-  // (structural-only, skips LLM archetype/zone enrichment). Not forwarded to the
-  // pr-markdown step, which has no such mode.
-  const analyzeFlags = [...quietFlags, ...(fast ? ["--fast"] : [])];
+  // (structural-only, skips LLM archetype/zone enrichment) and --verbose.
+  // Not forwarded to the pr-markdown step, which has no such mode.
+  const analyzeFlags = [...quietFlags, ...(fast ? ["--fast"] : []), ...(verbose ? ["--verbose"] : [])];
 
   if (uiOnly && dataOnly) {
     throw new RefreshPlanError(

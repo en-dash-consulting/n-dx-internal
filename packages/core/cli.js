@@ -1465,7 +1465,8 @@ async function handlePlan(rest) {
 
   // Skip sourcevision when importing from a specific file
   if (!hasFile) {
-    await runOrDie(tools.sourcevision, ["analyze", ...flags.filter((f) => f === "--quiet" || f === "-q"), dir]);
+    const svFlags = flags.filter((f) => f === "--quiet" || f === "-q" || f === "--verbose");
+    await runOrDie(tools.sourcevision, ["analyze", ...svFlags, dir]);
   }
 
   await runOrDie(tools.rex, ["analyze", ...flags, dir]);
@@ -1973,6 +1974,8 @@ async function handleSelfHeal(rest) {
   // Forward model-selection flags into the inner `hench run` so `ndx self-heal --model=opus`
   // (or --claude-model/--codex-model) actually changes which model the agent uses.
   const modelFlags = extractModelFlags(rest);
+  // Forward --verbose to all spawned sub-processes for diagnostic output on errors.
+  const verboseFlag = rest.includes("--verbose") ? ["--verbose"] : [];
 
   // Resolve whether the pre-execution confirmation prompt should be bypassed.
   // CLI flags (--auto, --yes) win over the project config setting.
@@ -2006,7 +2009,7 @@ async function handleSelfHeal(rest) {
     const stepTotal = captureOnly ? 3 : 5;
 
     console.log(`${shTag} step 1/${stepTotal}: sourcevision analyze --deep --full`);
-    await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", dir]);
+    await runOrDie(tools.sourcevision, ["analyze", "--deep", "--full", ...verboseFlag, dir]);
 
     if (!captureOnly) {
       // Regression guard: compare file-level code health metrics to baseline
@@ -2044,7 +2047,7 @@ async function handleSelfHeal(rest) {
     }
 
     console.log(`\n${shTag} step 2/${stepTotal}: rex recommend --actionable-only`);
-    await runOrDie(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, dir]);
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", ...structuralFlag, ...verboseFlag, dir]);
 
     // Pre-execution approval gate (iteration 1 only, skipped in capture-only mode):
     // print the queued task list and require user confirmation before any PRD
@@ -2087,7 +2090,7 @@ async function handleSelfHeal(rest) {
     const acceptStartedAt = new Date();
     const beforeItemCount = countPrdTreeItems(dir);
     console.log(`\n${shTag} step 3/${stepTotal}: rex recommend --actionable-only --accept ${dim(`(started ${acceptStartedAt.toISOString()}, tree size ${beforeItemCount ?? "?"})`)}`);
-    await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, dir]);
+    await runOrDie(tools.rex, ["recommend", "--actionable-only", "--accept", ...structuralFlag, ...verboseFlag, dir]);
     const acceptFinishedAt = new Date();
     const afterItemCount = countPrdTreeItems(dir);
     if (beforeItemCount !== null && afterItemCount !== null) {
@@ -2104,7 +2107,7 @@ async function handleSelfHeal(rest) {
 
     const modelFlagSummary = modelFlags.length > 0 ? ` ${modelFlags.join(" ")}` : "";
     console.log(`\n${shTag} step 4/5: hench run --auto --loop --self-heal --tags=self-heal${yes ? " --yes" : ""}${modelFlagSummary}`);
-    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", "--tags=self-heal", ...yesFlag, ...modelFlags, dir]);
+    await runOrDie(tools.hench, ["run", "--auto", "--loop", "--self-heal", "--tags=self-heal", ...yesFlag, ...modelFlags, ...verboseFlag, dir]);
 
     console.log(`\n${shTag} step 5/5: acknowledge completed findings`);
     await runOrDie(tools.rex, ["recommend", "--acknowledge-completed", dir]);
