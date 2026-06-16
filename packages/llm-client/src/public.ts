@@ -387,6 +387,21 @@ export {
 // Deprecation warning filter (CLI entry points)
 export { suppressKnownDeprecations } from "./suppress-deprecations.js";
 
+// Shared error code registry (single source of truth for failure category metadata)
+export type { ErrorSeverity, ErrorCodeEntry } from "./error-codes.js";
+export {
+  E_NULL_RESPONSE,
+  E_TIMEOUT,
+  E_MALFORMED_RESPONSE,
+  E_AUTH_FAILURE,
+  E_NETWORK_ERROR,
+  E_PARSE_ERROR,
+  E_RATE_LIMIT,
+  E_BUDGET_EXCEEDED,
+  E_UNKNOWN,
+  ERROR_CODE_REGISTRY,
+} from "./error-codes.js";
+
 // LLM error classification (shared across domain packages)
 export {
   classifyLLMError,
