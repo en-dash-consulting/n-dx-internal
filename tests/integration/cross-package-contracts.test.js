@@ -614,10 +614,13 @@ describe("gateway export auto-detection", () => {
         "mapApprovalToCodexFlag", "toAnthropicToolDef", "toAnthropicToolDefs",
         "toOpenAiToolDef", "toOpenAiToolDefs", "toGeminiFunctionDeclaration",
         "toGeminiFunctionDeclarations", "ProviderRegistry", "defaultRegistry",
-        "classifyLLMError", "getNextFailoverAttempt", "detectGoogleAuthMethod"],
+        "classifyLLMError", "getNextFailoverAttempt", "detectGoogleAuthMethod",
+        "mapFailureCategoryToErrorEntry"],
       ...["PROJECT_DIRS", "NEWEST_MODELS", "TIER_MODELS", "GOOGLE_MODELS",
         "VENDOR_CONTEXT_CHAR_LIMITS",
-        "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS", "ALL_FAILURE_CATEGORIES"],
+        "DEFAULT_EXECUTION_POLICY", "CANONICAL_PROMPT_SECTIONS", "ALL_FAILURE_CATEGORIES",
+        "E_TIMEOUT", "E_MALFORMED_RESPONSE", "E_NULL_RESPONSE", "E_AUTH_FAILURE",
+        "E_NETWORK_ERROR", "E_UNKNOWN"],
     ]);
 
     const untested = sourceExports.filter((s) => !testedSymbols.has(s));

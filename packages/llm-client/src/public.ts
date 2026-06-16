@@ -400,6 +400,8 @@ export {
   E_BUDGET_EXCEEDED,
   E_UNKNOWN,
   ERROR_CODE_REGISTRY,
+  mapCLICodeToErrorEntry,
+  mapFailureCategoryToErrorEntry,
 } from "./error-codes.js";
 
 // LLM error classification (shared across domain packages)
@@ -422,6 +424,8 @@ export {
   extractRetryAfterMs,
   classifyTimeout,
   DEFAULT_AUTO_RETRY_THRESHOLD_MS,
+  parseProtoDuration,
+  extractRefreshAt,
 } from "./rate-limit.js";
 export type { TimeoutKind } from "./rate-limit.js";
 

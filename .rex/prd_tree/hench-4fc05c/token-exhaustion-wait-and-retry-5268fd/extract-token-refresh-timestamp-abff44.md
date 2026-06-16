@@ -2,13 +2,16 @@
 id: "abff441e-d4d5-4bb1-9b8c-7b2589aaecb6"
 level: "task"
 title: "Extract token-refresh timestamp from insufficient-token API error responses"
-status: "pending"
+status: "completed"
 priority: "high"
 tags:
   - "hench"
   - "llm-client"
   - "token-exhaustion"
 source: "smart-add"
+startedAt: "2026-06-16T20:39:01.048Z"
+completedAt: "2026-06-16T21:06:02.434Z"
+endedAt: "2026-06-16T21:06:02.434Z"
 acceptanceCriteria:
   - "Returns a `Date` for Claude, Codex, and Google rate-limit / quota-exhausted error responses that include a reset time"
   - "Returns `null` when no reset time is present in the error payload"

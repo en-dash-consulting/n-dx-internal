@@ -2,8 +2,8 @@
  * Unit tests for rate-limit detection and retry utilities.
  *
  * Covers: Retry-After header parsing, countdown formatting,
- * auto-retry threshold logic, SDK error extraction, and timeout
- * classification.
+ * auto-retry threshold logic, SDK error extraction, timeout
+ * classification, proto Duration parsing, and refresh-timestamp extraction.
  */
 
 import { describe, it, expect, vi, afterEach } from "vitest";
@@ -14,6 +14,8 @@ import {
   extractRetryAfterMs,
   classifyTimeout,
   DEFAULT_AUTO_RETRY_THRESHOLD_MS,
+  parseProtoDuration,
+  extractRefreshAt,
 } from "../../src/rate-limit.js";
 import { ClaudeClientError } from "../../src/types.js";
 
@@ -238,5 +240,246 @@ describe("classifyTimeout", () => {
 
   it("classifies unknown error as api", () => {
     expect(classifyTimeout(new Error("something timed out"))).toBe("api");
+  });
+});
+
+// ── parseProtoDuration ──────────────────────────────────────────────
+
+describe("parseProtoDuration", () => {
+  it("parses a whole-second duration", () => {
+    expect(parseProtoDuration("30s")).toBe(30_000);
+  });
+
+  it("parses fractional seconds (rounds up)", () => {
+    expect(parseProtoDuration("1.5s")).toBe(2_000);
+  });
+
+  it("parses zero seconds", () => {
+    expect(parseProtoDuration("0s")).toBe(0);
+  });
+
+  it("parses large values", () => {
+    expect(parseProtoDuration("300s")).toBe(300_000);
+  });
+
+  it("returns undefined for missing unit", () => {
+    expect(parseProtoDuration("30")).toBeUndefined();
+  });
+
+  it("returns undefined for minute notation", () => {
+    expect(parseProtoDuration("2m")).toBeUndefined();
+  });
+
+  it("returns undefined for empty string", () => {
+    expect(parseProtoDuration("")).toBeUndefined();
+  });
+
+  it("returns undefined for non-numeric prefix", () => {
+    expect(parseProtoDuration("xs")).toBeUndefined();
+  });
+});
+
+// ── extractRefreshAt ────────────────────────────────────────────────
+
+const FIXED_NOW = 1_700_000_000_000; // fixed epoch ms for deterministic tests
+
+describe("extractRefreshAt", () => {
+  // ── null / non-object inputs ──────────────────────────────────────
+  it("returns null for null", () => {
+    expect(extractRefreshAt(null, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null for undefined", () => {
+    expect(extractRefreshAt(undefined, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null for a plain string", () => {
+    expect(extractRefreshAt("rate limited", FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null for a plain number", () => {
+    expect(extractRefreshAt(429, FIXED_NOW)).toBeNull();
+  });
+
+  // ── ClaudeClientError with retryAfterMs ───────────────────────────
+  it("returns Date from ClaudeClientError.retryAfterMs", () => {
+    const err = new ClaudeClientError("rate limited", "rate-limit", true, 30_000);
+    const result = extractRefreshAt(err, FIXED_NOW);
+    expect(result).toEqual(new Date(FIXED_NOW + 30_000));
+  });
+
+  it("returns null from ClaudeClientError with no retryAfterMs", () => {
+    const err = new ClaudeClientError("rate limited", "rate-limit", true);
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from ClaudeClientError with retryAfterMs=0", () => {
+    // ClaudeClientError constructor drops zero retryAfterMs, so err.retryAfterMs is undefined
+    const err = new ClaudeClientError("rate limited", "rate-limit", true, 0);
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  // ── Claude / Anthropic SDK raw error (status + headers) ──────────
+  it("returns Date from Anthropic SDK 429 error with retry-after header", () => {
+    const err = {
+      status: 429,
+      headers: { get: (name: string) => (name === "retry-after" ? "47" : null) },
+      message: "Too Many Requests",
+    };
+    const result = extractRefreshAt(err, FIXED_NOW);
+    expect(result).toEqual(new Date(FIXED_NOW + 47_000));
+  });
+
+  it("returns Date from Anthropic SDK 429 error with HTTP-date retry-after", () => {
+    // parseRetryAfterHeader calls Date.now() internally for HTTP-dates, so use
+    // a real future timestamp — not the fixed FIXED_NOW epoch which is in the past.
+    const futureMs = Date.now() + 60_000;
+    const futureDate = new Date(futureMs).toUTCString();
+    const err = {
+      status: 429,
+      headers: { get: (name: string) => (name === "retry-after" ? futureDate : null) },
+      message: "Too Many Requests",
+    };
+    const before = Date.now();
+    const result = extractRefreshAt(err);
+    expect(result).not.toBeNull();
+    // The returned Date should be approximately 60 s after the call was made.
+    const resultMs = (result as Date).getTime();
+    expect(resultMs).toBeGreaterThan(before + 59_000);
+    expect(resultMs).toBeLessThan(before + 61_000);
+  });
+
+  it("returns null from 429 error with no retry-after header", () => {
+    const err = {
+      status: 429,
+      headers: { get: () => null },
+      message: "rate limited",
+    };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from non-429 error with retry-after header", () => {
+    const err = {
+      status: 500,
+      headers: { get: () => "30" },
+      message: "server error",
+    };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from 429 error with no headers property", () => {
+    const err = { status: 429, message: "rate limited" };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  // ── Google (Gemini) JSON body ─────────────────────────────────────
+  it("returns Date from Gemini error message with retryDelay", () => {
+    const body = JSON.stringify({
+      error: {
+        code: 429,
+        message: "Resource exhausted",
+        status: "RESOURCE_EXHAUSTED",
+        details: [
+          {
+            "@type": "type.googleapis.com/google.rpc.RetryInfo",
+            retryDelay: "30s",
+          },
+        ],
+      },
+    });
+    const err = { message: `Gemini API error 429: ${body}` };
+    expect(extractRefreshAt(err, FIXED_NOW)).toEqual(new Date(FIXED_NOW + 30_000));
+  });
+
+  it("returns Date from Gemini error with multiple details entries (first retryDelay wins)", () => {
+    const body = JSON.stringify({
+      error: {
+        details: [
+          { "@type": "type.googleapis.com/google.rpc.QuotaFailure" },
+          {
+            "@type": "type.googleapis.com/google.rpc.RetryInfo",
+            retryDelay: "60s",
+          },
+        ],
+      },
+    });
+    const err = { message: `Gemini API error 429: ${body}` };
+    expect(extractRefreshAt(err, FIXED_NOW)).toEqual(new Date(FIXED_NOW + 60_000));
+  });
+
+  it("returns null from Gemini error with no retryDelay in details", () => {
+    const body = JSON.stringify({
+      error: {
+        code: 429,
+        details: [
+          { "@type": "type.googleapis.com/google.rpc.QuotaFailure", violations: [] },
+        ],
+      },
+    });
+    const err = { message: `Gemini API error 429: ${body}` };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from Gemini error with empty details array", () => {
+    const body = JSON.stringify({ error: { code: 429, details: [] } });
+    const err = { message: `Gemini API error 429: ${body}` };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from Gemini error with no details field", () => {
+    const body = JSON.stringify({ error: { code: 429, message: "quota exceeded" } });
+    const err = { message: `Gemini API error 429: ${body}` };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null when the Gemini message contains malformed JSON", () => {
+    const err = { message: "Gemini API error 429: { not valid json }" };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null when message contains no JSON at all", () => {
+    const err = { message: "Gemini API error 429: quota exhausted" };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  // ── Codex CLI text patterns ───────────────────────────────────────
+  it("parses 'retry after N seconds' from Codex stderr", () => {
+    const err = { message: "Rate limit exceeded. Please retry after 47 seconds." };
+    expect(extractRefreshAt(err, FIXED_NOW)).toEqual(new Date(FIXED_NOW + 47_000));
+  });
+
+  it("parses 'retry in Ns' pattern", () => {
+    const err = { message: "Too many requests. Retry in 60s." };
+    expect(extractRefreshAt(err, FIXED_NOW)).toEqual(new Date(FIXED_NOW + 60_000));
+  });
+
+  it("parses 'try again in N seconds' pattern", () => {
+    const err = { message: "quota exhausted, try again in 30 seconds" };
+    expect(extractRefreshAt(err, FIXED_NOW)).toEqual(new Date(FIXED_NOW + 30_000));
+  });
+
+  it("returns null from Codex message with no retry time", () => {
+    const err = {
+      message:
+        "Codex rate limit exceeded — all 3 attempts failed. Wait a few minutes and try again.",
+    };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  it("returns null from a plain auth error message", () => {
+    const err = { message: "Authentication failed: invalid API key" };
+    expect(extractRefreshAt(err, FIXED_NOW)).toBeNull();
+  });
+
+  // ── Default nowMs (smoke test — only checks shape) ─────────────────
+  it("uses Date.now() when nowMs is omitted", () => {
+    const err = new ClaudeClientError("rate limited", "rate-limit", true, 5_000);
+    const before = Date.now();
+    const result = extractRefreshAt(err);
+    const after = Date.now();
+    expect(result).not.toBeNull();
+    const ms = (result as Date).getTime();
+    expect(ms).toBeGreaterThanOrEqual(before + 5_000);
+    expect(ms).toBeLessThanOrEqual(after + 5_000);
   });
 });

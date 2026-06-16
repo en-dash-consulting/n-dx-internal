@@ -8,6 +8,8 @@
  * guidance instead of opaque backoff delays.
  */
 
+import { ClaudeClientError } from "./types.js";
+
 // ── Retry-After header parsing ──────────────────────────────────────────
 
 /**
@@ -139,4 +141,118 @@ export function classifyTimeout(err: Error): TimeoutKind {
   // Everything else is treated as an API-processing timeout:
   // HTTP 408, explicit "timeout" in the error, request exceeded deadline, etc.
   return "api";
+}
+
+// ── Token-quota refresh timestamp extraction ────────────────────────────────
+
+/**
+ * Parse a proto Duration string (e.g. `"30s"`, `"300s"`) into milliseconds.
+ *
+ * Google's `RetryInfo.retryDelay` uses this format. Only handles the
+ * seconds-only form (`"Ns"`) produced by the Gemini API for short delays.
+ *
+ * @returns Milliseconds, or `undefined` for unrecognized formats.
+ */
+export function parseProtoDuration(value: string): number | undefined {
+  const match = /^(\d+(?:\.\d+)?)s$/.exec(value);
+  if (!match) return undefined;
+  const seconds = parseFloat(match[1]);
+  if (!Number.isFinite(seconds) || seconds < 0) return undefined;
+  return Math.ceil(seconds) * 1000;
+}
+
+/**
+ * Extract a retry delay (ms) from a Google Gemini error message string.
+ *
+ * Gemini embeds the JSON body in the error message:
+ * `"Gemini API error 429: { \"error\": { \"details\": [...] } }"`.
+ * This function parses the body and returns the `retryDelay` from the first
+ * `RetryInfo` detail entry.
+ */
+function extractGoogleRetryDelayMs(message: string): number | undefined {
+  const jsonStart = message.indexOf("{");
+  if (jsonStart === -1) return undefined;
+  try {
+    const parsed = JSON.parse(message.slice(jsonStart)) as {
+      error?: { details?: Array<Record<string, unknown>> };
+    };
+    for (const detail of parsed.error?.details ?? []) {
+      if (typeof detail.retryDelay === "string") {
+        return parseProtoDuration(detail.retryDelay);
+      }
+    }
+  } catch {
+    // Not valid JSON
+  }
+  return undefined;
+}
+
+/**
+ * Extract a retry delay (ms) from a plain text error message.
+ *
+ * Covers Codex CLI stderr and any other text-based error that includes
+ * patterns like `"retry after 47 seconds"` or `"try again in 30s"`.
+ */
+function extractTextRetryDelayMs(message: string): number | undefined {
+  const pattern =
+    /(?:retry(?:\s+(?:after|in))|try\s+again(?:\s+after|\s+in)|please\s+retry(?:\s+(?:after|in))?)\s+(\d+)\s*s(?:ec(?:onds?)?)?/i;
+  const match = pattern.exec(message);
+  if (!match) return undefined;
+  const seconds = parseInt(match[1], 10);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : undefined;
+}
+
+/**
+ * Extract the token-quota refresh time from an LLM rate-limit error.
+ *
+ * Inspects the error payload across all supported providers and returns the
+ * absolute time at which the quota or rate limit should reset. Returns `null`
+ * when no reset time is present in the error payload.
+ *
+ * Provider-specific parsing:
+ * - **Claude / generic** — `ClaudeClientError.retryAfterMs` (set by providers
+ *   that already parsed the `Retry-After` header before throwing)
+ * - **Claude (Anthropic SDK raw)** — `retry-after` HTTP header on 429 errors
+ * - **Google (Gemini)** — `error.details[].retryDelay` proto Duration embedded
+ *   in the JSON body of the error message
+ * - **Codex (CLI text)** — plain-text retry patterns in the error message
+ *   (e.g. `"Please retry after 47 seconds"`)
+ *
+ * Pure function — no side effects, no API calls.
+ *
+ * @param err    The raw error to inspect.
+ * @param nowMs  Current epoch milliseconds (default: `Date.now()`). Pass a
+ *               fixed value in tests for deterministic `Date` results.
+ * @returns A `Date` for the refresh time, or `null` if unavailable.
+ */
+export function extractRefreshAt(err: unknown, nowMs = Date.now()): Date | null {
+  if (err == null || typeof err !== "object") return null;
+
+  const e = err as Record<string, unknown>;
+
+  // 1. Pre-processed ClaudeClientError — providers store the parsed
+  //    Retry-After delay here before rethrowing.
+  if (
+    err instanceof ClaudeClientError &&
+    typeof err.retryAfterMs === "number" &&
+    err.retryAfterMs > 0
+  ) {
+    return new Date(nowMs + err.retryAfterMs);
+  }
+
+  // 2. Anthropic SDK raw error: status 429 + retry-after header.
+  if (e.status === 429) {
+    const headers = e.headers as { get?: (name: string) => string | null } | undefined;
+    const ms = parseRetryAfterHeader(headers?.get?.("retry-after"));
+    if (ms != null) return new Date(nowMs + ms);
+  }
+
+  // 3. Google Gemini: JSON body with retryDelay in error.details[].
+  // 4. Codex CLI / other text: plain-text retry patterns in message.
+  if (typeof e.message === "string") {
+    const ms = extractGoogleRetryDelayMs(e.message) ?? extractTextRetryDelayMs(e.message);
+    if (ms != null) return new Date(nowMs + ms);
+  }
+
+  return null;
 }
