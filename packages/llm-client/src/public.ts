@@ -372,6 +372,7 @@ export { suppressKnownDeprecations } from "./suppress-deprecations.js";
 export {
   classifyLLMError,
   extractProviderDetail,
+  isAuthError,
 } from "./llm-error-classifier.js";
 export type {
   LLMErrorCategory,

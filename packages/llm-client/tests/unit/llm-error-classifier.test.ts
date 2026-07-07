@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import {
   classifyLLMError,
   extractProviderDetail,
+  isAuthError,
   type LLMErrorCategory,
   type LLMErrorClassification,
   type LLMErrorContext,
@@ -25,6 +26,20 @@ describe("classifyLLMError", () => {
 
   it("classifies invalid API key as auth", () => {
     const r = classifyLLMError(new Error("Invalid API key provided"));
+    expect(r.category).toBe("auth");
+  });
+
+  it("classifies a lost CLI session as auth with re-auth guidance (codex)", () => {
+    const r = classifyLLMError(
+      new Error("Not logged in. Please run codex login to continue."),
+      "codex",
+    );
+    expect(r.category).toBe("auth");
+    expect(r.suggestion).toContain("codex login");
+  });
+
+  it("classifies an expired session as auth", () => {
+    const r = classifyLLMError(new Error("Your session has expired"));
     expect(r.category).toBe("auth");
   });
 
@@ -385,5 +400,51 @@ describe("extractProviderDetail", () => {
 
   it("returns empty string for empty input", () => {
     expect(extractProviderDetail("")).toBe("");
+  });
+});
+
+describe("isAuthError", () => {
+  describe("API auth signatures", () => {
+    it.each([
+      ["401 Unauthorized", "401"],
+      ["Request failed with status 403", "403"],
+      ["Invalid API key provided", "invalid api key"],
+      ["authentication failed", "authentication failed"],
+      ["Authentication error: token invalid", "authentication invalid"],
+      ["unauthorized", "bare unauthorized"],
+    ])("returns true for '%s' (%s)", (input) => {
+      expect(isAuthError(input)).toBe(true);
+    });
+  });
+
+  describe("CLI session-loss signatures", () => {
+    it.each([
+      ["Not logged in", "not logged in"],
+      ["Please run claude login to authenticate", "please run login"],
+      ["Please sign in first", "please sign in"],
+      ["Run /login to continue", "/login"],
+      ["Your session has expired", "session expired"],
+      ["OAuth token has expired", "oauth token expired"],
+      ["The access token was revoked", "access token revoked"],
+      ["Credentials were rejected", "credentials rejected"],
+      ["Authentication required", "authentication required"],
+      ["Please re-authenticate and retry", "re-authenticate"],
+    ])("returns true for '%s' (%s)", (input) => {
+      expect(isAuthError(input)).toBe(true);
+    });
+  });
+
+  describe("non-auth errors (no false positives)", () => {
+    it.each([
+      ["token limit exceeded for this project", "budget, not auth"],
+      ["response truncated at 4096 tokens", "parse, not auth"],
+      ["429 Too Many Requests", "rate-limit"],
+      ["ECONNRESET", "network"],
+      ["529 Overloaded", "server"],
+      ["File not found: foo.ts", "generic"],
+      ["", "empty string"],
+    ])("returns false for '%s' (%s)", (input) => {
+      expect(isAuthError(input)).toBe(false);
+    });
   });
 });
