@@ -77,11 +77,12 @@ function extractCodexContent(envelope: PromptEnvelope): {
 } {
   const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-  const lastArg = config.args[config.args.length - 1] as string;
-  const systemStart = lastArg.indexOf("SYSTEM:\n") + "SYSTEM:\n".length;
-  const taskMarker = lastArg.indexOf("\n\nTASK:\n");
-  const systemPrompt = lastArg.slice(systemStart, taskMarker);
-  const taskPrompt = lastArg.slice(taskMarker + "\n\nTASK:\n".length);
+  // Codex delivers the combined prompt via stdin (trailing "-" arg).
+  const prompt = config.stdinContent as string;
+  const systemStart = prompt.indexOf("SYSTEM:\n") + "SYSTEM:\n".length;
+  const taskMarker = prompt.indexOf("\n\nTASK:\n");
+  const systemPrompt = prompt.slice(systemStart, taskMarker);
+  const taskPrompt = prompt.slice(taskMarker + "\n\nTASK:\n".length);
 
   return { systemPrompt, taskPrompt };
 }
@@ -337,7 +338,7 @@ describe("AC2: section content equivalence between adapters", () => {
       }
       expect(claudeConfig.stdinContent).toBe(canonical.taskPrompt);
 
-      const codexPrompt = codexConfig.args[codexConfig.args.length - 1] as string;
+      const codexPrompt = codexConfig.stdinContent as string;
       expect(codexPrompt).toBe(
         `SYSTEM:\n${canonical.systemPrompt}\n\nTASK:\n${canonical.taskPrompt}`,
       );
@@ -354,7 +355,7 @@ describe("AC2: section content equivalence between adapters", () => {
 
     expect(claude.stdinContent).toBe(canonical.taskPrompt);
 
-    const codexPrompt = codex.args[codex.args.length - 1] as string;
+    const codexPrompt = codex.stdinContent as string;
     expect(codexPrompt).toContain(canonical.systemPrompt);
     expect(codexPrompt).toContain(canonical.taskPrompt);
   });

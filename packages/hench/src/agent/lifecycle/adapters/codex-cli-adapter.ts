@@ -644,7 +644,6 @@ export const codexCliAdapter: VendorAdapter = {
   ): SpawnConfig {
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
-    // Codex takes the prompt as a positional argument (not stdin).
     // Combine system and task prompts into a single prompt string,
     // matching the format used by dispatchVendorSpawn in cli-loop.ts.
     const prompt = `SYSTEM:\n${systemPrompt}\n\nTASK:\n${taskPrompt}`;
@@ -656,20 +655,26 @@ export const codexCliAdapter: VendorAdapter = {
     // opts.permissionMode is intentionally ignored — it is a Claude-CLI
     // concept with no Codex equivalent; the run.ts caller drops it with a
     // warning before reaching this adapter.
+    //
+    // The prompt is delivered via stdin (trailing "-"), not as a positional
+    // argv argument. Briefs are bounded at 400 KB (VENDOR_CONTEXT_CHAR_LIMITS.codex),
+    // which exceeds the OS ARG_MAX for a single argv element and would crash the
+    // spawn with E2BIG. `codex exec … -` reads the prompt from stdin, matching
+    // the Claude adapter and the llm-client codex provider.
     const args = [
       "exec",
       ...policyFlags,
       "--json",
       "--skip-git-repo-check",
       ...(opts.model ? ["-m", opts.model] : []),
-      prompt,
+      "-",
     ];
 
     return {
       binary: "codex",
       args,
       env: {},
-      stdinContent: null, // Codex: prompt in args, not stdin
+      stdinContent: prompt, // Codex: prompt via stdin, not args (avoids E2BIG)
       cwd: ".",
     };
   },
