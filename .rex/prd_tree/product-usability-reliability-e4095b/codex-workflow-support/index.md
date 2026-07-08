@@ -15,4 +15,4 @@ description: "Type: Bug/Story. Improve Codex support so N-DX is usable with Code
 |-------|--------|
 | [Make Codex quota/token retrieval work for codex login (session auth) users](./make-codex-quota-token-676ea2.md) | completed |
 | [Reconcile Codex model-id catalogs and fix dead light-tier alias](./reconcile-codex-model-id-74f09a.md) | pending |
-| [Wire Codex token accounting into event-pipeline close path](./wire-codex-token-accounting-7feabb.md) | pending |
+| [Wire Codex token accounting into event-pipeline close path](./wire-codex-token-accounting-7feabb.md) | completed |
