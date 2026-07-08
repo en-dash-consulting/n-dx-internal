@@ -21,5 +21,5 @@ description: "Improve N-DX install/setup reliability, cross-platform CLI executi
 | [Recommended Install Path Validation](./recommended-install-path-validation.md) | completed |
 | [Source Vision Build and Config Artifact Classification](./source-vision-build-and-config-f771e5.md) | pending |
 | [Source Vision Vendor Artifact Exclusion](./source-vision-vendor-artifact-exclusion.md) | pending |
-| [Windows CLI Spawn and Execution Fixes](./windows-cli-spawn-and-execution-fixes.md) | pending |
+| [Windows CLI Spawn and Execution Fixes](./windows-cli-spawn-and-execution-fixes.md) | completed |
 | [Windows Install Reliability](./windows-install-reliability.md) | pending |
