@@ -68,6 +68,7 @@ export function buildPrdStatusExcerpt(dir) {
       const out = execFileSync("rex", ["status", "--format=json", dir], {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
+        shell: process.platform === "win32",
       });
       doc = JSON.parse(out);
     } catch (err) {

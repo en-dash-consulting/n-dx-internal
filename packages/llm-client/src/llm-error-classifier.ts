@@ -224,8 +224,14 @@ export function classifyLLMError(
   const detail = extractProviderDetail(cleanedMessage);
   const detailSuffix = detail ? ` (${detail})` : "";
 
+  // Strip embedded user input before auth classification to avoid false-positives
+  // when the user's description contains words like "unauthorized" or "authentication".
+  // Error messages may embed user text as: "…unexpected response for input: <user text>".
+  const forInputIdx = cleanedMessage.search(/\bfor input:/i);
+  const authCheckMessage = forInputIdx !== -1 ? cleanedMessage.slice(0, forInputIdx) : cleanedMessage;
+
   // ── Authentication (401, invalid key, expired token, lost session) ──
-  if (isAuthError(cleanedMessage)) {
+  if (isAuthError(authCheckMessage)) {
     if (vendor === "codex") {
       return {
         message: `Authentication failed — Codex CLI credentials were rejected.${suffix}${detailSuffix}`,
