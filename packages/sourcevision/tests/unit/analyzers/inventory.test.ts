@@ -195,6 +195,43 @@ describe("classifyRole", () => {
   it("classifies scripts dir files as build", () => {
     expect(classifyRole("scripts/deploy.sh", "Shell")).toBe("build");
   });
+
+  // ── Convention: *.config.* build/tooling config not in the enumerated set ──
+
+  it("classifies enumerated-miss configs as config via the *.config.* convention", () => {
+    // None of these are in typescript.ts configFilenames, so before the
+    // convention heuristic they fell through to the "source" role.
+    expect(classifyRole("drizzle.config.ts", "TypeScript")).toBe("config");
+    expect(classifyRole("playwright.config.ts", "TypeScript")).toBe("config");
+    expect(classifyRole("tsup.config.ts", "TypeScript")).toBe("config");
+    expect(classifyRole("cypress.config.js", "JavaScript")).toBe("config");
+    expect(classifyRole("commitlint.config.cjs", "JavaScript")).toBe("config");
+    expect(classifyRole("uno.config.mts", "TypeScript")).toBe("config");
+  });
+
+  it("applies the *.config.* convention regardless of directory depth", () => {
+    expect(classifyRole("packages/web/vite.config.ts", "TypeScript")).toBe("config");
+    expect(classifyRole("apps/site/astro.config.mjs", "JavaScript")).toBe("config");
+  });
+
+  it("matches config data extensions in the *.config.* convention", () => {
+    expect(classifyRole("release.config.json", "JSON")).toBe("config");
+    expect(classifyRole("renovate.config.yaml", "YAML")).toBe("config");
+  });
+
+  // ── Guardrails: the convention must not swallow genuine source files ──
+
+  it("does not treat a source file named config.ts as config", () => {
+    expect(classifyRole("src/config.ts", "TypeScript")).toBe("source");
+  });
+
+  it("does not match substrings like configuration.ts", () => {
+    expect(classifyRole("src/configuration.ts", "TypeScript")).toBe("source");
+  });
+
+  it("does not match a hyphenated db-config.ts", () => {
+    expect(classifyRole("src/db-config.ts", "TypeScript")).toBe("source");
+  });
 });
 
 // ── deriveCategory ────────────────────────────────────────────────────────────

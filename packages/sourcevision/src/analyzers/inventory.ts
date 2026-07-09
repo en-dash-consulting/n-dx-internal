@@ -126,6 +126,19 @@ export function detectLanguage(filePath: string): string {
 // CONFIG_FILENAMES — now sourced from languageConfig.configFilenames.
 // See packages/sourcevision/src/language/ for per-language config sets.
 
+/**
+ * Convention for build/tooling config artifacts named `<tool>.config.<ext>`
+ * (e.g. `vite.config.ts`, `jest.config.js`, `drizzle.config.ts`,
+ * `playwright.config.ts`, `tsup.config.ts`). The per-language
+ * `configFilenames` set only enumerates well-known names, so anything a
+ * project or a newer tool introduces would otherwise fall through to the
+ * `source` role and pollute source-logic analysis. Matching requires the
+ * literal `.config.` segment, so genuine source files like `config.ts`,
+ * `configuration.ts`, or `db-config.ts` are unaffected.
+ */
+const CONFIG_CONVENTION_PATTERN =
+  /\.config\.(?:[cm]?[jt]sx?|json|ya?ml|toml)$/i;
+
 const LOCKFILE_NAMES = new Set([
   "package-lock.json",
   "yarn.lock",
@@ -221,6 +234,7 @@ export function classifyRole(filePath: string, language: string, langConfig?: La
   // 3. Config — language-specific filenames + universal heuristics
   if (
     config.configFilenames.has(name) ||
+    CONFIG_CONVENTION_PATTERN.test(name) ||
     name.startsWith("tsconfig") ||
     name === ".env" ||
     name.startsWith(".env.") ||
