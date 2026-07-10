@@ -182,6 +182,31 @@ describe("rex adapter", () => {
     expect(github.config.projectId).toBe("PVT_kwDOABCD1234");
   });
 
+  it("configures the jira adapter and redacts its api token", async () => {
+    const output = run([
+      "adapter",
+      "add",
+      "jira",
+      "--domain=acme.atlassian.net",
+      "--email=me@acme.com",
+      "--apiToken=super-secret-jira-token",
+      "--projectKey=PRD",
+      tmpDir,
+    ]);
+    expect(output).toContain('Adapter "jira" configured');
+
+    const raw = await readFile(join(tmpDir, ".rex", "adapters.json"), "utf-8");
+    const data = JSON.parse(raw);
+    const jira = data.adapters.find((a: { name: string }) => a.name === "jira");
+    expect(jira).toBeDefined();
+    expect(jira.config.apiToken.__redacted).toBe(true);
+    expect(jira.config.apiToken.envVar).toBe("REX_JIRA_API_TOKEN");
+    // Non-sensitive fields stored as-is.
+    expect(jira.config.domain).toBe("acme.atlassian.net");
+    expect(jira.config.email).toBe("me@acme.com");
+    expect(jira.config.projectKey).toBe("PRD");
+  });
+
   // ---- Show --------------------------------------------------------------
 
   it("shows adapter details", () => {

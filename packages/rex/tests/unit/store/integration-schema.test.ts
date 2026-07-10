@@ -432,11 +432,12 @@ describe("Built-in integration schemas", () => {
     });
   });
 
-  describe("Jira schema (stub)", () => {
+  describe("Jira schema", () => {
     it("has correct ID and metadata", () => {
       expect(jiraIntegrationSchema.id).toBe("jira");
       expect(jiraIntegrationSchema.name).toBe("Jira");
-      expect(jiraIntegrationSchema.builtIn).toBe(false);
+      // Promoted to a built-in when the Jira store adapter shipped.
+      expect(jiraIntegrationSchema.builtIn).toBe(true);
       expect(jiraIntegrationSchema.supportsConnectionTest).toBe(true);
     });
 

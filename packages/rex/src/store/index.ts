@@ -69,6 +69,15 @@ export type {
   DraftContent,
 } from "./github-projects-client.js";
 export { LiveGitHubProjectsClient } from "./github-projects-client.js";
+export { JiraStore, ensureJiraRexDir } from "./jira-adapter.js";
+export type {
+  JiraClient,
+  JiraAdapterConfig,
+  JiraIssue,
+  JiraCreateParams,
+  JiraUpdateParams,
+} from "./jira-client.js";
+export { LiveJiraClient } from "./jira-client.js";
 export { SyncEngine } from "../core/sync-engine.js";
 export type { SyncDirection, SyncReport, SyncOptions } from "../core/sync-engine.js";
 export {
@@ -120,6 +129,8 @@ import { AsanaStore } from "./asana-adapter.js";
 import { LiveAsanaClient } from "./asana-client.js";
 import { GitHubProjectsStore } from "./github-projects-adapter.js";
 import { LiveGitHubProjectsClient } from "./github-projects-client.js";
+import { JiraStore } from "./jira-adapter.js";
+import { LiveJiraClient } from "./jira-client.js";
 import { getDefaultRegistry } from "./adapter-registry.js";
 import { dirname } from "node:path";
 import { resolveGitBranch } from "./branch-naming.js";
@@ -129,6 +140,7 @@ import type { PRDStore } from "./contracts.js";
 import type { NotionAdapterConfig } from "./notion-client.js";
 import type { AsanaAdapterConfig } from "./asana-client.js";
 import type { GitHubProjectsAdapterConfig } from "./github-projects-client.js";
+import type { JiraAdapterConfig } from "./jira-client.js";
 
 /**
  * Create a PRDStore for the given adapter name.
@@ -194,6 +206,20 @@ export function createGitHubProjectsStore(
 ): PRDStore {
   const client = new LiveGitHubProjectsClient(config.token);
   return new GitHubProjectsStore(rexDir, client, config);
+}
+
+/**
+ * Create a Jira-backed store.
+ *
+ * Requires a JiraAdapterConfig with domain, email, apiToken, and projectKey.
+ * The rexDir is still used for config, logs, and workflow files.
+ */
+export function createJiraStore(
+  rexDir: string,
+  config: JiraAdapterConfig,
+): PRDStore {
+  const client = new LiveJiraClient(config.domain, config.email, config.apiToken);
+  return new JiraStore(rexDir, client, config);
 }
 
 /**

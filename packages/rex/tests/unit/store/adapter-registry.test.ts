@@ -100,6 +100,15 @@ describe("AdapterRegistry", () => {
       expect(def!.configSchema.projectId?.required).toBe(true);
     });
 
+    it("has 'jira' adapter registered by default with a sensitive apiToken", () => {
+      const def = registry.get("jira");
+      expect(def).toBeDefined();
+      expect(def!.configSchema.domain?.required).toBe(true);
+      expect(def!.configSchema.apiToken?.required).toBe(true);
+      expect(def!.configSchema.apiToken?.sensitive).toBe(true);
+      expect(def!.configSchema.projectKey?.required).toBe(true);
+    });
+
     it("creates a FileStore for the 'file' adapter", () => {
       const store = registry.create("file", rexDir, {});
       expect(store.capabilities().adapter).toBe("file");
