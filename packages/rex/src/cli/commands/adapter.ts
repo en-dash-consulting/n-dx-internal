@@ -240,6 +240,7 @@ Examples:
   rex adapter list
   rex adapter add notion --token=secret_abc --databaseId=abc123
   rex adapter add asana --token=1/abc --projectId=1201234567890123
+  rex adapter add github --token=ghp_abc --projectId=PVT_kwABC
   rex adapter show notion
   rex adapter remove notion`);
     return;

@@ -161,6 +161,27 @@ describe("rex adapter", () => {
     expect(asana.config.projectId).toBe("1201234567890123");
   });
 
+  it("configures the github adapter and redacts its token", async () => {
+    const output = run([
+      "adapter",
+      "add",
+      "github",
+      "--token=ghp_secret_github_token",
+      "--projectId=PVT_kwDOABCD1234",
+      tmpDir,
+    ]);
+    expect(output).toContain('Adapter "github" configured');
+
+    const raw = await readFile(join(tmpDir, ".rex", "adapters.json"), "utf-8");
+    const data = JSON.parse(raw);
+    const github = data.adapters.find((a: { name: string }) => a.name === "github");
+    expect(github).toBeDefined();
+    expect(github.config.token.__redacted).toBe(true);
+    expect(github.config.token.envVar).toBe("REX_GITHUB_TOKEN");
+    // Non-sensitive project node ID stored as-is.
+    expect(github.config.projectId).toBe("PVT_kwDOABCD1234");
+  });
+
   // ---- Show --------------------------------------------------------------
 
   it("shows adapter details", () => {

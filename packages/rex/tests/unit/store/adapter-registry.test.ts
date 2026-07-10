@@ -92,6 +92,14 @@ describe("AdapterRegistry", () => {
       expect(def!.configSchema.projectId?.required).toBe(true);
     });
 
+    it("has 'github' adapter registered by default with token + projectId schema", () => {
+      const def = registry.get("github");
+      expect(def).toBeDefined();
+      expect(def!.configSchema.token?.required).toBe(true);
+      expect(def!.configSchema.token?.sensitive).toBe(true);
+      expect(def!.configSchema.projectId?.required).toBe(true);
+    });
+
     it("creates a FileStore for the 'file' adapter", () => {
       const store = registry.create("file", rexDir, {});
       expect(store.capabilities().adapter).toBe("file");

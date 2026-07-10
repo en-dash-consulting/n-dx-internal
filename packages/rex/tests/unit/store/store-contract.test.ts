@@ -29,6 +29,16 @@ import type {
   AsanaCreateParams,
   AsanaUpdateParams,
 } from "../../../src/store/asana-client.js";
+import {
+  GitHubProjectsStore,
+  ensureGitHubProjectsRexDir,
+} from "../../../src/store/github-projects-adapter.js";
+import type {
+  GitHubProjectsClient,
+  GitHubProjectsAdapterConfig,
+  GitHubProjectItem,
+  DraftContent,
+} from "../../../src/store/github-projects-client.js";
 import { serializeDocument } from "../../../src/store/markdown-serializer.js";
 import { PRD_MARKDOWN_FILENAME } from "../../../src/store/prd-md-migration.js";
 
@@ -761,6 +771,82 @@ describeStoreContract("AsanaStore", () => ({
     };
     const mockClient = new ContractMockAsanaClient();
     const store = new AsanaStore(rexDir, mockClient, adapterConfig);
+
+    return {
+      store,
+      cleanup: async () => rm(tmpDir, { recursive: true, force: true }),
+    };
+  },
+}));
+
+// ---------------------------------------------------------------------------
+// Run the contract against the GitHubProjectsStore adapter
+// ---------------------------------------------------------------------------
+
+class ContractMockGitHubProjectsClient implements GitHubProjectsClient {
+  items = new Map<string, GitHubProjectItem>();
+  private nextId = 1;
+
+  async listItems(_projectId: string): Promise<GitHubProjectItem[]> {
+    return [...this.items.values()];
+  }
+
+  async createDraftItem(_projectId: string, content: DraftContent): Promise<GitHubProjectItem> {
+    const n = this.nextId++;
+    const item: GitHubProjectItem = {
+      itemId: `PVTI_${n}`,
+      contentId: `DI_${n}`,
+      title: content.title,
+      body: content.body,
+    };
+    this.items.set(item.contentId, item);
+    return item;
+  }
+
+  async updateDraftItem(contentId: string, content: DraftContent): Promise<GitHubProjectItem> {
+    const item = this.items.get(contentId);
+    if (!item) throw new Error(`Draft not found: ${contentId}`);
+    item.title = content.title;
+    item.body = content.body;
+    return item;
+  }
+
+  async deleteItem(_projectId: string, itemId: string): Promise<void> {
+    for (const [key, item] of this.items) {
+      if (item.itemId === itemId) {
+        this.items.delete(key);
+        return;
+      }
+    }
+  }
+}
+
+describeStoreContract("GitHubProjectsStore", () => ({
+  supportsPassthrough: false,
+  supportsArchival: false,
+  setup: async () => {
+    const tmpDir = await mkdtemp(join(tmpdir(), "rex-contract-github-"));
+    const rexDir = join(tmpDir, ".rex");
+    await ensureGitHubProjectsRexDir(rexDir);
+
+    await writeFile(
+      join(rexDir, "config.json"),
+      toCanonicalJSON({
+        schema: SCHEMA_VERSION,
+        project: "contract-test",
+        adapter: "github",
+      }),
+      "utf-8",
+    );
+    await writeFile(join(rexDir, "execution-log.jsonl"), "", "utf-8");
+    await writeFile(join(rexDir, "workflow.md"), "# Workflow", "utf-8");
+
+    const adapterConfig: GitHubProjectsAdapterConfig = {
+      token: "ghp_contract-test",
+      projectId: "PVT_contract",
+    };
+    const mockClient = new ContractMockGitHubProjectsClient();
+    const store = new GitHubProjectsStore(rexDir, mockClient, adapterConfig);
 
     return {
       store,

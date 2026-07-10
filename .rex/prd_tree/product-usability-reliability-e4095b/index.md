@@ -14,7 +14,7 @@ description: "Improve N-DX install/setup reliability, cross-platform CLI executi
 | [Asana Work Tracking Integration](./asana-work-tracking-integration.md) | completed |
 | [Authentication State Checker](./authentication-state-checker.md) | completed |
 | [Front-End Action Fixes](./front-end-action-fixes.md) | completed |
-| [GitHub Projects Work Tracking Integration](./github-projects-work-tracking-84aa58.md) | pending |
+| [GitHub Projects Work Tracking Integration](./github-projects-work-tracking-84aa58.md) | completed |
 | [Jira Work Tracking Integration](./jira-work-tracking-integration.md) | pending |
 | [Notion Work Tracking Integration MVP](./notion-work-tracking-integration-mvp.md) | completed |
 | [PRD-to-Work-Item Linkage Model](./prd-to-work-item-linkage-model.md) | completed |

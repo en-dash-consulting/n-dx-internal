@@ -61,6 +61,14 @@ export type {
   AsanaExternal,
 } from "./asana-client.js";
 export { LiveAsanaClient } from "./asana-client.js";
+export { GitHubProjectsStore, ensureGitHubProjectsRexDir } from "./github-projects-adapter.js";
+export type {
+  GitHubProjectsClient,
+  GitHubProjectsAdapterConfig,
+  GitHubProjectItem,
+  DraftContent,
+} from "./github-projects-client.js";
+export { LiveGitHubProjectsClient } from "./github-projects-client.js";
 export { SyncEngine } from "../core/sync-engine.js";
 export type { SyncDirection, SyncReport, SyncOptions } from "../core/sync-engine.js";
 export {
@@ -103,12 +111,15 @@ export {
 export { notionIntegrationSchema } from "./integration-schemas/notion.js";
 export { jiraIntegrationSchema } from "./integration-schemas/jira.js";
 export { asanaIntegrationSchema } from "./integration-schemas/asana.js";
+export { githubIntegrationSchema } from "./integration-schemas/github.js";
 
 import { FileStore, PRD_FILENAME } from "./file-adapter.js";
 import { NotionStore } from "./notion-adapter.js";
 import { LiveNotionClient } from "./notion-client.js";
 import { AsanaStore } from "./asana-adapter.js";
 import { LiveAsanaClient } from "./asana-client.js";
+import { GitHubProjectsStore } from "./github-projects-adapter.js";
+import { LiveGitHubProjectsClient } from "./github-projects-client.js";
 import { getDefaultRegistry } from "./adapter-registry.js";
 import { dirname } from "node:path";
 import { resolveGitBranch } from "./branch-naming.js";
@@ -117,6 +128,7 @@ import { PRD_MARKDOWN_FILENAME } from "./prd-md-migration.js";
 import type { PRDStore } from "./contracts.js";
 import type { NotionAdapterConfig } from "./notion-client.js";
 import type { AsanaAdapterConfig } from "./asana-client.js";
+import type { GitHubProjectsAdapterConfig } from "./github-projects-client.js";
 
 /**
  * Create a PRDStore for the given adapter name.
@@ -168,6 +180,20 @@ export function createAsanaStore(
 ): PRDStore {
   const client = new LiveAsanaClient(config.token);
   return new AsanaStore(rexDir, client, config);
+}
+
+/**
+ * Create a GitHub Projects-backed store.
+ *
+ * Requires a GitHubProjectsAdapterConfig with token and projectId.
+ * The rexDir is still used for config, logs, and workflow files.
+ */
+export function createGitHubProjectsStore(
+  rexDir: string,
+  config: GitHubProjectsAdapterConfig,
+): PRDStore {
+  const client = new LiveGitHubProjectsClient(config.token);
+  return new GitHubProjectsStore(rexDir, client, config);
 }
 
 /**

@@ -19,6 +19,8 @@ import { NotionStore } from "./notion-adapter.js";
 import { LiveNotionClient } from "./notion-client.js";
 import { AsanaStore } from "./asana-adapter.js";
 import { LiveAsanaClient } from "./asana-client.js";
+import { GitHubProjectsStore } from "./github-projects-adapter.js";
+import { LiveGitHubProjectsClient } from "./github-projects-client.js";
 import type { PRDStore } from "./contracts.js";
 
 // ---------------------------------------------------------------------------
@@ -155,7 +157,7 @@ export function isRedactedField(v: unknown): v is RedactedField {
  * Exported so other modules (e.g. the CLI `adapter` command) can classify an
  * adapter as built-in without duplicating the list.
  */
-export const BUILT_IN_NAMES = new Set(["file", "notion", "asana"]);
+export const BUILT_IN_NAMES = new Set(["file", "notion", "asana", "github"]);
 
 function fileAdapterDef(): AdapterDefinition {
   return {
@@ -200,6 +202,23 @@ function asanaAdapterDef(): AdapterDefinition {
   };
 }
 
+function githubAdapterDef(): AdapterDefinition {
+  return {
+    name: "github",
+    description: "GitHub Projects (v2) backend",
+    configSchema: {
+      token: { required: true, sensitive: true, description: "GitHub personal access token (project scope)" },
+      projectId: { required: true, description: "GitHub ProjectV2 node ID (PVT_...)" },
+    },
+    factory: (rexDir, config) => {
+      const token = config.token as string;
+      const projectId = config.projectId as string;
+      const client = new LiveGitHubProjectsClient(token);
+      return new GitHubProjectsStore(rexDir, client, { token, projectId });
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // AdapterRegistry
 // ---------------------------------------------------------------------------
@@ -217,6 +236,7 @@ export class AdapterRegistry {
     this.adapters.set("file", fileAdapterDef());
     this.adapters.set("notion", notionAdapterDef());
     this.adapters.set("asana", asanaAdapterDef());
+    this.adapters.set("github", githubAdapterDef());
   }
 
   // ---- Registration ------------------------------------------------------
