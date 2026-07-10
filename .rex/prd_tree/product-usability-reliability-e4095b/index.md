@@ -10,7 +10,7 @@ description: "Improve N-DX install/setup reliability, cross-platform CLI executi
 
 | Title | Status |
 |-------|--------|
-| [Codex Workflow Support](./codex-workflow-support/index.md) | in_progress |
+| [Codex Workflow Support](./codex-workflow-support/index.md) | completed |
 | [Asana Work Tracking Integration](./asana-work-tracking-integration.md) | pending |
 | [Authentication State Checker](./authentication-state-checker.md) | completed |
 | [Front-End Action Fixes](./front-end-action-fixes.md) | completed |
