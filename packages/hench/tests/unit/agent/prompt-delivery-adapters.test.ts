@@ -114,25 +114,27 @@ describe("AC1: Claude adapter uses assemblePrompt() for system/task split", () =
 // ── 2. Codex adapter formats with SYSTEM/TASK headers ──────────────────
 
 describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
-  it("buildSpawnConfig produces SYSTEM/TASK formatted prompt as last arg", () => {
+  it("buildSpawnConfig produces SYSTEM/TASK formatted prompt via stdin", () => {
     const envelope = createFullEnvelope();
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    const lastArg = config.args[config.args.length - 1] as string;
-    expect(lastArg).toContain("SYSTEM:");
-    expect(lastArg).toContain("TASK:");
+    const prompt = config.stdinContent as string;
+    expect(prompt).toContain("SYSTEM:");
+    expect(prompt).toContain("TASK:");
+    // Prompt travels via stdin; args end with the "-" stdin marker.
+    expect(config.args[config.args.length - 1]).toBe("-");
   });
 
   it("SYSTEM section contains system + workflow content", () => {
     const envelope = createFullEnvelope();
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    const lastArg = config.args[config.args.length - 1] as string;
+    const prompt = config.stdinContent as string;
 
     // Extract the SYSTEM section (between SYSTEM: and TASK:)
-    const systemStart = lastArg.indexOf("SYSTEM:\n") + "SYSTEM:\n".length;
-    const taskStart = lastArg.indexOf("\n\nTASK:\n");
-    const systemSection = lastArg.slice(systemStart, taskStart);
+    const systemStart = prompt.indexOf("SYSTEM:\n") + "SYSTEM:\n".length;
+    const taskStart = prompt.indexOf("\n\nTASK:\n");
+    const systemSection = prompt.slice(systemStart, taskStart);
 
     expect(systemSection).toContain("You are Hench, an autonomous AI agent.");
     expect(systemSection).toContain("Follow TDD: red → green → refactor.");
@@ -142,11 +144,11 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
     const envelope = createFullEnvelope();
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    const lastArg = config.args[config.args.length - 1] as string;
+    const prompt = config.stdinContent as string;
 
     // Extract the TASK section (after TASK:)
-    const taskStart = lastArg.indexOf("TASK:\n") + "TASK:\n".length;
-    const taskSection = lastArg.slice(taskStart);
+    const taskStart = prompt.indexOf("TASK:\n") + "TASK:\n".length;
+    const taskSection = prompt.slice(taskStart);
 
     expect(taskSection).toContain("Implement user authentication with JWT.");
     expect(taskSection).toContain("src/auth.ts — existing auth module.");
@@ -159,25 +161,26 @@ describe("AC2: Codex adapter formats with SYSTEM/TASK headers", () => {
     const { systemPrompt, taskPrompt } = assemblePrompt(envelope);
 
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
-    const lastArg = config.args[config.args.length - 1] as string;
+    const prompt = config.stdinContent as string;
 
     const expected = `SYSTEM:\n${systemPrompt}\n\nTASK:\n${taskPrompt}`;
-    expect(lastArg).toBe(expected);
+    expect(prompt).toBe(expected);
   });
 
   it("minimal envelope produces correct SYSTEM/TASK format", () => {
     const envelope = createMinimalEnvelope();
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    const lastArg = config.args[config.args.length - 1] as string;
-    expect(lastArg).toBe("SYSTEM:\nYou are Hench.\n\nTASK:\nFix the bug.");
+    const prompt = config.stdinContent as string;
+    expect(prompt).toBe("SYSTEM:\nYou are Hench.\n\nTASK:\nFix the bug.");
   });
 
-  it("stdinContent is null (Codex uses args, not stdin)", () => {
+  it("stdinContent carries the prompt (Codex uses stdin, not args)", () => {
     const envelope = createMinimalEnvelope();
     const config = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    expect(config.stdinContent).toBeNull();
+    expect(config.stdinContent).not.toBeNull();
+    expect(config.args.some((a) => a.includes("SYSTEM:"))).toBe(false);
   });
 
   it("model override is passed through correctly", () => {
@@ -373,7 +376,7 @@ describe("Cross-vendor parity: prompt delivery", () => {
     // Claude: system in args, task in stdin
     const claudeConfig = claudeCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
-    // Codex: both in args as SYSTEM:/TASK:
+    // Codex: both in stdin as SYSTEM:/TASK:
     const codexConfig = codexCliAdapter.buildSpawnConfig(envelope, DEFAULT_EXECUTION_POLICY, {});
 
     if (process.platform !== "win32") {
@@ -382,7 +385,7 @@ describe("Cross-vendor parity: prompt delivery", () => {
     }
     expect(claudeConfig.stdinContent).toBe(taskPrompt);
 
-    const codexPrompt = codexConfig.args[codexConfig.args.length - 1] as string;
+    const codexPrompt = codexConfig.stdinContent as string;
     expect(codexPrompt).toContain(systemPrompt);
     expect(codexPrompt).toContain(taskPrompt);
   });

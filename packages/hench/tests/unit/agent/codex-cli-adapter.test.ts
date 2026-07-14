@@ -75,7 +75,7 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
 
     expect(config.binary).toBe("codex");
     expect(Array.isArray(config.args)).toBe(true);
-    expect(config.stdinContent).toBeNull(); // Codex: prompt in args, not stdin
+    expect(config.stdinContent).not.toBeNull(); // Codex: prompt via stdin, not args
     expect(config.cwd).toBe(".");
     expect(typeof config.env).toBe("object");
   });
@@ -125,21 +125,18 @@ describe("CodexCliAdapter: buildSpawnConfig", () => {
     expect(config.args).not.toContain("-m");
   });
 
-  it("includes the prompt as the last argument", () => {
+  it("delivers the prompt via stdin, not argv (avoids E2BIG on large briefs)", () => {
     const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
-    const lastArg = config.args[config.args.length - 1];
-    // The prompt should contain both system and task content
-    expect(lastArg).toContain("SYSTEM:");
-    expect(lastArg).toContain("You are Hench.");
-    expect(lastArg).toContain("TASK:");
-    expect(lastArg).toContain("Fix the bug.");
-  });
-
-  it("stdinContent is null (Codex uses args-based delivery)", () => {
-    const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
-
-    expect(config.stdinContent).toBeNull();
+    // The stdin marker "-" must be the last arg so `codex exec` reads from stdin.
+    expect(config.args[config.args.length - 1]).toBe("-");
+    // The prompt is no longer any positional arg.
+    expect(config.args.some((a) => a.includes("SYSTEM:"))).toBe(false);
+    // The prompt should contain both system and task content, delivered via stdin.
+    expect(config.stdinContent).toContain("SYSTEM:");
+    expect(config.stdinContent).toContain("You are Hench.");
+    expect(config.stdinContent).toContain("TASK:");
+    expect(config.stdinContent).toContain("Fix the bug.");
   });
 
   it("policy flags match compileCodexPolicyFlags output", () => {
@@ -160,26 +157,26 @@ describe("CodexCliAdapter: snapshot parity", () => {
   it("SNAPSHOT: standard Codex CLI args are deterministic", () => {
     const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, {});
 
-    // Remove the prompt (last arg) since it has variable content from assemblePrompt
-    const argsWithoutPrompt = config.args.slice(0, -1);
-    expect(argsWithoutPrompt).toEqual([
+    // The prompt is delivered via stdin; args end with the "-" stdin marker.
+    expect(config.args).toEqual([
       "exec",
       "--full-auto",
       "--json",
       "--skip-git-repo-check",
+      "-",
     ]);
   });
 
   it("SNAPSHOT: Codex CLI args with model override are deterministic", () => {
     const config = codexCliAdapter.buildSpawnConfig(createMinimalEnvelope(), DEFAULT_EXECUTION_POLICY, { model: "gpt-5-codex" });
 
-    const argsWithoutPrompt = config.args.slice(0, -1);
-    expect(argsWithoutPrompt).toEqual([
+    expect(config.args).toEqual([
       "exec",
       "--full-auto",
       "--json",
       "--skip-git-repo-check",
       "-m", "gpt-5-codex",
+      "-",
     ]);
   });
 
@@ -793,13 +790,13 @@ describe("CodexCliAdapter: end-to-end pipeline", () => {
     expect(config.args.includes("exec")).toBe(true);
     expect(config.args.includes("--json")).toBe(true);
 
-    // stdin is null (for args-based delivery)
-    expect(config.stdinContent).toBeNull();
+    // Prompt is delivered via stdin; args end with the "-" stdin marker.
+    expect(config.args[config.args.length - 1]).toBe("-");
 
-    // Prompt is the last arg and contains both system and task content
-    const lastArg = config.args[config.args.length - 1];
-    expect(lastArg).toContain("SYSTEM:");
-    expect(lastArg).toContain("TASK:");
+    // stdin carries both system and task content
+    const prompt = config.stdinContent as string;
+    expect(prompt).toContain("SYSTEM:");
+    expect(prompt).toContain("TASK:");
   });
 
   it("parse a multi-event Codex sequence into RuntimeEvents", () => {

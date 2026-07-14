@@ -148,6 +148,48 @@ function formatErrorSuffix(
 }
 
 /**
+ * Detect whether an error message signals an authentication or session-loss
+ * problem — a credential that was never valid, or a CLI session that expired
+ * or was revoked mid-run.
+ *
+ * Covers two families of signatures:
+ *
+ * - **API auth** — 401/403 responses, rejected/invalid API keys,
+ *   `unauthorized`, and `authentication failed/invalid/expired` messages.
+ * - **CLI session loss** — the phrases the `claude` / `codex` binaries emit
+ *   when their browser/OAuth session is gone: `not logged in`,
+ *   `please run … login`, `/login`, an expired/revoked session or OAuth token,
+ *   and explicit `re-authenticate` / `login required` prompts.
+ *
+ * This is the shared, pre-emptive check used to halt a run the moment auth is
+ * lost rather than retrying (auth loss is never transient) or surfacing a
+ * generic, non-actionable failure. Patterns are deliberately narrow enough not
+ * to collide with adjacent categories — e.g. `token limit exceeded` (budget)
+ * and `truncated at N tokens` (parse) are not matched.
+ */
+export function isAuthError(message: string): boolean {
+  if (!message) return false;
+  return (
+    /\b401\b/.test(message) ||
+    /\b403\b/.test(message) ||
+    /invalid.*api.*key/i.test(message) ||
+    /authentication.*(fail|error|invalid|expired|required)/i.test(message) ||
+    /\bunauthorized\b/i.test(message) ||
+    /not logged ?in/i.test(message) ||
+    /please (log ?in|sign in|run [^.\n]*login)/i.test(message) ||
+    /\/login\b/i.test(message) ||
+    /(session|oauth token|access token|auth token|credentials?)\b[^.\n]*(expired|invalid|rejected|revoked)/i.test(
+      message,
+    ) ||
+    /(expired|invalid|revoked)\b[^.\n]*(session|oauth token|access token|auth token|credentials?)/i.test(
+      message,
+    ) ||
+    /login required|authentication required/i.test(message) ||
+    /re-?authenticate/i.test(message)
+  );
+}
+
+/**
  * Classify an LLM error and return a user-friendly message, suggestion, and category.
  *
  * Covers: auth failures, rate limits, network issues, response parsing,
@@ -182,14 +224,14 @@ export function classifyLLMError(
   const detail = extractProviderDetail(cleanedMessage);
   const detailSuffix = detail ? ` (${detail})` : "";
 
-  // ── Authentication (401, invalid key, expired token) ──────────────
-  const isAuthError =
-    /\b401\b/.test(msg) ||
-    /invalid.*api.*key/i.test(err.message) ||
-    /authentication.*(fail|error|invalid|expired)/i.test(err.message) ||
-    /unauthorized.*(request|access|error)/i.test(err.message);
+  // Strip embedded user input before auth classification to avoid false-positives
+  // when the user's description contains words like "unauthorized" or "authentication".
+  // Error messages may embed user text as: "…unexpected response for input: <user text>".
+  const forInputIdx = cleanedMessage.search(/\bfor input:/i);
+  const authCheckMessage = forInputIdx !== -1 ? cleanedMessage.slice(0, forInputIdx) : cleanedMessage;
 
-  if (isAuthError) {
+  // ── Authentication (401, invalid key, expired token, lost session) ──
+  if (isAuthError(authCheckMessage)) {
     if (vendor === "codex") {
       return {
         message: `Authentication failed — Codex CLI credentials were rejected.${suffix}${detailSuffix}`,
