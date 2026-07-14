@@ -1,5 +1,15 @@
 # @n-dx/llm-client
 
+## 0.5.0
+
+### Minor Changes
+
+- [#295](https://github.com/en-dash-consulting/n-dx/pull/295) [`21283a2`](https://github.com/en-dash-consulting/n-dx/commit/21283a22fcd2b68d5f016fe923e49908c141ebf0) Thanks [@jeremylumanbailey](https://github.com/jeremylumanbailey)! - When running ndx config llm.vendor claude if the auth is outdated, a vague error message would show. Now the error message is more explicit and users can run "ndx auth" to troubleshoot that their auth for the configured llm is up to date
+
+### Patch Changes
+
+- [#279](https://github.com/en-dash-consulting/n-dx/pull/279) [`18b36f7`](https://github.com/en-dash-consulting/n-dx/commit/18b36f73c0b18bdf508b956e3fb42e5bbf5aeabd) Thanks [@endash-shal](https://github.com/endash-shal)! - Refresh the Claude model catalog shown in `ndx init` and align the runtime default. Adds **Claude Fable 5** (`claude-fable-5`) and **Claude Sonnet 5** (`claude-sonnet-5`) to the selector, and promotes Sonnet 5 to the recommended default (replacing the previous-generation Sonnet 4.6 as the pre-selected model and as `DEFAULT_CLAUDE_MODEL` / `NEWEST_MODELS.claude`). Sonnet 5's 1M context window and pricing are registered for budget preflight. `claude-sonnet-4-6` remains a valid, accepted model id (kept in the context/cost maps and added to the init legacy-alias list) so existing configs and `--claude-model=claude-sonnet-4-6` keep working without warnings. Codex and Gemini catalogs are unchanged.
+
 ## 0.4.6
 
 ### Patch Changes

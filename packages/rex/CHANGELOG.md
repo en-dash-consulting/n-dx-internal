@@ -1,5 +1,12 @@
 # @n-dx/rex
 
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`18b36f7`](https://github.com/en-dash-consulting/n-dx/commit/18b36f73c0b18bdf508b956e3fb42e5bbf5aeabd), [`21283a2`](https://github.com/en-dash-consulting/n-dx/commit/21283a22fcd2b68d5f016fe923e49908c141ebf0)]:
+  - @n-dx/llm-client@0.5.0
+
 ## 0.4.6
 
 ### Patch Changes
