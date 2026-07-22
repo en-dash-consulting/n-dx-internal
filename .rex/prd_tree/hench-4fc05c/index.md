@@ -35,5 +35,5 @@ description: "Autonomous agent: picks rex tasks, builds briefs with codebase con
 | [Run Loop Cancellation and Iteration Visibility Refinements](./run-loop-cancellation-and-3e4e10/index.md) | completed |
 | [Sequential Epic Execution](./sequential-epic-execution/index.md) | completed |
 | [Web UI: Reorganize around SourceVision / Rex / Hench sections](./web-ui-reorganize-around-d5ad6f/index.md) | completed |
-| [Fix hench task-completion commit gap + fullTestCommand schema drop (#302)](./fix-hench-task-completion-5c8cb3.md) | pending |
+| [Fix hench task-completion commit gap + fullTestCommand schema drop (#302)](./fix-hench-task-completion-5c8cb3.md) | in_progress |
 | [Pre-run commit gate: verify uncommitted changes before starting a work loop](./pre-run-commit-gate-verify-9af68a.md) | completed |

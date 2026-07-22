@@ -1091,6 +1091,59 @@ async function commitPreRunChanges(projectDir: string, message: string): Promise
   });
 }
 
+/**
+ * Commit any uncommitted .rex/prd_tree changes produced by the task-completion
+ * status update. Called on the autoCommit path only, where
+ * performCommitPromptIfNeeded is a no-op and would otherwise leave the
+ * metadata dirty in the working tree.
+ *
+ * Skips silently when there are no staged changes or when not in a git repo.
+ */
+async function commitCompletionMetadata(
+  projectDir: string,
+  taskId: string,
+): Promise<void> {
+  const { join } = await import("node:path");
+  const { existsSync } = await import("node:fs");
+  const prdTreePath = join(".rex", PRD_TREE_DIRNAME);
+
+  if (!existsSync(join(projectDir, prdTreePath))) {
+    return;
+  }
+
+  try {
+    await execStdout("git", ["add", prdTreePath], { cwd: projectDir, timeout: 10_000 });
+  } catch {
+    return; // not in a git repo
+  }
+
+  let staged = 0;
+  try {
+    const out = await execStdout(
+      "git", ["diff", "--cached", "--name-only", "--", ".rex/"],
+      { cwd: projectDir, timeout: 10_000 },
+    );
+    staged = out.trim().split("\n").filter(Boolean).length;
+  } catch {
+    return;
+  }
+
+  if (staged === 0) {
+    return;
+  }
+
+  const message = `chore(prd): mark task ${taskId} completed`;
+  try {
+    await execStdout(
+      "git", ["commit", "-m", message, "-m", buildCoAuthoredByTrailerLine()],
+      { cwd: projectDir, timeout: 30_000 },
+    );
+    detail(`Committed completion metadata (${staged} PRD file(s))`);
+  } catch (err) {
+    detail(`Warning: could not commit completion metadata: ${(err as Error).message}`);
+  }
+}
+
 export interface PreRunCommitGateOptions {
   projectDir: string;
   henchDir: string;
@@ -1823,6 +1876,13 @@ export async function finalizeRun(opts: FinalizeRunOptions): Promise<void> {
     run.taskId,
     opts.commitWatcher,
   );
+
+  // On the autoCommit path performCommitPromptIfNeeded is a no-op, so the
+  // completion metadata written by updateCompletedTaskStatus would otherwise
+  // be left uncommitted. Commit it now in a small dedicated second commit.
+  if (opts.autoCommit === true && run.status === "completed" && run.taskId) {
+    await commitCompletionMetadata(projectDir, run.taskId);
+  }
 
   // Rollback uncommitted changes when the run failed (unless suppressed).
   // Runs after test gates so the working tree reflects the agent's final state.
