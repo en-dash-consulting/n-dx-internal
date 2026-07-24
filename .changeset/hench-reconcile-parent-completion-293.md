@@ -1,5 +1,5 @@
 ---
-"rex": patch
+"@n-dx/rex": patch
 "@n-dx/hench": patch
 ---
 
