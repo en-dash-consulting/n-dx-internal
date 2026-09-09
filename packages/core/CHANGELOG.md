@@ -1,5 +1,93 @@
 # @n-dx/core
 
+## 0.5.3
+
+### Patch Changes
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Attribute SourceVision Ask token spend in the LLM Utilization view
+  
+  Every Ask call spent real tokens from a surface with no accounting path. Hench
+  runs land in `.hench/runs/` and roll up per PRD item; rex and sourcevision
+  report through their own artifacts. The dashboard's own spend reported nowhere,
+  so the one view whose job is to report the bill was blind to its own.
+  
+  Each call is now appended to `.n-dx-web-usage.jsonl` with vendor, model, input,
+  output, cache-creation and cache-read tokens, plus how the call ended. The
+  utilization aggregation reads it as a fourth package bucket, `web`, rendered as
+  "Dashboard" — its own colour, donut slice, filter option and command row, so it
+  stays separable from hench run spend everywhere the view breaks down by
+  package. Asks are not task-scoped, so the spend is a dashboard bucket rather
+  than being attributed to whichever PRD item happened to be selected.
+  
+  Failed calls are recorded too, with the call counted and whatever the provider
+  reported. A provider that finishes after the ask timed out appends its counts
+  as a second, call-free record, so late tokens are neither lost nor
+  double-counted as a second call. A call that never reached a provider (no
+  analysis, unconstructible client) is deliberately not recorded — the ledger
+  counts calls, not intentions.
+  
+  Cache tokens are now reported in this view rather than hidden, consistent with
+  the hench/rex decision. The server had always counted and priced them
+  (`estimateCost` charges cache writes at 1.25x input and reads at 0.1x), but the
+  viewer's local copy of the wire shape omitted the fields and totalled only
+  input + output — so "Total Tokens" disagreed with the "Est. Cost" beside it, and
+  on a cache-heavy run most of the bill had no visible line. Cache write/read now
+  appear as headline figures, as columns in the vendor-model and command tables,
+  and as their own cost lines.
+  
+  The aggregation cache also fingerprints the ledger, so an answer's cost appears
+  without waiting for an unrelated source to change.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Add `POST /api/sourcevision/ask`, answering a question from the existing analysis
+  
+  The SourceVision Ask panel's server half. The request is
+  `{ prompt, seed? }` validated by a zod schema; the response is
+  `{ answer, vendor, model, tokens, contextSources }`.
+  
+  **Bundle, not a tool-use loop.** Context is pre-assembled from the
+  `.sourcevision/` artifacts already on disk — manifest, inventory, imports,
+  zones, findings, derived next steps, component count, and a `CONTEXT.md`
+  excerpt — and sent in a single non-agentic call. A loop that queried lookups on
+  demand would answer a wider range of questions, but at an unbounded number of
+  round trips per question and with no way to test what the model actually saw. A
+  unit test now asserts the assembled facts reach the completion request, which is
+  the property the whole endpoint rests on. Every section is capped and reports
+  what it cut, so the bundle does not grow with the repository until the vendor
+  rejects it as an opaque 400.
+  
+  **Analysis is the only ground truth.** The endpoint reads no source, and refuses
+  with `no_analysis` rather than letting the model answer from its priors when
+  nothing has been analysed. All sourcevision access — including the five artifact
+  schema types the reads are parsed against — goes through
+  `server/domain-gateway.ts`; the gateway's export cap moved 15 → 16 with that
+  reason recorded.
+  
+  **Named failures, and it cannot hang.** Vendor and model come from the project's
+  own config via `loadLLMConfig` + `resolveTaskModel` (new `sourcevision.ask`
+  class, standard tier, reroutable through `llm.routes`), and the pair that served
+  the call is reported back so the panel never has to guess which model produced
+  an answer. The call races a budget — `sourcevision.ask.timeoutMs`, default 120s,
+  also passed down so a CLI-mode child bounds itself — and every failure returns a
+  named `kind` (`timeout`, `rate_limit`, `auth`, `network`, `no_analysis`,
+  `invalid_request`, `llm_error`) with the vendor's retry delay when it supplied
+  one, instead of a generic 500. A provider that already threw a typed
+  `ClaudeClientError` is trusted over re-classifying its message, so a 429 the
+  provider knew about is never downgraded to `unknown`.
+  
+  The task-class registry contract test now scans `web` as well as the three
+  domain packages: web declares classes now, and an unregistered one there
+  resolves silently to the standard tier exactly as it would anywhere else.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Stop the pre-run git gate counting the warm-parent session cache as operator work.
+  
+  `.hench/session-cache.json` is rewritten on every orientation, but it was absent from `HENCH_RUNTIME_GITIGNORE_ENTRIES` and from both ignore lists, so `git add -A` in the pre-run commit gate swept it into commits — and a later run then saw its own write as one uncommitted file and refused to start. It is now ignored, discounted by the gate, and written by `hench init`. The ignore template test additionally pins every declared runtime artifact to both ignore files, so the constant can no longer drift away from them.
+- Updated dependencies [[`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`72609db`](https://github.com/en-dash-consulting/n-dx/commit/72609db1c4572f94ef25a2178d5cac2c17e241dc), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e)]:
+  - @n-dx/rex@0.5.3
+  - @n-dx/web@0.5.3
+  - @n-dx/hench@0.5.3
+  - @n-dx/llm-client@0.5.3
+  - @n-dx/sourcevision@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes

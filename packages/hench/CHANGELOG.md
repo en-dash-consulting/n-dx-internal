@@ -1,5 +1,192 @@
 # @n-dx/hench
 
+## 0.5.3
+
+### Patch Changes
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Stop the pre-run git gate self-blocking on hench's own lock directory
+  
+  `ndx work --auto` on a project without hench's `.gitignore` entries refused to
+  start with "Refusing to start an autonomous run with 1 uncommitted file(s), 0
+  line(s) changed in the working tree" — and left a clean tree behind, so the
+  message looked unreproducible. The dirt was `.hench/locks/`, created at process
+  startup before the gate runs and removed again on exit.
+  
+  The gate now discounts hench's own runtime artifacts (`.hench/locks/`,
+  `.hench/runs/`, `.hench/usage-cursors/`, `.hench-commit-msg.txt`) when reading
+  `git status --porcelain`, so a lock the run itself created can never count as
+  operator dirt. `.hench/config.json` is deliberately not discounted — it is
+  operator-authored and a pending change to it should still stop the run.
+  
+  `hench init` also now writes those `.gitignore` entries ahead of its
+  already-initialized early return, so a project initialized before the entries
+  existed picks them up on the next `ndx init` instead of staying exposed.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - fix(hench): stop reporting a clean dependency audit for one that never ran
+  
+  `runDependencyAudit` failed OPEN. Both of its steps guarded the parse on
+  `stdout` being non-empty, and a command that cannot be spawned comes back from
+  `exec` as exitCode 1 with empty stdout — so the parse was skipped, the all-zero
+  initializer was returned untouched, and the function answered `ran: true`. The
+  caller then printed `✓ No vulnerabilities or outdated packages found` for an
+  audit that had executed nothing. Two bare `catch {}` blocks discarded any throw
+  on the way. This was the reverse of the direction a security-adjacent check
+  should fail, and worse than being loudly wrong: it was silently reassuring.
+  
+  Each step is now classified, and every way of failing to produce counts is
+  reported as `ran: false` with a reason: never launched (naming the spawn error),
+  killed on timeout, a non-zero exit with no output (carrying the stderr tail, so
+  `ERR_PNPM_NO_LOCKFILE` reaches the operator), unparseable JSON, and a payload
+  that parses but carries no vulnerability data — pnpm reports its own errors as
+  JSON too. `exitCode 0` with no output stays a real empty report, because
+  `pnpm outdated --json` prints nothing when every dependency is current.
+  
+  `DependencyAuditResult` now has a three-outcome contract — ran, partial, and
+  inconclusive — with per-step `commands.audit` / `commands.outdated` records
+  saying which half failed and why. **An inconclusive audit warns and proceeds**,
+  and the reasoning is recorded on the type: the audit gates nothing today (a run
+  with ten critical vulnerabilities proceeds), so a `pnpm` that will not spawn must
+  not be a harder stop than the vulnerabilities themselves; the defect being fixed
+  is the false clean bill of health, not the decision to continue. A future gate
+  that wants to fail closed can already distinguish the state.
+  
+  The dead `hasIssues` computation is gone. It was this defect in miniature —
+  OR-ing over counts a never-launched step had left at zero — and nothing read it.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Run shell commands in a shell that exists on Windows.
+  
+  `execShellCmd` hardcoded `sh -c` on every platform. On Windows `sh` ships with
+  Git for Windows and is on PATH only inside Git Bash, so from PowerShell or
+  cmd.exe — the default shells — the spawn failed with ENOENT. `exec` reported
+  that as `exitCode: 1` with empty output, which is indistinguishable from a
+  command that ran and failed: hench's test gate concluded the suite was broken
+  after essentially every task, and `rex verify` reported `passed: false` for
+  tests that never started.
+  
+  `execShellCmd` now resolves the shell per platform — `sh -c` wherever a POSIX
+  shell is resolvable, `cmd.exe /d /s /c` on a Windows box without one. POSIX
+  behaviour is unchanged, and Windows machines that have Git for Windows keep
+  POSIX semantics rather than being switched to cmd.exe.
+  
+  `ExecResult` gains `launched`, which is `false` when the command never started.
+  Callers that infer pass/fail from `exitCode` alone can no longer mistake an
+  unlaunchable command for a failing one; `rex verify` and hench's `run_command`
+  now report the two cases differently.
+  
+  The two remaining sites that spawned `sh` directly (hench's `execShell`, rex's
+  `verify`) are routed through `execShellCmd`, and an architecture-policy guard
+  fails the build if a new one appears.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Charge the adversarial review pass's per-turn tokens to the run record.
+  
+  `runAdversarialReviewPass` added the reviewer's aggregate spend to
+  `run.tokenUsage` but never merged `result.turnTokenUsage` into
+  `run.turnTokenUsage` — `accumulateResult` is the only path that concats the
+  per-turn array, and the review pass does not go through it.
+  
+  The per-turn half is the one that reaches the rollups. Rex's
+  `extractHenchTokenEvents` builds its usage events from `turnTokenUsage`
+  whenever that array is non-empty and then advances to the next run; it never
+  falls back to the aggregate. A run carrying only the executor's turns
+  therefore reports only the executor's spend, however large `tokenUsage` grew.
+  
+  Measured on live run 5c1e9bee (executor claude-sonnet-4-6, reviewer
+  claude-opus-5): `run.tokenUsage.output` was 28,920 while all 20 per-turn
+  entries were tagged sonnet and summed to 3,154 output. `ndx usage` printed the
+  aggregate as its headline (29,082) and the per-turn sum as the per-command
+  line (3,200) in the same report — an 89% under-report — and priced the whole
+  run at Sonnet rates although roughly 25.8k of the 28.9k output tokens were
+  billed to opus-5.
+  
+  The two halves now move together in one place, `chargeReviewToRun`. The
+  reviewer's turn numbers restart at 1, so they are offset past the executor's
+  highest turn to keep `turn` monotonic within a run. Entries are tagged with
+  the review model, with an unresolved model (the local vendor sends no model
+  flag) normalized from `""` to absent so the `turn.model ?? run.model` fallback
+  downstream still engages. A reviewer that reports no per-turn data contributes
+  none rather than one synthetic entry — fabricated per-turn data is
+  indistinguishable from measured data once written.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - fix(hench): stop failing a run for a test suite that never started
+  
+  `runTestGate` inferred pass/fail from `exitCode` alone. A command that cannot
+  be spawned comes back from `exec` as exitCode 1 with empty stdout and stderr —
+  byte for byte what a real failing exit looks like — so the only thing separating
+  "your tests failed" from "the suite never started" is `ExecResult.launched`,
+  which was never read.
+  
+  The consequences ran well past a misleading message. In autonomous mode the gate
+  failure aborted the run, which set `run.status = "failed"`, which skipped
+  `updateCompletedTaskStatus` and short-circuited the commit prompt. Finished,
+  committed work went unrecorded in the PRD, the loop re-selected the same task,
+  and three strikes auto-cancelled it. Operators saw `✗ 0/0 package(s) failed` and
+  `Test gate failed:` with nothing after the colon. On Windows without a POSIX
+  shell this fired on essentially every task until b5a3a3e0 fixed shell resolution.
+  
+  Now:
+  
+  - A gate that could not be executed is reported as `ran: false` with an error
+    naming the spawn failure — inconclusive, not a verdict. `TestGateResult` says
+    so explicitly: check `ran` before `passed`.
+  - The lifecycle treats that as inconclusive and leaves `run.status` alone, so the
+    PRD write and the commit still happen, and prints a distinct message rather
+    than claiming a test failure.
+  - The retry loop terminates instead of spinning to the 5-attempt cap re-running a
+    command that cannot launch, then failing the run for exhausting its retries.
+  - A gate failure with no package results names a reason instead of ending in a
+    bare colon.
+  
+  The same `launched` gap is fixed in `runTestsForFiles`, `runTypecheck` (cleanup
+  transformations — still fails closed, since it guards a mutation, but no longer
+  reports a spawn failure as type errors), and completion validation. The rex
+  requirements executor folds the spawn error into stderr, since its contract has
+  no field for it. `runDependencyAudit` was left annotated and tracked separately,
+  because its fail-open behaviour was a design decision about a security-adjacent
+  check rather than a mechanical one; it is fixed in its own changeset.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - fix(hench): show the actual test failure instead of `0/0 package(s) failed`
+  
+  The gate threw away every diagnostic for the test command it selects by default.
+  `parseVitestOutput` expected vitest JSON, but `autoDetectTestCommand` returns
+  `npm run test` whenever package.json has a `test` script — most repos, and this
+  one, where it runs `scripts/run-all-tests.mjs` and prints a human-readable
+  summary. `JSON.parse` threw, the fallback searched only stderr while that runner
+  writes its summary to stdout, and an empty array came back. The lifecycle
+  rendered it as `✗ 0/0 package(s) failed` with no output to print, so a real
+  failure was indistinguishable from a suite that never launched — and neither
+  said anything useful.
+  
+  - The parser reads both streams and never returns an empty array for a run that
+    produced output. When it cannot parse, it surfaces the raw output instead of
+    reporting nothing.
+  - Failing packages are named only from lines carrying a failure marker. Scanning
+    the whole output collected every package the run mentioned, which would have
+    reported five passing packages as failures alongside the one that failed.
+  - Raw output is taken from stdout and stderr combined. Vitest puts `×` markers on
+    stdout and the AssertionError block on stderr, and the existing helper takes
+    `stdout || stderr` — so the operator was told which test failed but not why.
+  - A passing run is reported as passing with no output attached, so the package
+    count is honest on the happy path too.
+  - Timeouts report distinctly, naming both the budget and the elapsed time and
+    keeping whatever output arrived before the kill. A timeout still fails the run:
+    a gate that cannot finish on freshly changed code is a reason to stop.
+  
+  `TEST_GATE_TIMEOUT` raised 5m → 15m. The full suite here measures 248s idle —
+  83% of the old ceiling — and the gate runs while the agent's own subprocesses are
+  still competing for cores. It is a hang guardrail, not a latency SLA, and the
+  measurement is recorded next to the constant.
+  
+  Verified end to end by running the real gate against a deliberately failing test:
+  the output now carries the test name, `AssertionError: expected 42 to be 43`, and
+  the source line.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Stop the pre-run git gate counting the warm-parent session cache as operator work.
+  
+  `.hench/session-cache.json` is rewritten on every orientation, but it was absent from `HENCH_RUNTIME_GITIGNORE_ENTRIES` and from both ignore lists, so `git add -A` in the pre-run commit gate swept it into commits — and a later run then saw its own write as one uncommitted file and refused to start. It is now ignored, discounted by the gate, and written by `hench init`. The ignore template test additionally pins every declared runtime artifact to both ignore files, so the constant can no longer drift away from them.
+- Updated dependencies [[`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e)]:
+  - @n-dx/rex@0.5.3
+  - @n-dx/llm-client@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes

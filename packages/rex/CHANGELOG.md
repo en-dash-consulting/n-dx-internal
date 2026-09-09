@@ -1,5 +1,139 @@
 # @n-dx/rex
 
+## 0.5.3
+
+### Patch Changes
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Insert an `analyze --accept` batch in one transaction, so it stops failing its own stale-save guard.
+  
+  Acceptance called `store.addItem` once per item, so accepting N items ran N
+  transactions and serialized the whole folder tree N times. Every intermediate
+  shape reached disk — and one of them is destructive to clean up. An epic
+  inserted before its first feature has no children, so the serializer writes it
+  as the leaf `general.md`; the transaction that adds that feature must then
+  DELETE the leaf to promote the epic to `general/index.md`.
+  
+  The stale-save guard weighs every such deletion against the transaction's own
+  load time, with a 2 ms tolerance. Measured on Windows, the leaf's mtime lands
+  just 0.57–2.04 ms before the next transaction's load — inside the window, but
+  with almost nothing to spare. Under the I/O pressure of the full monorepo suite
+  the write timestamp drifts past it, and the accept aborts with
+  
+      Stale-save guard: this save would delete 1 item written after the document
+      being saved was loaded
+  
+  naming `prd_tree/general.md` and warning that another writer's work was about to
+  be destroyed. It was its own, one transaction earlier. This reproduced 2/2
+  through `scripts/run-all-tests.mjs` and passed 2/2 with the rex suite alone,
+  so it presented as flake rather than as a bug in the accept path — that runner's
+  header already refers to "rex's load-sensitive tests".
+  
+  Proposals are now built into fully-nested epics up front and pushed in a single
+  `store.withTransaction`, which is what the guard's own error message advises.
+  One write emits the final shape, so the intermediate leaf is never created and
+  there is no deletion to weigh. Verified with a filesystem watcher over a real
+  accept: only `general/`, `general/index.md` and the feature file are touched.
+  Item stamping (`withSelfHealTag` then `stampModified`) is preserved per item and
+  now happens outside the lock, since resolving the actor can shell out to git.
+  
+  This is the write path the surrounding "move file lock to saveDocument" work
+  missed — it converted `reorganize`, `prune` and `reshape`, but not
+  `analyze --accept`. Accepted counts, batch-record output and the
+  `analyze_accept` execution-log entry are unchanged.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - test(rex): count comparisons instead of timing them in the scoped consolidation complexity gate
+  
+  `add-auto-reshape.test.ts` asserted that the scoped consolidation pass grows
+  sub-quadratically by comparing two wall-clock readings. It failed on an idle
+  machine at 8.6x against an 8x bound, and failed reliably under the CPU load of an
+  `ndx work` run — which took the hench pre-commit test gate red on every task,
+  for reasons unrelated to the code under test.
+  
+  Tuning the bound could not fix it. The readings were dominated by loading the
+  tree (26 vs 101 items) rather than by the cohort scan the test claimed to guard,
+  so the signal was a minority of what was measured and the noise floor sat at the
+  threshold. The test had already been hardened three times (absolute budget →
+  growth ratio, shared store → one store per size, single shot → min of 7).
+  
+  It now counts calls to `similarity`, the pairwise content-comparison primitive
+  that defines the complexity: grouping by normalized title calls it once per
+  colliding pair, while comparing every sibling against every other calls it O(n²)
+  times. Counts are exact integers, so the result is identical on an idle machine
+  and a saturated one. Verified in the failing direction — a nested pairwise scan
+  added to `detectNonDuplicateTitleCollisions` took the 24-sibling count from 12 to
+  288 and the growth from 4x to 16x.
+  
+  The test no longer builds a store or touches disk: ~35s of setup and a raised
+  60s timeout are gone, and the file runs in under 3s.
+  
+  No production behaviour changes.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Run shell commands in a shell that exists on Windows.
+  
+  `execShellCmd` hardcoded `sh -c` on every platform. On Windows `sh` ships with
+  Git for Windows and is on PATH only inside Git Bash, so from PowerShell or
+  cmd.exe — the default shells — the spawn failed with ENOENT. `exec` reported
+  that as `exitCode: 1` with empty output, which is indistinguishable from a
+  command that ran and failed: hench's test gate concluded the suite was broken
+  after essentially every task, and `rex verify` reported `passed: false` for
+  tests that never started.
+  
+  `execShellCmd` now resolves the shell per platform — `sh -c` wherever a POSIX
+  shell is resolvable, `cmd.exe /d /s /c` on a Windows box without one. POSIX
+  behaviour is unchanged, and Windows machines that have Git for Windows keep
+  POSIX semantics rather than being switched to cmd.exe.
+  
+  `ExecResult` gains `launched`, which is `false` when the command never started.
+  Callers that infer pass/fail from `exitCode` alone can no longer mistake an
+  unlaunchable command for a failing one; `rex verify` and hench's `run_command`
+  now report the two cases differently.
+  
+  The two remaining sites that spawned `sh` directly (hench's `execShell`, rex's
+  `verify`) are routed through `execShellCmd`, and an architecture-policy guard
+  fails the build if a new one appears.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Stamp `lastModified` on tree mutations made inside `store.withTransaction`.
+  
+  Only the single-item store methods (`addItem`/`updateItem`/`removeItem`)
+  stamped. Every batch write mutates the tree directly inside a transaction and
+  so bypassed them: the dashboard's bulk update and merge routes, the Ask panel's
+  apply-refinements, and the CLI restructurers. The item was written to disk
+  looking untouched.
+  
+  That is silent in both directions. `isModifiedSinceSync` asks whether
+  `lastModified > lastSyncedAt`, so a previously-synced item whose stamp never
+  advanced is skipped on push; `resolveConflicts` then does last-write-wins on
+  local versus remote time, and with the local time stale the next
+  `sync_with_remote` overwrites the local change with the remote's value. Nothing
+  reports either half. Reachable on any project configured with a remote adapter.
+  
+  The stamp now belongs to the transaction rather than to each caller —
+  `FileStore.withTransaction` and `FolderTreeStore.withTransaction` signature the
+  tree before running the callback and stamp whatever changed, via
+  `snapshotItemContent` / `stampChangedItems` in `core/sync.ts`.
+  
+  Deliberate details:
+  
+  - **Changed, not merely present.** `migrate-slugs` and `reshape` each open an
+    empty transaction purely to force a rewrite; stamping unconditionally would
+    mark every item in the PRD modified and queue the whole tree for push.
+  - **A parent whose child list changed counts as changed**, which is what
+    `removeItem` already did by hand for exactly this reason.
+  - **A stamp the item arrived with is kept.** `analyze.ts` stamps its accepted
+    items before opening its transaction, deliberately; only an item that is new
+    to the tree *and* unstamped gets one here.
+  - **Sync bookkeeping is excluded from the signature** (`lastModified`,
+    `lastModifiedBy`, `lastSyncedAt`, `remoteId`) — including any of them would
+    make a stamp, or a recorded sync, look like a further modification.
+  - **The actor is resolved before the lock is taken.** `resolveActor` shells out
+    to `git config` on first call; doing that inside the locked span puts a
+    subprocess between every other writer and the PRD.
+  
+  The remote adapters keep their own lock-free `withTransaction` unchanged: they
+  push to systems where these timestamps mean something different.
+- Updated dependencies [[`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e)]:
+  - @n-dx/llm-client@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes
