@@ -1,5 +1,29 @@
 # @n-dx/sourcevision
 
+## 0.5.3
+
+### Patch Changes
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Discover isometric-map infrastructure from CloudFormation and SAM templates, not only Terraform. `.yaml`/`.yml` files are scanned for a top-level `Resources:` block plus a namespaced `Type:` — strict enough that a CI workflow or a k8s manifest is never mistaken for infrastructure — and resource types are normalised (`AWS::SQS::Queue` → `aws_sqs_queue`) so both dialects share the one classification table instead of each carrying its own. Name literals come from `BucketName`/`QueueName`/… properties but never from a `!Ref` or `!Sub`, which is not a name. A project on CloudFormation now gets infrastructure nodes with nothing declared by hand in `.n-dx.json`.
+
+- [#351](https://github.com/en-dash-consulting/n-dx/pull/351) [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e) Thanks [@endash-shal](https://github.com/endash-shal)! - Check declared injection seams against the call graph on the isometric map. A seam declared under `sourcevision.isoMap.injectionSeams` was previously drawn on trust, so a refactor could leave the declaration behind and the map would keep asserting a relationship nothing invokes. Where `callgraph.json` is available, each named callback is now looked for on the receiving side: a corroborated seam's panel names the file and expression that matched, a seam the call graph does not support is drawn thinner and fainter with a sparser dash and labelled "unverified", and callbacks nothing calls are listed in the page footer. A view with no call graph reports the seams as unchecked rather than marking them unverified.
+
+- [#354](https://github.com/en-dash-consulting/n-dx/pull/354) [`72609db`](https://github.com/en-dash-consulting/n-dx/commit/72609db1c4572f94ef25a2178d5cac2c17e241dc) Thanks [@ryrykeith](https://github.com/ryrykeith)! - Fix `analyze` promoting git worktree checkouts as sub-analyses.
+  
+  Sub-analysis discovery walked into `.claude/worktrees/<name>/` and other in-repo
+  worktrees. Each is a full checkout carrying its own `.sourcevision/`, so every
+  live worktree injected a duplicate copy of the parent's zones — one observed run
+  returned 120 zones, 87 of them duplicates.
+  
+  `findSubSvDirs()` now skips `.claude`, and additionally skips any directory that
+  `git worktree list --porcelain` reports as a registered worktree nested inside
+  the analysis root. Worktree resolution is best-effort: if git is unavailable or
+  the directory is not a repository, the scan behaves exactly as before. The root
+  itself is never skipped, so analyzing a project that is itself a worktree still
+  works.
+- Updated dependencies [[`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e), [`d21d0ab`](https://github.com/en-dash-consulting/n-dx/commit/d21d0ab9d291fe444726d038415d8cddd5fc8e8e)]:
+  - @n-dx/llm-client@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes
